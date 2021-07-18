@@ -20,13 +20,19 @@ export default class ReactForm extends React.Component {
 
   inputs = {};
 
-  answerData;
-
   constructor(props) {
     super(props);
-    this.answerData = this._convert(props.answer_data);
     this.emitter = new EventEmitter();
     this.getDataById = this.getDataById.bind(this);
+    this.state = {
+      answerData: this._convert(props.answer_data)
+    };
+  }
+
+  static getDerivedStateFromProps(props) {
+    return {
+      answerData: this._convert(props.answer_data)
+    };
   }
 
   _convert(answers) {
@@ -45,7 +51,7 @@ export default class ReactForm extends React.Component {
   }
 
   _getDefaultValue(item) {
-    return this.answerData[item.field_name];
+    return this.state.answerData[item.field_name];
   }
 
   _optionsDefaultValue(item) {
@@ -56,7 +62,7 @@ export default class ReactForm extends React.Component {
 
     const defaultChecked = [];
     item.options.forEach(option => {
-      if (this.answerData[`option_${option.key}`]) {
+      if (this.state.answerData[`option_${option.key}`]) {
         defaultChecked.push(option.key);
       }
     });
@@ -308,7 +314,7 @@ export default class ReactForm extends React.Component {
 
     data_items.forEach((item) => {
       if (item && item.readOnly && item.variableKey && this.props.variables[item.variableKey]) {
-        this.answerData[item.field_name] = this.props.variables[item.variableKey];
+        this.state.answerData[item.field_name] = this.props.variables[item.variableKey];
       }
     });
 
