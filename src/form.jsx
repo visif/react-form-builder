@@ -15,6 +15,21 @@ const {
   Image, Checkboxes, Signature, Download, Camera,
 } = FormElements;
 
+const convert = (answers) => {
+  if (Array.isArray(answers)) {
+    const result = {};
+    answers.forEach(x => {
+      if (x.name.indexOf('tags_') > -1) {
+        result[x.name] = x.value.map(y => y.value);
+      } else {
+        result[x.name] = x.value;
+      }
+    });
+    return result;
+  }
+  return answers || {};
+}
+
 export default class ReactForm extends React.Component {
   form;
 
@@ -25,29 +40,14 @@ export default class ReactForm extends React.Component {
     this.emitter = new EventEmitter();
     this.getDataById = this.getDataById.bind(this);
     this.state = {
-      answerData: this._convert(props.answer_data)
+      answerData: convert(props.answer_data)
     };
   }
 
   static getDerivedStateFromProps(props) {
     return {
-      answerData: this._convert(props.answer_data)
+      answerData: convert(props.answer_data)
     };
-  }
-
-  _convert(answers) {
-    if (Array.isArray(answers)) {
-      const result = {};
-      answers.forEach(x => {
-        if (x.name.indexOf('tags_') > -1) {
-          result[x.name] = x.value.map(y => y.value);
-        } else {
-          result[x.name] = x.value;
-        }
-      });
-      return result;
-    }
-    return answers || {};
   }
 
   _getDefaultValue(item) {
