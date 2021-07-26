@@ -53,6 +53,17 @@ export default class DynamicOptionList extends React.Component {
     this.props.updateElement.call(this.props.preview, this_element);
   }
 
+  editOptionInfo(option_index, e) {
+    const this_element = this.state.element;
+    if (this_element.options[option_index].hasOwnProperty('info')) {
+      delete (this_element.options[option_index].info);
+    } else {
+      this_element.options[option_index].info = true;
+    }
+    this.setState({ element: this_element });
+    this.props.updateElement.call(this.props.preview, this_element);
+  }
+
   updateOption() {
     const this_element = this.state.element;
     // to prevent ajax calls with no change
@@ -83,11 +94,13 @@ export default class DynamicOptionList extends React.Component {
         <ul>
           <li>
             <div className="row">
-              <div className="col-sm-6"><b>Options</b></div>
+              <div className="col-sm-5"><b>Options</b></div>
               { this.props.canHaveOptionValue &&
               <div className="col-sm-2"><b>Value</b></div> }
+              { this.props.canHaveOptionValue && this.props.canHaveInfo &&
+              <div className="col-sm-1"><b>Info</b></div> }
               { this.props.canHaveOptionValue && this.props.canHaveOptionCorrect &&
-              <div className="col-sm-4"><b>Correct</b></div> }
+              <div className="col-sm-1"><b>Correct</b></div> }
             </div>
           </li>
           {
@@ -97,12 +110,16 @@ export default class DynamicOptionList extends React.Component {
               return (
                 <li className="clearfix" key={this_key}>
                   <div className="row">
-                    <div className="col-sm-6">
+                    <div className="col-sm-5">
                       <input tabIndex={index + 1} className="form-control" style={{ width: '100%' }} type="text" name={`text_${index}`} placeholder="Option text" value={option.text} onBlur={this.updateOption.bind(this)} onChange={this.editOption.bind(this, index)} />
                     </div>
                     { this.props.canHaveOptionValue &&
                     <div className="col-sm-2">
                       <input className="form-control" type="text" name={`value_${index}`} value={val} onChange={this.editValue.bind(this, index)} />
+                    </div> }
+                    { this.props.canHaveOptionValue && this.props.canHaveInfo &&
+                    <div className="col-sm-1">
+                      <input className="form-control" type="checkbox" value="1" onChange={this.editOptionInfo.bind(this, index)} checked={option.hasOwnProperty('info')} />
                     </div> }
                     { this.props.canHaveOptionValue && this.props.canHaveOptionCorrect &&
                     <div className="col-sm-1">

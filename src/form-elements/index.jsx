@@ -369,30 +369,46 @@ class Checkboxes extends React.Component {
         <ComponentHeader {...this.props} />
         <div className="form-group">
           <ComponentLabel className="form-label" {...this.props} />
-          {this.props.data.options.map((option) => {
-            const this_key = `preview_${option.key}`;
-            const props = {};
-            props.name = `option_${option.key}`;
+          {
+            this.props.data.options.map((option) => {
+              const this_key = `preview_${option.key}`;
+              const props = {};
+              props.name = `option_${option.key}`;
 
-            props.type = 'checkbox';
-            props.value = option.value;
-            if (self.props.mutable) {
-              props.defaultChecked = self.props.defaultValue !== undefined && self.props.defaultValue.indexOf(option.key) > -1;
-            }
-            if (this.props.read_only) {
-              props.disabled = 'disabled';
-            }
-            return (
-              <div className={classNames} key={this_key}>
-                <input id={"fid_" + this_key} className="custom-control-input" ref={c => {
-                  if (c && self.props.mutable) {
-                    self.options[`child_ref_${option.key}`] = c;
+              props.type = 'checkbox';
+              props.value = option.value;
+
+              if (self.props.mutable) {
+                props.defaultChecked = self.props.defaultValue !== undefined && self.props.defaultValue.indexOf(option.key) > -1;
+              }
+
+              if (this.props.read_only) {
+                props.disabled = 'disabled';
+              }
+
+              return (
+                <div className={classNames} key={this_key} style={{ display: "flex", alignItems: "center" }}>
+                  <input 
+                    id={"fid_" + this_key} 
+                    className="custom-control-input" 
+                    ref={c => {
+                      if (c && self.props.mutable) {
+                        self.options[`child_ref_${option.key}`] = c;
+                      }
+                    }} 
+                    {...props} 
+                    onChange={(event) => {
+                      console.log('Event', event)
+                    }}
+                  />
+                  <label className="custom-control-label" htmlFor={"fid_" + this_key}>{option.text}</label>
+                  {
+                    option.info && <input type="text" class="form-control" style={{ width: "auto", marginLeft: 16 }} />
                   }
-                }} {...props} />
-                <label className="custom-control-label" htmlFor={"fid_" + this_key}>{option.text}</label>
-              </div>
-            );
-          })}
+                </div>
+              );
+            })
+          }
         </div>
       </div>
     );
@@ -696,6 +712,7 @@ class Range extends React.Component {
 }
 
 FormElements.Header = Header;
+FormElements.HeaderBar = HeaderBar;
 FormElements.Paragraph = Paragraph;
 FormElements.Label = Label;
 FormElements.LineBreak = LineBreak;

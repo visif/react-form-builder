@@ -118,6 +118,7 @@ export default class Toolbar extends React.Component {
       {
         key: 'Checkboxes',
         canHaveAnswer: true,
+        canHaveInfo: true,
         name: 'Checkboxes',
         icon: 'far fa-check-square',
         label: 'Placeholder Label',
@@ -127,6 +128,7 @@ export default class Toolbar extends React.Component {
       {
         key: 'RadioButtons',
         canHaveAnswer: true,
+        canHaveInfo: true,
         name: 'Multiple Choice',
         icon: 'far fa-dot-circle',
         label: 'Placeholder Label',
@@ -289,6 +291,8 @@ export default class Toolbar extends React.Component {
     }
 
     if (item.canHaveAnswer) { elementOptions.canHaveAnswer = item.canHaveAnswer; }
+    
+    if (item.canHaveInfo) { elementOptions.canHaveInfo = item.canHaveInfo; }
 
     if (item.canReadOnly) { elementOptions.readOnly = false; }
 
