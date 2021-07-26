@@ -7,6 +7,7 @@ import ReactBootstrapSlider from 'react-bootstrap-slider';
 import StarRating from './star-rating';
 import HeaderBar from './header-bar';
 import DatePicker from './date-picker';
+import Tables from './tables';
 import ComponentHeader from './component-header';
 import ComponentLabel from './component-label';
 import myxss from './myxss';
@@ -695,56 +696,6 @@ class Range extends React.Component {
   }
 }
 
-class Tables extends React.Component {
-  constructor(props) {
-    super(props);
-    this.options = {};
-  }
-
-  render() {
-    const self = this;
-    let classNames = 'custom-control custom-table';
-    if (this.props.data.inline) { classNames += ' option-inline'; }
-
-    let baseClasses = 'SortableItem rfb-item';
-    if (this.props.data.pageBreakBefore) { baseClasses += ' alwaysbreak'; }
-
-    return (
-      <div className={baseClasses}>
-        <ComponentHeader {...this.props} />
-        <div className="form-group">
-          <ComponentLabel className="form-label" {...this.props} />
-          {this.props.data.options.map((option) => {
-            const this_key = `preview_${option.key}`;
-            const props = {};
-            props.name = self.props.data.field_name;
-
-            props.type = 'table';
-            props.value = option.value;
-            if (self.props.mutable) {
-              props.defaultChecked = (self.props.defaultValue !== undefined &&
-                (self.props.defaultValue.indexOf(option.key) > -1 || self.props.defaultValue.indexOf(option.value) > -1));
-            }
-            if (this.props.read_only) {
-              props.disabled = 'disabled';
-            }
-
-            return (
-              <div className={classNames} key={this_key}>
-                <input id={"fid_" + this_key} className="custom-control-input" ref={c => {
-                  if (c && self.props.mutable) {
-                    self.options[`child_ref_${option.key}`] = c;
-                  }
-                }} {...props} />
-                <label className="custom-control-label" htmlFor={"fid_" + this_key}>{option.text}</label>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-  }
-}
 
 FormElements.Header = Header;
 FormElements.Paragraph = Paragraph;
