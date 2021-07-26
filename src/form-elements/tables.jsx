@@ -1,5 +1,5 @@
 import React from 'react';
-export class Tables extends React.Component {
+class Tables extends React.Component {
     constructor(props) {
         super(props);
 
@@ -70,3 +70,4 @@ export class Tables extends React.Component {
         });
     }
 }
+export default Tables
