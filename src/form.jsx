@@ -342,6 +342,7 @@ export default class ReactForm extends React.Component {
         case 'TextInput':
         case 'NumberInput':
         case 'TextArea':
+        case 'Tables':
         case 'Dropdown':
         case 'DatePicker':
         case 'RadioButtons':
