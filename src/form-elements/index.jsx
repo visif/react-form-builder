@@ -354,6 +354,15 @@ class Checkboxes extends React.Component {
   constructor(props) {
     super(props);
     this.options = {};
+    this.state = {
+      value: props.defaultValue 
+    };
+  }
+
+  static getDerivedStateFromProps(props) {
+    return {
+      value: props.defaultValue
+    };
   }
 
   render() {
@@ -372,14 +381,14 @@ class Checkboxes extends React.Component {
           {
             this.props.data.options.map((option) => {
               const this_key = `preview_${option.key}`;
+
               const props = {};
               props.name = `option_${option.key}`;
-
               props.type = 'checkbox';
               props.value = option.value;
 
               if (self.props.mutable) {
-                props.defaultChecked = self.props.defaultValue !== undefined && self.props.defaultValue.indexOf(option.key) > -1;
+                props.defaultChecked = self.state.value !== undefined && self.state.value.indexOf(option.key) > -1;
               }
 
               if (this.props.read_only) {
@@ -396,10 +405,7 @@ class Checkboxes extends React.Component {
                         self.options[`child_ref_${option.key}`] = c;
                       }
                     }} 
-                    {...props} 
-                    onChange={(event) => {
-                      console.log('Event', event)
-                    }}
+                    {...props}
                   />
                   <label className="custom-control-label" htmlFor={"fid_" + this_key}>{option.text}</label>
                   {
@@ -419,8 +425,17 @@ class RadioButtons extends React.Component {
   constructor(props) {
     super(props);
     this.options = {};
+    this.state = {
+      value: props.defaultValue 
+    };
   }
 
+  static getDerivedStateFromProps(props) {
+    return {
+      value: props.defaultValue 
+    };
+  }
+  
   render() {
     const self = this;
     let classNames = 'custom-control custom-radio';
@@ -434,32 +449,34 @@ class RadioButtons extends React.Component {
         <ComponentHeader {...this.props} />
         <div className="form-group">
           <ComponentLabel className="form-label" {...this.props} />
-          {this.props.data.options.map((option) => {
-            const this_key = `preview_${option.key}`;
-            const props = {};
-            props.name = self.props.data.field_name;
+          {
+            this.props.data.options.map((option) => {
+              const this_key = `preview_${option.key}`;
+              const props = {};
+              props.name = self.props.data.field_name;
 
-            props.type = 'radio';
-            props.value = option.value;
-            if (self.props.mutable) {
-              props.defaultChecked = (self.props.defaultValue !== undefined &&
-                (self.props.defaultValue.indexOf(option.key) > -1 || self.props.defaultValue.indexOf(option.value) > -1));
-            }
-            if (this.props.read_only) {
-              props.disabled = 'disabled';
-            }
+              props.type = 'radio';
+              props.value = option.value;
+              if (self.props.mutable) {
+                props.defaultChecked = (self.state.value !== undefined &&
+                  (self.state.value.indexOf(option.key) > -1 || self.state.value.indexOf(option.value) > -1));
+              }
+              if (this.props.read_only) {
+                props.disabled = 'disabled';
+              }
 
-            return (
-              <div className={classNames} key={this_key}>
-                <input id={"fid_" + this_key} className="custom-control-input" ref={c => {
-                  if (c && self.props.mutable) {
-                    self.options[`child_ref_${option.key}`] = c;
-                  }
-                }} {...props} />
-                <label className="custom-control-label" htmlFor={"fid_" + this_key}>{option.text}</label>
-              </div>
-            );
-          })}
+              return (
+                <div className={classNames} key={this_key}>
+                  <input id={"fid_" + this_key} className="custom-control-input" ref={c => {
+                    if (c && self.props.mutable) {
+                      self.options[`child_ref_${option.key}`] = c;
+                    }
+                  }} {...props} />
+                  <label className="custom-control-label" htmlFor={"fid_" + this_key}>{option.text}</label>
+                </div>
+              );
+            })
+          }
         </div>
       </div>
     );
