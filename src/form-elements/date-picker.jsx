@@ -81,7 +81,6 @@ class DatePicker extends React.Component {
 
   static getDerivedStateFromProps(props, state) {
     const { updated, formatMask } = DatePicker.updateFormat(props, state.formatMask);
-    alert(props.defaultValue)
     if (
       (props.data.defaultToday !== state.defaultToday) 
       || updated 
@@ -110,8 +109,6 @@ class DatePicker extends React.Component {
     let baseClasses = 'SortableItem rfb-item';
     if (this.props.data.pageBreakBefore) { baseClasses += ' alwaysbreak'; }
 
-    alert(props.defaultValue)
-    console.log('props.defaultValue', props.defaultValue)
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
