@@ -409,7 +409,7 @@ class Checkboxes extends React.Component {
                   />
                   <label className="custom-control-label" htmlFor={"fid_" + this_key}>{option.text}</label>
                   {
-                    option.info && <input type="text" class="form-control" style={{ width: "auto", marginLeft: 16 }} />
+                    option.info && <input type="text" class="form-control" style={{ width: "auto", marginLeft: 16, height: "calc(1.5em + .5rem)" }} />
                   }
                 </div>
               );
@@ -466,13 +466,16 @@ class RadioButtons extends React.Component {
               }
 
               return (
-                <div className={classNames} key={this_key}>
+                <div className={classNames} key={this_key} style={{ display: "flex", alignItems: "center" }}>
                   <input id={"fid_" + this_key} className="custom-control-input" ref={c => {
                     if (c && self.props.mutable) {
                       self.options[`child_ref_${option.key}`] = c;
                     }
                   }} {...props} />
                   <label className="custom-control-label" htmlFor={"fid_" + this_key}>{option.text}</label>
+                  {
+                    option.info && <input type="text" class="form-control" style={{ width: "auto", marginLeft: 16, height: "calc(1.5em + .5rem)" }} />
+                  }
                 </div>
               );
             })
