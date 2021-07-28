@@ -355,14 +355,19 @@ class Checkboxes extends React.Component {
     super(props);
     this.options = {};
     this.state = {
-      value: props.defaultValue 
+      defaultValue: props.defaultValue,
+      value: props.defaultValue
     };
   }
 
-  static getDerivedStateFromProps(props) {
-    return {
-      value: props.defaultValue
-    };
+  static getDerivedStateFromProps(props, state) {
+    if (state.defaultValue !== props.defaultValue) {
+      return {
+        defaultValue: props.defaultValue,
+        value: props.defaultValue 
+      }
+    }
+    return state;
   }
 
   render() {
@@ -388,7 +393,7 @@ class Checkboxes extends React.Component {
               props.value = option.value;
 
               if (self.props.mutable) {
-                props.defaultChecked = self.state.value !== undefined && self.state.value.indexOf(option.key) > -1;
+                props.checked = self.state.value !== undefined && self.state.value.indexOf(option.key) > -1;
               }
 
               if (this.props.read_only) {
@@ -396,6 +401,7 @@ class Checkboxes extends React.Component {
               }
 
               console.log('Checkbox =>> ', props);
+
               return (
                 <div className={classNames} key={this_key} style={{ display: "flex", alignItems: "center" }}>
                   <input 
@@ -405,12 +411,17 @@ class Checkboxes extends React.Component {
                       if (c && self.props.mutable) {
                         self.options[`child_ref_${option.key}`] = c;
                       }
+                    }}
+                    onChange={() => {
+                      self.setState({ 
+                        ...self.state,
+                        value: [ option.key ] })
                     }} 
                     {...props}
                   />
                   <label className="custom-control-label" htmlFor={"fid_" + this_key}>{option.text}</label>
                   {
-                    option.info && <input type="text" class="form-control" style={{ width: "auto", marginLeft: 16, height: "calc(1.5em + .5rem)" }} />
+                    props.checked && option.info && <input type="text" class="form-control" style={{ width: "auto", marginLeft: 16, height: "calc(1.5em + .5rem)" }} />
                   }
                 </div>
               );
@@ -427,14 +438,19 @@ class RadioButtons extends React.Component {
     super(props);
     this.options = {};
     this.state = {
-      value: props.defaultValue 
+      defaultValue: props.defaultValue,
+      value: props.defaultValue,
     };
   }
 
-  static getDerivedStateFromProps(props) {
-    return {
-      value: props.defaultValue 
-    };
+  static getDerivedStateFromProps(props, state) {
+    if (state.defaultValue !== props.defaultValue) {
+      return {
+        defaultValue: props.defaultValue,
+        value: props.defaultValue 
+      }
+    }
+    return state;
   }
   
   render() {
@@ -459,7 +475,7 @@ class RadioButtons extends React.Component {
               props.type = 'radio';
               props.value = option.value;
               if (self.props.mutable) {
-                props.defaultChecked = (self.state.value !== undefined &&
+                props.checked = (self.state.value !== undefined &&
                   (self.state.value.indexOf(option.key) > -1 || self.state.value.indexOf(option.value) > -1));
               }
               if (this.props.read_only) {
@@ -467,16 +483,27 @@ class RadioButtons extends React.Component {
               }
 
               console.log('Radio =>> ', props);
+
               return (
                 <div className={classNames} key={this_key} style={{ display: "flex", alignItems: "center" }}>
-                  <input id={"fid_" + this_key} className="custom-control-input" ref={c => {
-                    if (c && self.props.mutable) {
-                      self.options[`child_ref_${option.key}`] = c;
-                    }
-                  }} {...props} />
+                  <input 
+                    id={"fid_" + this_key} 
+                    className="custom-control-input" 
+                    ref={c => {
+                      if (c && self.props.mutable) {
+                        self.options[`child_ref_${option.key}`] = c;
+                      }
+                    }} 
+                    onChange={() => {
+                      self.setState({ 
+                        ...self.state,
+                        value: [ option.key ] })
+                    }} 
+                    {...props} 
+                  />
                   <label className="custom-control-label" htmlFor={"fid_" + this_key}>{option.text}</label>
                   {
-                    option.info && <input type="text" class="form-control" style={{ width: "auto", marginLeft: 16, height: "calc(1.5em + .5rem)" }} />
+                    props.checked && option.info && <input type="text" class="form-control" style={{ width: "auto", marginLeft: 16, height: "calc(1.5em + .5rem)" }} />
                   }
                 </div>
               );
