@@ -395,6 +395,7 @@ class Checkboxes extends React.Component {
                 props.disabled = 'disabled';
               }
 
+              console.log('Checkbox =>> ', props);
               return (
                 <div className={classNames} key={this_key} style={{ display: "flex", alignItems: "center" }}>
                   <input 
@@ -465,6 +466,7 @@ class RadioButtons extends React.Component {
                 props.disabled = 'disabled';
               }
 
+              console.log('Radio =>> ', props);
               return (
                 <div className={classNames} key={this_key} style={{ display: "flex", alignItems: "center" }}>
                   <input id={"fid_" + this_key} className="custom-control-input" ref={c => {
