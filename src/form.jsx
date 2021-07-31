@@ -154,13 +154,24 @@ export default class ReactForm extends React.Component {
     const ref = this.inputs[item.field_name];
     if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
       const checked_options = [];
+      const checked_infos = [];
       item.options.forEach(option => {
         const $option = ReactDOM.findDOMNode(ref.options[`child_ref_${option.key}`]);
         if ($option.checked) {
           checked_options.push(option.key);
+          if (option.info) {
+            const $info = ReactDOM.findDOMNode(ref.infos[`child_ref_${option.key}_info`]);
+            checked_infos.push({
+              key: option.key,
+              value: $info?.value
+            })
+          }
         }
       });
+
       itemData.value = checked_options;
+      itemData.info = checked_infos;
+
     } else {
       if (!ref) return null;
       itemData.value = this._getItemValue(item, ref).value;
@@ -364,7 +375,12 @@ export default class ReactForm extends React.Component {
       <div>
         <FormValidator emitter={this.emitter} />
         <div className='react-form-builder-form'>
-          <form encType='multipart/form-data' ref={c => this.form = c} action={this.props.form_action} onSubmit={this.handleSubmit.bind(this)} method={this.props.form_method}>
+          <form encType='multipart/form-data' 
+            ref={c => this.form = c} 
+            action={this.props.form_action} 
+            onSubmit={this.handleSubmit.bind(this)} 
+            method={this.props.form_method}
+          >
             {this.props.authenticity_token &&
               <div style={formTokenStyle}>
                 <input name='utf8' type='hidden' value='&#x2713;' />

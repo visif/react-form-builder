@@ -354,6 +354,7 @@ class Checkboxes extends React.Component {
   constructor(props) {
     super(props);
     this.options = {};
+    this.infos = {};
     this.state = {
       defaultValue: props.defaultValue,
       value: props.defaultValue
@@ -421,7 +422,18 @@ class Checkboxes extends React.Component {
                   />
                   <label className="custom-control-label" htmlFor={"fid_" + this_key}>{option.text}</label>
                   {
-                    props.checked && option.info && <input type="text" class="form-control" style={{ width: "auto", marginLeft: 16, height: "calc(1.5em + .5rem)" }} />
+                    props.checked && option.info && 
+                      <input 
+                        id={"fid_" + this_key + "_info"} 
+                        type="text" 
+                        class="form-control" 
+                        style={{ width: "auto", marginLeft: 16, height: "calc(1.5em + .5rem)" }}
+                        ref={c => {
+                          if (c && self.props.mutable) {
+                            self.infos[`child_ref_${option.key}_info`] = c;
+                          }
+                        }}
+                      />
                   }
                 </div>
               );
@@ -437,6 +449,7 @@ class RadioButtons extends React.Component {
   constructor(props) {
     super(props);
     this.options = {};
+    this.infos = {};
     this.state = {
       defaultValue: props.defaultValue,
       value: props.defaultValue,
@@ -503,7 +516,17 @@ class RadioButtons extends React.Component {
                   />
                   <label className="custom-control-label" htmlFor={"fid_" + this_key}>{option.text}</label>
                   {
-                    props.checked && option.info && <input type="text" class="form-control" style={{ width: "auto", marginLeft: 16, height: "calc(1.5em + .5rem)" }} />
+                    props.checked && option.info &&
+                     <input 
+                      id={"fid_" + this_key + "_info"} 
+                      type="text" class="form-control" 
+                      style={{ width: "auto", marginLeft: 16, height: "calc(1.5em + .5rem)" }} 
+                      ref={c => {
+                        if (c && self.props.mutable) {
+                          self.infos[`child_ref_${option.key}_info`] = c;
+                        }
+                      }}
+                    />
                   }
                 </div>
               );
