@@ -154,23 +154,26 @@ export default class ReactForm extends React.Component {
     const ref = this.inputs[item.field_name];
     if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
       const checked_options = [];
-      const checked_infos = [];
+
       item.options.forEach(option => {
         const $option = ReactDOM.findDOMNode(ref.options[`child_ref_${option.key}`]);
         if ($option.checked) {
-          checked_options.push(option.key);
+          let info = '';
+
           if (option.info) {
             const $info = ReactDOM.findDOMNode(ref.infos[`child_ref_${option.key}_info`]);
-            checked_infos.push({
-              key: option.key,
-              value: $info?.value
-            })
+            info = $info?.value ?? '';
           }
+
+          checked_options.push({
+            key: option.key,
+            value: true,
+            info: info
+          });
         }
       });
 
       itemData.value = checked_options;
-      itemData.info = checked_infos;
 
     } else {
       if (!ref) return null;
@@ -218,6 +221,11 @@ export default class ReactForm extends React.Component {
     // Only submit if there are no errors.
     if (errors.length < 1) {
       const { onSubmit } = this.props;
+
+      // debug
+      debugger;
+      const debugData = this._collectFormData(this.props.data);
+
       if (onSubmit) {
         const data = this._collectFormData(this.props.data);
         onSubmit(data);
@@ -353,7 +361,17 @@ export default class ReactForm extends React.Component {
         case 'Signature':
           return <Signature ref={c => this.inputs[item.field_name] = c} read_only={this.props.read_only || item.readOnly} mutable={true} key={`form_${item.id}`} data={item} defaultValue={this._getDefaultValue(item)} />;
         case 'Checkboxes':
-          return <Checkboxes ref={c => this.inputs[item.field_name] = c} read_only={this.props.read_only} handleChange={this.handleChange} mutable={true} key={`form_${item.id}`} data={item} defaultValue={this._optionsDefaultValue(item)} />;
+          return (
+            <Checkboxes 
+              ref={c => this.inputs[item.field_name] = c}
+              read_only={this.props.read_only} 
+              handleChange={this.handleChange} 
+              mutable={true} 
+              key={`form_${item.id}`} 
+              data={item} 
+              defaultValue={this._optionsDefaultValue(item)} 
+            />
+          );
         case 'Image':
           return <Image ref={c => this.inputs[item.field_name] = c} handleChange={this.handleChange} mutable={true} key={`form_${item.id}`} data={item} defaultValue={this._getDefaultValue(item)} />;
         case 'Download':

@@ -371,6 +371,10 @@ class Checkboxes extends React.Component {
     return state;
   }
 
+  getActiveValue = (values, key) => {
+    return values?.find(item => item.key === key)
+  }
+
   render() {
     const self = this;
     let classNames = 'custom-control custom-checkbox';
@@ -393,8 +397,10 @@ class Checkboxes extends React.Component {
               props.type = 'checkbox';
               props.value = option.value;
 
+              const answerItem = self.getActiveValue(self.state.value, option.key)
+
               if (self.props.mutable) {
-                props.checked = self.state.value !== undefined && self.state.value.indexOf(option.key) > -1;
+                props.checked = answerItem?.value ?? false;
               }
 
               if (this.props.read_only) {
@@ -414,9 +420,20 @@ class Checkboxes extends React.Component {
                       }
                     }}
                     onChange={() => {
-                      self.setState({ 
-                        ...self.state,
-                        value: [ option.key ] })
+                      self.setState((current) => { 
+                        const activeVal = self.getActiveValue(current.value, option.key)
+                        const newActiveVal = activeVal ? { ...activeVal, value: !activeVal.value} : {
+                          key: option.key, value: true, info: ''
+                        }
+
+                        return {
+                          ...current,
+                          value: [ 
+                            ...(current.value).filter(item => item.key !== option.key),
+                            newActiveVal
+                          ]
+                        };
+                      })
                     }} 
                     {...props}
                   />
@@ -427,7 +444,8 @@ class Checkboxes extends React.Component {
                         id={"fid_" + this_key + "_info"} 
                         type="text" 
                         class="form-control" 
-                        style={{ width: "auto", marginLeft: 16, height: "calc(1.5em + .5rem)" }}
+                        style={{ width: "auto", marginLeft: 16, height: "calc(1.5em + .5rem)", marginBottom: 4 }}
+                        defaultValue={answerItem.info ?? ''}
                         ref={c => {
                           if (c && self.props.mutable) {
                             self.infos[`child_ref_${option.key}_info`] = c;
@@ -487,9 +505,13 @@ class RadioButtons extends React.Component {
 
               props.type = 'radio';
               props.value = option.value;
+
+              const answerItem = self.state.value !== undefined && self.state.value.find(item => {
+                item.hasOwnProperty(option.key);
+              })
+
               if (self.props.mutable) {
-                props.checked = (self.state.value !== undefined &&
-                  (self.state.value.indexOf(option.key) > -1 || self.state.value.indexOf(option.value) > -1));
+                props.checked = !!answerItem;
               }
               if (this.props.read_only) {
                 props.disabled = 'disabled';
@@ -521,6 +543,7 @@ class RadioButtons extends React.Component {
                       id={"fid_" + this_key + "_info"} 
                       type="text" class="form-control" 
                       style={{ width: "auto", marginLeft: 16, height: "calc(1.5em + .5rem)" }} 
+                      value={answerItem && (answerItem[option.key] ?? '')}
                       ref={c => {
                         if (c && self.props.mutable) {
                           self.infos[`child_ref_${option.key}_info`] = c;
