@@ -483,6 +483,10 @@ class RadioButtons extends React.Component {
     }
     return state;
   }
+
+  getActiveValue = (values, key) => {
+    return values?.find(item => item.key === key)
+  }
   
   render() {
     const self = this;
@@ -506,12 +510,10 @@ class RadioButtons extends React.Component {
               props.type = 'radio';
               props.value = option.value;
 
-              const answerItem = self.state.value !== undefined && self.state.value.find(item => {
-                item.hasOwnProperty(option.key);
-              })
+              const answerItem = self.getActiveValue(self.state.value, option.key)
 
               if (self.props.mutable) {
-                props.checked = !!answerItem;
+                props.checked = answerItem?.value ?? false;
               }
               if (this.props.read_only) {
                 props.disabled = 'disabled';
@@ -530,9 +532,14 @@ class RadioButtons extends React.Component {
                       }
                     }} 
                     onChange={() => {
-                      self.setState({ 
-                        ...self.state,
-                        value: [ option.key ] })
+                      self.setState((current) => { 
+                        return {
+                          ...current,
+                          value: [{
+                            key: option.key, value: true, info: ''
+                          }]
+                        };
+                      })
                     }} 
                     {...props} 
                   />
@@ -543,7 +550,7 @@ class RadioButtons extends React.Component {
                       id={"fid_" + this_key + "_info"} 
                       type="text" class="form-control" 
                       style={{ width: "auto", marginLeft: 16, height: "calc(1.5em + .5rem)" }} 
-                      value={answerItem && (answerItem[option.key] ?? '')}
+                      defaultValue={answerItem.info ?? ''}
                       ref={c => {
                         if (c && self.props.mutable) {
                           self.infos[`child_ref_${option.key}_info`] = c;

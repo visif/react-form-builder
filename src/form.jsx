@@ -222,9 +222,8 @@ export default class ReactForm extends React.Component {
     if (errors.length < 1) {
       const { onSubmit } = this.props;
 
-      // debug
-      debugger;
-      const debugData = this._collectFormData(this.props.data);
+      // debugger;
+      // const debugData = this._collectFormData(this.props.data);
 
       if (onSubmit) {
         const data = this._collectFormData(this.props.data);
