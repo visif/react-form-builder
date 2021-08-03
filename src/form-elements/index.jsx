@@ -362,7 +362,9 @@ class Checkboxes extends React.Component {
   }
 
   static getDerivedStateFromProps(props, state) {
-    if (state.defaultValue !== props.defaultValue) {
+    console.log('Checkboxes getDerivedStateFromProps')
+    if (JSON.stringify(state.defaultValue) !== JSON.stringify(props.defaultValue)) {
+      console.log('Checkboxes default prop changed', state.defaultValue, props.defaultValue)
       return {
         defaultValue: props.defaultValue,
         value: props.defaultValue 
@@ -475,7 +477,9 @@ class RadioButtons extends React.Component {
   }
 
   static getDerivedStateFromProps(props, state) {
-    if (state.defaultValue !== props.defaultValue) {
+    console.log('RadioButtons getDerivedStateFromProps')
+    if (JSON.stringify(state.defaultValue) !== JSON.stringify(props.defaultValue)) {
+      console.log('RadioButtons default prop changed', state.defaultValue, props.defaultValue)
       return {
         defaultValue: props.defaultValue,
         value: props.defaultValue 
