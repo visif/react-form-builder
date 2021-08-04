@@ -25,6 +25,8 @@ function buildItems(items, defaultItems) {
   });
 }
 
+const DATE_FORMAT = 'dd MMM yyyy';
+
 export default class Toolbar extends React.Component {
   constructor(props) {
     super(props);
@@ -203,7 +205,7 @@ export default class Toolbar extends React.Component {
         key: 'DatePicker',
         canDefaultToday: true,
         canReadOnly: true,
-        dateFormat: 'MM/dd/yyyy',
+        dateFormat: DATE_FORMAT,
         timeFormat: 'hh:mm aa',
         showTimeSelect: false,
         showTimeSelectOnly: false,

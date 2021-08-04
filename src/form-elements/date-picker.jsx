@@ -61,30 +61,22 @@ class DatePicker extends React.Component {
         internalValue = parse(value, state.formatMask, new Date());
       }
     }
-
     return {
       value,
       internalValue,
       placeholder: formatMask.toLowerCase(),
       defaultToday,
       formatMask: state.formatMask,
+      defaultValue: props.defaultValue,
     };
   }
 
-  // componentWillReceiveProps(props) {
-  //   const formatUpdated = this.updateFormat(props);
-  //   if ((props.data.defaultToday !== !this.state.defaultToday) || formatUpdated) {
-  //     const state = this.updateDateTime(props, this.formatMask);
-  //     this.setState(state);
-  //   }
-  // }
-
   static getDerivedStateFromProps(props, state) {
     const { updated, formatMask } = DatePicker.updateFormat(props, state.formatMask);
-    if (
-      (props.data.defaultToday !== state.defaultToday) 
-      || updated 
-      || props.defaultValue !== state.internalValue) {
+    if (updated
+      || (props.data.defaultToday !== state.defaultToday)
+      || (state.defaultValue !== props.defaultValue)
+      ) {
       const newState = DatePicker.updateDateTime(props, state, formatMask);
       return newState;
     }
