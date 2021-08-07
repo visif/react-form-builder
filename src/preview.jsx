@@ -96,6 +96,10 @@ export default class Preview extends React.Component {
       }
     });
 
+    if (typeof this.props.onChange === 'function') {
+      this.props.onChange(data)
+    }
+
     this.setState({
       data,
       answer_data,

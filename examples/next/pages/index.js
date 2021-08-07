@@ -15,7 +15,8 @@ class Index extends React.Component {
 
         <FormBuilder.ReactFormBuilder
           url={url}
-          saveUrl={saveUrl} />
+          saveUrl={saveUrl} 
+        />
       </div>
     );
   }
