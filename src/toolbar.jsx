@@ -162,10 +162,8 @@ export default class Toolbar extends React.Component {
         field_name: 'text_area_',
       },
       {
-        key: 'Tables',
-        canHaveAnswer: true,
-        name: 'Tables',
-        label: 'Placeholder Label',
+        key: 'Table',
+        name: 'Table',
         icon: 'fas fa-table',
         field_name: 'tables_',
       },

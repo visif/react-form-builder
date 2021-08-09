@@ -7,7 +7,7 @@ import ReactBootstrapSlider from 'react-bootstrap-slider';
 import StarRating from './star-rating';
 import HeaderBar from './header-bar';
 import DatePicker from './date-picker';
-import Tables from './tables';
+import Table from './table';
 import ComponentHeader from './component-header';
 import ComponentLabel from './component-label';
 import myxss from './myxss';
@@ -839,6 +839,6 @@ FormElements.HyperLink = HyperLink;
 FormElements.Download = Download;
 FormElements.Camera = Camera;
 FormElements.Range = Range;
-FormElements.Tables = Tables;
+FormElements.Table = Table;
 
 export default FormElements;

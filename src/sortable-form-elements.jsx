@@ -7,6 +7,7 @@ import CustomElement from './form-elements/custom-element';
 const {
   Header, Paragraph, Label, LineBreak, TextInput, NumberInput, TextArea, Dropdown, Checkboxes,
   DatePicker, RadioButtons, Image, Rating, Tags, Signature, HyperLink, Download, Camera, Range,
+  Table
 } = BaseFormElements;
 
 const FormElements = {};
@@ -35,5 +36,6 @@ FormElements.TwoColumnRow = SortableElement(TwoColumnRow);
 FormElements.ThreeColumnRow = SortableElement(ThreeColumnRow);
 FormElements.FourColumnRow = SortableElement(FourColumnRow);
 FormElements.CustomElement = SortableElement(CustomElement);
+FormElements.Table = SortableElement(Table);
 
 export default FormElements;
