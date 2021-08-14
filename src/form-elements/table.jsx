@@ -1,100 +1,82 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import ComponentHeader from './component-header';
 import ComponentLabel from './component-label';
+// import FormElements from '../form-elements';
 
-const Table = (props) => {
-  console.log(props);
-  const [ rows, setRows ] = useState(props.rows || 3);
-  const [ cols, setCols ] = useState(props.cols || 3);
+export default class Table extends React.Component {
+  constructor(props) {
+    super(props);
+    this.tableRef = React.createRef();
+    this.state = {
+      rows: props.rows || 3,
+      cols: props.cols || 3,
+      inputs: this.getInputValues(props),
+    };
+  }
 
-    // constructor(props) {
-    //     super(props);
+  getInputValues = (props) => {
+    const result = [];
+    Array.from(Array(props.rows || 3).keys()).map((i) => {
+      const current = []
+      Array.from(Array(props.cols || 3).keys()).map((j) => {
+        current.push('')
+      })
+      result.push(current)
+    })
 
-    //     this.state = {
-    //         message: "",
-    //         items: []
-    //     }
-    // }
+    return result;
+  }
 
-    // updateMessage(event) {
-    //     this.setState({
-    //         message: event.target.value
-    //     });
-    // }
-
-    // handleClick() {
-    //     var items = this.state.items;
-
-    //     items.push(this.state.message);
-
-    //     this.setState({
-    //         items: items,
-    //         message: ""
-    //     });
-    // }
-
-    // handleItemChanged(i, event) {
-    //     var items = this.state.items;
-    //     items[i] = event.target.value;
-
-    //     this.setState({
-    //         items: items
-    //     });
-    // }
-
-    // handleItemDeleted(i) {
-    //     var items = this.state.items;
-
-    //     items.splice(i, 1);
-
-    //     this.setState({
-    //         items: items
-    //     });
-    // }
-
-    const renderRows = (rows) => {
-      if (!rows) {
-        return;
-      }
-      return (
-        <tbody>
-        {
-          Array.from(Array(rows).keys()).map((i) => (
-            <tr key={"row" + i}>
-            {
-              Array.from(Array(cols).keys()).map((j) => (
+  renderRows = (rows, cols) => {
+    if (!rows) {
+      return;
+    }
+    return (
+      <tbody>
+      {
+        Array.from(Array(rows).keys()).map((i) => (
+          <tr key={"row" + i}>
+          {
+            Array.from(Array(cols).keys()).map((j) => {
+              return (
                 <td>
                   <input
+                    className="form-control"
                     type="text"
-                    value={j}
-                    // onChange={context.handleItemChanged.bind(context, i)}
+                    value={this.state.inputs[i][j]}
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      const array = this.state.inputs;
+                      array[i][j] = value;
+                      this.setState({
+                        inputs: array
+                      })
+                    }}
                   />
-                </td>
-              ))
-            }
-            </tr>
-          ))
-        }
-        </tbody>
-      );
-    }
+              </td>
+              );
+            })
+          }
+          </tr>
+        ))
+      }
+      </tbody>
+    );
+  }
 
-    // const {
-    //   controls, data, editModeOn, getDataById, setAsChild, removeChild, seq, className, index,
-    // } = props;
-    // const { childItems, pageBreakBefore } = data;
-    // let baseClasses = 'SortableItem rfb-item';
-    // if (pageBreakBefore) { baseClasses += ' alwaysbreak'; }
-
+  render () {
     let baseClasses = 'SortableItem rfb-item';
-    if (props?.data?.pageBreakBefore) { baseClasses += ' alwaysbreak'; }
+    if (this.props?.data?.pageBreakBefore) { baseClasses += ' alwaysbreak'; }
 
     return (
       <div className={baseClasses}>
-        <ComponentHeader {...props} />
+        <ComponentHeader {...this.props} />
         <div className="form-group">
-          <ComponentLabel {...props} />
-          <table className="table table-bordered">
+          <ComponentLabel {...this.props} />
+          <table 
+            className="table table-bordered"
+            ref={this.tableRef}
+          >
             <thead>
               <tr>
                 <th scope="col">Col 1</th>
@@ -102,28 +84,12 @@ const Table = (props) => {
                 <th scope="col">Col 3</th>
               </tr>
             </thead>
-            {renderRows(rows)}
-            {/* {childItems.map((x, i) => (
-              <div key={`${i}_${x || '_'}`} className={className}>{
-                controls ? controls[i] :
-                  <Dustbin
-                    style={{ width: '100%' }}
-                    data={data}
-                    accepts={accepts}
-                    items={childItems}
-                    col={i}
-                    parentIndex={index}
-                    editModeOn={editModeOn}
-                    _onDestroy={() => removeChild(data, i)}
-                    getDataById={getDataById}
-                    setAsChild={setAsChild}
-                    seq={seq}
-                  />}
-              </div>))} */}
+            {
+              this.renderRows(this.state.rows, this.state.cols)
+            }
           </table>
         </div>  
       </div>
-    );
+    )
+  }
 }
-
-export default Table
