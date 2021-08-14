@@ -840,5 +840,4 @@ FormElements.Download = Download;
 FormElements.Camera = Camera;
 FormElements.Range = Range;
 FormElements.Table = Table;
-
 export default FormElements;
