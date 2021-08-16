@@ -70,6 +70,14 @@ export default class Toolbar extends React.Component {
     }
   }
 
+  static _defaultItemColumns() {
+    return [
+      { text: 'Column1', key: `table_column_${ID.uuid()}` },
+      { text: 'Column2', key: `table_column_${ID.uuid()}` },
+      { text: 'Column3', key: `table_column_${ID.uuid()}` },
+    ];
+  }
+
   _defaultItems() {
     return [
       {
@@ -160,6 +168,14 @@ export default class Toolbar extends React.Component {
         label: 'Placeholder Label',
         icon: 'fas fa-text-height',
         field_name: 'text_area_',
+      },
+      {
+        key: 'Table',
+        name: 'Table',
+        icon: 'fas fa-table',
+        field_name: 'tables_',
+        columns: [],
+        rows: 3,
       },
       {
         key: 'TwoColumnRow',
@@ -355,6 +371,15 @@ export default class Toolbar extends React.Component {
       } else {
         elementOptions.options = Toolbar._defaultItemOptions(elementOptions.element);
       }
+    }
+
+    if (item.key === 'Table') {
+      if (item.columns.length > 0) {
+        elementOptions.columns = item.columns;
+      } else {
+        elementOptions.columns = Toolbar._defaultItemColumns();
+      }
+      elementOptions.rows = item.rows || 3;
     }
 
     return elementOptions;

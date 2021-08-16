@@ -251,7 +251,24 @@ export default class Preview extends React.Component {
     if (SortableFormElement === null) {
       return null;
     }
-    return <SortableFormElement id={item.id} seq={this.seq} index={index} moveCard={this.moveCard} insertCard={this.insertCard} mutable={false} parent={this.props.parent} editModeOn={this.props.editModeOn} isDraggable={true} key={item.id} sortData={item.id} data={item} getDataById={this.getDataById} setAsChild={this.setAsChild} removeChild={this.removeChild} _onDestroy={this._onDestroy} />;
+    return (
+      <SortableFormElement 
+        id={item.id} seq={this.seq} 
+        index={index} 
+        moveCard={this.moveCard} 
+        insertCard={this.insertCard} 
+        mutable={false} 
+        parent={this.props.parent} 
+        editModeOn={this.props.editModeOn} 
+        isDraggable={true} key={item.id} 
+        sortData={item.id} 
+        data={item} 
+        getDataById={this.getDataById} 
+        setAsChild={this.setAsChild} 
+        removeChild={this.removeChild} 
+        _onDestroy={this._onDestroy} 
+      />
+    )
   }
 
   showEditForm() {

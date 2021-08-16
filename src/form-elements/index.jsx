@@ -7,6 +7,7 @@ import ReactBootstrapSlider from 'react-bootstrap-slider';
 import StarRating from './star-rating';
 import HeaderBar from './header-bar';
 import DatePicker from './date-picker';
+import Table from './table';
 import ComponentHeader from './component-header';
 import ComponentLabel from './component-label';
 import myxss from './myxss';
@@ -582,10 +583,10 @@ class Image extends React.Component {
     return (
       <div className={baseClasses} style={style}>
         <ComponentHeader {...this.props} />
-        { this.props.data.src &&
+        {this.props.data.src &&
           <img src={this.props.data.src} width={this.props.data.width} height={this.props.data.height} />
         }
-        { !this.props.data.src &&
+        {!this.props.data.src &&
           <div className="no-image">No Image</div>
         }
       </div>
@@ -721,12 +722,12 @@ class Camera extends React.Component {
                 </div>
               </div>
 
-              { this.state.img &&
+              {this.state.img &&
                 <div>
                   <img src={this.state.img} height="100" className="image-upload-preview" /><br />
                   <div className="btn btn-image-clear" onClick={this.clearImage}>
                     <i className="fas fa-times"></i> Clear Photo
-                </div>
+                  </div>
                 </div>
               }
             </div>)
@@ -817,6 +818,7 @@ class Range extends React.Component {
   }
 }
 
+
 FormElements.Header = Header;
 FormElements.HeaderBar = HeaderBar;
 FormElements.Paragraph = Paragraph;
@@ -837,5 +839,5 @@ FormElements.HyperLink = HyperLink;
 FormElements.Download = Download;
 FormElements.Camera = Camera;
 FormElements.Range = Range;
-
+FormElements.Table = Table;
 export default FormElements;

@@ -87,7 +87,10 @@ export default class ReactForm extends React.Component {
       if ($item && typeof $item.value === 'string') {
         $item.value = $item.value.trim();
       }
+    } else if (item.element === 'Table') {
+      $item.value = ref.state.inputs;
     }
+
     return $item;
   }
 
@@ -222,7 +225,6 @@ export default class ReactForm extends React.Component {
     if (errors.length < 1) {
       const { onSubmit } = this.props;
 
-      // debugger;
       // const debugData = this._collectFormData(this.props.data);
 
       if (onSubmit) {
@@ -272,7 +274,9 @@ export default class ReactForm extends React.Component {
     const Input = FormElements[item.element];
     return (<Input
       handleChange={this.handleChange}
-      ref={c => this.inputs[item.field_name] = c}
+      ref={c => {
+        this.inputs[item.field_name] = c}
+      }
       mutable={true}
       key={`form_${item.id}`}
       data={item}
@@ -342,6 +346,7 @@ export default class ReactForm extends React.Component {
         case 'TextInput':
         case 'NumberInput':
         case 'TextArea':
+        case 'Table':
         case 'Dropdown':
         case 'DatePicker':
         case 'RadioButtons':
