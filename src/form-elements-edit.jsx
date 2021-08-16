@@ -7,6 +7,7 @@ import draftToHtml from 'draftjs-to-html';
 import { Editor } from 'react-draft-wysiwyg';
 
 import DynamicOptionList from './dynamic-option-list';
+import DynamicColumnList from './dynamic-column-list';
 import { get } from './stores/requests';
 import ID from './UUID';
 
@@ -369,7 +370,8 @@ export default class FormElementsEdit extends React.Component {
           </div>
         }
         { this.props.element.hasOwnProperty('options') &&
-          <DynamicOptionList showCorrectColumn={this.props.showCorrectColumn}
+          <DynamicOptionList 
+            showCorrectColumn={this.props.showCorrectColumn}
             canHaveOptionCorrect={canHaveOptionCorrect}
             canHaveOptionValue={canHaveOptionValue}
             canHaveInfo={canHaveInfo}
@@ -378,6 +380,24 @@ export default class FormElementsEdit extends React.Component {
             preview={this.props.preview}
             element={this.props.element}
             key={this.props.element.options.length} />
+        }
+        { this.props.element.hasOwnProperty('rows') &&
+          <div className="form-group">
+            <label className="control-label" htmlFor="rowInput">Row Count</label>
+            <input id="rowInput" type="text" className="form-control" 
+              defaultValue={this.props.element.rows} 
+              onBlur={this.updateElement.bind(this)} 
+              onChange={this.editElementProp.bind(this, 'rows', 'value')} 
+            />
+          </div>
+        }
+        { this.props.element.hasOwnProperty('columns') &&
+          <DynamicColumnList 
+            data={this.props.preview.state.data}
+            updateElement={this.props.updateElement}
+            preview={this.props.preview}
+            element={this.props.element}
+            key={this.props.element.columns.length} />
         }
       </div>
     );
