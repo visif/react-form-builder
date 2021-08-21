@@ -41,6 +41,12 @@ class ReactFormBuilder extends React.Component {
     }
   }
 
+  onPost () {
+    if (typeof this.props.onPost === 'function') {
+      this.props.onPost(data)
+    }
+  }
+
   render() {
     const toolbarProps = {
       showDescription: this.props.show_description,
@@ -68,7 +74,8 @@ class ReactFormBuilder extends React.Component {
                 url={this.props.url}
                 saveUrl={this.props.saveUrl}
                 onLoad={this.props.onLoad}
-                onPost={this.props.onPost}
+                // onPost={this.props.onPost}
+                onPost={this.onPost}
                 editModeOn={this.editModeOn}
                 editMode={this.state.editMode}
                 variables={this.props.variables}

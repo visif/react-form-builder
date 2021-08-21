@@ -77,10 +77,13 @@ const saveUrl = '/api/formdata';
 
 ReactDOM.render(
   <FormBuilder.ReactFormBuilder
-    variables={variables}
-    url={url}
-    saveUrl={saveUrl}
-    // toolbarItems={items}
+  variables={variables}
+  url={url}
+  saveUrl={saveUrl}
+  // toolbarItems={items}
+    onChange={(data) => {
+      console.log('>>>>>>', data)
+    }}
   />,
   document.getElementById('form-builder'),
 );
