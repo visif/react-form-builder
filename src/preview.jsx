@@ -29,7 +29,7 @@ export default class Preview extends React.Component {
     };
     this.seq = 0;
 
-    const onUpdate = this._onChange.bind(this);
+    const onUpdate = this._onChange;
     store.subscribe(state => onUpdate(state.data));
 
     this.getDataById = this.getDataById.bind(this);
@@ -87,7 +87,7 @@ export default class Preview extends React.Component {
     }
   }
 
-  _onChange(data) {
+  _onChange = (data) => {
     const answer_data = {};
 
     data.forEach((item) => {
@@ -96,14 +96,14 @@ export default class Preview extends React.Component {
       }
     });
 
-    if (typeof this.props.onChange === 'function') {
-      this.props.onChange(data)
-    }
-
     this.setState({
       data,
       answer_data,
     });
+
+    if (typeof this.props.onChange === 'function') {
+      this.props.onChange(data)
+    }
   }
 
   _onDestroy(item) {
