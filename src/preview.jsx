@@ -28,10 +28,7 @@ export default class Preview extends React.Component {
       answer_data: {},
     };
     this.seq = 0;
-
-    const onUpdate = this._onChange;
-    store.subscribe(state => onUpdate(state.data));
-
+    
     this.getDataById = this.getDataById.bind(this);
     this.moveCard = this.moveCard.bind(this);
     this.insertCard = this.insertCard.bind(this);
@@ -44,6 +41,9 @@ export default class Preview extends React.Component {
     const { data, url, saveUrl } = this.props;
     store.dispatch('load', { loadUrl: url, saveUrl, data: data || [] });
     document.addEventListener('mousedown', this.editModeOff);
+
+    const onUpdate = this._onChange;
+    store.subscribe(state => onUpdate(state.data));
   }
 
   componentWillUnmount() {
