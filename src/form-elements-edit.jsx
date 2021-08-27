@@ -455,4 +455,5 @@ export default class FormElementsEdit extends React.Component {
     );
   }
 }
+
 FormElementsEdit.defaultProps = { className: 'edit-element-fields' };

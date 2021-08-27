@@ -16,15 +16,15 @@ export default class DynamicColumnList extends React.Component {
   }
 
   _setValue(text) {
-    return text.replace(/[^A-Z0-9]+/ig, '_').toLowerCase();
+    return `${text}`.replace(/[^A-Z0-9]+/ig, '_').toLowerCase();
   }
 
-  editColumn(index, e) {
+  editColumn(index, key, e) {
     const this_element = this.state.element;
-    const val = (this_element.columns[index].value !== this._setValue(this_element.columns[index].text)) ? 
+    const val = (this_element.columns[index].value !== this._setValue(this_element.columns[index][key])) ? 
       this_element.columns[index].value : this._setValue(e.target.value);
 
-    this_element.columns[index].text = e.target.value;
+    this_element.columns[index][key] = e.target.value;
     this_element.columns[index].value = val;
     this.setState({
       element: this_element,
@@ -43,7 +43,7 @@ export default class DynamicColumnList extends React.Component {
 
   addColumn(index) {
     const this_element = this.state.element;
-    this_element.columns.splice(index + 1, 0, { value: '', text: '', key: ID.uuid() });
+    this_element.columns.splice(index + 1, 0, { value: '', text: '', key: ID.uuid(), width: 1 });
     this.props.updateElement.call(this.props.preview, this_element);
   }
 
@@ -63,47 +63,67 @@ export default class DynamicColumnList extends React.Component {
         <ul>
           <li>
             <div className="row">
-              <div className="col-sm-9"><b>Column Header Text</b></div>
+              <div className="col-sm-12"><b>Columns</b></div>
             </div>
           </li>
+          <li className="clearfix">
+            <div className="row">
+              <div className="col-sm-7">Header Text</div>
+              <div className="col-sm-2">Width</div>
+              <div className="col-sm-3"></div>
+            </div>
+          </li>  
           {
             this.props.element.columns.map((option, index) => {
               const this_key = `edit_${option.key}`;
               const val = (option.value !== this._setValue(option.text)) ? option.value : '';
               return (
-                <li className="clearfix" key={this_key}>
-                  <div className="row">
-                    <div className="col-sm-9">
-                      <input tabIndex={index + 1} 
-                        className="form-control" 
-                        style={{ width: '100%' }} type="text" 
-                        name={`text_${index}`} placeholder="Option text" 
-                        value={option.text} 
-                        onBlur={this.updateColumn.bind(this)} 
-                        onChange={this.editColumn.bind(this, index)} 
-                      />
-                    </div>
-                    <div className="col-sm-3">
-                      <div className="dynamic-options-actions-buttons">
-                        <button 
-                          onClick={this.addColumn.bind(this, index)} 
-                          className="btn btn-success"
-                        >
-                          <i className="fas fa-plus-circle"></i>
-                        </button>
-                        { 
-                          index > 0 && 
+                <>
+                  <li className="clearfix" key={this_key}>
+                    <div className="row">
+                      <div className="col-sm-7">
+                        <input tabIndex={index + 1} 
+                          className="form-control" 
+                          style={{ width: '100%' }} type="text" 
+                          name={`text_${index}`} placeholder="Option text" 
+                          value={option.text} 
+                          onBlur={this.updateColumn.bind(this)} 
+                          onChange={this.editColumn.bind(this, index, 'text')} 
+                        />
+                      </div>
+                      <div className="col-sm-2">
+                        <input tabIndex={index + 1} 
+                          className="form-control" 
+                          style={{ width: '100%' }} type="text" 
+                          name={`text_${index}`} 
+                          placeholder="Width" 
+                          value={option.width} 
+                          onBlur={this.updateColumn.bind(this)} 
+                          onChange={this.editColumn.bind(this, index, 'width')} 
+                        />
+                      </div>
+                      <div className="col-sm-3">
+                        <div className="dynamic-options-actions-buttons">
                           <button 
-                            onClick={this.removeColumn.bind(this, index)} 
-                            className="btn btn-danger"
+                            onClick={this.addColumn.bind(this, index)} 
+                            className="btn btn-success"
                           >
-                            <i className="fas fa-minus-circle"></i>
+                            <i className="fas fa-plus-circle"></i>
                           </button>
-                        }
+                          { 
+                            index > 0 && 
+                            <button 
+                              onClick={this.removeColumn.bind(this, index)} 
+                              className="btn btn-danger"
+                            >
+                              <i className="fas fa-minus-circle"></i>
+                            </button>
+                          }
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </li>
+                  </li>
+                </>
               );
             })
           }
