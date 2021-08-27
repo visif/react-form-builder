@@ -1,3 +1,4 @@
+import { isNumber } from 'lodash-es';
 import React, { useRef, useState } from 'react';
 import ComponentHeader from './component-header';
 import ComponentLabel from './component-label';
@@ -94,9 +95,17 @@ export default class Table extends React.Component {
     );
   }
 
+  getColumnWidth = (totalWidthCount, width) => {
+    const currentWidth = (parseInt(width) ? Number(width) : 1)
+    return `${(currentWidth / totalWidthCount) * 100}%`;
+  }
+
   render () {
     let baseClasses = 'SortableItem rfb-item';
     if (this.props?.data?.pageBreakBefore) { baseClasses += ' alwaysbreak'; }
+    const totalWidthCount = this.props.data?.columns.reduce((previous, current) => {
+      return previous + (parseInt(current.width) ? Number(current.width) : 1)
+    }, 0);
 
     return (
       <div className={baseClasses}>
@@ -112,7 +121,10 @@ export default class Table extends React.Component {
               {
                 this.props.data?.columns?.map((col) => {
                   return (
-                    <th scope="col">{col.text}</th>
+                    <th 
+                      scope="col"
+                      style={{ width: this.getColumnWidth(totalWidthCount, col.width)}}
+                    >{col.text}</th>
                   );
                 })
               }
