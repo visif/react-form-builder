@@ -10,16 +10,17 @@ export default class Table extends React.Component {
     super(props);
     this.tableRef = React.createRef();
     this.state = {
-      rows: props.data.rows,
+      rows: Number(props.data.rows),
       columns: props.data.columns,
       defaultValue: props.defaultValue,
-      inputs: Table.getInputValues(props.defaultValue, props.data.columns, props.data.rows),
+      inputs: Table.getInputValues(props.defaultValue, props.data.columns, Number(props.data.rows), 0),
+      rowsAdded: 0,
     };
   }
 
-  static getInputValues = (defaultValue = [], columns, rows) => {
+  static getInputValues = (defaultValue = [], columns, rows, addingRows) => {
     const result = [];
-    Array.from(Array(Number(rows)).keys()).map((i) => {
+    Array.from(Array(Number(rows + addingRows)).keys()).map((i) => {
       const current = []
       columns.map((j, jIndex) => {
         const value = defaultValue[i] ? (defaultValue[i][jIndex] ?? '') : '';
@@ -38,34 +39,39 @@ export default class Table extends React.Component {
     ) {
       console.log('Table default columns/rows changed')
       return {
-        rows: props.data.rows,
-        columns: props.data.columns,
+        rows: Number(props.data.rows),
+        columns: Number(props.data.columns),
         defaultValue: state.defaultValue,
-        inputs: Table.getInputValues(state.inputs, props.data.columns, props.data.rows),
+        inputs: Table.getInputValues(state.inputs, props.data.columns, Number(props.data.rows), state.rowsAdded),
       }
     }
 
     if (JSON.stringify(state.defaultValue) !== JSON.stringify(props.defaultValue)) {
       console.log('Table default prop changed', state.defaultValue, props.defaultValue)
       return {
-        rows: props.data.rows,
-        columns: props.data.columns,
+        rows: Number(props.data.rows),
+        columns: Number(props.data.columns),
         defaultValue: props.defaultValue,
-        inputs: Table.getInputValues(props.defaultValue, props.data.columns, props.data.rows),
+        inputs: Table.getInputValues(props.defaultValue, props.data.columns, Number(props.data.rows), state.rowsAdded),
       }
     }
 
     return state;
   }
 
+  addRow = () => {
+    this.setState((current) => ({
+      ...current,
+      rowsAdded: current.rowsAdded + 1,
+      inputs: Table.getInputValues(current.inputs, current.columns, current.rows, current.rowsAdded + 1),
+    }))
+  }
+
   renderRows = () => {
-    if (!Number(this.props.data?.rows)) {
-      return;
-    }
     return (
       <tbody>
       {
-        Array.from(Array(Number(this.props.data?.rows)).keys()).map((i) => (
+        Array.from(Array(Number(this.state.inputs.length)).keys()).map((i) => (
           <tr key={"row" + i}>
           {
             this.props.data?.columns?.map((j, jIndex) => {
@@ -134,6 +140,9 @@ export default class Table extends React.Component {
               this.renderRows()
             }
           </table>
+          <div style={{ textAlign: 'right' }}>
+            <button type="button" class="btn btn-info" onClick={this.addRow}>Add Row</button>
+          </div>
         </div>  
       </div>
     )
