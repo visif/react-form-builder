@@ -9,12 +9,13 @@ export default class Table extends React.Component {
   constructor(props) {
     super(props);
     this.tableRef = React.createRef();
+    const rowsAdded = props.data.columns.length - props.data.rows;
     this.state = {
       rows: Number(props.data.rows),
       columns: props.data.columns,
       defaultValue: props.defaultValue,
-      inputs: Table.getInputValues(props.defaultValue, props.data.columns, Number(props.data.rows), 0),
-      rowsAdded: 0,
+      inputs: Table.getInputValues(props.defaultValue, props.data.columns, Number(props.data.rows), rowsAdded),
+      rowsAdded,
     };
   }
 
@@ -64,6 +65,14 @@ export default class Table extends React.Component {
       ...current,
       rowsAdded: current.rowsAdded + 1,
       inputs: Table.getInputValues(current.inputs, current.columns, current.rows, current.rowsAdded + 1),
+    }))
+  }
+
+  removeRow = () => {
+    this.setState((current) => ({
+      ...current,
+      rowsAdded: current.rowsAdded - 1,
+      inputs: Table.getInputValues(current.inputs, current.columns, current.rows, current.rowsAdded - 1),
     }))
   }
 
@@ -141,6 +150,12 @@ export default class Table extends React.Component {
             }
           </table>
           <div style={{ textAlign: 'right' }}>
+            <button 
+              type="button" 
+              class="btn btn-secondary" 
+              onClick={this.removeRow}
+              style={{ marginRight: 8, display: this.state.inputs.length > 0 ? 'initial' : 'none'}}
+            >Remove Row</button>
             <button type="button" class="btn btn-info" onClick={this.addRow}>Add Row</button>
           </div>
         </div>  
