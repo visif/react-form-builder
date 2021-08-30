@@ -4,12 +4,37 @@ import ComponentHeader from './component-header';
 import ComponentLabel from './component-label';
 // import FormElements from '../form-elements';
 
+/*
+[
+  [
+    "1",
+    "มีนา",
+    "ๅ"
+  ],
+  [
+    "2",
+    "มานี",
+    "ๅ"
+  ],
+  [
+    "3",
+    "ชูใจ",
+    "ๅ"
+  ],
+  [
+    "4",
+    "This is new added row",
+    "ลองเพิ่มใหม่"
+  ]
+]
+*/
+
 export default class Table extends React.Component {
   self = this;
   constructor(props) {
     super(props);
     this.tableRef = React.createRef();
-    const rowsAdded = props.data.columns.length - props.data.rows;
+    const rowsAdded = (props.defaultValue ? props.defaultValue.length : Number(props.data.rows)) - Number(props.data.rows);
     this.state = {
       rows: Number(props.data.rows),
       columns: props.data.columns,
@@ -41,19 +66,22 @@ export default class Table extends React.Component {
       console.log('Table default columns/rows changed')
       return {
         rows: Number(props.data.rows),
-        columns: Number(props.data.columns),
+        columns: props.data.columns,
         defaultValue: state.defaultValue,
         inputs: Table.getInputValues(state.inputs, props.data.columns, Number(props.data.rows), state.rowsAdded),
+        rowsAdded: state.rowsAdded,
       }
     }
 
     if (JSON.stringify(state.defaultValue) !== JSON.stringify(props.defaultValue)) {
       console.log('Table default prop changed', state.defaultValue, props.defaultValue)
+      const rowsAdded = (props.defaultValue ? props.defaultValue.length : Number(props.data.rows)) - Number(props.data.rows);
       return {
         rows: Number(props.data.rows),
-        columns: Number(props.data.columns),
+        columns: props.data.columns,
         defaultValue: props.defaultValue,
-        inputs: Table.getInputValues(props.defaultValue, props.data.columns, Number(props.data.rows), state.rowsAdded),
+        inputs: Table.getInputValues(props.defaultValue, props.data.columns, Number(props.data.rows), rowsAdded),
+        rowsAdded,
       }
     }
 
