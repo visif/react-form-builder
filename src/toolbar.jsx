@@ -175,6 +175,7 @@ export default class Toolbar extends React.Component {
         icon: 'fas fa-table',
         field_name: 'tables_',
         columns: [],
+        rowLabels: [],
         rows: 3,
       },
       {
@@ -378,6 +379,12 @@ export default class Toolbar extends React.Component {
         elementOptions.columns = item.columns;
       } else {
         elementOptions.columns = Toolbar._defaultItemColumns();
+      }
+
+      if (item.rowLabels?.length > 0) {
+        elementOptions.rowLabels = item.rowLabels;
+      } else {
+        elementOptions.rowLabels = [];
       }
       elementOptions.rows = item.rows || 3;
     }

@@ -253,7 +253,9 @@ export default class Preview extends React.Component {
     }
     return (
       <SortableFormElement 
-        id={item.id} seq={this.seq} 
+        id={item.id} 
+        key={item.id} 
+        seq={this.seq} 
         index={index} 
         moveCard={this.moveCard} 
         insertCard={this.insertCard} 

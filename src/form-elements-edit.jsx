@@ -8,6 +8,7 @@ import { Editor } from 'react-draft-wysiwyg';
 
 import DynamicOptionList from './dynamic-option-list';
 import DynamicColumnList from './dynamic-column-list';
+import FixedRowList from './fixed-row-list';
 import { get } from './stores/requests';
 import ID from './UUID';
 
@@ -431,7 +432,8 @@ export default class FormElementsEdit extends React.Component {
             updateElement={this.props.updateElement}
             preview={this.props.preview}
             element={this.props.element}
-            key={this.props.element.options.length} />
+            key={`option-${this.props.element.options.length}`} 
+          />
         }
         { this.props.element.hasOwnProperty('rows') &&
           <div className="form-group">
@@ -443,13 +445,25 @@ export default class FormElementsEdit extends React.Component {
             />
           </div>
         }
-        { this.props.element.hasOwnProperty('columns') &&
+        { 
+          this.props.element.hasOwnProperty('rowLabels') &&
+          <FixedRowList 
+            data={this.props.preview.state.data}
+            updateElement={this.props.updateElement}
+            preview={this.props.preview}
+            element={this.props.element}
+            key={`table-row-labels`} 
+          />
+        }
+        { 
+          this.props.element.hasOwnProperty('columns') &&
           <DynamicColumnList 
             data={this.props.preview.state.data}
             updateElement={this.props.updateElement}
             preview={this.props.preview}
             element={this.props.element}
-            key={this.props.element.columns.length} />
+            key={`table-columns`} 
+          />
         }
       </div>
     );

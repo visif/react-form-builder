@@ -151,13 +151,14 @@ export default class Table extends React.Component {
     }, 0);
 
     return (
-      <div className={baseClasses}>
+      <div className={baseClasses} key={`table-container-${this.props.id}`}>
         <ComponentHeader {...this.props} />
         <div className="form-group">
           <ComponentLabel {...this.props} />
           <table 
             className="table table-bordered"
             ref={this.tableRef}
+            key={`table-${this.props.id}`}
           >
             <thead>
               <tr>
