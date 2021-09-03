@@ -1,33 +1,6 @@
-import { isNumber } from 'lodash-es';
-import React, { useRef, useState } from 'react';
+import React from 'react';
 import ComponentHeader from './component-header';
 import ComponentLabel from './component-label';
-// import FormElements from '../form-elements';
-
-/*
-[
-  [
-    "1",
-    "มีนา",
-    "ๅ"
-  ],
-  [
-    "2",
-    "มานี",
-    "ๅ"
-  ],
-  [
-    "3",
-    "ชูใจ",
-    "ๅ"
-  ],
-  [
-    "4",
-    "This is new added row",
-    "ลองเพิ่มใหม่"
-  ]
-]
-*/
 
 export default class Table extends React.Component {
   self = this;
@@ -37,19 +10,31 @@ export default class Table extends React.Component {
     const rowsAdded = (props.defaultValue ? props.defaultValue.length : Number(props.data.rows)) - Number(props.data.rows);
     this.state = {
       rows: Number(props.data.rows),
+      rowLabels: props.data.rowLabels,
       columns: props.data.columns,
       defaultValue: props.defaultValue,
-      inputs: Table.getInputValues(props.defaultValue, props.data.columns, Number(props.data.rows), rowsAdded),
+      inputs: Table.getInputValues(
+        props.defaultValue, 
+        props.data.columns, 
+        Number(props.data.rows), 
+        rowsAdded,
+        props.data.rowLabels,
+      ),
       rowsAdded,
     };
   }
 
-  static getInputValues = (defaultValue = [], columns, rows, addingRows) => {
+  static getInputValues = (defaultValue = [], columns, rows, addingRows, rowLabels) => {
     const result = [];
-    Array.from(Array(Number(rows + addingRows)).keys()).map((i) => {
+    const isFixedRow = rowLabels?.length > 0;
+    const activeRows = isFixedRow ? rowLabels?.length : (rows + addingRows);
+    Array.from(Array(Number(activeRows)).keys()).map((i) => {
       const current = []
       columns.map((j, jIndex) => {
-        const value = defaultValue[i] ? (defaultValue[i][jIndex] ?? '') : '';
+        let value = defaultValue[i] ? (defaultValue[i][jIndex] ?? '') : '';
+        if (isFixedRow && jIndex === 0) {
+          value = rowLabels[i].text;
+        }
         current.push(value)
       })
       result.push(current)
@@ -61,15 +46,17 @@ export default class Table extends React.Component {
   static getDerivedStateFromProps = (props, state) => {
     console.log('Table getDerivedStateFromProps')
     if (Number(props.data.rows) !== Number(state.rows) 
-      || JSON.stringify(props.data.columns) !== JSON.stringify(state.columns)
+      || (JSON.stringify(props.data.columns) !== JSON.stringify(state.columns))
+      || (JSON.stringify(state.rowLabels) !== JSON.stringify(props.data.rowLabels))
     ) {
       console.log('Table default columns/rows changed')
       return {
         rows: Number(props.data.rows),
         columns: props.data.columns,
         defaultValue: state.defaultValue,
-        inputs: Table.getInputValues(state.inputs, props.data.columns, Number(props.data.rows), state.rowsAdded),
+        inputs: Table.getInputValues(state.inputs, props.data.columns, Number(props.data.rows), state.rowsAdded, props.data.rowLabels),
         rowsAdded: state.rowsAdded,
+        rowLabels: props.data.rowLabels,
       }
     }
 
@@ -80,8 +67,9 @@ export default class Table extends React.Component {
         rows: Number(props.data.rows),
         columns: props.data.columns,
         defaultValue: props.defaultValue,
-        inputs: Table.getInputValues(props.defaultValue, props.data.columns, Number(props.data.rows), rowsAdded),
+        inputs: Table.getInputValues(props.defaultValue, props.data.columns, Number(props.data.rows), rowsAdded, props.data.rowLabels),
         rowsAdded,
+        rowLabels: props.data.rowLabels,
       }
     }
 
@@ -105,19 +93,27 @@ export default class Table extends React.Component {
   }
 
   renderRows = () => {
+    const isFixedRow = this.state.rowLabels?.length > 0;
+    const activeRows =  isFixedRow ? this.state.rowLabels?.length : (this.state.rows + this.state.rowsAdded);
     return (
       <tbody>
       {
-        Array.from(Array(Number(this.state.inputs.length)).keys()).map((i) => (
+
+        Array.from(Array(Number(activeRows)).keys()).map((i) => (
           <tr key={"row" + i}>
           {
             this.props.data?.columns?.map((j, jIndex) => {
+              const isLabel =  (isFixedRow && jIndex === 0);
+              const value = isLabel ? this.state.rowLabels[i].text
+                : (this.state.inputs[i] ? (this.state.inputs[i][jIndex] ?? '') : '')
               return (
                 <td>
                   <input
                     className="form-control"
+                    style={isLabel ? { border: 0, backgroundColor: 'inherit'} : {}}
+                    disabled={isLabel}
                     type="text"
-                    value={this.state.inputs[i] ? (this.state.inputs[i][jIndex] ?? '') : ''}
+                    value={value}
                     onChange={(event) => {
                       const value = event.target.value;
                       const array = this.state.inputs;
