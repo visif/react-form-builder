@@ -43,7 +43,8 @@ export default class Table extends React.Component {
     return result;
   }
 
-  static getDerivedStateFromProps = (props, state) => {
+  static 
+   = (props, state) => {
     console.log('Table getDerivedStateFromProps')
     if (Number(props.data.rows) !== Number(state.rows) 
       || (JSON.stringify(props.data.columns) !== JSON.stringify(state.columns))
@@ -145,6 +146,7 @@ export default class Table extends React.Component {
     const totalWidthCount = this.props.data?.columns.reduce((previous, current) => {
       return previous + (parseInt(current.width) ? Number(current.width) : 1)
     }, 0);
+    const isFixedRow = this.state.rowLabels?.length > 0;
 
     return (
       <div className={baseClasses} key={`table-container-${this.props.id}`}>
@@ -174,15 +176,18 @@ export default class Table extends React.Component {
               this.renderRows()
             }
           </table>
-          <div style={{ textAlign: 'right' }}>
-            <button 
-              type="button" 
-              class="btn btn-secondary" 
-              onClick={this.removeRow}
-              style={{ marginRight: 8, display: this.state.inputs.length > 0 ? 'initial' : 'none'}}
-            >Remove Row</button>
-            <button type="button" class="btn btn-info" onClick={this.addRow}>Add Row</button>
-          </div>
+          {
+            !isFixedRow &&
+            <div style={{ textAlign: 'right' }}>
+              <button 
+                type="button" 
+                class="btn btn-secondary" 
+                onClick={this.removeRow}
+                style={{ marginRight: 8, display: this.state.inputs.length > 0 ? 'initial' : 'none'}}
+              >Remove Row</button>
+              <button type="button" class="btn btn-info" onClick={this.addRow}>Add Row</button>
+            </div>
+          }
         </div>  
       </div>
     )
