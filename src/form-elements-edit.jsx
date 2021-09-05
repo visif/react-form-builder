@@ -1,4 +1,5 @@
 import React from 'react';
+import axios from "axios";
 import TextAreaAutosize from 'react-textarea-autosize';
 import {
   ContentState, EditorState, convertFromHTML, convertToRaw,
@@ -35,54 +36,78 @@ export default class FormElementsEdit extends React.Component {
     // const this_element = this.state.element;
   }
 
-  //copy code from vdc
-  async nativeUploadFile(file) {
-    const extension = file.name.split(".").pop();
-    const data = new FormData();
-    data.append("Filename", file.name);
-    data.append("Filename", `form_uuid_.${extension}`);
-    data.append("fileUpload", file);
-    data.append("userID", `${auth.userId}`);
-    data.append("Upload", "Submit Query");
-    data.append("method", "uploadSignature");
-
-    return await new HttpClient().post("UploadServlet", data);
-  }
-
   async onUploadFile(event) {
     if (!event || !event.target || !event.target.files) {
       return false;
     }
-    debugger;
+
     const file = event.target.files[0];
-    console.log(file);
+    let timeoutId = 0;
+
     try {
-      const response = await new Promise.all(nativeUploadFile(file));
-    } catch (error) {
-      console.log(error);
-    }
+      const data = new FormData();
+      data.append("Filename", file.name);     // The file extension will be used for naming uploaded file
+      data.append("fileUpload", file);
+      data.append("userID", `temp_userid`);   // The file will be kept in the user temp directory
+      data.append("Upload", "Submit Query");
+      data.append("method", "uploadToPersonalTempDir");
+      //Return the file name => 000:[NUMBER].abc:XXX:YYY => 000:1450959777200100.doc:70148:2_1630413085910
 
-    if (response && response.data) {
-      const results = response.data.split(":");
+      const timeout = (1000 * 60 * 10); // 10 minutes,
+      const axiosInstance = axios.create({
+        baseURL: "http://www.isocafe.com:8080/VisiforgeDC/",
+        validateStatus: (status) => {
+          return status >= 200;
+        },
+        timeout,
+        withCredentials: true
+      });
 
-      if (response.data.indexOf("000:") <= -1) {
-        notifyError("Cannot upload file");
-        event.target.value = null;
+      const axiosCancelSource = axios.CancelToken.source();
+      timeoutId = setTimeout(() => {
+        return cancelTokenSource.cancel(
+          `HTTP timeout after ${timeout}ms.`
+        );
+      }, timeout);
 
+      debugger;
+      const result = await axiosInstance.post("UploadServlet", data, {
+        cancelToken: axiosCancelSource.token
+      });
+
+      debugger;
+      if ((result.status === 200 || result.status === 204) && 
+        `${result.data}`.includes('000:')
+      ) {
+        const filePath = `${result.data}`.replace('000:', '');
+
+        const this_element = this.state.element;
+        this_element['src'] = filePath;
+        this.setState({
+          element: this_element
+        });
+        
       } else {
-        const splitdot = file.name.split(".");
-        splitdot.pop();
-        const fileNameNoExt = splitdot.join(".");
-
-        checkDocumentTitle(fileNameNoExt);
-        return true;
+        const this_element = this.state.element;
+        this_element['src'] = 'cannot upload file';
+        this.setState({
+          element: this_element
+        });
       }
+
+    } catch (error) {
+      console.log('error upload', error)
+      const this_element = this.state.element;
+      this_element['src'] = 'cannot upload file';
+      this.setState({
+        element: this_element
+      });
+
+    } finally {
+      clearTimeout(timeoutId);
     }
-    return false;
   }
   //-----end copy from vdc
-
-
 
   editElementProp(elemProperty, targProperty, e) {
     // elemProperty could be content or label
@@ -198,7 +223,6 @@ export default class FormElementsEdit extends React.Component {
         {this.props.element.hasOwnProperty('content') &&
           <div className="form-group">
             <label className="control-label">Text to display:</label>
-
             <Editor
               toolbar={toolbar}
               defaultEditorState={editorState}
@@ -226,11 +250,19 @@ export default class FormElementsEdit extends React.Component {
         {this.props.element.hasOwnProperty('src') &&
           <div>
             <div className="form-group">
-              <input id="srcImage" type="file" onBlur={this.updateElement.bind(this)} onChange={this.onUploadFile.bind(this)} />
+              <input 
+                id="srcImage" 
+                type="file" 
+                onChange={this.onUploadFile.bind(this)} 
+              />
             </div>
             <div className="form-group">
               <label className="control-label" htmlFor="srcInput">Link to:</label>
-              <input id="srcInput" type="text" className="form-control" defaultValue={this.props.element.src} onBlur={this.updateElement.bind(this)} onChange={this.editElementProp.bind(this, 'src', 'value')} />
+              <input id="srcInput" type="text" 
+                className="form-control" 
+                defaultValue={this.props.element.src} 
+                onBlur={this.updateElement.bind(this)} 
+                onChange={this.editElementProp.bind(this, 'src', 'value')} />
             </div>
             <div className="form-group">
               <div className="custom-control custom-checkbox">
