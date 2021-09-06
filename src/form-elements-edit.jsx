@@ -38,9 +38,9 @@ export default class FormElementsEdit extends React.Component {
 
   async onUploadFile(event) {
     if (!event || !event.target || !event.target.files
-      || !this.props.uploadUrl) {
+      || !this.props.preview.props.uploadUrl) {
   
-      if (!this.props.uploadUrl) {
+      if (!this.props.preview.props.uploadUrl) {
         const this_element = this.state.element;
         this_element['src'] = 'Invalid upload path';
         this.setState({
@@ -65,7 +65,7 @@ export default class FormElementsEdit extends React.Component {
 
       const timeout = (1000 * 60 * 10);       // 10 minutes,
       const axiosInstance = axios.create({
-        baseURL: this.props.uploadUrl,        //"http://www.isocafe.com:8080/VisiforgeDC/",
+        baseURL: this.props.preview.props.uploadUrl,        //"http://www.isocafe.com:8080/VisiforgeDC/",
         validateStatus: (status) => {
           return status >= 200;
         },
