@@ -37,8 +37,18 @@ export default class FormElementsEdit extends React.Component {
   }
 
   async onUploadFile(event) {
-    if (!event || !event.target || !event.target.files) {
-      return false;
+    if (!event || !event.target || !event.target.files
+      || !this.props.uploadUrl) {
+  
+      if (!this.props.uploadUrl) {
+        const this_element = this.state.element;
+        this_element['src'] = 'Invalid upload path';
+        this.setState({
+          element: this_element
+        });
+      }
+
+      return;
     }
 
     const file = event.target.files[0];
@@ -53,9 +63,9 @@ export default class FormElementsEdit extends React.Component {
       data.append("method", "uploadToPersonalTempDir");
       //Return the file name => 000:[NUMBER].abc:XXX:YYY => 000:1450959777200100.doc:70148:2_1630413085910
 
-      const timeout = (1000 * 60 * 10); // 10 minutes,
+      const timeout = (1000 * 60 * 10);       // 10 minutes,
       const axiosInstance = axios.create({
-        baseURL: "http://www.isocafe.com:8080/VisiforgeDC/",
+        baseURL: this.props.uploadUrl,        //"http://www.isocafe.com:8080/VisiforgeDC/",
         validateStatus: (status) => {
           return status >= 200;
         },
@@ -70,7 +80,6 @@ export default class FormElementsEdit extends React.Component {
         );
       }, timeout);
 
-      debugger;
       const result = await axiosInstance.post("UploadServlet", data, {
         cancelToken: axiosCancelSource.token
       });

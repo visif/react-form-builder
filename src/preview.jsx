@@ -305,6 +305,7 @@ export default class Preview extends React.Component {
     );
   }
 }
+
 Preview.defaultProps = {
   showCorrectColumn: false,
   files: [],
