@@ -53,7 +53,7 @@ export default class FormElementsEdit extends React.Component {
     try {
 
       const file = event.target.files[0];
-      const imageUrl = this.props.preview.props.onImageUpload(file);
+      const imageUrl = await this.props.preview.props.onImageUpload(file);
 
       const this_element = this.state.element;
       this_element['src'] = imageUrl;
