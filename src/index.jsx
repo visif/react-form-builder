@@ -83,6 +83,7 @@ class ReactFormBuilder extends React.Component {
                 renderEditForm={this.props.renderEditForm}
                 onChange={this.props.onChange}
                 uploadUrl={this.props.uploadUrl}
+                onImageUpload={this.props.onImageUpload}
               />
               <Toolbar {...toolbarProps} customItems={this.props.customToolbarItems} />
             </div>

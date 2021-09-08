@@ -1,5 +1,4 @@
 import React from 'react';
-import axios from "axios";
 import TextAreaAutosize from 'react-textarea-autosize';
 import {
   ContentState, EditorState, convertFromHTML, convertToRaw,
@@ -38,11 +37,11 @@ export default class FormElementsEdit extends React.Component {
 
   async onUploadFile(event) {
     if (!event || !event.target || !event.target.files
-      || !this.props.preview.props.uploadUrl) {
+      || !this.props.preview.props.onImageUpload) {
   
-      if (!this.props.preview.props.uploadUrl) {
+      if (!this.props.preview.props.onImageUpload) {
         const this_element = this.state.element;
-        this_element['src'] = 'Invalid upload path';
+        this_element['src'] = 'Please provide upload callback';
         this.setState({
           element: this_element
         });
@@ -51,58 +50,16 @@ export default class FormElementsEdit extends React.Component {
       return;
     }
 
-    const file = event.target.files[0];
-    let timeoutId = 0;
-
     try {
-      const data = new FormData();
-      data.append("Filename", file.name);     // The file extension will be used for naming uploaded file
-      data.append("fileUpload", file);
-      data.append("userID", `temp_userid`);   // The file will be kept in the user temp directory
-      data.append("Upload", "Submit Query");
-      data.append("method", "uploadToPersonalTempDir");
-      //Return the file name => 000:[NUMBER].abc:XXX:YYY => 000:1450959777200100.doc:70148:2_1630413085910
 
-      const timeout = (1000 * 60 * 10);       // 10 minutes,
-      const axiosInstance = axios.create({
-        baseURL: this.props.preview.props.uploadUrl,        //"http://www.isocafe.com:8080/VisiforgeDC/",
-        validateStatus: (status) => {
-          return status >= 200;
-        },
-        timeout,
-        withCredentials: true
+      const file = event.target.files[0];
+      const imageUrl = this.props.preview.props.onImageUpload(file);
+
+      const this_element = this.state.element;
+      this_element['src'] = imageUrl;
+      this.setState({
+        element: this_element
       });
-
-      const axiosCancelSource = axios.CancelToken.source();
-      timeoutId = setTimeout(() => {
-        return cancelTokenSource.cancel(
-          `HTTP timeout after ${timeout}ms.`
-        );
-      }, timeout);
-
-      const result = await axiosInstance.post("UploadServlet", data, {
-        cancelToken: axiosCancelSource.token
-      });
-
-      debugger;
-      if ((result.status === 200 || result.status === 204) && 
-        `${result.data}`.includes('000:')
-      ) {
-        const filePath = `${result.data}`.replace('000:', '');
-
-        const this_element = this.state.element;
-        this_element['src'] = filePath;
-        this.setState({
-          element: this_element
-        });
-        
-      } else {
-        const this_element = this.state.element;
-        this_element['src'] = 'cannot upload file';
-        this.setState({
-          element: this_element
-        });
-      }
 
     } catch (error) {
       console.log('error upload', error)
@@ -112,8 +69,6 @@ export default class FormElementsEdit extends React.Component {
         element: this_element
       });
 
-    } finally {
-      clearTimeout(timeoutId);
     }
   }
   //-----end copy from vdc
