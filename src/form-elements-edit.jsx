@@ -224,7 +224,8 @@ export default class FormElementsEdit extends React.Component {
               <label className="control-label" htmlFor="srcInput">Link to:</label>
               <input id="srcInput" type="text" 
                 className="form-control" 
-                defaultValue={this.props.element.src} 
+                value={this.props.element.src}
+                defaultValue={this.props.element.src}
                 onBlur={this.updateElement.bind(this)} 
                 onChange={this.editElementProp.bind(this, 'src', 'value')} />
             </div>

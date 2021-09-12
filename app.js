@@ -80,6 +80,9 @@ ReactDOM.render(
   variables={variables}
   url={url}
   saveUrl={saveUrl}
+  onImageUpload={() => {
+    return Math.random(1000).toString()
+  }}
   // toolbarItems={items}
     onChange={(data) => {
       console.log('>>>>>>', data)
