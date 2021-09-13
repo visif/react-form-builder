@@ -337,6 +337,8 @@ export default class Toolbar extends React.Component {
 
     if (item.key === 'Image') {
       elementOptions.src = item.src;
+      elementOptions.width = item.src.width || 100;
+      elementOptions.height = item.src.height || 100;
     }
 
     if (item.key === 'DatePicker') {

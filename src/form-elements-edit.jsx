@@ -51,15 +51,25 @@ export default class FormElementsEdit extends React.Component {
     }
 
     try {
-
       const file = event.target.files[0];
+
       const imageUrl = await this.props.preview.props.onImageUpload(file, this.props.element.id);
 
-      const this_element = this.state.element;
-      this_element['src'] = imageUrl;
-      this.setState({
-        element: this_element
-      });
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        var img = new Image;
+        img.onload = function() {
+          const this_element = this.state.element;
+          this_element['width'] = img.width;
+          this_element['height'] = img.height;
+          this_element['src'] = imageUrl;
+          this.setState({
+            element: this_element
+          });
+        }.bind(this);
+        img.src = reader.result;
+      }.bind(this);
+      reader.readAsDataURL(file);
 
     } catch (error) {
       console.log('error upload', error)
@@ -240,11 +250,25 @@ export default class FormElementsEdit extends React.Component {
             <div className="row">
               <div className="col-sm-3">
                 <label className="control-label" htmlFor="elementWidth">Width:</label>
-                <input id="elementWidth" type="text" className="form-control" defaultValue={this.props.element.width} onBlur={this.updateElement.bind(this)} onChange={this.editElementProp.bind(this, 'width', 'value')} />
+                <input id="elementWidth" 
+                  type="text" 
+                  className="form-control" 
+                  value={this.props.element.width} 
+                  defaultValue={this.props.element.width} 
+                  onBlur={this.updateElement.bind(this)} 
+                  onChange={this.editElementProp.bind(this, 'width', 'value')} 
+                />
               </div>
               <div className="col-sm-3">
                 <label className="control-label" htmlFor="elementHeight">Height:</label>
-                <input id="elementHeight" type="text" className="form-control" defaultValue={this.props.element.height} onBlur={this.updateElement.bind(this)} onChange={this.editElementProp.bind(this, 'height', 'value')} />
+                <input id="elementHeight" 
+                  type="text" 
+                  className="form-control" 
+                  value={this.props.element.height} 
+                  defaultValue={this.props.element.height} 
+                  onBlur={this.updateElement.bind(this)} 
+                  onChange={this.editElementProp.bind(this, 'height', 'value')} 
+                />
               </div>
             </div>
           </div>
