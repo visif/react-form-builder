@@ -66,6 +66,7 @@ export default class FormElementsEdit extends React.Component {
           this.setState({
             element: this_element
           });
+          this.props.updateElement.call(this.props.preview, this_element);
         }.bind(this);
         img.src = reader.result;
       }.bind(this);
