@@ -9,7 +9,7 @@ export default class Section extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <span>{this.props.data.header}</span>
+        <h6>{this.props.data.header}</h6>
         <hr />
       </div>
     );
