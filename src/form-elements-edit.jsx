@@ -431,6 +431,15 @@ export default class FormElementsEdit extends React.Component {
             <input id="correctAnswer" type="text" className="form-control" defaultValue={this.props.element.correct} onBlur={this.updateElement.bind(this)} onChange={this.editElementProp.bind(this, 'correct', 'value')} />
           </div>
         }
+        {this.props.element.hasOwnProperty('header') &&
+          <div className="form-group">
+            <label className="control-label" htmlFor="header">Section Header</label>
+            <input id="header" type="text" className="form-control" defaultValue={this.props.element.correct} 
+            onBlur={this.updateElement.bind(this)} 
+            onChange={this.editElementProp.bind(this, 'header', 'value')} 
+          />
+          </div>
+        }
         {this.props.element.canPopulateFromApi && this.props.element.hasOwnProperty('options') &&
           <div className="form-group">
             <label className="control-label" htmlFor="optionsApiUrl">Populate Options from API</label>

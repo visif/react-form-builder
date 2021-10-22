@@ -277,6 +277,12 @@ export default class Toolbar extends React.Component {
         label: 'Placeholder Label',
         field_name: 'camera_',
       },
+      {
+        key: 'Section',
+        name: 'Section',
+        icon: 'fas fa-cut',
+        field_name: 'section_',
+      },
     ];
   }
 
@@ -389,6 +395,10 @@ export default class Toolbar extends React.Component {
         elementOptions.rowLabels = [];
       }
       elementOptions.rows = item.rows || 3;
+    }
+
+    if (item.key === 'Section') {
+      elementOptions.header = 'Section';
     }
 
     return elementOptions;

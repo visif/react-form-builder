@@ -11,6 +11,7 @@ import Table from './table';
 import ComponentHeader from './component-header';
 import ComponentLabel from './component-label';
 import myxss from './myxss';
+import Section from './section';
 
 const FormElements = {};
 
@@ -849,4 +850,5 @@ FormElements.Download = Download;
 FormElements.Camera = Camera;
 FormElements.Range = Range;
 FormElements.Table = Table;
+FormElements.Section = Section;
 export default FormElements;
