@@ -43,8 +43,7 @@ export default class Table extends React.Component {
     return result;
   }
 
-  static 
-   = (props, state) => {
+  static getDerivedStateFromProps = (props, state) => {
     console.log('Table getDerivedStateFromProps')
     if (Number(props.data.rows) !== Number(state.rows) 
       || (JSON.stringify(props.data.columns) !== JSON.stringify(state.columns))
