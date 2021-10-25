@@ -141,7 +141,7 @@ export default class ReactForm extends React.Component {
           if ($item.value === 0) {
             invalid = true;
           }
-        } else if ($item.value === undefined || $item.value.length < 1) {
+        } else if ($item.value === undefined || $item.value === null || $item.value.length < 1) {
           invalid = true;
         }
       }
@@ -155,6 +155,7 @@ export default class ReactForm extends React.Component {
       custom_name: item.custom_name || item.field_name,
     };
     const ref = this.inputs[item.field_name];
+
     if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
       const checked_options = [];
 
@@ -196,6 +197,24 @@ export default class ReactForm extends React.Component {
     return formData;
   }
 
+  _collectFormItems(data) {
+    const formData = [];
+    data.forEach(item => {
+
+      const itemValue = this._collect(item);
+      const itemData = {
+        id: item.id,
+        element: item.element,
+        value: itemValue && itemValue.value,
+      };
+
+      formData.push(itemData);
+
+    });
+
+    return formData;
+  }
+
   _getSignatureImg(item) {
     const ref = this.inputs[item.field_name];
     const $canvas_sig = ref.canvas.current;
@@ -214,35 +233,101 @@ export default class ReactForm extends React.Component {
   handleSubmit(e) {
     e.preventDefault();
 
-    let errors = [];
-    if (!this.props.skip_validations) {
-      errors = this.validateForm();
-      // Publish errors, if any.
-      this.emitter.emit('formValidation', errors);
-    }
+    // let errors = [];
+    // if (!this.props.skip_validations) {
+    //   errors = this.validateForm();
+    //   // Publish errors, if any.
+    //   this.emitter.emit('formValidation', errors);
+    // }
 
-    // Only submit if there are no errors.
-    if (errors.length < 1) {
-      const { onSubmit } = this.props;
+    // // Only submit if there are no errors.
+    // if (errors.length < 1) {
+    const { onSubmit } = this.props;
 
-      // const debugData = this._collectFormData(this.props.data);
+    // submit with no form
+    if (onSubmit) {
 
-      if (onSubmit) {
+      let errors = [];
+      if (!this.props.skip_validations) {
+        errors = this.validateForm();
+        // Publish errors, if any.
+        this.emitter.emit('formValidation', errors);
+      }
+
+      // Only submit if there are no errors.
+      if (errors.length < 1) {
         const data = this._collectFormData(this.props.data);
         onSubmit(data);
-      } else {
+      }
+   
+    } else { // incase no submit function provided => go to form submit
+
+      let errors = [];
+      if (!this.props.skip_validations) {
+        errors = this.validateForm();
+        // Publish errors, if any.
+        this.emitter.emit('formValidation', errors);
+      }
+
+      // Only submit if there are no errors.
+      if (errors.length < 1) {
         const $form = ReactDOM.findDOMNode(this.form);
         $form.submit();
       }
+
     }
+    // }
   }
 
   validateForm() {
     const errors = [];
     let data_items = this.props.data;
 
-    if (this.props.display_short) {
-      data_items = this.props.data.filter((i) => i.alternateForm === true);
+    // get all input items
+    const formItems = this._collectFormItems(this.props.data);
+    const sectionItems = formItems.filter(item => item.element === 'Section' )
+
+    // Validate with special condition when there is any section
+    if (sectionItems.length > 0) {
+
+      // split items into groups by section
+      const firstItem = formItems[0];
+      let activeSectionKey = firstItem.element === 'Section' ? firstItem.id : '';
+      const sectionGroup = {};
+      sectionGroup[activeSectionKey] = [];
+
+      // group items by section separator
+      formItems.forEach(item => {
+        if (item.element === 'Section') {
+          activeSectionKey = item.id
+          sectionGroup[activeSectionKey] = [];
+        } else {
+          sectionGroup[activeSectionKey].push(item)
+        }
+      });
+
+      let activeItems = [];
+
+      // find only active section => there is any item with value input
+      const keys = Object.keys(sectionGroup); 
+      keys.forEach((key) => {
+        const items = sectionGroup[key];
+        const fillingItems = items.find(item => 
+          item.element !== 'Table' 
+          && item.element !== "Dropdown"
+          && item.element !== "Range"
+          && (
+            (Array.isArray(item.value) && item.value.length > 0)
+            || (!Array.isArray(item.value) && !!item.value)
+          )
+        );
+        if (fillingItems) {
+          activeItems = activeItems.concat(items)
+        }
+      });
+
+      const itemIds = activeItems.map(item => item.id);
+      data_items = this.props.data.filter(item => itemIds.includes(item.id));
     }
 
     data_items.forEach(item => {
