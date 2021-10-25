@@ -282,6 +282,7 @@ export default class Toolbar extends React.Component {
         name: 'Section',
         icon: 'fas fa-cut',
         field_name: 'section_',
+        header: 'Placeholder Text',
       },
     ];
   }
@@ -398,7 +399,7 @@ export default class Toolbar extends React.Component {
     }
 
     if (item.key === 'Section') {
-      elementOptions.header = 'Section';
+      elementOptions.header = 'Placeholder Text';
     }
 
     return elementOptions;

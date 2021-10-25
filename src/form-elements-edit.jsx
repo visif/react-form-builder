@@ -434,9 +434,12 @@ export default class FormElementsEdit extends React.Component {
         {this.props.element.hasOwnProperty('header') &&
           <div className="form-group">
             <label className="control-label" htmlFor="header">Section Header</label>
-            <input id="header" type="text" className="form-control" defaultValue={this.props.element.correct} 
-            onBlur={this.updateElement.bind(this)} 
-            onChange={this.editElementProp.bind(this, 'header', 'value')} 
+            <input 
+              id="header" type="text" 
+              className="form-control" 
+              defaultValue={this.props.element.header}
+              onBlur={this.updateElement.bind(this)} 
+              onChange={this.editElementProp.bind(this, 'header', 'value')} 
           />
           </div>
         }
