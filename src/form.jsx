@@ -186,7 +186,7 @@ export default class ReactForm extends React.Component {
     return itemData;
   }
 
-  _collectFormData(data) {
+_collectFormData(data) {
     const formData = [];
     data.forEach(item => {
       const item_data = this._collect(item);
