@@ -1,7 +1,6 @@
 /**
-  * <Form />
-  */
-
+* <Form />
+*/
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { EventEmitter } from 'fbemitter';
@@ -12,7 +11,12 @@ import CustomElement from './form-elements/custom-element';
 import Registry from './stores/registry';
 
 const {
-  Image, Checkboxes, Signature, Download, Camera,
+  Image, 
+  Checkboxes, 
+  Signature, 
+  Signature2, 
+  Download, 
+  Camera,
 } = FormElements;
 
 const convert = (answers) => {
@@ -449,6 +453,8 @@ _collectFormData(data) {
           return this.getContainerElement(item, TwoColumnRow);
         case 'Signature':
           return <Signature ref={c => this.inputs[item.field_name] = c} read_only={this.props.read_only || item.readOnly} mutable={true} key={`form_${item.id}`} data={item} defaultValue={this._getDefaultValue(item)} />;
+        case 'Signature2':
+          return <Signature2 ref={c => this.inputs[item.field_name] = c} read_only={this.props.read_only || item.readOnly} mutable={true} key={`form_${item.id}`} data={item} defaultValue={this._getDefaultValue(item)} />;
         case 'Checkboxes':
           return (
             <Checkboxes 

@@ -284,6 +284,12 @@ export default class Toolbar extends React.Component {
         field_name: 'section_',
         header: 'Placeholder Text',
       },
+      {
+        key: 'Signature2',
+        name: 'Signature',
+        icon: 'fas fa-signature',
+        field_name: 'signature2_',
+      },
     ];
   }
 
@@ -400,6 +406,10 @@ export default class Toolbar extends React.Component {
 
     if (item.key === 'Section') {
       elementOptions.header = 'Placeholder Text';
+    }
+
+    if (item.key === 'Signature2') {
+
     }
 
     return elementOptions;

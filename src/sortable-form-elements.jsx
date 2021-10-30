@@ -5,17 +5,28 @@ import { TwoColumnRow, ThreeColumnRow, FourColumnRow } from './multi-column';
 import CustomElement from './form-elements/custom-element';
 
 const {
-  Header, Paragraph, Label, 
-  LineBreak, TextInput, 
+  Header, 
+  Paragraph, 
+  Label, 
+  LineBreak, 
+  TextInput, 
   NumberInput, 
-  TextArea, Dropdown, 
+  TextArea, 
+  Dropdown, 
   Checkboxes,
-  DatePicker, RadioButtons, 
-  Image, Rating, Tags, 
+  DatePicker, 
+  RadioButtons, 
+  Image, 
+  Rating, 
+  Tags, 
   Signature, 
-  HyperLink, Download, 
-  Camera, Range,
-  Table, Section
+  Signature2,
+  HyperLink, 
+  Download, 
+  Camera, 
+  Range,
+  Table, 
+  Section
 } = BaseFormElements;
 
 const FormElements = {};
@@ -46,5 +57,6 @@ FormElements.FourColumnRow = SortableElement(FourColumnRow);
 FormElements.CustomElement = SortableElement(CustomElement);
 FormElements.Table = SortableElement(Table);
 FormElements.Section = SortableElement(Section);
+FormElements.Signature2 = SortableElement(Signature2);
 
 export default FormElements;
