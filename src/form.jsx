@@ -327,15 +327,21 @@ _collectFormData(data) {
       const keys = Object.keys(sectionGroup); 
       keys.forEach((key) => {
         const items = sectionGroup[key];
-        const fillingItems = items.find(item => 
-          item.element !== 'Table' 
-          && item.element !== "Dropdown"
-          && item.element !== "Range"
-          && (
-            (Array.isArray(item.value) && item.value.length > 0)
-            || (!Array.isArray(item.value) && !!item.value)
-          )
-        );
+        let fillingItems = items;
+
+        // incase of section separator
+        if (key) {
+          fillingItems = items.find(item => 
+            item.element !== 'Table' 
+            && item.element !== "Dropdown"
+            && item.element !== "Range"
+            && (
+              (Array.isArray(item.value) && item.value.length > 0)
+              || (!Array.isArray(item.value) && !!item.value)
+            )
+          );
+        }
+
         if (fillingItems) {
           activeItems = activeItems.concat(items)
         }
