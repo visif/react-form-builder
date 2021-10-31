@@ -287,8 +287,19 @@ _collectFormData(data) {
     const errors = [];
     let data_items = this.props.data;
 
+    // re-order items to avoid items inside 
+    let orderedItems = [];
+    this.props.data.forEach(item => {
+      const childItems = this.props.data.filter(child => child.parentId === item.id);
+      if (childItems?.length > 0) {
+        orderedItems = orderedItems.concat(childItems)
+      } else if (!item.parentId) {
+        orderedItems.push(item)
+      }
+    });
+
     // get all input items
-    const formItems = this._collectFormItems(this.props.data);
+    const formItems = this._collectFormItems(orderedItems);
     const sectionItems = formItems.filter(item => item.element === 'Section' )
 
     // Validate with special condition when there is any section
