@@ -324,13 +324,16 @@ _collectFormData(data) {
       let activeItems = [];
 
       // find only active section => there is any item with value input
-      const keys = Object.keys(sectionGroup); 
-      keys.forEach((key) => {
+      const reverseKeys = sectionItems.map(item => item.id).reverse();
+      reverseKeys.push('');
+      let activeSectionFound = false;
+
+      reverseKeys.forEach((key) => {
         const items = sectionGroup[key];
         let fillingItems = items;
 
         // incase of section separator
-        if (key) {
+        if (key && !activeSectionFound) {
           fillingItems = items.find(item => 
             item.element !== 'Table' 
             && item.element !== "Dropdown"
@@ -340,6 +343,8 @@ _collectFormData(data) {
               || (!Array.isArray(item.value) && !!item.value)
             )
           );
+
+          activeSectionFound = !!fillingItems;
         }
 
         if (fillingItems) {
