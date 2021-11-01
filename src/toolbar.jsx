@@ -289,6 +289,7 @@ export default class Toolbar extends React.Component {
         name: 'Signature',
         icon: 'fas fa-signature',
         field_name: 'signature2_',
+        position: 'Placeholder Text',
       },
     ];
   }
@@ -409,7 +410,7 @@ export default class Toolbar extends React.Component {
     }
 
     if (item.key === 'Signature2') {
-
+      elementOptions.position = 'Placeholder Text';
     }
 
     return elementOptions;

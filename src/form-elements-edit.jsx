@@ -443,6 +443,18 @@ export default class FormElementsEdit extends React.Component {
           />
           </div>
         }
+        {this.props.element.hasOwnProperty('position') &&
+          <div className="form-group">
+            <label className="control-label" htmlFor="position">Role / Position</label>
+            <input 
+              id="position" type="text" 
+              className="form-control" 
+              defaultValue={this.props.element.position}
+              onBlur={this.updateElement.bind(this)} 
+              onChange={this.editElementProp.bind(this, 'position', 'value')} 
+          />
+          </div>
+        }
         {this.props.element.canPopulateFromApi && this.props.element.hasOwnProperty('options') &&
           <div className="form-group">
             <label className="control-label" htmlFor="optionsApiUrl">Populate Options from API</label>
