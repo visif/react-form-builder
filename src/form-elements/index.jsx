@@ -196,6 +196,23 @@ class Dropdown extends React.Component {
   constructor(props) {
     super(props);
     this.inputField = React.createRef();
+
+    this.state = {
+      defaultValue: props.defaultValue,
+      value: props.defaultValue
+    };
+  }
+
+  static getDerivedStateFromProps(props, state) {
+    console.log('Dropdown getDerivedStateFromProps')
+    if (JSON.stringify(state.defaultValue) !== JSON.stringify(props.defaultValue)) {
+      console.log('Dropdown default prop changed', state.defaultValue, props.defaultValue)
+      return {
+        defaultValue: props.defaultValue,
+        value: props.defaultValue 
+      }
+    }
+    return state;
   }
 
   render() {
