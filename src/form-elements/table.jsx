@@ -104,16 +104,27 @@ export default class Table extends React.Component {
           {
             this.props.data?.columns?.map((j, jIndex) => {
               const isLabel =  (isFixedRow && jIndex === 0);
-              const value = isLabel ? this.state.rowLabels[i].text
-                : (this.state.inputs[i] ? (this.state.inputs[i][jIndex] ?? '') : '')
+
+              if (isLabel) {
+                return (
+                  <td>
+                    <label>
+                      {this.state.rowLabels[i].text}
+                    </label>
+                  </td>
+                );
+              }
+                
+              const value = this.state.inputs[i] ? (this.state.inputs[i][jIndex] ?? '') : '';
               return (
                 <td>
-                  <input
+                  <textarea
                     className="form-control"
                     style={isLabel ? { border: 0, backgroundColor: 'inherit'} : {}}
                     disabled={isLabel}
                     type="text"
                     value={value}
+                    rows={1}
                     onChange={(event) => {
                       const value = event.target.value;
                       const array = this.state.inputs;
@@ -123,7 +134,7 @@ export default class Table extends React.Component {
                       })
                     }}
                   />
-              </td>
+                </td>
               );
             })
           }
