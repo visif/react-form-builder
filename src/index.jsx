@@ -84,6 +84,11 @@ class ReactFormBuilder extends React.Component {
                 onChange={this.props.onChange}
                 uploadUrl={this.props.uploadUrl}
                 onImageUpload={this.props.onImageUpload}
+                getActiveUserProperties={() => {
+                  return {
+                    name: 'test'
+                  }
+                }}
               />
               <Toolbar {...toolbarProps} customItems={this.props.customToolbarItems} />
             </div>

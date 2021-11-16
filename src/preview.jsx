@@ -251,6 +251,7 @@ export default class Preview extends React.Component {
     if (SortableFormElement === null) {
       return null;
     }
+
     return (
       <SortableFormElement 
         id={item.id} 
@@ -269,6 +270,7 @@ export default class Preview extends React.Component {
         setAsChild={this.setAsChild} 
         removeChild={this.removeChild} 
         _onDestroy={this._onDestroy} 
+        getActiveUserProperties={this.props.getActiveUserProperties}
       />
     )
   }

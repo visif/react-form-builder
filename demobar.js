@@ -109,6 +109,12 @@ export default class Demobar extends React.Component {
                   variables={this.props.variables}
                   data={this.state.data} 
                   onSubmit={() => {}}
+                  onSubmit={() => {}}
+                  getActiveUserProperties={() => {
+                    return {
+                      name: 'test'
+                    }
+                  }}
                 />
 
                 <div className="modal-footer">
@@ -136,6 +142,11 @@ export default class Demobar extends React.Component {
                   hide_actions={true}
                   data={this.state.data} 
                   onSubmit={() => {}}
+                  getActiveUserProperties={() => {
+                    return {
+                      name: 'test'
+                    }
+                  }}
                 />
                 <div className="modal-footer">
                   <button type="button" className="btn btn-default" data-dismiss="modal" onClick={this.closePreview.bind(this)}>Close</button>
@@ -159,6 +170,11 @@ export default class Demobar extends React.Component {
                   variables={this.props.variables}
                   hide_actions={false} 
                   onSubmit={() => {}}
+                  getActiveUserProperties={() => {
+                    return {
+                      name: 'test'
+                    }
+                  }}
                 />
 
                 <div className="modal-footer">

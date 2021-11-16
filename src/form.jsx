@@ -476,7 +476,16 @@ _collectFormData(data) {
         case 'Signature':
           return <Signature ref={c => this.inputs[item.field_name] = c} read_only={this.props.read_only || item.readOnly} mutable={true} key={`form_${item.id}`} data={item} defaultValue={this._getDefaultValue(item)} />;
         case 'Signature2':
-          return <Signature2 ref={c => this.inputs[item.field_name] = c} read_only={this.props.read_only || item.readOnly} mutable={true} key={`form_${item.id}`} data={item} defaultValue={this._getDefaultValue(item)} />;
+          return (
+            <Signature2 
+              ref={c => this.inputs[item.field_name] = c} 
+              read_only={this.props.read_only || item.readOnly} 
+              mutable={true} key={`form_${item.id}`} 
+              data={item} 
+              defaultValue={this._getDefaultValue(item)}
+              getActiveUserProperties={this.props.getActiveUserProperties}
+            />
+          );
         case 'Checkboxes':
           return (
             <Checkboxes 
