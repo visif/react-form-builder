@@ -383,16 +383,20 @@ _collectFormData(data) {
       return this.getCustomElement(item);
     }
     const Input = FormElements[item.element];
-    return (<Input
-      handleChange={this.handleChange}
-      ref={c => {
-        this.inputs[item.field_name] = c}
-      }
-      mutable={true}
-      key={`form_${item.id}`}
-      data={item}
-      read_only={this.props.read_only}
-      defaultValue={this._getDefaultValue(item)} />);
+    return (
+      <Input
+        handleChange={this.handleChange}
+        ref={c => {
+          this.inputs[item.field_name] = c}
+        }
+        mutable={true}
+        key={`form_${item.id}`}
+        data={item}
+        read_only={this.props.read_only}
+        defaultValue={this._getDefaultValue(item)} 
+        getActiveUserProperties={this.props.getActiveUserProperties}
+      />
+    );
   }
 
   getContainerElement(item, Element) {

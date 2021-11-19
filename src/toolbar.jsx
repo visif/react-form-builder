@@ -240,6 +240,13 @@ export default class Toolbar extends React.Component {
         field_name: 'signature_',
       },
       {
+        key: 'Signature2',
+        name: 'Signature',
+        icon: 'fas fa-signature',
+        field_name: 'signature2_',
+        position: 'Placeholder Text',
+      },
+      {
         key: 'HyperLink',
         name: 'Web site',
         icon: 'fas fa-link',
@@ -283,13 +290,6 @@ export default class Toolbar extends React.Component {
         icon: 'fas fa-cut',
         field_name: 'section_',
         header: 'Placeholder Text',
-      },
-      {
-        key: 'Signature2',
-        name: 'Signature',
-        icon: 'fas fa-signature',
-        field_name: 'signature2_',
-        position: 'Placeholder Text',
       },
     ];
   }
