@@ -1,54 +1,89 @@
-import React, { useState } from 'react';
+import React from 'react';
 import ComponentHeader from './component-header';
 
-const Signature2 = (props) => {
-  const [ isSigned, setIsSigned ] = useState(false);
-  const [ isError, setIsError ] = useState(false);
+class Signature2 extends React.Component {
+  constructor (props) {
+    super (props);
+    this.inputField = React.createRef();
 
-  const clickToSign = () => {
-    if (typeof props.getActiveUserProperties !== 'function' ) {
+    this.state = {
+      defaultValue: props.defaultValue && props.defaultValue.isSigned,
+      isSigned: props.defaultValue && props.defaultValue.isSigned,
+      isError: false,
+    };
+  }
+
+  static getDerivedStateFromProps = (props, state) => {
+    console.log('Signature getDerivedStateFromProps')
+    if (props.defaultValue && props.defaultValue.isSigned !== state.defaultValue) {
+      return {
+        defaultValue: props.defaultValue && props.defaultValue.isSigned,
+        isSigned: props.defaultValue && props.defaultValue.isSigned,
+        isError: false,
+      }
+    }
+
+    return state;
+  }
+
+  // const [ isSigned, setIsSigned ] = useState(false);
+  // const [ isError, setIsError ] = useState(false);
+
+  clickToSign = () => {
+    if (typeof this.props.getActiveUserProperties !== 'function' ) {
       return;
     }
 
-    const userProperties = props.getActiveUserProperties();
+    const userProperties = this.props.getActiveUserProperties();
     let roleLists = (userProperties && userProperties.role) || [];
     roleLists = roleLists.concat([(userProperties && userProperties.name) || '']);
 
-    const position = `${props.data.position}`.toLocaleLowerCase();
+    const position = `${this.props.data.position}`.toLocaleLowerCase().trim();
 
-    if (roleLists.find(item => `${item}`.toLocaleLowerCase() === position)) {
-      setIsSigned(!isSigned);
+    if (roleLists.find(item => `${item}`.toLocaleLowerCase().trim() === position)) {
+      this.setState((current) => ({
+        ...current,
+        isSigned: !current.isSigned
+      }));
     } else {
-      if (!isError) {
-        setIsError(true);
+      if (!this.state.isError) {
+        this.setState({
+          isError: true
+        });
         setTimeout(() => {
-          setIsError(false);
+          this.setState({
+            isError: false
+          });
         }, 5000);
       }
       console.log('role annd name does not match');
     }
   }
 
-  let baseClasses = 'SortableItem rfb-item';
-  if (props.data.pageBreakBefore) { baseClasses += ' alwaysbreak'; }
+  render() {
+    // props.ref = this.inputField;
 
-  return (
-    <div className={baseClasses}>
-      <ComponentHeader {...props} />
-      <div className="form-group" onClick={clickToSign} style={{ cursor: 'pointer' }}>
-        <h5 style={{ textAlign: 'center' }}>{isSigned ? 'Already signed' : '(Click to sign)'}</h5>
-        <div style={{ 
-          textAlign: 'center', 
-          marginTop: 8, 
-          marginBottom: 8, 
-          color: isError ? 'red' : 'inherit'
-        }}>
-          {isError ? 'You has no permission to sign' : '__________________'}
+    return (
+      <div 
+        ref={this.tableRef}
+        className={`SortableItem rfb-item${this.props.data.pageBreakBefore ? ' alwaysbreak' : ''}` }
+      >
+        <ComponentHeader {...this.props} />
+        <div className="form-group" onClick={this.clickToSign} style={{ cursor: 'pointer' }}>
+          <h5 style={{ textAlign: 'center' }}>{this.state.isSigned ? 'Already signed' : '(Click to sign)'}</h5>
+          <div style={{ 
+            textAlign: 'center', 
+            marginTop: 8, 
+            marginBottom: 8, 
+            color: this.state.isError ? 'red' : 'inherit'
+          }}>
+            {this.state.isError ? 'You has no permission to sign' : '__________________'}
+          </div>
+          <h6 style={{ textAlign: 'center' }}>{this.props.data.position || 'Placeholder Text'}</h6>
         </div>
-        <h6 style={{ textAlign: 'center' }}>{props.data.position || 'Placeholder Text'}</h6>
       </div>
-    </div>
-  );
+    );
+  }
 }
 
 export default Signature2;
