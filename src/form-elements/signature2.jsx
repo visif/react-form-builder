@@ -2,8 +2,8 @@ import React from 'react';
 import ComponentHeader from './component-header';
 
 class Signature2 extends React.Component {
-  constructor (props) {
-    super (props);
+  constructor(props) {
+    super(props);
     this.inputField = React.createRef();
 
     this.state = {
@@ -30,7 +30,7 @@ class Signature2 extends React.Component {
   // const [ isError, setIsError ] = useState(false);
 
   clickToSign = () => {
-    if (typeof this.props.getActiveUserProperties !== 'function' ) {
+    if (typeof this.props.getActiveUserProperties !== 'function') {
       return;
     }
 
@@ -64,20 +64,20 @@ class Signature2 extends React.Component {
     // props.ref = this.inputField;
 
     return (
-      <div 
+      <div
         ref={this.tableRef}
-        className={`SortableItem rfb-item${this.props.data.pageBreakBefore ? ' alwaysbreak' : ''}` }
+        className={`SortableItem rfb-item${this.props.data.pageBreakBefore ? ' alwaysbreak' : ''}`}
       >
         <ComponentHeader {...this.props} />
         <div className="form-group" onClick={this.clickToSign} style={{ cursor: 'pointer' }}>
           <h5 style={{ textAlign: 'center' }}>{this.state.isSigned ? 'Already signed' : '(Click to sign)'}</h5>
-          <div style={{ 
-            textAlign: 'center', 
-            marginTop: 8, 
-            marginBottom: 8, 
+          <div style={{
+            textAlign: 'center',
+            marginTop: 8,
+            marginBottom: 8,
             color: this.state.isError ? 'red' : 'inherit'
           }}>
-            {this.state.isError ? 'You has no permission to sign' : '__________________'}
+            {this.state.isError ? 'You have no permission to sign' : '__________________'}
           </div>
           <h6 style={{ textAlign: 'center' }}>{this.props.data.position || 'Placeholder Text'}</h6>
         </div>
