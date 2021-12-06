@@ -174,7 +174,7 @@ export default class Toolbar extends React.Component {
         name: "DataSource",
         icon: "fa fa-database",
         field_name: "data_source_",
-        type: "name",
+        sourceType: "name",
         canHaveAnswer: true,
         label: 'Placeholder Label',
       },
@@ -420,6 +420,10 @@ export default class Toolbar extends React.Component {
 
     if (item.key === 'Signature2') {
       elementOptions.position = 'Placeholder Text';
+    }
+
+    if (item.key === 'DataSource') {
+      elementOptions.sourceType = item.sourceType;
     }
 
     return elementOptions;

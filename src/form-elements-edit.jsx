@@ -209,7 +209,10 @@ export default class FormElementsEdit extends React.Component {
         {this.props.element.hasOwnProperty('file_path') &&
           <div className="form-group">
             <label className="control-label" htmlFor="fileSelect">Choose file:</label>
-            <select id="fileSelect" className="form-control" defaultValue={this.props.element.file_path} onBlur={this.updateElement.bind(this)} onChange={this.editElementProp.bind(this, 'file_path', 'value')}>
+            <select id="fileSelect" className="form-control" defaultValue={this.props.element.file_path} 
+              onBlur={this.updateElement.bind(this)} 
+              onChange={this.editElementProp.bind(this, 'file_path', 'value')}
+            >
               {this_files.map((file) => {
                 const this_key = `file_${file.id}`;
                 return <option value={file.id} key={this_key}>{file.file_name}</option>;
@@ -344,7 +347,8 @@ export default class FormElementsEdit extends React.Component {
           : (<div />)
         }
 
-        {canHavePageBreakBefore &&
+        {
+          canHavePageBreakBefore &&
           <div className="form-group">
             <label className="control-label">Print Options</label>
             <div className="custom-control custom-checkbox">
@@ -356,7 +360,8 @@ export default class FormElementsEdit extends React.Component {
           </div>
         }
 
-        {canHaveAlternateForm &&
+        {
+          canHaveAlternateForm &&
           <div className="form-group">
             <label className="control-label">Alternate/Signature Page</label>
             <div className="custom-control custom-checkbox">
@@ -376,6 +381,7 @@ export default class FormElementsEdit extends React.Component {
             </div>
           </div>
         }
+
         {this.props.element.hasOwnProperty('min_value') &&
           <div className="form-group">
             <div className="form-group-range">
@@ -385,6 +391,7 @@ export default class FormElementsEdit extends React.Component {
             </div>
           </div>
         }
+
         {this.props.element.hasOwnProperty('max_value') &&
           <div className="form-group">
             <div className="form-group-range">
@@ -455,7 +462,8 @@ export default class FormElementsEdit extends React.Component {
           />
           </div>
         }
-        {this.props.element.canPopulateFromApi && this.props.element.hasOwnProperty('options') &&
+        {
+          this.props.element.canPopulateFromApi && this.props.element.hasOwnProperty('options') &&
           <div className="form-group">
             <label className="control-label" htmlFor="optionsApiUrl">Populate Options from API</label>
             <div className="row">
@@ -510,6 +518,27 @@ export default class FormElementsEdit extends React.Component {
             element={this.props.element}
             key={`table-columns`} 
           />
+        }
+        {
+          this.props.element.hasOwnProperty('sourceType') &&
+          <div className="form-group">
+            <label 
+              className="control-label" 
+              htmlFor="sourceType">Source Type
+            </label>
+            <select 
+              className="form-control"
+              id="sourceType" 
+              defaultValue={this.props.element.sourceType}
+              onBlur={this.updateElement.bind(this)} 
+              onChange={this.editElementProp.bind(this, 'sourceType', 'value')}
+            >
+              <option value="name" key="name">Name</option>
+              <option value="department" key="department">Department</option>
+              <option value="role" key="role">Role</option>
+              <option value="form" key="form">Form</option>
+            </select>
+          </div>
         }
       </div>
     );
