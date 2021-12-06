@@ -17,6 +17,7 @@ const {
   Signature2, 
   Download, 
   Camera,
+  DataSource,
 } = FormElements;
 
 const convert = (answers) => {
@@ -96,6 +97,10 @@ export default class ReactForm extends React.Component {
     } else if (item.element === 'Signature2') {
       $item.value = {
         isSigned: ref.state.isSigned,
+      }
+    } else if (item.element === 'DataSource') {
+      $item.value = {
+        type: 'name'
       }
     }
 
@@ -473,6 +478,20 @@ _collectFormData(data) {
         case 'Tags':
         case 'Range':
           return this.getInputElement(item);
+        case 'DataSource':
+          return (
+            <DataSource 
+              handleChange={this.handleChange}
+              ref={c => {
+                this.inputs[item.field_name] = c}
+              }
+              mutable={true}
+              key={`form_${item.id}`}
+              data={item}
+              read_only={this.props.read_only}
+              defaultValue={this._getDefaultValue(item)} 
+            />
+          );
         case 'CustomElement':
           return this.getCustomElement(item);
         case 'FourColumnRow':

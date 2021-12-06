@@ -13,6 +13,7 @@ import ComponentLabel from './component-label';
 import myxss from './myxss';
 import Section from './section';
 import Signature2 from './signature2';
+import DataSource from './datasource';
 
 const FormElements = {};
 
@@ -876,4 +877,5 @@ FormElements.Range = Range;
 FormElements.Table = Table;
 FormElements.Section = Section;
 FormElements.Signature2 = Signature2;
+FormElements.DataSource = DataSource;
 export default FormElements;

@@ -170,6 +170,15 @@ export default class Toolbar extends React.Component {
         field_name: 'text_area_',
       },
       {
+        key: "DataSource",
+        name: "DataSource",
+        icon: "fa fa-database",
+        field_name: "data_source_",
+        type: "name",
+        canHaveAnswer: true,
+        label: 'Placeholder Label',
+      },
+      {
         key: 'Table',
         name: 'Table',
         icon: 'fas fa-table',

@@ -21,6 +21,7 @@ const {
   Tags, 
   Signature, 
   Signature2,
+  DataSource,
   HyperLink, 
   Download, 
   Camera, 
@@ -58,5 +59,6 @@ FormElements.CustomElement = SortableElement(CustomElement);
 FormElements.Table = SortableElement(Table);
 FormElements.Section = SortableElement(Section);
 FormElements.Signature2 = SortableElement(Signature2);
+FormElements.DataSource = SortableElement(DataSource);
 
 export default FormElements;
