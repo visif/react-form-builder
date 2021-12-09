@@ -271,6 +271,9 @@ export default class Preview extends React.Component {
         removeChild={this.removeChild} 
         _onDestroy={this._onDestroy} 
         getActiveUserProperties={this.props.getActiveUserProperties}
+        getDataSource={(sourceType) => {
+          return [];
+        }}
       />
     )
   }

@@ -404,6 +404,7 @@ _collectFormData(data) {
         read_only={this.props.read_only}
         defaultValue={this._getDefaultValue(item)} 
         getActiveUserProperties={this.props.getActiveUserProperties}
+        getDataSource={this.props.getDataSource}
       />
     );
   }
@@ -490,6 +491,7 @@ _collectFormData(data) {
               data={item}
               read_only={this.props.read_only}
               defaultValue={this._getDefaultValue(item)} 
+              getDataSource={this.props.getDataSource}
             />
           );
         case 'CustomElement':

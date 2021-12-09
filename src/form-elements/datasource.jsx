@@ -7,7 +7,16 @@ class DataSource extends React.Component {
   constructor(props) {
     super(props);
     this.inputField = React.createRef();
+
+    this.state = {
+      sourceList: [],
+    };
   }
+
+  // componentDidMount() {
+  //   if (this.props.)
+  //   const data = 
+  // }
 
   render() {
     const props = {};

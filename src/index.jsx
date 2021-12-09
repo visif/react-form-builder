@@ -89,6 +89,9 @@ class ReactFormBuilder extends React.Component {
                     name: 'test'
                   }
                 }}
+                getDataSource={(sourceType) => {
+                  return [];
+                }}
               />
               <Toolbar {...toolbarProps} customItems={this.props.customToolbarItems} />
             </div>
