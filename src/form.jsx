@@ -94,7 +94,7 @@ export default class ReactForm extends React.Component {
       }
     } else if (item.element === 'Table') {
       $item.value = ref.state.inputs;
-    } else if (item.element === 'Signature2') {
+    } else if (item.element === 'Signature2' && ref.state.isSigned) {
       $item.value = {
         isSigned: ref.state.isSigned,
       }
