@@ -13,10 +13,14 @@ class DataSource extends React.Component {
     };
   }
 
-  // componentDidMount() {
-  //   if (this.props.)
-  //   const data = 
-  // }
+  componentDidMount() {
+    if (this.props.getDataSource && typeof this.props.getDataSource === 'function') {
+      const data = this.props.getDataSource(this.props.data.sourceType);
+      this.setState({
+        sourceList: data
+      });
+    }
+  }
 
   render() {
     const props = {};
@@ -39,8 +43,40 @@ class DataSource extends React.Component {
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
         <div className="form-group">
-          <ComponentLabel {...this.props} />
-          <input {...props} />
+          <ComponentLabel {...this.props} style={{ display: 'block' }}/>
+          <div style={{ position: 'relative', display: 'inline-block', width: '100%' }}>
+            <div>
+              <input {...props} />
+            </div>
+            <div style={{position: 'absolute', zIndex: 99, top: "100%", left: 0, right: 0 }}>
+              <div style={{ 
+                position: 'relative', display: 'block', padding: '0.75rem 1.25rem',
+                marginBottom: -1, backgroundColor: '#fff', border: '1px solid rgba(0, 0, 0, 0.125)' }} >
+                  Test 1
+              </div>
+              <div style={{ 
+                position: 'relative', display: 'block', padding: '0.75rem 1.25rem',
+                marginBottom: -1, backgroundColor: '#fff', border: '1px solid rgba(0, 0, 0, 0.125)' }} >
+                  Test 2
+              </div>
+              <div style={{ 
+                position: 'relative', display: 'block', padding: '0.75rem 1.25rem',
+                marginBottom: -1, backgroundColor: '#fff', border: '1px solid rgba(0, 0, 0, 0.125)' }} >
+                  Test 3
+              </div>
+              {
+                this.state.sourceList.map(item => {
+                  return (
+                    <div style={{ 
+                      position: 'relative', display: 'block', padding: '0.75rem 1.25rem',
+                      marginBottom: -1, backgroundColor: '#fff', border: '1px solid rgba(0, 0, 0, 0.125)' }} >
+                        {item}
+                    </div>
+                  );
+                })
+              }
+            </div>
+          </div>
         </div>
       </div>
     );
