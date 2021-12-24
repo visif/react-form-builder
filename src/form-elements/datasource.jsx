@@ -1,6 +1,7 @@
 import React from 'react';
 import ComponentHeader from './component-header';
 import ComponentLabel from './component-label';
+import debounce from 'lodash.debounce';
 
 class DataSource extends React.Component {
   
@@ -13,7 +14,6 @@ class DataSource extends React.Component {
       matchedList: [],
       searchText: '',
       isShowingList: false,
-      value: '',
     };
   }
 
@@ -34,9 +34,11 @@ class DataSource extends React.Component {
   }
 
   handleInputBlur = () => {
-    this.setState({
-      isShowingList: false,
-    })
+    setTimeout(() => {
+      this.setState({
+        isShowingList: false,
+      })
+     }, 200)
   };
 
   handleOnChange = (event) => {
@@ -45,7 +47,6 @@ class DataSource extends React.Component {
     }
 
     const value = event.target.value;
-    console.log('>>', value)
 
     const matchData = this.state.sourceList.filter(item => {
       return `${item}`.toLocaleLowerCase().includes(`${value}`.toLocaleLowerCase())
@@ -61,7 +62,7 @@ class DataSource extends React.Component {
     props.type = 'text';
     props.className = 'form-control';
     props.name = this.props.data.field_name;
-    props.value = this.state.value;
+    props.value = this.state.searchText;
 
     if (this.props.mutable) {
       props.defaultValue = this.props.defaultValue;
@@ -102,11 +103,11 @@ class DataSource extends React.Component {
                       marginBottom: -1, backgroundColor: '#fff', border: '1px solid rgba(0, 0, 0, 0.125)' }} 
                       onClick={() => {
                         this.setState({
-                          value: item,
+                          searchText: item,
                         })
                       }}
                     >
-                        {item}
+                      {item}
                     </div>
                   );
                 })
