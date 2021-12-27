@@ -1,7 +1,6 @@
 import React from 'react';
 import ComponentHeader from './component-header';
 import ComponentLabel from './component-label';
-import debounce from 'lodash.debounce';
 
 class DataSource extends React.Component {
   
