@@ -13,6 +13,7 @@ class DataSource extends React.Component {
       matchedList: [],
       searchText: '',
       isShowingList: false,
+      sourceType: props.data.sourceType,
     };
   }
 
