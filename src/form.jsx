@@ -1,21 +1,21 @@
 /**
-* <Form />
-*/
-import React from 'react';
-import ReactDOM from 'react-dom';
-import { EventEmitter } from 'fbemitter';
-import FormValidator from './form-validator';
-import FormElements from './form-elements';
-import { TwoColumnRow, ThreeColumnRow, FourColumnRow } from './multi-column';
-import CustomElement from './form-elements/custom-element';
-import Registry from './stores/registry';
+ * <Form />
+ */
+import React from "react";
+import ReactDOM from "react-dom";
+import { EventEmitter } from "fbemitter";
+import FormValidator from "./form-validator";
+import FormElements from "./form-elements";
+import { TwoColumnRow, ThreeColumnRow, FourColumnRow } from "./multi-column";
+import CustomElement from "./form-elements/custom-element";
+import Registry from "./stores/registry";
 
 const {
-  Image, 
-  Checkboxes, 
-  Signature, 
-  Signature2, 
-  Download, 
+  Image,
+  Checkboxes,
+  Signature,
+  Signature2,
+  Download,
   Camera,
   DataSource,
 } = FormElements;
@@ -23,9 +23,9 @@ const {
 const convert = (answers) => {
   if (Array.isArray(answers)) {
     const result = {};
-    answers.forEach(x => {
-      if (x.name.indexOf('tags_') > -1) {
-        result[x.name] = x.value.map(y => y.value);
+    answers.forEach((x) => {
+      if (x.name.indexOf("tags_") > -1) {
+        result[x.name] = x.value.map((y) => y.value);
       } else {
         result[x.name] = x.value;
       }
@@ -33,7 +33,7 @@ const convert = (answers) => {
     return result;
   }
   return answers || {};
-}
+};
 
 export default class ReactForm extends React.Component {
   form;
@@ -45,13 +45,13 @@ export default class ReactForm extends React.Component {
     this.emitter = new EventEmitter();
     this.getDataById = this.getDataById.bind(this);
     this.state = {
-      answerData: convert(props.answer_data)
+      answerData: convert(props.answer_data),
     };
   }
 
   static getDerivedStateFromProps(props) {
     return {
-      answerData: convert(props.answer_data)
+      answerData: convert(props.answer_data),
     };
   }
 
@@ -66,7 +66,7 @@ export default class ReactForm extends React.Component {
     }
 
     const defaultChecked = [];
-    item.options.forEach(option => {
+    item.options.forEach((option) => {
       if (this.state.answerData[`option_${option.key}`]) {
         defaultChecked.push(option.key);
       }
@@ -77,32 +77,35 @@ export default class ReactForm extends React.Component {
   _getItemValue(item, ref) {
     let $item = {
       element: item.element,
-      value: '',
+      value: "",
     };
-    if (item.element === 'Rating') {
+    if (item.element === "Rating") {
       $item.value = ref.inputField.current.state.rating;
-    } else if (item.element === 'Tags') {
+    } else if (item.element === "Tags") {
       $item.value = ref.inputField.current.state.value;
-    } else if (item.element === 'DatePicker') {
+    } else if (item.element === "DatePicker") {
       $item.value = ref.state.value;
-    } else if (item.element === 'Camera') {
-      $item.value = ref.state.img ? ref.state.img.replace('data:image/png;base64,', '') : '';
+    } else if (item.element === "Camera") {
+      $item.value = ref.state.img
+        ? ref.state.img.replace("data:image/png;base64,", "")
+        : "";
     } else if (ref && ref.inputField && ref.inputField.current) {
       $item = ReactDOM.findDOMNode(ref.inputField.current);
-      if ($item && typeof $item.value === 'string') {
+      if ($item && typeof $item.value === "string") {
         $item.value = $item.value.trim();
       }
-    } else if (item.element === 'Table') {
+    } else if (item.element === "Table") {
       $item.value = ref.state.inputs;
-    } else if (item.element === 'Signature2' && ref.state.isSigned) {
+    } else if (item.element === "Signature2" && ref.state.isSigned) {
       $item.value = {
         isSigned: ref.state.isSigned,
-      }
-    } else if (item.element === 'DataSource' && ref.state.searchText) {
+        signedPerson: ref.state.signedPerson,
+      };
+    } else if (item.element === "DataSource" && ref.state.searchText) {
       $item.value = {
-        type: 'name',
+        type: "name",
         value: ref.state.searchText,
-      }
+      };
     }
 
     return $item;
@@ -112,20 +115,27 @@ export default class ReactForm extends React.Component {
     let incorrect = false;
     if (item.canHaveAnswer) {
       const ref = this.inputs[item.field_name];
-      if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
-        item.options.forEach(option => {
-          const $option = ReactDOM.findDOMNode(ref.options[`child_ref_${option.key}`]);
-          if ((option.hasOwnProperty('correct') && !$option.checked) || (!option.hasOwnProperty('correct') && $option.checked)) {
+      if (item.element === "Checkboxes" || item.element === "RadioButtons") {
+        item.options.forEach((option) => {
+          const $option = ReactDOM.findDOMNode(
+            ref.options[`child_ref_${option.key}`]
+          );
+          if (
+            (option.hasOwnProperty("correct") && !$option.checked) ||
+            (!option.hasOwnProperty("correct") && $option.checked)
+          ) {
             incorrect = true;
           }
         });
       } else {
         const $item = this._getItemValue(item, ref);
-        if (item.element === 'Rating') {
+        if (item.element === "Rating") {
           if ($item.value.toString() !== item.correct) {
             incorrect = true;
           }
-        } else if ($item.value.toLowerCase() !== item.correct.trim().toLowerCase()) {
+        } else if (
+          $item.value.toLowerCase() !== item.correct.trim().toLowerCase()
+        ) {
           incorrect = true;
         }
       }
@@ -137,10 +147,12 @@ export default class ReactForm extends React.Component {
     let invalid = false;
     if (item.required === true) {
       const ref = this.inputs[item.field_name];
-      if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
+      if (item.element === "Checkboxes" || item.element === "RadioButtons") {
         let checked_options = 0;
-        item.options.forEach(option => {
-          const $option = ReactDOM.findDOMNode(ref.options[`child_ref_${option.key}`]);
+        item.options.forEach((option) => {
+          const $option = ReactDOM.findDOMNode(
+            ref.options[`child_ref_${option.key}`]
+          );
           if ($option.checked) {
             checked_options += 1;
           }
@@ -151,11 +163,15 @@ export default class ReactForm extends React.Component {
         }
       } else {
         const $item = this._getItemValue(item, ref);
-        if (item.element === 'Rating') {
+        if (item.element === "Rating") {
           if ($item.value === 0) {
             invalid = true;
           }
-        } else if ($item.value === undefined || $item.value === null || $item.value.length < 1) {
+        } else if (
+          $item.value === undefined ||
+          $item.value === null ||
+          $item.value.length < 1
+        ) {
           invalid = true;
         }
       }
@@ -170,29 +186,32 @@ export default class ReactForm extends React.Component {
     };
     const ref = this.inputs[item.field_name];
 
-    if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
+    if (item.element === "Checkboxes" || item.element === "RadioButtons") {
       const checked_options = [];
 
-      item.options.forEach(option => {
-        const $option = ReactDOM.findDOMNode(ref.options[`child_ref_${option.key}`]);
+      item.options.forEach((option) => {
+        const $option = ReactDOM.findDOMNode(
+          ref.options[`child_ref_${option.key}`]
+        );
         if ($option.checked) {
-          let info = '';
+          let info = "";
 
           if (option.info) {
-            const $info = ReactDOM.findDOMNode(ref.infos[`child_ref_${option.key}_info`]);
-            info = $info?.value ?? '';
+            const $info = ReactDOM.findDOMNode(
+              ref.infos[`child_ref_${option.key}_info`]
+            );
+            info = $info?.value ?? "";
           }
 
           checked_options.push({
             key: option.key,
             value: true,
-            info: info
+            info: info,
           });
         }
       });
 
       itemData.value = checked_options;
-
     } else {
       if (!ref) return null;
       itemData.value = this._getItemValue(item, ref).value;
@@ -200,9 +219,9 @@ export default class ReactForm extends React.Component {
     return itemData;
   }
 
-_collectFormData(data) {
+  _collectFormData(data) {
     const formData = [];
-    data.forEach(item => {
+    data.forEach((item) => {
       const item_data = this._collect(item);
       if (item_data) {
         formData.push(item_data);
@@ -213,8 +232,7 @@ _collectFormData(data) {
 
   _collectFormItems(data) {
     const formData = [];
-    data.forEach(item => {
-
+    data.forEach((item) => {
       const itemValue = this._collect(item);
       const itemData = {
         id: item.id,
@@ -223,7 +241,6 @@ _collectFormData(data) {
       };
 
       formData.push(itemData);
-
     });
 
     return formData;
@@ -233,11 +250,13 @@ _collectFormData(data) {
     const ref = this.inputs[item.field_name];
     const $canvas_sig = ref.canvas.current;
     if ($canvas_sig) {
-      const base64 = $canvas_sig.toDataURL().replace('data:image/png;base64,', '');
+      const base64 = $canvas_sig
+        .toDataURL()
+        .replace("data:image/png;base64,", "");
       const isEmpty = $canvas_sig.isEmpty();
       const $input_sig = ReactDOM.findDOMNode(ref.inputField.current);
       if (isEmpty) {
-        $input_sig.value = '';
+        $input_sig.value = "";
       } else {
         $input_sig.value = base64;
       }
@@ -260,12 +279,11 @@ _collectFormData(data) {
 
     // submit with no form
     if (onSubmit) {
-
       let errors = [];
       if (!this.props.skip_validations) {
         errors = this.validateForm();
         // Publish errors, if any.
-        this.emitter.emit('formValidation', errors);
+        this.emitter.emit("formValidation", errors);
       }
 
       // Only submit if there are no errors.
@@ -273,14 +291,14 @@ _collectFormData(data) {
         const data = this._collectFormData(this.props.data);
         onSubmit(data);
       }
-   
-    } else { // incase no submit function provided => go to form submit
+    } else {
+      // incase no submit function provided => go to form submit
 
       let errors = [];
       if (!this.props.skip_validations) {
         errors = this.validateForm();
         // Publish errors, if any.
-        this.emitter.emit('formValidation', errors);
+        this.emitter.emit("formValidation", errors);
       }
 
       // Only submit if there are no errors.
@@ -288,7 +306,6 @@ _collectFormData(data) {
         const $form = ReactDOM.findDOMNode(this.form);
         $form.submit();
       }
-
     }
     // }
   }
@@ -297,45 +314,47 @@ _collectFormData(data) {
     const errors = [];
     let data_items = this.props.data;
 
-    // re-order items to avoid items inside 
+    // re-order items to avoid items inside
     let orderedItems = [];
-    this.props.data.forEach(item => {
-      const childItems = this.props.data.filter(child => child.parentId === item.id);
+    this.props.data.forEach((item) => {
+      const childItems = this.props.data.filter(
+        (child) => child.parentId === item.id
+      );
       if (childItems?.length > 0) {
-        orderedItems = orderedItems.concat(childItems)
+        orderedItems = orderedItems.concat(childItems);
       } else if (!item.parentId) {
-        orderedItems.push(item)
+        orderedItems.push(item);
       }
     });
 
     // get all input items
     const formItems = this._collectFormItems(orderedItems);
-    const sectionItems = formItems.filter(item => item.element === 'Section' )
+    const sectionItems = formItems.filter((item) => item.element === "Section");
 
     // Validate with special condition when there is any section
     if (sectionItems.length > 0) {
-
       // split items into groups by section
       const firstItem = formItems[0];
-      let activeSectionKey = firstItem.element === 'Section' ? firstItem.id : '';
+      let activeSectionKey =
+        firstItem.element === "Section" ? firstItem.id : "";
       const sectionGroup = {};
       sectionGroup[activeSectionKey] = [];
 
       // group items by section separator
-      formItems.forEach(item => {
-        if (item.element === 'Section') {
-          activeSectionKey = item.id
+      formItems.forEach((item) => {
+        if (item.element === "Section") {
+          activeSectionKey = item.id;
           sectionGroup[activeSectionKey] = [];
         } else {
-          sectionGroup[activeSectionKey].push(item)
+          sectionGroup[activeSectionKey].push(item);
         }
       });
 
       let activeItems = [];
 
       // find only active section => there is any item with value input
-      const reverseKeys = sectionItems.map(item => item.id).reverse();
-      reverseKeys.push('');
+      const reverseKeys = sectionItems.map((item) => item.id).reverse();
+      reverseKeys.push("");
       let activeSectionFound = false;
 
       reverseKeys.forEach((key) => {
@@ -344,30 +363,29 @@ _collectFormData(data) {
 
         // incase of section separator
         if (key && !activeSectionFound) {
-          fillingItems = items.find(item => 
-            item.element !== 'Table' 
-            && item.element !== "Dropdown"
-            && item.element !== "Range"
-            && (
-              (Array.isArray(item.value) && item.value.length > 0)
-              || (!Array.isArray(item.value) && !!item.value)
-            )
+          fillingItems = items.find(
+            (item) =>
+              item.element !== "Table" &&
+              item.element !== "Dropdown" &&
+              item.element !== "Range" &&
+              ((Array.isArray(item.value) && item.value.length > 0) ||
+                (!Array.isArray(item.value) && !!item.value))
           );
 
           activeSectionFound = !!fillingItems;
         }
 
         if (fillingItems) {
-          activeItems = activeItems.concat(items)
+          activeItems = activeItems.concat(items);
         }
       });
 
-      const itemIds = activeItems.map(item => item.id);
-      data_items = this.props.data.filter(item => itemIds.includes(item.id));
+      const itemIds = activeItems.map((item) => item.id);
+      data_items = this.props.data.filter((item) => itemIds.includes(item.id));
     }
 
-    data_items.forEach(item => {
-      if (item.element === 'Signature') {
+    data_items.forEach((item) => {
+      if (item.element === "Signature") {
         this._getSignatureImg(item);
       }
 
@@ -385,7 +403,7 @@ _collectFormData(data) {
 
   getDataById(id) {
     const { data } = this.props;
-    return data.find(x => x.id === id);
+    return data.find((x) => x.id === id);
   }
 
   getInputElement(item) {
@@ -396,14 +414,14 @@ _collectFormData(data) {
     return (
       <Input
         handleChange={this.handleChange}
-        ref={c => {
-          this.inputs[item.field_name] = c}
-        }
+        ref={(c) => {
+          this.inputs[item.field_name] = c;
+        }}
         mutable={true}
         key={`form_${item.id}`}
         data={item}
         read_only={this.props.read_only}
-        defaultValue={this._getDefaultValue(item)} 
+        defaultValue={this._getDefaultValue(item)}
         getActiveUserProperties={this.props.getActiveUserProperties}
         getDataSource={this.props.getDataSource}
       />
@@ -411,17 +429,26 @@ _collectFormData(data) {
   }
 
   getContainerElement(item, Element) {
-    const controls = item.childItems.map(x => (x ? this.getInputElement(this.getDataById(x)) : <div>&nbsp;</div>));
-    return (<Element mutable={true} key={`form_${item.id}`} data={item} controls={controls} />);
+    const controls = item.childItems.map((x) =>
+      x ? this.getInputElement(this.getDataById(x)) : <div>&nbsp;</div>
+    );
+    return (
+      <Element
+        mutable={true}
+        key={`form_${item.id}`}
+        data={item}
+        controls={controls}
+      />
+    );
   }
 
   getSimpleElement(item) {
     const Element = FormElements[item.element];
-    return (<Element mutable={true} key={`form_${item.id}`} data={item} />);
+    return <Element mutable={true} key={`form_${item.id}`} data={item} />;
   }
 
   getCustomElement(item) {
-    if (!item.component || typeof item.component !== 'function') {
+    if (!item.component || typeof item.component !== "function") {
       item.component = Registry.get(item.key);
       if (!item.component) {
         console.error(`${item.element} was not registered`);
@@ -431,7 +458,7 @@ _collectFormData(data) {
     const inputProps = item.forwardRef && {
       handleChange: this.handleChange,
       defaultValue: this._getDefaultValue(item),
-      ref: c => this.inputs[item.field_name] = c,
+      ref: (c) => (this.inputs[item.field_name] = c),
     };
     return (
       <CustomElement
@@ -445,13 +472,14 @@ _collectFormData(data) {
   }
 
   handleRenderSubmit = () => {
-    const {
-      actionName = 'Submit',
-      submitButton = false,
-    } = this.props;
+    const { actionName = "Submit", submitButton = false } = this.props;
 
-    return submitButton || <input type='submit' className='btn btn-big' value={actionName} />;
-  }
+    return (
+      submitButton || (
+        <input type="submit" className="btn btn-big" value={actionName} />
+      )
+    );
+  };
 
   render() {
     let data_items = this.props.data;
@@ -461,115 +489,170 @@ _collectFormData(data) {
     }
 
     data_items.forEach((item) => {
-      if (item && item.readOnly && item.variableKey && this.props.variables[item.variableKey]) {
-        this.state.answerData[item.field_name] = this.props.variables[item.variableKey];
+      if (
+        item &&
+        item.readOnly &&
+        item.variableKey &&
+        this.props.variables[item.variableKey]
+      ) {
+        this.state.answerData[item.field_name] =
+          this.props.variables[item.variableKey];
       }
     });
 
-    const items = data_items.filter(x => !x.parentId).map(item => {
-      if (!item) return null;
-      switch (item.element) {
-        case 'TextInput':
-        case 'NumberInput':
-        case 'TextArea':
-        case 'Table':
-        case 'Dropdown':
-        case 'DatePicker':
-        case 'RadioButtons':
-        case 'Rating':
-        case 'Tags':
-        case 'Range':
-          return this.getInputElement(item);
-        case 'DataSource':
-          return (
-            <DataSource 
-              handleChange={this.handleChange}
-              ref={c => {
-                this.inputs[item.field_name] = c}
-              }
-              mutable={true}
-              key={`form_${item.id}`}
-              data={item}
-              read_only={this.props.read_only}
-              defaultValue={this._getDefaultValue(item)} 
-              getDataSource={this.props.getDataSource}
-            />
-          );
-        case 'CustomElement':
-          return this.getCustomElement(item);
-        case 'FourColumnRow':
-          return this.getContainerElement(item, FourColumnRow);
-        case 'ThreeColumnRow':
-          return this.getContainerElement(item, ThreeColumnRow);
-        case 'TwoColumnRow':
-          return this.getContainerElement(item, TwoColumnRow);
-        case 'Signature':
-          return <Signature ref={c => this.inputs[item.field_name] = c} read_only={this.props.read_only || item.readOnly} mutable={true} key={`form_${item.id}`} data={item} defaultValue={this._getDefaultValue(item)} />;
-        case 'Signature2':
-          return (
-            <Signature2 
-              ref={c => this.inputs[item.field_name] = c} 
-              read_only={this.props.read_only || item.readOnly} 
-              mutable={true} key={`form_${item.id}`} 
-              data={item} 
-              defaultValue={this._getDefaultValue(item)}
-              getActiveUserProperties={this.props.getActiveUserProperties}
-            />
-          );
-        case 'Checkboxes':
-          return (
-            <Checkboxes 
-              ref={c => this.inputs[item.field_name] = c}
-              read_only={this.props.read_only} 
-              handleChange={this.handleChange} 
-              mutable={true} 
-              key={`form_${item.id}`} 
-              data={item} 
-              defaultValue={this._optionsDefaultValue(item)} 
-            />
-          );
-        case 'Image':
-          return <Image ref={c => this.inputs[item.field_name] = c} handleChange={this.handleChange} mutable={true} key={`form_${item.id}`} data={item} defaultValue={this._getDefaultValue(item)} />;
-        case 'Download':
-          return <Download download_path={this.props.download_path} mutable={true} key={`form_${item.id}`} data={item} />;
-        case 'Camera':
-          return <Camera ref={c => this.inputs[item.field_name] = c} read_only={this.props.read_only || item.readOnly} mutable={true} key={`form_${item.id}`} data={item} defaultValue={this._getDefaultValue(item)} />;
-        default:
-          return this.getSimpleElement(item);
-      }
-    });
+    const items = data_items
+      .filter((x) => !x.parentId)
+      .map((item) => {
+        if (!item) return null;
+        switch (item.element) {
+          case "TextInput":
+          case "NumberInput":
+          case "TextArea":
+          case "Table":
+          case "Dropdown":
+          case "DatePicker":
+          case "RadioButtons":
+          case "Rating":
+          case "Tags":
+          case "Range":
+            return this.getInputElement(item);
+          case "DataSource":
+            return (
+              <DataSource
+                handleChange={this.handleChange}
+                ref={(c) => {
+                  this.inputs[item.field_name] = c;
+                }}
+                mutable={true}
+                key={`form_${item.id}`}
+                data={item}
+                read_only={this.props.read_only}
+                defaultValue={this._getDefaultValue(item)}
+                getDataSource={this.props.getDataSource}
+              />
+            );
+          case "CustomElement":
+            return this.getCustomElement(item);
+          case "FourColumnRow":
+            return this.getContainerElement(item, FourColumnRow);
+          case "ThreeColumnRow":
+            return this.getContainerElement(item, ThreeColumnRow);
+          case "TwoColumnRow":
+            return this.getContainerElement(item, TwoColumnRow);
+          case "Signature":
+            return (
+              <Signature
+                ref={(c) => (this.inputs[item.field_name] = c)}
+                read_only={this.props.read_only || item.readOnly}
+                mutable={true}
+                key={`form_${item.id}`}
+                data={item}
+                defaultValue={this._getDefaultValue(item)}
+              />
+            );
+          case "Signature2":
+            return (
+              <Signature2
+                ref={(c) => (this.inputs[item.field_name] = c)}
+                read_only={this.props.read_only || item.readOnly}
+                mutable={true}
+                key={`form_${item.id}`}
+                data={item}
+                defaultValue={this._getDefaultValue(item)}
+                getActiveUserProperties={this.props.getActiveUserProperties}
+              />
+            );
+          case "Checkboxes":
+            return (
+              <Checkboxes
+                ref={(c) => (this.inputs[item.field_name] = c)}
+                read_only={this.props.read_only}
+                handleChange={this.handleChange}
+                mutable={true}
+                key={`form_${item.id}`}
+                data={item}
+                defaultValue={this._optionsDefaultValue(item)}
+              />
+            );
+          case "Image":
+            return (
+              <Image
+                ref={(c) => (this.inputs[item.field_name] = c)}
+                handleChange={this.handleChange}
+                mutable={true}
+                key={`form_${item.id}`}
+                data={item}
+                defaultValue={this._getDefaultValue(item)}
+              />
+            );
+          case "Download":
+            return (
+              <Download
+                download_path={this.props.download_path}
+                mutable={true}
+                key={`form_${item.id}`}
+                data={item}
+              />
+            );
+          case "Camera":
+            return (
+              <Camera
+                ref={(c) => (this.inputs[item.field_name] = c)}
+                read_only={this.props.read_only || item.readOnly}
+                mutable={true}
+                key={`form_${item.id}`}
+                data={item}
+                defaultValue={this._getDefaultValue(item)}
+              />
+            );
+          default:
+            return this.getSimpleElement(item);
+        }
+      });
 
     const formTokenStyle = {
-      display: 'none',
+      display: "none",
     };
 
-    const backName = (this.props.back_name) ? this.props.back_name : 'Cancel';
+    const backName = this.props.back_name ? this.props.back_name : "Cancel";
 
     return (
       <div>
         <FormValidator emitter={this.emitter} />
-        <div className='react-form-builder-form'>
-          <form encType='multipart/form-data' 
-            ref={c => this.form = c} 
-            action={this.props.form_action} 
-            onSubmit={this.handleSubmit.bind(this)} 
+        <div className="react-form-builder-form">
+          <form
+            encType="multipart/form-data"
+            ref={(c) => (this.form = c)}
+            action={this.props.form_action}
+            onSubmit={this.handleSubmit.bind(this)}
             method={this.props.form_method}
           >
-            {this.props.authenticity_token &&
+            {this.props.authenticity_token && (
               <div style={formTokenStyle}>
-                <input name='utf8' type='hidden' value='&#x2713;' />
-                <input name='authenticity_token' type='hidden' value={this.props.authenticity_token} />
-                <input name='task_id' type='hidden' value={this.props.task_id} />
+                <input name="utf8" type="hidden" value="&#x2713;" />
+                <input
+                  name="authenticity_token"
+                  type="hidden"
+                  value={this.props.authenticity_token}
+                />
+                <input
+                  name="task_id"
+                  type="hidden"
+                  value={this.props.task_id}
+                />
               </div>
-            }
+            )}
             {items}
-            <div className='btn-toolbar'>
-              {!this.props.hide_actions &&
-                this.handleRenderSubmit()
-              }
-              {!this.props.hide_actions && this.props.back_action &&
-                <a href={this.props.back_action} className='btn btn-default btn-cancel btn-big'>{backName}</a>
-              }
+            <div className="btn-toolbar">
+              {!this.props.hide_actions && this.handleRenderSubmit()}
+              {!this.props.hide_actions && this.props.back_action && (
+                <a
+                  href={this.props.back_action}
+                  className="btn btn-default btn-cancel btn-big"
+                >
+                  {backName}
+                </a>
+              )}
             </div>
           </form>
         </div>
