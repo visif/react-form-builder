@@ -434,6 +434,7 @@ export default class Toolbar extends React.Component {
       elementOptions.timeFormat = item.timeFormat;
       elementOptions.showTimeSelect = item.showTimeSelect;
       elementOptions.showTimeSelectOnly = item.showTimeSelectOnly;
+      elementOptions.overdueNotification = false;
     }
 
     if (item.key === "Download") {

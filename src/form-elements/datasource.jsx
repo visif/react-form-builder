@@ -1,9 +1,8 @@
-import React from 'react';
-import ComponentHeader from './component-header';
-import ComponentLabel from './component-label';
+import React from "react";
+import ComponentHeader from "./component-header";
+import ComponentLabel from "./component-label";
 
 class DataSource extends React.Component {
-  
   constructor(props) {
     super(props);
     this.inputField = React.createRef();
@@ -11,14 +10,17 @@ class DataSource extends React.Component {
     this.state = {
       sourceList: [],
       matchedList: [],
-      searchText: '',
+      searchText: "",
       isShowingList: false,
       sourceType: props.data.sourceType,
     };
   }
 
   componentDidMount() {
-    if (this.props.getDataSource && typeof this.props.getDataSource === 'function') {
+    if (
+      this.props.getDataSource &&
+      typeof this.props.getDataSource === "function"
+    ) {
       const data = this.props.getDataSource(this.props.data.sourceType);
       this.setState({
         sourceList: data,
@@ -30,37 +32,39 @@ class DataSource extends React.Component {
   handleInputFocus = () => {
     this.setState({
       isShowingList: true,
-    })
-  }
+    });
+  };
 
   handleInputBlur = () => {
     setTimeout(() => {
       this.setState({
         isShowingList: false,
-      })
-     }, 200)
+      });
+    }, 200);
   };
 
   handleOnChange = (event) => {
-    if(event.key === 'Enter'){
+    if (event.key === "Enter") {
       return;
     }
 
     const value = event.target.value;
 
-    const matchData = this.state.sourceList.filter(item => {
-      return `${item}`.toLocaleLowerCase().includes(`${value}`.toLocaleLowerCase())
+    const matchData = this.state.sourceList.filter((item) => {
+      return `${item}`
+        .toLocaleLowerCase()
+        .includes(`${value}`.toLocaleLowerCase());
     });
     this.setState({
       searchText: value,
       matchedList: matchData,
     });
-  }
+  };
 
   render() {
     const props = {};
-    props.type = 'text';
-    props.className = 'form-control';
+    props.type = "text";
+    props.className = "form-control";
     props.name = this.props.data.field_name;
     props.value = this.state.searchText;
 
@@ -69,49 +73,66 @@ class DataSource extends React.Component {
       props.ref = this.inputField;
     }
 
-    let baseClasses = 'SortableItem rfb-item';
-    if (this.props.data.pageBreakBefore) { baseClasses += ' alwaysbreak'; }
+    let baseClasses = "SortableItem rfb-item";
+    if (this.props.data.pageBreakBefore) {
+      baseClasses += " alwaysbreak";
+    }
 
     if (this.props.read_only) {
-      props.disabled = 'disabled';
+      props.disabled = "disabled";
     }
 
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
         <div className="form-group">
-          <ComponentLabel {...this.props} style={{ display: 'block' }}/>
-          <div style={{ position: 'relative', display: 'inline-block', width: '100%' }}>
+          <ComponentLabel {...this.props} style={{ display: "block" }} />
+          <div
+            style={{
+              position: "relative",
+              display: "inline-block",
+              width: "100%",
+            }}
+          >
             <div>
-              <input 
-                {...props} 
+              <input
+                {...props}
                 onFocus={this.handleInputFocus}
                 onBlur={this.handleInputBlur}
-                onChange={this.handleOnChange} 
+                onChange={this.handleOnChange}
               />
             </div>
-            <div style={{
-                position: 'absolute', zIndex: 99, top: "100%", left: 0, right: 0,
-                display: this.state.isShowingList ? 'block' : 'none'
+            <div
+              style={{
+                position: "absolute",
+                zIndex: 99,
+                top: "100%",
+                left: 0,
+                right: 0,
+                display: this.state.isShowingList ? "block" : "none",
               }}
             >
-              {
-                this.state.matchedList.map(item => {
-                  return (
-                    <div style={{ 
-                      position: 'relative', display: 'block', padding: '0.75rem 1.25rem',
-                      marginBottom: -1, backgroundColor: '#fff', border: '1px solid rgba(0, 0, 0, 0.125)' }} 
-                      onClick={() => {
-                        this.setState({
-                          searchText: item,
-                        })
-                      }}
-                    >
-                      {item}
-                    </div>
-                  );
-                })
-              }
+              {this.state.matchedList.map((item) => {
+                return (
+                  <div
+                    style={{
+                      position: "relative",
+                      display: "block",
+                      padding: "0.75rem 1.25rem",
+                      marginBottom: -1,
+                      backgroundColor: "#fff",
+                      border: "1px solid rgba(0, 0, 0, 0.125)",
+                    }}
+                    onClick={() => {
+                      this.setState({
+                        searchText: item,
+                      });
+                    }}
+                  >
+                    {item}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

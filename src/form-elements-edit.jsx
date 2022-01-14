@@ -488,6 +488,28 @@ export default class FormElementsEdit extends React.Component {
                   </label>
                 </div>
               )}
+            {this.props.element.hasOwnProperty("overdueNotification") && (
+              <div className="custom-control custom-checkbox">
+                <input
+                  id="overdueNotification"
+                  className="custom-control-input"
+                  type="checkbox"
+                  checked={!!this.props.element.overdueNotification}
+                  value={true}
+                  onChange={this.editElementProp.bind(
+                    this,
+                    "overdueNotification",
+                    "checked"
+                  )}
+                />
+                <label
+                  className="custom-control-label"
+                  htmlFor="overdueNotification"
+                >
+                  Overdue Notification
+                </label>
+              </div>
+            )}
             {(this.state.element.element === "RadioButtons" ||
               this.state.element.element === "Checkboxes") &&
               canHaveDisplayHorizontal && (

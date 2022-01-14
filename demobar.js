@@ -138,6 +138,18 @@ export default class Demobar extends React.Component {
                       return ["NameA lastNameA", "NameB lastNameB"];
                     }
 
+                    if (sourceType === "department") {
+                      return ["NameA lastNameA", "NameB lastNameB"];
+                    }
+
+                    if (sourceType === "role") {
+                      return ["NameA lastNameA", "NameB lastNameB"];
+                    }
+
+                    if (sourceType === "form") {
+                      return ["NameA lastNameA", "NameB lastNameB"];
+                    }
+
                     return ["no data"];
                   }}
                 />
