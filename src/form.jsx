@@ -15,6 +15,7 @@ const {
   Checkboxes,
   Signature,
   Signature2,
+  FileUpload,
   Download,
   Camera,
   DataSource,
@@ -424,6 +425,7 @@ export default class ReactForm extends React.Component {
         defaultValue={this._getDefaultValue(item)}
         getActiveUserProperties={this.props.getActiveUserProperties}
         getDataSource={this.props.getDataSource}
+        onUploadFile={this.props.onUploadFile}
       />
     );
   }
@@ -603,6 +605,18 @@ export default class ReactForm extends React.Component {
                 key={`form_${item.id}`}
                 data={item}
                 defaultValue={this._getDefaultValue(item)}
+              />
+            );
+          case "FileUpload":
+            return (
+              <FileUpload
+                ref={(c) => (this.inputs[item.field_name] = c)}
+                read_only={this.props.read_only || item.readOnly}
+                mutable={true}
+                key={`form_${item.id}`}
+                data={item}
+                defaultValue={this._getDefaultValue(item)}
+                onUploadFile={this.props.onUploadFile}
               />
             );
           default:

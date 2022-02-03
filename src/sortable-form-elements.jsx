@@ -1,33 +1,34 @@
-import SortableElement from './sortable-element';
-import PlaceHolder from './form-place-holder';
-import BaseFormElements from './form-elements';
-import { TwoColumnRow, ThreeColumnRow, FourColumnRow } from './multi-column';
-import CustomElement from './form-elements/custom-element';
+import SortableElement from "./sortable-element";
+import PlaceHolder from "./form-place-holder";
+import BaseFormElements from "./form-elements";
+import { TwoColumnRow, ThreeColumnRow, FourColumnRow } from "./multi-column";
+import CustomElement from "./form-elements/custom-element";
 
 const {
-  Header, 
-  Paragraph, 
-  Label, 
-  LineBreak, 
-  TextInput, 
-  NumberInput, 
-  TextArea, 
-  Dropdown, 
+  Header,
+  Paragraph,
+  Label,
+  LineBreak,
+  TextInput,
+  NumberInput,
+  TextArea,
+  Dropdown,
   Checkboxes,
-  DatePicker, 
-  RadioButtons, 
-  Image, 
-  Rating, 
-  Tags, 
-  Signature, 
+  DatePicker,
+  RadioButtons,
+  Image,
+  Rating,
+  Tags,
+  Signature,
   Signature2,
   DataSource,
-  HyperLink, 
-  Download, 
-  Camera, 
+  HyperLink,
+  Download,
+  Camera,
   Range,
-  Table, 
-  Section
+  Table,
+  Section,
+  FileUpload,
 } = BaseFormElements;
 
 const FormElements = {};
@@ -60,5 +61,6 @@ FormElements.Table = SortableElement(Table);
 FormElements.Section = SortableElement(Section);
 FormElements.Signature2 = SortableElement(Signature2);
 FormElements.DataSource = SortableElement(DataSource);
+FormElements.FileUpload = SortableElement(FileUpload);
 
 export default FormElements;

@@ -152,6 +152,9 @@ export default class Demobar extends React.Component {
 
                     return ["no data"];
                   }}
+                  onUploadFile={(file) => {
+                    return `${file.name}-${Math.random() * 10000000}`;
+                  }}
                 />
 
                 <div className="modal-footer">
@@ -198,6 +201,9 @@ export default class Demobar extends React.Component {
 
                     return ["no data"];
                   }}
+                  onUploadFile={(file) => {
+                    return `${file.name}-${Math.random() * 10000000}`;
+                  }}
                 />
                 <div className="modal-footer">
                   <button
@@ -235,6 +241,9 @@ export default class Demobar extends React.Component {
                   }}
                   getDataSource={(sourceType) => {
                     return [];
+                  }}
+                  onUploadFile={(file) => {
+                    return `${file.name}-${Math.random() * 10000000}`;
                   }}
                 />
 

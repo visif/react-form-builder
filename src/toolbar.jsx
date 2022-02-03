@@ -351,6 +351,13 @@ export default class Toolbar extends React.Component {
         field_name: "section_",
         header: "Placeholder Text",
       },
+      {
+        key: "FileUpload",
+        name: "FileUpload",
+        icon: "fas fa-upload",
+        field_name: "fileupload_",
+        header: "Placeholder Text",
+      },
     ];
   }
 
@@ -499,6 +506,9 @@ export default class Toolbar extends React.Component {
 
     if (item.key === "DataSource") {
       elementOptions.sourceType = item.sourceType;
+    }
+
+    if (item.key === "FileUpload") {
     }
 
     return elementOptions;
