@@ -38,7 +38,7 @@ class FileUpload extends React.Component {
     }
 
     const fileName = this.props.onUploadFile(file);
-    return {  
+    return {
       originalName: file.name,
       fileName,
     };
@@ -112,7 +112,7 @@ class FileUpload extends React.Component {
                           this.onRemoveFile(file);
                         }}
                       >
-                        x
+                        <i class="fas fa-trash"></i>
                       </span>
                     </li>
                   );
