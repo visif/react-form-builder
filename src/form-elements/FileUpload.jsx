@@ -6,17 +6,22 @@ class FileUpload extends React.Component {
     super(props);
     this.inputField = React.createRef();
 
+    const fileList = (props.defaultValue && props.defaultValue.fileList) || [];
+
     this.state = {
       defaultValue: props.defaultValue && props.defaultValue.fileList,
-      fileList: [],
+      fileList: [...fileList],
     };
   }
 
   static getDerivedStateFromProps = (props, state) => {
     console.log("FileUpload getDerivedStateFromProps");
     if (props.defaultValue !== state.defaultValue) {
+      const fileList =
+        (props.defaultValue && props.defaultValue.fileList) || [];
       return {
-        defaultValue: props.defaultValue && props.defaultValue.isSigned,
+        defaultValue: props.defaultValue && props.defaultValue.fileList,
+        fileList: [...fileList],
       };
     }
 
@@ -25,7 +30,9 @@ class FileUpload extends React.Component {
 
   onRemoveFile = (file) => {
     this.setState((current) => {
-      const remainList = current.fileList.filter((item) => item.id !== file.id);
+      const remainList = current.fileList.filter(
+        (item) => item.fileName !== file.fileName
+      );
       return {
         fileList: [...remainList],
       };
@@ -52,7 +59,6 @@ class FileUpload extends React.Component {
     const newFileList = Array.from(event.target.files);
 
     for (let i = 0; i < newFileList.length; i = i + 1) {
-      debugger;
       const currentFile = newFileList[i];
       const response = await this.uploadAttachFile(currentFile);
       if (response) {
@@ -87,7 +93,7 @@ class FileUpload extends React.Component {
               <ul
                 style={{
                   display: "flex",
-                  maxWidth: "400px",
+                  maxWidth: "450px",
                   flexDirection: "column",
                   marginTop: "1rem",
                 }}
@@ -107,7 +113,11 @@ class FileUpload extends React.Component {
                         {file.fileName}
                       </span>
                       <span
-                        style={{ float: "right", cursor: "pointer" }}
+                        style={{
+                          float: "right",
+                          cursor: "pointer",
+                          marginTop: 4,
+                        }}
                         onClick={() => {
                           this.onRemoveFile(file);
                         }}
