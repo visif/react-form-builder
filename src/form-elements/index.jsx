@@ -13,7 +13,7 @@ import ComponentLabel from "./component-label";
 import myxss from "./myxss";
 import Section from "./section";
 import Signature2 from "./signature2";
-import FileUpload from "./fileUpload";
+import FileUpload from "./fileUpload2";
 import DataSource from "./datasource";
 
 const FormElements = {};

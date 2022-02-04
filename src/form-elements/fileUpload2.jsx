@@ -15,7 +15,7 @@ class FileUpload extends React.Component {
   }
 
   static getDerivedStateFromProps = (props, state) => {
-    console.log("FileUpload getDerivedStateFromProps");
+    console.log("FileUpload >> getDerivedStateFromProps");
     if (props.defaultValue !== state.defaultValue) {
       const fileList =
         (props.defaultValue && props.defaultValue.fileList) || [];
