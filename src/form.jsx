@@ -107,6 +107,10 @@ export default class ReactForm extends React.Component {
         type: "name",
         value: ref.state.searchText,
       };
+    } else if (item.element === "FileUpload") {
+      $item.value = {
+        fileList: ref.state.fileList,
+      };
     }
 
     return $item;
