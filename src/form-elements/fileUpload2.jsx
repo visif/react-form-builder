@@ -41,9 +41,14 @@ class FileUpload extends React.Component {
 
   uploadAttachFile = async (file) => {
     if (typeof this.props.onUploadFile !== "function") {
+      console.log(
+        "FileUpload >>>>> not upload function found",
+        this.props.onUploadFile
+      );
       return;
     }
 
+    console.log("Uploading file.....");
     const fileName = this.props.onUploadFile(file);
     return {
       originalName: file.name,
