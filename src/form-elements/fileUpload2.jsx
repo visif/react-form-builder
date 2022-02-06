@@ -54,7 +54,7 @@ class FileUpload extends React.Component {
     }
 
     console.log("Uploading file.....");
-    const fileName = this.props.onUploadFile(file);
+    const fileName = await this.props.onUploadFile(file);
     return {
       originalName: file.name,
       fileName,
