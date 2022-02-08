@@ -4,7 +4,7 @@ import ComponentHeader from "./component-header";
 class FileUpload extends React.Component {
   constructor(props) {
     super(props);
-    this.inputField = React.createRef();
+    this.inputField = React.createRef(null);
 
     const fileList = (props.defaultValue && props.defaultValue.fileList) || [];
 
@@ -93,12 +93,24 @@ class FileUpload extends React.Component {
         <div className="form-group">
           <div>
             <input
+              ref={this.inputField}
               type="file"
               name="fileUpload"
-              multiple
-              style={{ marginTop: 6 }}
+              title=" "
+              style={{ display: "none" }}
               onChange={this.onUploadMultipleFiles}
             />
+            <a
+              href=""
+              style={{ marginTop: 6 }}
+              className="btn btn-secondary"
+              onClick={(e) => {
+                this.inputField && this.inputField.current.click();
+                e.preventDefault();
+              }}
+            >
+              Upload files
+            </a>
             {this.state.fileList && this.state.fileList.length && (
               <ul
                 style={{
@@ -120,7 +132,7 @@ class FileUpload extends React.Component {
                     >
                       <span style={{ float: "left" }}>
                         <span style={{ marginRight: 4 }}>{index + 1}.</span>{" "}
-                        {file.fileName}
+                        {file.originalName}
                       </span>
                       <span
                         style={{
