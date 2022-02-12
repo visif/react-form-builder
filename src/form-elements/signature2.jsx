@@ -53,7 +53,7 @@ class Signature2 extends React.Component {
       this.setState((current) => ({
         ...current,
         isSigned: !current.isSigned,
-        signedPerson: "",
+        signedPerson: !current.isSigned ? userProperties.name : "",
       }));
     } else if (this.props.data.specificRole === "notSpecific") {
       this.setState((current) => ({
@@ -107,11 +107,11 @@ class Signature2 extends React.Component {
               ? "You have no permission to sign"
               : "__________________"}
           </div>
+          <h6 style={{ textAlign: "center", minHeight: 20 }}>
+            {this.state.isSigned && `(${this.state.signedPerson})`}
+          </h6>
           <h6 style={{ textAlign: "center" }}>
-            {(this.props.data.specificRole === "notSpecific" &&
-              this.state.signedPerson) ||
-              this.props.data.position ||
-              "Placeholder Text"}
+            {this.props.data.position || "Placeholder Text"}
           </h6>
         </div>
       </div>
