@@ -120,7 +120,8 @@ export default class Preview extends React.Component {
 
   getDataById(id) {
     const { data } = this.state;
-    return data.find((x) => x && x.id === id);
+    const item = data.find((x) => x && x.id === id);
+    return item;
   }
 
   swapChildren(data, item, child, col) {

@@ -408,7 +408,8 @@ export default class ReactForm extends React.Component {
 
   getDataById(id) {
     const { data } = this.props;
-    return data.find((x) => x.id === id);
+    const item = data.find((x) => x.id === id);
+    return item;
   }
 
   getInputElement(item) {
@@ -435,9 +436,14 @@ export default class ReactForm extends React.Component {
   }
 
   getContainerElement(item, Element) {
-    const controls = item.childItems.map((x) =>
-      x ? this.getInputElement(this.getDataById(x)) : <div>&nbsp;</div>
-    );
+    const controls = item.childItems.map((x) => {
+      const currentItem = this.getDataById(x);
+      return x && currentItem ? (
+        this.getInputElement(currentItem)
+      ) : (
+        <div>&nbsp;</div>
+      );
+    });
     return (
       <Element
         mutable={true}
