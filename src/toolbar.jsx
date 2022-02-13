@@ -358,6 +358,13 @@ export default class Toolbar extends React.Component {
         field_name: "fileupload_",
         header: "Placeholder Text",
       },
+      {
+        key: "ImageUpload",
+        name: "ImageUpload",
+        icon: "fas fa-image",
+        field_name: "fileimage_",
+        header: "Placeholder Text",
+      },
     ];
   }
 

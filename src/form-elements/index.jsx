@@ -15,6 +15,7 @@ import Section from "./section";
 import Signature2 from "./signature2";
 import FileUpload from "./fileUpload2";
 import DataSource from "./datasource";
+import ImageUpload from "./imageUpload";
 
 const FormElements = {};
 
@@ -1050,4 +1051,5 @@ FormElements.Section = Section;
 FormElements.Signature2 = Signature2;
 FormElements.DataSource = DataSource;
 FormElements.FileUpload = FileUpload;
+FormElements.ImageUpload = ImageUpload;
 export default FormElements;
