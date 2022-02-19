@@ -67,18 +67,20 @@ class FileUpload extends React.Component {
     }
 
     const newFileList = Array.from(event.target.files);
-
+    const newResponse = [];
     for (let i = 0; i < newFileList.length; i = i + 1) {
       const currentFile = newFileList[i];
       const response = await this.uploadAttachFile(currentFile);
       if (response) {
-        this.setState((current) => {
-          return {
-            fileList: [...current.fileList, response],
-          };
-        });
+        newResponse.push(response);
       }
     }
+
+    this.setState((current) => {
+      return {
+        fileList: [...current.fileList, ...newResponse],
+      };
+    });
   };
 
   render() {
