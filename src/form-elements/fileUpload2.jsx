@@ -62,6 +62,7 @@ class FileUpload extends React.Component {
   };
 
   onUploadMultipleFiles = async (event) => {
+    event.persist();
     if (!event || !event.target || !event.target.files) {
       return;
     }
