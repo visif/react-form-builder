@@ -96,7 +96,7 @@ class FileUpload extends React.Component {
         <div className="form-group">
           <div>
             <input
-              // multiple
+              multiple
               ref={this.inputField}
               type="file"
               name="fileUpload"
@@ -110,7 +110,6 @@ class FileUpload extends React.Component {
               className="btn btn-secondary"
               onClick={(e) => {
                 this.inputField && this.inputField.current.click();
-                e.preventDefault();
               }}
             >
               Upload files
