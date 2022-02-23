@@ -96,7 +96,7 @@ class FileUpload extends React.Component {
         <div className="form-group">
           <div>
             <input
-              multiple
+              // multiple
               ref={this.inputField}
               type="file"
               name="fileUpload"
