@@ -109,6 +109,8 @@ class FileUpload extends React.Component {
               style={{ marginTop: 6 }}
               className="btn btn-secondary"
               onClick={(e) => {
+                e.persist();
+                e.preventDefault();
                 this.inputField && this.inputField.current.click();
               }}
             >
