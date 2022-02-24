@@ -63,6 +63,8 @@ class FileUpload extends React.Component {
 
   onUploadMultipleFiles = async (event) => {
     event.persist();
+    event.preventDefault();
+    debugger;
     if (!event || !event.target || !event.target.files) {
       return;
     }
@@ -105,12 +107,10 @@ class FileUpload extends React.Component {
               onChange={this.onUploadMultipleFiles}
             />
             <a
-              href=""
+              href="#"
               style={{ marginTop: 6 }}
               className="btn btn-secondary"
               onClick={(e) => {
-                e.persist();
-                e.preventDefault();
                 this.inputField && this.inputField.current.click();
               }}
             >
