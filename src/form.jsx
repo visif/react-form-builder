@@ -269,7 +269,6 @@ export default class ReactForm extends React.Component {
   }
 
   handleSubmit(e) {
-    e.persist();
     e.preventDefault();
 
     // let errors = [];
