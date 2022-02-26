@@ -90,11 +90,6 @@ export default class ReactForm extends React.Component {
       $item.value = ref.state.img
         ? ref.state.img.replace("data:image/png;base64,", "")
         : "";
-    } else if (ref && ref.inputField && ref.inputField.current) {
-      $item = ReactDOM.findDOMNode(ref.inputField.current);
-      if ($item && typeof $item.value === "string") {
-        $item.value = $item.value.trim();
-      }
     } else if (item.element === "Table") {
       $item.value = ref.state.inputs;
     } else if (item.element === "Signature2" && ref.state.isSigned) {
@@ -111,6 +106,11 @@ export default class ReactForm extends React.Component {
       $item.value = {
         fileList: ref.state.fileList,
       };
+    } else if (ref && ref.inputField && ref.inputField.current) {
+      $item = ReactDOM.findDOMNode(ref.inputField.current);
+      if ($item && typeof $item.value === "string") {
+        $item.value = $item.value.trim();
+      }
     }
 
     return $item;
@@ -269,6 +269,8 @@ export default class ReactForm extends React.Component {
   }
 
   handleSubmit(e) {
+    debugger;
+    e.persist();
     e.preventDefault();
 
     // let errors = [];

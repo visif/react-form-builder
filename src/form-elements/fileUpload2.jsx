@@ -63,7 +63,7 @@ class FileUpload extends React.Component {
 
   onUploadMultipleFiles = async (event) => {
     event.persist();
-    debugger;
+
     if (!event || !event.target || !event.target.files) {
       return;
     }
@@ -102,10 +102,10 @@ class FileUpload extends React.Component {
               type="file"
               name="fileUpload"
               title=" "
-              style={{ display: "none" }}
+              // style={{ display: "none" }}
               onChange={this.onUploadMultipleFiles}
             />
-            <a
+            {/* <a
               href="#"
               style={{ marginTop: 6 }}
               className="btn btn-secondary"
@@ -114,7 +114,7 @@ class FileUpload extends React.Component {
               }}
             >
               Upload files
-            </a>
+            </a> */}
             {this.state.fileList && this.state.fileList.length && (
               <ul
                 style={{
@@ -148,7 +148,7 @@ class FileUpload extends React.Component {
                           this.onRemoveFile(file);
                         }}
                       >
-                        <i class="fas fa-trash"></i>
+                        <i className="fas fa-trash"></i>
                       </span>
                     </li>
                   );
