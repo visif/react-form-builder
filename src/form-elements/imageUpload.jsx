@@ -1,16 +1,17 @@
 import React from "react";
 import ComponentHeader from "./component-header";
+import noImage from "./noImage.png";
 
 class ImageUpload extends React.Component {
   constructor(props) {
     super(props);
     this.inputField = React.createRef(null);
 
-    const fileList = (props.defaultValue && props.defaultValue.fileList) || [];
+    const filePath = props.defaultValue && props.defaultValue.filePath;
 
     this.state = {
-      defaultValue: props.defaultValue && props.defaultValue.fileList,
-      fileList: [...fileList],
+      defaultValue: filePath,
+      filePath: filePath,
     };
   }
 
@@ -22,11 +23,10 @@ class ImageUpload extends React.Component {
       JSON.stringify(props.defaultValue.fileList) !==
         JSON.stringify(state.defaultValue)
     ) {
-      const fileList =
-        (props.defaultValue && props.defaultValue.fileList) || [];
+      const filePath = props.defaultValue && props.defaultValue.filePath;
       return {
-        defaultValue: props.defaultValue && props.defaultValue.fileList,
-        fileList: [...fileList],
+        defaultValue: filePath,
+        fileList: filePath,
       };
     }
 
@@ -91,7 +91,13 @@ class ImageUpload extends React.Component {
       >
         <ComponentHeader {...this.props} />
         <div className="form-group">
-          <image style={{ width: 50, heiht: 50 }} />
+          <div style={{ position: "relative" }}>
+            <img
+              style={{ width: 200 }}
+              // src="https://media.istockphoto.com/vectors/cute-panda-character-vector-design-vector-id1195743934"
+              src={this.state.filePath ? this.state.filePath : noImage}
+            />
+          </div>
           <div>
             <input
               ref={this.inputField}
@@ -103,7 +109,6 @@ class ImageUpload extends React.Component {
             />
             <a
               href=""
-              style={{ marginTop: 6 }}
               className="btn btn-secondary"
               onClick={(e) => {
                 this.inputField && this.inputField.current.click();
