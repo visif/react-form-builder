@@ -102,19 +102,20 @@ class FileUpload extends React.Component {
               type="file"
               name="fileUpload"
               title=" "
-              // style={{ display: "none" }}
+              style={{ display: "none" }}
               onChange={this.onUploadMultipleFiles}
             />
-            {/* <a
+            <a
               href="#"
               style={{ marginTop: 6 }}
               className="btn btn-secondary"
               onClick={(e) => {
+                e.preventDefault();
                 this.inputField && this.inputField.current.click();
               }}
             >
               Upload files
-            </a> */}
+            </a>
             {this.state.fileList && this.state.fileList.length && (
               <ul
                 style={{
