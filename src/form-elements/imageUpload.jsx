@@ -8,77 +8,67 @@ class ImageUpload extends React.Component {
     this.inputField = React.createRef(null);
 
     const filePath = props.defaultValue && props.defaultValue.filePath;
+    const fileName = props.defaultValue && props.defaultValue.fileName;
 
     this.state = {
-      defaultValue: filePath,
+      defaultValue: props.defaultValue,
       filePath: filePath,
+      fileName: fileName,
     };
   }
 
   static getDerivedStateFromProps = (props, state) => {
-    console.log("FileUpload >> getDerivedStateFromProps");
+    console.log("ImageUpload >> getDerivedStateFromProps");
     console.log(props.defaultValue);
     if (
       props.defaultValue &&
-      JSON.stringify(props.defaultValue.fileList) !==
-        JSON.stringify(state.defaultValue)
+      JSON.stringify(props.defaultValue) !== JSON.stringify(state.defaultValue)
     ) {
       const filePath = props.defaultValue && props.defaultValue.filePath;
+      const fileName = props.defaultValue && props.defaultValue.fileName;
+
       return {
-        defaultValue: filePath,
-        fileList: filePath,
+        defaultValue: props.defaultValue,
+        filePath: filePath,
+        fileName: fileName,
       };
     }
 
     return state;
   };
 
-  onRemoveFile = (file) => {
-    this.setState((current) => {
-      const remainList = current.fileList.filter(
-        (item) => item.fileName !== file.fileName
-      );
+  onRemoveImage = () => {
+    this.setState(() => {
       return {
-        fileList: [...remainList],
+        filePath: "",
+        fileName: "",
       };
     });
   };
 
-  uploadAttachFile = async (file) => {
-    if (typeof this.props.onUploadFile !== "function") {
-      console.log(
-        "FileUpload >>>>> not upload function found",
-        this.props.onUploadFile
-      );
-      return;
-    }
+  uploadImageFile = async (event) => {
+    event.persist();
 
-    console.log("Uploading file.....");
-    const fileName = await this.props.onUploadFile(file);
-    return {
-      originalName: file.name,
-      fileName,
-    };
-  };
-
-  onUploadMultipleFiles = async (event) => {
     if (!event || !event.target || !event.target.files) {
       return;
     }
 
-    const newFileList = Array.from(event.target.files);
+    const file = Array.from(event.target.files)[0];
 
-    for (let i = 0; i < newFileList.length; i = i + 1) {
-      const currentFile = newFileList[i];
-      const response = await this.uploadAttachFile(currentFile);
-      if (response) {
-        this.setState((current) => {
-          return {
-            fileList: [...current.fileList, response],
-          };
-        });
-      }
+    if (typeof this.props.onUploadImage !== "function") {
+      console.log(
+        "onUploadImage >>>>> no upload function found",
+        this.props.onUploadImage
+      );
+      return;
     }
+
+    console.log("Uploading image .....");
+    const filePath = await this.props.onUploadImage(file);
+    this.setState({
+      fileName: file.name,
+      filePath,
+    });
   };
 
   render() {
@@ -92,6 +82,18 @@ class ImageUpload extends React.Component {
         <ComponentHeader {...this.props} />
         <div className="form-group">
           <div style={{ position: "relative" }}>
+            <div
+              className="btn is-isolated"
+              onClick={this.onRemoveImage}
+              style={{
+                position: "absolute",
+                left: 0,
+                right: 0,
+                display: this.state.filePath ? "" : "none",
+              }}
+            >
+              <i className="is-isolated fas fa-trash"></i>
+            </div>
             <img
               style={{ width: 200 }}
               // src="https://media.istockphoto.com/vectors/cute-panda-character-vector-design-vector-id1195743934"
@@ -105,11 +107,12 @@ class ImageUpload extends React.Component {
               name="fileUpload"
               title=" "
               style={{ display: "none" }}
-              onChange={this.onUploadMultipleFiles}
+              onChange={this.uploadImageFile}
             />
             <a
               href=""
               className="btn btn-secondary"
+              style={{ display: this.state.filePath ? "none" : "inline-block" }}
               onClick={(e) => {
                 this.inputField && this.inputField.current.click();
                 e.preventDefault();

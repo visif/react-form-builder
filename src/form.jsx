@@ -16,6 +16,7 @@ const {
   Signature,
   Signature2,
   FileUpload,
+  ImageUpload,
   Download,
   Camera,
   DataSource,
@@ -105,6 +106,11 @@ export default class ReactForm extends React.Component {
     } else if (item.element === "FileUpload") {
       $item.value = {
         fileList: ref.state.fileList,
+      };
+    } else if (item.element === "ImageUpload") {
+      $item.value = {
+        filePath: ref.state.filePath,
+        fileName: ref.state.fileName,
       };
     } else if (ref && ref.inputField && ref.inputField.current) {
       $item = ReactDOM.findDOMNode(ref.inputField.current);
@@ -431,6 +437,7 @@ export default class ReactForm extends React.Component {
         getActiveUserProperties={this.props.getActiveUserProperties}
         getDataSource={this.props.getDataSource}
         onUploadFile={this.props.onUploadFile}
+        onUploadImage={this.props.onUploadImage}
       />
     );
   }
@@ -627,6 +634,18 @@ export default class ReactForm extends React.Component {
                 data={item}
                 defaultValue={this._getDefaultValue(item)}
                 onUploadFile={this.props.onUploadFile}
+              />
+            );
+          case "ImageUpload":
+            return (
+              <ImageUpload
+                ref={(c) => (this.inputs[item.field_name] = c)}
+                read_only={this.props.read_only || item.readOnly}
+                mutable={true}
+                key={`form_${item.id}`}
+                data={item}
+                defaultValue={this._getDefaultValue(item)}
+                onUploadImage={this.props.onUploadImage}
               />
             );
           default:
