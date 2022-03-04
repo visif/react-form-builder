@@ -1,6 +1,6 @@
 import React from "react";
 import ComponentHeader from "./component-header";
-import noImage from "./noImage.png";
+// import noImage from "./noImage.png";
 
 class ImageUpload extends React.Component {
   constructor(props) {
@@ -110,7 +110,7 @@ class ImageUpload extends React.Component {
               src={
                 this.state.blobUrl || this.state.filePath
                   ? this.state.blobUrl || this.state.filePath
-                  : noImage
+                  : ""
               }
             />
           </div>
