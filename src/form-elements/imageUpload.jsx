@@ -38,6 +38,10 @@ class ImageUpload extends React.Component {
   };
 
   onRemoveImage = () => {
+    if (!confirm("Confirm delete?")) {
+      return;
+    }
+
     this.setState(() => {
       return {
         filePath: "",
