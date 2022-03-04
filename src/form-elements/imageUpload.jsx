@@ -14,6 +14,7 @@ class ImageUpload extends React.Component {
       defaultValue: props.defaultValue,
       filePath: filePath,
       fileName: fileName,
+      blobUrl: "",
     };
   }
 
@@ -46,6 +47,7 @@ class ImageUpload extends React.Component {
       return {
         filePath: "",
         fileName: "",
+        blobUrl: "",
       };
     });
   };
@@ -68,10 +70,15 @@ class ImageUpload extends React.Component {
     }
 
     console.log("Uploading image .....");
+    const extension = `${file.name}`.substring(file.name.lastIndexOf("."));
     const filePath = await this.props.onUploadImage(file);
+
+    const blobUrl = URL.createObjectURL(file);
+
     this.setState({
       fileName: file.name,
-      filePath,
+      blobUrl,
+      filePath: `${filePath}${extension}`,
     });
   };
 
@@ -100,8 +107,11 @@ class ImageUpload extends React.Component {
             </div>
             <img
               style={{ width: 200 }}
-              // src="https://media.istockphoto.com/vectors/cute-panda-character-vector-design-vector-id1195743934"
-              src={this.state.filePath ? this.state.filePath : noImage}
+              src={
+                this.state.blobUrl || this.state.filePath
+                  ? this.state.blobUrl || this.state.filePath
+                  : noImage
+              }
             />
           </div>
           <div>
