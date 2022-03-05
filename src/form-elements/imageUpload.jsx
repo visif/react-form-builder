@@ -9,12 +9,13 @@ class ImageUpload extends React.Component {
 
     const filePath = props.defaultValue && props.defaultValue.filePath;
     const fileName = props.defaultValue && props.defaultValue.fileName;
+    const blobUrl = props.defaultValue && props.defaultValue.blobUrl;
 
     this.state = {
       defaultValue: props.defaultValue,
-      filePath: filePath,
-      fileName: fileName,
-      blobUrl: "",
+      filePath,
+      fileName,
+      blobUrl,
     };
   }
 
@@ -27,11 +28,13 @@ class ImageUpload extends React.Component {
     ) {
       const filePath = props.defaultValue && props.defaultValue.filePath;
       const fileName = props.defaultValue && props.defaultValue.fileName;
+      const blobUrl = props.defaultValue && props.defaultValue.blobUrl;
 
       return {
         defaultValue: props.defaultValue,
-        filePath: filePath,
-        fileName: fileName,
+        filePath,
+        fileName,
+        blobUrl,
       };
     }
 

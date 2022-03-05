@@ -111,6 +111,7 @@ export default class ReactForm extends React.Component {
       $item.value = {
         filePath: ref.state.filePath,
         fileName: ref.state.fileName,
+        blobUrl: ref.state.blobUrl,
       };
     } else if (ref && ref.inputField && ref.inputField.current) {
       $item = ReactDOM.findDOMNode(ref.inputField.current);
