@@ -127,7 +127,6 @@ export default class Demobar extends React.Component {
                   variables={this.props.variables}
                   data={this.state.data}
                   onSubmit={() => {}}
-                  onSubmit={() => {}}
                   getActiveUserProperties={() => {
                     return {
                       name: "test",
@@ -139,15 +138,15 @@ export default class Demobar extends React.Component {
                     }
 
                     if (sourceType === "department") {
-                      return ["NameA lastNameA", "NameB lastNameB"];
+                      return ["departmentA", "departmentB"];
                     }
 
                     if (sourceType === "role") {
-                      return ["NameA lastNameA", "NameB lastNameB"];
+                      return ["roleA", "roleB"];
                     }
 
                     if (sourceType === "form") {
-                      return ["NameA lastNameA", "NameB lastNameB"];
+                      return ["formA", "formB"];
                     }
 
                     return ["no data"];
@@ -202,7 +201,17 @@ export default class Demobar extends React.Component {
                       return ["NameA lastNameA", "NameB lastNameB"];
                     }
 
-                    return ["no data"];
+                    if (sourceType === "department") {
+                      return ["departmentA", "departmentB"];
+                    }
+
+                    if (sourceType === "role") {
+                      return ["roleA", "roleB"];
+                    }
+
+                    if (sourceType === "form") {
+                      return ["formA", "formB"];
+                    }
                   }}
                   onUploadFile={(file) => {
                     return `${file.name}-${Math.random() * 10000000}`;
@@ -246,7 +255,21 @@ export default class Demobar extends React.Component {
                     };
                   }}
                   getDataSource={(sourceType) => {
-                    return [];
+                    if (sourceType === "name") {
+                      return ["NameA lastNameA", "NameB lastNameB"];
+                    }
+
+                    if (sourceType === "department") {
+                      return ["departmentA", "departmentB"];
+                    }
+
+                    if (sourceType === "role") {
+                      return ["roleA", "roleB"];
+                    }
+
+                    if (sourceType === "form") {
+                      return ["formA", "formB"];
+                    }
                   }}
                   onUploadFile={(file) => {
                     return `${file.name}-${Math.random() * 10000000}`;

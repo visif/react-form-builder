@@ -273,7 +273,6 @@ export default class Preview extends React.Component {
         parent={this.props.parent}
         editModeOn={this.props.editModeOn}
         isDraggable={true}
-        key={item.id}
         sortData={item.id}
         data={item}
         getDataById={this.getDataById}
@@ -282,7 +281,21 @@ export default class Preview extends React.Component {
         _onDestroy={this._onDestroy}
         getActiveUserProperties={this.props.getActiveUserProperties}
         getDataSource={(sourceType) => {
-          return [];
+          if (sourceType === "name") {
+            return ["NameA lastNameA", "NameB lastNameB"];
+          }
+
+          if (sourceType === "department") {
+            return ["departmentA", "departmentB"];
+          }
+
+          if (sourceType === "role") {
+            return ["roleA", "roleB"];
+          }
+
+          if (sourceType === "form") {
+            return ["formA", "formB"];
+          }
         }}
         onUploadFile={(file) => {
           return `${file.name}-${Math.random() * 10000000}`;

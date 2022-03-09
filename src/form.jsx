@@ -100,7 +100,7 @@ export default class ReactForm extends React.Component {
       };
     } else if (item.element === "DataSource" && ref.state.searchText) {
       $item.value = {
-        type: "name",
+        type: ref.props.data.sourceType,
         value: ref.state.searchText,
       };
     } else if (item.element === "FileUpload") {
