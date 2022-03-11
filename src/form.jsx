@@ -102,6 +102,7 @@ export default class ReactForm extends React.Component {
       $item.value = {
         type: ref.props.data.sourceType,
         value: ref.state.searchText,
+        selectedItem: ref.state.selectedItem,
       };
     } else if (item.element === "FileUpload") {
       $item.value = {

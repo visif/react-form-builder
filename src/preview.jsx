@@ -282,20 +282,34 @@ export default class Preview extends React.Component {
         getActiveUserProperties={this.props.getActiveUserProperties}
         getDataSource={(sourceType) => {
           if (sourceType === "name") {
-            return ["NameA lastNameA", "NameB lastNameB"];
+            return [
+              { id: 1, name: "NameA lastNameA" },
+              { id: 2, name: "NameB lastNameB" },
+            ];
           }
 
           if (sourceType === "department") {
-            return ["departmentA", "departmentB"];
+            return [
+              { id: 1, name: "departmentA" },
+              { id: 2, name: "departmentB" },
+            ];
           }
 
           if (sourceType === "role") {
-            return ["roleA", "roleB"];
+            return [
+              { id: 1, name: "roleA" },
+              { id: 2, name: "roleB" },
+            ];
           }
 
           if (sourceType === "form") {
-            return ["formA", "formB"];
+            return [
+              { id: 1, name: "formA" },
+              { id: 2, name: "formB" },
+            ];
           }
+
+          return [];
         }}
         onUploadFile={(file) => {
           return `${file.name}-${Math.random() * 10000000}`;

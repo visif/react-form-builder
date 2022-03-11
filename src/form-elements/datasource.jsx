@@ -11,6 +11,7 @@ class DataSource extends React.Component {
       sourceList: [],
       matchedList: [],
       searchText: "",
+      selectedItem: null,
       isShowingList: false,
       sourceType: props.data.sourceType,
     };
@@ -51,7 +52,7 @@ class DataSource extends React.Component {
     const value = event.target.value;
 
     const matchData = this.state.sourceList.filter((item) => {
-      return `${item}`
+      return `${item.name}`
         .toLocaleLowerCase()
         .includes(`${value}`.toLocaleLowerCase());
     });
@@ -115,6 +116,7 @@ class DataSource extends React.Component {
               {this.state.matchedList.map((item) => {
                 return (
                   <div
+                    key={item.id}
                     style={{
                       position: "relative",
                       display: "block",
@@ -125,11 +127,12 @@ class DataSource extends React.Component {
                     }}
                     onClick={() => {
                       this.setState({
-                        searchText: item,
+                        selectedItem: item,
+                        searchText: item.name,
                       });
                     }}
                   >
-                    {item}
+                    {item.name}
                   </div>
                 );
               })}
