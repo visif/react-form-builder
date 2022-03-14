@@ -7,11 +7,14 @@ class DataSource extends React.Component {
     super(props);
     this.inputField = React.createRef();
 
+    const defaultValue = props.defaultValue || {};
+
     this.state = {
       sourceList: [],
       matchedList: [],
-      searchText: "",
-      selectedItem: null,
+      searchText: defaultValue.value,
+      selectedItem: defaultValue.selectedItem,
+      defaultSelectedItem: defaultValue.selectedItem,
       isShowingList: false,
       sourceType: props.data.sourceType,
     };
@@ -29,6 +32,27 @@ class DataSource extends React.Component {
       });
     }
   }
+
+  static getDerivedStateFromProps = (props, state) => {
+    console.log("DataSource >> getDerivedStateFromProps");
+    console.log("props", props);
+    console.log("state", state);
+    if (
+      props.defaultValue &&
+      JSON.stringify(props.defaultValue.selectedItem) !==
+        JSON.stringify(state.defaultSelectedItem)
+    ) {
+      const defaultValue = props.defaultValue || {};
+
+      return {
+        searchText: defaultValue.value,
+        selectedItem: defaultValue.selectedItem,
+        defaultSelectedItem: defaultValue.selectedItem,
+      };
+    }
+
+    return state;
+  };
 
   handleInputFocus = () => {
     this.setState({
