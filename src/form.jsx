@@ -439,6 +439,7 @@ export default class ReactForm extends React.Component {
         getActiveUserProperties={this.props.getActiveUserProperties}
         getDataSource={this.props.getDataSource}
         onUploadFile={this.props.onUploadFile}
+        onDownloadFile={this.props.onDownloadFile}
         onUploadImage={this.props.onUploadImage}
       />
     );
@@ -636,6 +637,7 @@ export default class ReactForm extends React.Component {
                 data={item}
                 defaultValue={this._getDefaultValue(item)}
                 onUploadFile={this.props.onUploadFile}
+                onDownloadFile={this.props.onDownloadFile}
               />
             );
           case "ImageUpload":

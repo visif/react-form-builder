@@ -166,6 +166,9 @@ export default class Demobar extends React.Component {
                   onUploadFile={(file) => {
                     return `${file.name}-${Math.random() * 10000000}`;
                   }}
+                  onDownloadFile={(file) => {
+                    return `download_${file.name}-${Math.random() * 10000000}`;
+                  }}
                   onUploadImage={(file) => {
                     return `path/${file.name}-${Math.random() * 10000000}`;
                   }}
@@ -242,6 +245,9 @@ export default class Demobar extends React.Component {
                   onUploadFile={(file) => {
                     return `${file.name}-${Math.random() * 10000000}`;
                   }}
+                  onDownloadFile={(file) => {
+                    return `download_${file.name}-${Math.random() * 10000000}`;
+                  }}
                   onUploadImage={(file) => {
                     return `path/${file.name}-${Math.random() * 10000000}`;
                   }}
@@ -313,6 +319,9 @@ export default class Demobar extends React.Component {
                   }}
                   onUploadFile={(file) => {
                     return `${file.name}-${Math.random() * 10000000}`;
+                  }}
+                  onDownloadFile={(file) => {
+                    return `download_${file.name}-${Math.random() * 10000000}`;
                   }}
                   onUploadImage={(file) => {
                     return `path/${file.name}-${Math.random() * 10000000}`;

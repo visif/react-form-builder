@@ -317,6 +317,9 @@ export default class Preview extends React.Component {
         onUploadImage={(file) => {
           return `path/${file.name}-${Math.random() * 10000000}`;
         }}
+        onDownloadFile={(file) => {
+          return `download_${file.name}-${Math.random() * 10000000}`;
+        }}
       />
     );
   }

@@ -85,6 +85,20 @@ class FileUpload extends React.Component {
     });
   };
 
+  onDownloadFile = async (file) => {
+    if (typeof this.props.onDownloadFile !== "function") {
+      console.log(
+        "FileUpload >>>>> no download function found",
+        this.props.onDownloadFile
+      );
+      return;
+    }
+
+    console.log("Downloading File file.....");
+    await this.props.onDownloadFile(file);
+    console.log("download filtPath: ", file);
+  };
+
   render() {
     return (
       <div
@@ -135,7 +149,12 @@ class FileUpload extends React.Component {
                         display: "block",
                       }}
                     >
-                      <span style={{ float: "left" }}>
+                      <span
+                        style={{ float: "left", cursor: "pointer" }}
+                        onClick={() => {
+                          this.onDownloadFile(file);
+                        }}
+                      >
                         <span style={{ marginRight: 4 }}>{index + 1}.</span>{" "}
                         {file.originalName}
                       </span>
