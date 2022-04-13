@@ -146,6 +146,7 @@ export default class FormElementsEdit extends React.Component {
   }
 
   addOptions() {
+    debugger;
     const optionsApiUrl = document.getElementById("optionsApiUrl").value;
     if (optionsApiUrl) {
       get(optionsApiUrl).then((data) => {
@@ -402,7 +403,7 @@ export default class FormElementsEdit extends React.Component {
                 Required
               </label>
             </div>
-            {this.props.element.hasOwnProperty("readOnly") && (
+            {/* {this.props.element.hasOwnProperty("readOnly") && (
               <div className="custom-control custom-checkbox">
                 <input
                   id="is-read-only"
@@ -420,7 +421,7 @@ export default class FormElementsEdit extends React.Component {
                   Read only
                 </label>
               </div>
-            )}
+            )} */}
             {this.props.element.hasOwnProperty("defaultToday") && (
               <div className="custom-control custom-checkbox">
                 <input
@@ -560,7 +561,7 @@ export default class FormElementsEdit extends React.Component {
           <div />
         )}
 
-        {canHavePageBreakBefore && (
+        {/* {canHavePageBreakBefore && (
           <div className="form-group">
             <label className="control-label">Print Options</label>
             <div className="custom-control custom-checkbox">
@@ -584,7 +585,7 @@ export default class FormElementsEdit extends React.Component {
               </label>
             </div>
           </div>
-        )}
+        )} */}
 
         {canHaveAlternateForm && (
           <div className="form-group">
@@ -823,7 +824,7 @@ export default class FormElementsEdit extends React.Component {
             </select>
           </div>
         )}
-        {this.props.element.canPopulateFromApi &&
+        {/* {this.props.element.canPopulateFromApi &&
           this.props.element.hasOwnProperty("options") && (
             <div className="form-group">
               <label className="control-label" htmlFor="optionsApiUrl">
@@ -849,7 +850,7 @@ export default class FormElementsEdit extends React.Component {
                 </div>
               </div>
             </div>
-          )}
+          )} */}
         {this.props.element.hasOwnProperty("options") && (
           <DynamicOptionList
             showCorrectColumn={this.props.showCorrectColumn}
