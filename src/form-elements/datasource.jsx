@@ -2,7 +2,6 @@ import React from "react";
 import ComponentHeader from "./component-header";
 import ComponentLabel from "./component-label";
 
-
 class DataSource extends React.Component {
   constructor(props) {
     super(props);
@@ -18,6 +17,7 @@ class DataSource extends React.Component {
       defaultSelectedItem: defaultValue.selectedItem,
       isShowingList: false,
       sourceType: props.data.sourceType,
+      getDataSource: props.getDataSource,
     };
   }
 
@@ -36,19 +36,26 @@ class DataSource extends React.Component {
 
   static getDerivedStateFromProps = (props, state) => {
     console.log("DataSource >> getDerivedStateFromProps");
-    console.log("props", props);
-    console.log("state", state);
     if (
-      props.defaultValue &&
-      JSON.stringify(props.defaultValue.selectedItem) !==
-        JSON.stringify(state.defaultSelectedItem)
+      props.getDataSource !== state.getDataSource ||
+      (props.defaultValue &&
+        JSON.stringify(props.defaultValue.selectedItem) !==
+          JSON.stringify(state.defaultSelectedItem))
     ) {
+      console.log("DataSource >> getDerivedStateFromProps => props changed");
+
       const defaultValue = props.defaultValue || {};
+      let data = [];
+      if (props.getDataSource && typeof props.getDataSource === "function") {
+        data = this.props.getDataSource(props.data.sourceType);
+      }
 
       return {
         searchText: defaultValue.value,
         selectedItem: defaultValue.selectedItem,
         defaultSelectedItem: defaultValue.selectedItem,
+        sourceList: data,
+        matchedList: data,
       };
     }
 
