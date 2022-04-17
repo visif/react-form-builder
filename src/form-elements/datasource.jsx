@@ -26,7 +26,8 @@ class DataSource extends React.Component {
       this.props.getDataSource &&
       typeof this.props.getDataSource === "function"
     ) {
-      const data = this.props.getDataSource(this.props.data.sourceType);
+      const data = this.props.getDataSource(this.props.data.sourceType) || [];
+      console.log("getDataSource componentDidMount data: ", data);
       this.setState({
         sourceList: data,
         matchedList: data,
@@ -35,27 +36,32 @@ class DataSource extends React.Component {
   }
 
   static getDerivedStateFromProps = (props, state) => {
-    console.log("DataSource >> getDerivedStateFromProps");
-    if (
-      props.getDataSource !== state.getDataSource ||
-      (props.defaultValue &&
-        JSON.stringify(props.defaultValue.selectedItem) !==
-          JSON.stringify(state.defaultSelectedItem))
-    ) {
-      console.log("DataSource >> getDerivedStateFromProps => props changed");
-
-      const defaultValue = props.defaultValue || {};
+    console.log("111 DataSource >> getDerivedStateFromProps");
+    if (props.getDataSource !== state.getDataSource) {
       let data = [];
       if (props.getDataSource && typeof props.getDataSource === "function") {
-        data = this.props.getDataSource(props.data.sourceType);
+        data = props.getDataSource(props.data.sourceType) || [];
+        console.log("getDataSource data: ", data);
       }
+      return {
+        sourceList: data,
+        matchedList: data,
+        getDataSource: props.getDataSource,
+      };
+    } else if (
+      props.defaultValue &&
+      JSON.stringify(props.defaultValue.selectedItem) !==
+        JSON.stringify(state.defaultSelectedItem)
+    ) {
+      console.log(
+        "333 DataSource >> getDerivedStateFromProps => props changed"
+      );
 
+      const defaultValue = props.defaultValue || {};
       return {
         searchText: defaultValue.value,
         selectedItem: defaultValue.selectedItem,
         defaultSelectedItem: defaultValue.selectedItem,
-        sourceList: data,
-        matchedList: data,
       };
     }
 
@@ -76,12 +82,8 @@ class DataSource extends React.Component {
     }, 200);
   };
 
-  handleOnChange = (event) => {
-    if (event.key === "Enter") {
-      return;
-    }
-
-    const value = event.target.value;
+  debounceOnChange = (value) => {
+    console.log("handleOnChange => ", value);
 
     const matchData = this.state.sourceList.filter((item) => {
       return `${item.name}`
@@ -92,6 +94,13 @@ class DataSource extends React.Component {
       searchText: value,
       matchedList: matchData,
     });
+  };
+
+  handleOnChange = (event) => {
+    if (event.key === "Enter") {
+      return;
+    }
+    this.debounceOnChange(event.target.value);
   };
 
   render() {
@@ -145,7 +154,7 @@ class DataSource extends React.Component {
                 display: this.state.isShowingList ? "block" : "none",
               }}
             >
-              {this.state.matchedList.map((item) => {
+              {(this.state.matchedList || []).map((item) => {
                 return (
                   <div
                     key={item.id}
