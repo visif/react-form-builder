@@ -399,21 +399,28 @@ export default class FormElementsEdit extends React.Component {
             </div>
           </div>
         )}
-        {this.props.element.hasOwnProperty("label") && (
+
+        {(this.props.element.hasOwnProperty("label") ||
+          this.props.element.element === "Signature2") && (
           <div className="form-group">
-            <label>Display Label</label>
-            <Editor
-              toolbar={toolbar}
-              defaultEditorState={editorState}
-              onBlur={this.updateElement.bind(this)}
-              onEditorStateChange={this.onEditorStateChange.bind(
-                this,
-                0,
-                "label"
-              )}
-              stripPastedStyles={true}
-            />
-            <br />
+            {this.props.element.element !== "Signature2" && (
+              <>
+                <label>Display Label</label>
+                <Editor
+                  toolbar={toolbar}
+                  defaultEditorState={editorState}
+                  onBlur={this.updateElement.bind(this)}
+                  onEditorStateChange={this.onEditorStateChange.bind(
+                    this,
+                    0,
+                    "label"
+                  )}
+                  stripPastedStyles={true}
+                />
+                <br />
+              </>
+            )}
+
             <div className="custom-control custom-checkbox">
               <input
                 id="is-required"
@@ -431,6 +438,7 @@ export default class FormElementsEdit extends React.Component {
                 Required
               </label>
             </div>
+
             {/* {this.props.element.hasOwnProperty("readOnly") && (
               <div className="custom-control custom-checkbox">
                 <input
