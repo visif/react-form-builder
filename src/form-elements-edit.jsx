@@ -31,6 +31,8 @@ export default class FormElementsEdit extends React.Component {
       element: this.props.element,
       data: this.props.data,
       dirty: false,
+      formDataSource: [],
+      activeForm: null,
     };
   }
 
@@ -96,6 +98,29 @@ export default class FormElementsEdit extends React.Component {
     // targProperty could be value or checked
     const this_element = this.state.element;
     this_element[elemProperty] = e.target[targProperty];
+
+    if (
+      elemProperty === "sourceType" &&
+      this_element[elemProperty] === "form"
+    ) {
+      // call api to get form data
+      const formData = this.props.getFormSource();
+      this.setState((current) => ({
+        ...current,
+        formDataSource: formData || [],
+      }));
+      console.log("getFormSource >>>> ", formData);
+    }
+
+    if (elemProperty === "formSource" && this.state.formDataSource) {
+      const activeForm = this.state.formDataSource.find(
+        (item) => item.id == this_element[elemProperty]
+      );
+      this.setState((current) => ({
+        ...current,
+        activeForm,
+      }));
+    }
 
     this.setState(
       {
@@ -237,6 +262,9 @@ export default class FormElementsEdit extends React.Component {
     if (this.props.element.hasOwnProperty("label")) {
       editorState = this.convertFromHTML(this.props.element.label);
     }
+
+    console.log("formDataSource ", this.state.formDataSource);
+    console.log("activeForm ", this.state.activeForm);
 
     return (
       <div>
@@ -922,6 +950,68 @@ export default class FormElementsEdit extends React.Component {
                 Form
               </option>
             </select>
+          </div>
+        )}
+        {this.props.element.sourceType === "form" && (
+          <div>
+            {this.props.element.hasOwnProperty("formSource") && (
+              <div className="form-group">
+                <label className="control-label" htmlFor="formSource">
+                  Form Source
+                </label>
+                <select
+                  className="form-control"
+                  id="formSource"
+                  defaultValue={this.props.element.formSource}
+                  onBlur={this.updateElement.bind(this)}
+                  onChange={this.editElementProp.bind(
+                    this,
+                    "formSource",
+                    "value"
+                  )}
+                >
+                  <option value={-1} key={-1}>
+                    " Please select "
+                  </option>
+                  {this.state.formDataSource &&
+                    this.state.formDataSource.map((item) => {
+                      return (
+                        <option value={item.id} key={item.id}>
+                          {item.name}
+                        </option>
+                      );
+                    })}
+                </select>
+              </div>
+            )}
+            {this.props.element.hasOwnProperty("formField") && (
+              <div className="form-group">
+                <label className="control-label" htmlFor="formField">
+                  Form Field
+                </label>
+                <select
+                  className="form-control"
+                  id="formField"
+                  defaultValue={this.props.element.formField}
+                  onBlur={this.updateElement.bind(this)}
+                  onChange={this.editElementProp.bind(
+                    this,
+                    "formField",
+                    "value"
+                  )}
+                >
+                  {this.state.activeForm &&
+                    this.state.activeForm.columns &&
+                    this.state.activeForm.columns.map((item) => {
+                      return (
+                        <option value={item} key={item}>
+                          {item}
+                        </option>
+                      );
+                    })}
+                </select>
+              </div>
+            )}
           </div>
         )}
       </div>

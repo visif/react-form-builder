@@ -335,6 +335,7 @@ export default class Preview extends React.Component {
       preview: this,
       element: this.props.editElement,
       updateElement: handleUpdateElement,
+      getFormSource: this.props.getFormSource,
     };
 
     return this.props.renderEditForm(formElementEditProps);

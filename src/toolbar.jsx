@@ -225,6 +225,8 @@ export default class Toolbar extends React.Component {
         icon: "fa fa-database",
         field_name: "data_source_",
         sourceType: "name",
+        formSource: "",
+        formField: "",
         canHaveAnswer: true,
         label: "Placeholder Label",
       },
@@ -513,6 +515,8 @@ export default class Toolbar extends React.Component {
 
     if (item.key === "DataSource") {
       elementOptions.sourceType = item.sourceType;
+      elementOptions.formSource = item.formSource;
+      elementOptions.formField = item.formField;
     }
 
     if (item.key === "FileUpload") {
