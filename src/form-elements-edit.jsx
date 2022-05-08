@@ -116,6 +116,12 @@ export default class FormElementsEdit extends React.Component {
       const activeForm = this.state.formDataSource.find(
         (item) => item.id == this_element[elemProperty]
       );
+
+      this_element["formField"] =
+        activeForm && activeForm.columns && activeForm.columns.length
+          ? activeForm.columns[0]
+          : null;
+
       this.setState((current) => ({
         ...current,
         activeForm,
@@ -265,6 +271,8 @@ export default class FormElementsEdit extends React.Component {
 
     console.log("formDataSource ", this.state.formDataSource);
     console.log("activeForm ", this.state.activeForm);
+    console.log("formSource ", this.props.element.formSource);
+    console.log("formField ", this.props.element.formField);
 
     return (
       <div>

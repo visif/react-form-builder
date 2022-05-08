@@ -77,7 +77,10 @@ class Signature2 extends React.Component {
   };
 
   render() {
-    // props.ref = this.inputField;
+    const hasRequiredLabel =
+      this.props.data.hasOwnProperty("required") &&
+      this.props.data.required === true &&
+      !this.props.read_only;
 
     return (
       <div
@@ -92,6 +95,16 @@ class Signature2 extends React.Component {
           onClick={this.clickToSign}
           style={{ cursor: "pointer" }}
         >
+          {hasRequiredLabel && (
+            <span
+              className="label-required badge badge-danger"
+              style={{
+                marginLeft: "60%",
+              }}
+            >
+              Required
+            </span>
+          )}
           <h5 style={{ textAlign: "center" }}>
             {this.state.isSigned ? "Already signed" : "(Click to sign)"}
           </h5>
