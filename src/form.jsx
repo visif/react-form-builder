@@ -403,7 +403,7 @@ export default class ReactForm extends React.Component {
       }
 
       if (this._isInvalid(item)) {
-        errors.push(`${item.label} is required!`);
+        errors.push(`${item.label || item.position} is required!`);
       }
 
       if (this.props.validateForCorrectness && this._isIncorrect(item)) {

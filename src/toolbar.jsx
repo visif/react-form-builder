@@ -303,7 +303,7 @@ export default class Toolbar extends React.Component {
       {
         key: "Signature2",
         name: "Signature",
-        label: "Signature",
+        // label: "Signature",
         icon: "fas fa-signature",
         field_name: "signature2_",
         position: "Placeholder Text",

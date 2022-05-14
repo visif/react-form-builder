@@ -93,24 +93,45 @@ export default class FormElementsEdit extends React.Component {
   }
   //-----end copy from vdc
 
+  componentDidMount() {
+    let formDataSource = [];
+    let activeForm = [];
+
+    if (this.props.element.element === "DataSource") {
+      // call api to get form data
+      formDataSource = this.props.getFormSource() || [];
+      if (formDataSource) {
+        activeForm = formDataSource.find(
+          (item) => item.id == this.props.element.formSource
+        );
+      }
+
+      this.setState((current) => ({
+        ...current,
+        formDataSource,
+        activeForm,
+      }));
+    }
+  }
+
   editElementProp(elemProperty, targProperty, e) {
     // elemProperty could be content or label
     // targProperty could be value or checked
     const this_element = this.state.element;
     this_element[elemProperty] = e.target[targProperty];
 
-    if (
-      elemProperty === "sourceType" &&
-      this_element[elemProperty] === "form"
-    ) {
-      // call api to get form data
-      const formData = this.props.getFormSource();
-      this.setState((current) => ({
-        ...current,
-        formDataSource: formData || [],
-      }));
-      console.log("getFormSource >>>> ", formData);
-    }
+    // if (
+    //   elemProperty === "sourceType" &&
+    //   this_element[elemProperty] === "form"
+    // ) {
+    //   // call api to get form data
+    //   const formData = this.props.getFormSource();
+    //   this.setState((current) => ({
+    //     ...current,
+    //     formDataSource: formData || [],
+    //   }));
+    //   console.log("getFormSource >>>> ", formData);
+    // }
 
     if (elemProperty === "formSource" && this.state.formDataSource) {
       const activeForm = this.state.formDataSource.find(
@@ -978,6 +999,7 @@ export default class FormElementsEdit extends React.Component {
                 <select
                   className="form-control"
                   id="formSource"
+                  value={this.props.element.formSource}
                   defaultValue={this.props.element.formSource}
                   onBlur={this.updateElement.bind(this)}
                   onChange={this.editElementProp.bind(
@@ -1009,6 +1031,7 @@ export default class FormElementsEdit extends React.Component {
                   className="form-control"
                   id="formField"
                   defaultValue={this.props.element.formField}
+                  value={this.props.element.formField}
                   onBlur={this.updateElement.bind(this)}
                   onChange={this.editElementProp.bind(
                     this,
