@@ -86,6 +86,7 @@ class ReactFormBuilder extends React.Component {
                 onChange={this.props.onChange}
                 uploadUrl={this.props.uploadUrl}
                 onImageUpload={this.props.onImageUpload}
+                getFormSource={this.props.getFormSource}
                 getActiveUserProperties={() => {
                   return {
                     name: "test",
