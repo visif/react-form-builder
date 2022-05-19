@@ -441,6 +441,7 @@ export default class ReactForm extends React.Component {
         onUploadFile={this.props.onUploadFile}
         onDownloadFile={this.props.onDownloadFile}
         onUploadImage={this.props.onUploadImage}
+        getFormSource={this.props.getFormSource}
       />
     );
   }

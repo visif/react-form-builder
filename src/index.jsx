@@ -123,12 +123,6 @@ class ReactFormBuilder extends React.Component {
 
                   return [];
                 }}
-                getFormSource={() => {
-                  return [
-                    { id: 1, name: "Form A", columns: ["columnA", "columnB"] },
-                    { id: 2, name: "Form B", columns: ["column1", "column2"] },
-                  ];
-                }}
                 onUploadFile={(file) => {
                   return `${file.name}-${Math.random() * 10000000}`;
                 }}
