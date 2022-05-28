@@ -93,13 +93,17 @@ export default class FormElementsEdit extends React.Component {
   }
   //-----end copy from vdc
 
-  componentDidMount() {
+  async componentDidMount() {
     let formDataSource = [];
     let activeForm = [];
 
-    if (this.props.element.element === "DataSource") {
+    if (
+      this.props.element.element === "DataSource" &&
+      this.props.getFormSource
+    ) {
       // call api to get form data
-      formDataSource = this.props.getFormSource() || [];
+      debugger;
+      formDataSource = (await this.props.getFormSource()) || [];
       if (formDataSource) {
         activeForm = formDataSource.find(
           (item) => item.id == this.props.element.formSource
