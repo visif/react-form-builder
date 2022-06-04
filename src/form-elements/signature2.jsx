@@ -10,6 +10,7 @@ class Signature2 extends React.Component {
       defaultValue: props.defaultValue && props.defaultValue.isSigned,
       isSigned: props.defaultValue && props.defaultValue.isSigned,
       signedPerson: props.defaultValue && props.defaultValue.signedPerson,
+      signedPersonId: props.defaultValue && props.defaultValue.signedPersonId,
       isError: false,
     };
   }
@@ -25,6 +26,7 @@ class Signature2 extends React.Component {
         isSigned: props.defaultValue && props.defaultValue.isSigned,
         isError: false,
         signedPerson: props.defaultValue.signedPerson,
+        signedPersonId: props.defaultValue && props.defaultValue.signedPersonId,
       };
     }
 
@@ -54,12 +56,14 @@ class Signature2 extends React.Component {
         ...current,
         isSigned: !current.isSigned,
         signedPerson: !current.isSigned ? userProperties.name : "",
+        signedPersonId: !current.isSigned ? userProperties.userId : "",
       }));
     } else if (this.props.data.specificRole === "notSpecific") {
       this.setState((current) => ({
         ...current,
         isSigned: !current.isSigned,
         signedPerson: !current.isSigned ? userProperties.name : "",
+        signedPersonId: !current.isSigned ? userProperties.userId : "",
       }));
     } else {
       if (!this.state.isError) {

@@ -97,6 +97,7 @@ export default class ReactForm extends React.Component {
       $item.value = {
         isSigned: ref.state.isSigned,
         signedPerson: ref.state.signedPerson,
+        signedPersonId: ref.state.signedPersonId,
       };
     } else if (item.element === "DataSource" && ref.state.searchText) {
       $item.value = {
