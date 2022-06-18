@@ -95,7 +95,8 @@ export default class FormElementsEdit extends React.Component {
 
   async componentDidMount() {
     let formDataSource = [];
-    let activeForm = [];
+    let activeForm = {};
+    let activeFormContent = {};
 
     if (
       this.props.element.element === "DataSource" &&
@@ -108,48 +109,50 @@ export default class FormElementsEdit extends React.Component {
         activeForm = formDataSource.find(
           (item) => item.id == this.props.element.formSource
         );
+
+        debugger;
+        /// Call api to get current form field
+        if (activeForm && this.props.getFormContent) {
+          activeFormContent = (await this.props.getFormContent()) || {};
+        }
       }
 
       this.setState((current) => ({
         ...current,
         formDataSource,
-        activeForm,
+        activeForm: activeFormContent,
       }));
     }
   }
 
-  editElementProp(elemProperty, targProperty, e) {
+  async editElementProp(elemProperty, targProperty, e) {
     // elemProperty could be content or label
     // targProperty could be value or checked
     const this_element = this.state.element;
     this_element[elemProperty] = e.target[targProperty];
-
-    // if (
-    //   elemProperty === "sourceType" &&
-    //   this_element[elemProperty] === "form"
-    // ) {
-    //   // call api to get form data
-    //   const formData = this.props.getFormSource();
-    //   this.setState((current) => ({
-    //     ...current,
-    //     formDataSource: formData || [],
-    //   }));
-    //   console.log("getFormSource >>>> ", formData);
-    // }
 
     if (elemProperty === "formSource" && this.state.formDataSource) {
       const activeForm = this.state.formDataSource.find(
         (item) => item.id == this_element[elemProperty]
       );
 
+      let activeFormContent = {};
+
+      /// Call api to get current form field
+
+      if (this.props.getFormContent) {
+        activeFormContent = (await this.props.getFormContent()) || {};
+      }
+
+      debugger;
       this_element["formField"] =
-        activeForm && activeForm.columns && activeForm.columns.length
-          ? activeForm.columns[0]
+        activeFormContent.columns && activeFormContent.columns.length
+          ? activeFormContent.columns[0]
           : null;
 
       this.setState((current) => ({
         ...current,
-        activeForm,
+        activeForm: activeFormContent,
       }));
     }
 

@@ -87,6 +87,7 @@ class ReactFormBuilder extends React.Component {
                 uploadUrl={this.props.uploadUrl}
                 onImageUpload={this.props.onImageUpload}
                 getFormSource={this.props.getFormSource}
+                getFormContent={this.props.getFormContent}
                 getActiveUserProperties={() => {
                   return {
                     name: "test",
@@ -123,6 +124,19 @@ class ReactFormBuilder extends React.Component {
 
                   return [];
                 }}
+                // getFormSource={() => {
+                //   return [
+                //     { id: 1, name: "Form A", columns: ["columnA", "columnB"] },
+                //     { id: 2, name: "Form B", columns: ["column1", "column2"] },
+                //   ];
+                // }}
+                // getFormContent={() => {
+                //   return {
+                //     id: 1,
+                //     name: "Form A",
+                //     columns: ["columnA", "columnB"],
+                //   };
+                // }}
                 onUploadFile={(file) => {
                   return `${file.name}-${Math.random() * 10000000}`;
                 }}
