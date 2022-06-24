@@ -113,10 +113,12 @@ export default class FormElementsEdit extends React.Component {
         debugger;
         /// Call api to get current form field
         if (activeForm && this.props.getFormContent) {
-          activeFormContent = (await this.props.getFormContent()) || {};
+          activeFormContent =
+            (await this.props.getFormContent(activeForm)) || {};
         }
       }
 
+      debugger;
       this.setState((current) => ({
         ...current,
         formDataSource,
@@ -126,6 +128,7 @@ export default class FormElementsEdit extends React.Component {
   }
 
   async editElementProp(elemProperty, targProperty, e) {
+    debugger;
     // elemProperty could be content or label
     // targProperty could be value or checked
     const this_element = this.state.element;
@@ -140,8 +143,8 @@ export default class FormElementsEdit extends React.Component {
 
       /// Call api to get current form field
 
-      if (this.props.getFormContent) {
-        activeFormContent = (await this.props.getFormContent()) || {};
+      if (activeForm && this.props.getFormContent) {
+        activeFormContent = (await this.props.getFormContent(activeForm)) || {};
       }
 
       debugger;
