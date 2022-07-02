@@ -3,6 +3,7 @@ import React from "react";
 import Select from "react-select";
 import SignaturePad from "react-signature-canvas";
 import ReactBootstrapSlider from "react-bootstrap-slider";
+import TextAreaAutosize from "react-textarea-autosize";
 
 import StarRating from "./star-rating";
 import HeaderBar from "./header-bar";
@@ -228,7 +229,7 @@ class TextArea extends React.Component {
         <ComponentHeader {...this.props} />
         <div className="form-group">
           <ComponentLabel {...this.props} />
-          <textarea {...props} />
+          <TextAreaAutosize {...props} />
         </div>
       </div>
     );
