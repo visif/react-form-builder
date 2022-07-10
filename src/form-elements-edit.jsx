@@ -103,14 +103,12 @@ export default class FormElementsEdit extends React.Component {
       this.props.getFormSource
     ) {
       // call api to get form data
-      debugger;
       formDataSource = (await this.props.getFormSource()) || [];
       if (formDataSource) {
         activeForm = formDataSource.find(
           (item) => item.id == this.props.element.formSource
         );
 
-        debugger;
         /// Call api to get current form field
         if (activeForm && this.props.getFormContent) {
           activeFormContent =
@@ -118,7 +116,6 @@ export default class FormElementsEdit extends React.Component {
         }
       }
 
-      debugger;
       this.setState((current) => ({
         ...current,
         formDataSource,
@@ -128,7 +125,6 @@ export default class FormElementsEdit extends React.Component {
   }
 
   async editElementProp(elemProperty, targProperty, e) {
-    debugger;
     // elemProperty could be content or label
     // targProperty could be value or checked
     const this_element = this.state.element;
@@ -147,7 +143,6 @@ export default class FormElementsEdit extends React.Component {
         activeFormContent = (await this.props.getFormContent(activeForm)) || {};
       }
 
-      debugger;
       this_element["formField"] =
         activeFormContent.columns && activeFormContent.columns.length
           ? activeFormContent.columns[0]
@@ -208,7 +203,6 @@ export default class FormElementsEdit extends React.Component {
   }
 
   addOptions() {
-    debugger;
     const optionsApiUrl = document.getElementById("optionsApiUrl").value;
     if (optionsApiUrl) {
       get(optionsApiUrl).then((data) => {
