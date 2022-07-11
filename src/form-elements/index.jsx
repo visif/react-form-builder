@@ -534,7 +534,7 @@ class Checkboxes extends React.Component {
                   onChange={() => {
                     self.setState((current) => {
                       const activeVal = self.getActiveValue(
-                        current.value,
+                        current && current.value,
                         option.key
                       );
                       const newActiveVal = activeVal
@@ -545,12 +545,20 @@ class Checkboxes extends React.Component {
                             info: "",
                           };
 
+                      if (!current) {
+                        return current;
+                      }
+
                       return {
                         ...current,
                         value: [
-                          ...current.value.filter(
-                            (item) => item.key !== option.key
-                          ),
+                          current.value
+                            ? {
+                                ...current.value.filter(
+                                  (item) => item.key !== option.key
+                                ),
+                              }
+                            : [],
                           newActiveVal,
                         ],
                       };
