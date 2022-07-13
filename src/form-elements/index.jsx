@@ -552,13 +552,9 @@ class Checkboxes extends React.Component {
                       return {
                         ...current,
                         value: [
-                          current.value
-                            ? {
-                                ...current.value.filter(
-                                  (item) => item.key !== option.key
-                                ),
-                              }
-                            : [],
+                          ...(current.value || []).filter(
+                            (item) => item.key !== option.key
+                          ),
                           newActiveVal,
                         ],
                       };
