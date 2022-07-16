@@ -143,10 +143,10 @@ export default class FormElementsEdit extends React.Component {
         activeFormContent = (await this.props.getFormContent(activeForm)) || {};
       }
 
-      this_element["formField"] =
-        activeFormContent.columns && activeFormContent.columns.length
-          ? activeFormContent.columns[0]
-          : null;
+      // this_element["formField"] =
+      //   activeFormContent.columns && activeFormContent.columns.length
+      //     ? activeFormContent.columns[0]
+      //     : null;
 
       this.setState((current) => ({
         ...current,
@@ -293,11 +293,6 @@ export default class FormElementsEdit extends React.Component {
     if (this.props.element.hasOwnProperty("label")) {
       editorState = this.convertFromHTML(this.props.element.label);
     }
-
-    console.log("formDataSource ", this.state.formDataSource);
-    console.log("activeForm ", this.state.activeForm);
-    console.log("formSource ", this.props.element.formSource);
-    console.log("formField ", this.props.element.formField);
 
     return (
       <div>
@@ -1028,7 +1023,42 @@ export default class FormElementsEdit extends React.Component {
             )}
             {this.props.element.hasOwnProperty("formField") && (
               <div className="form-group">
-                <label className="control-label" htmlFor="formField">
+                <label className="control-label" htmlFor="formSource">
+                  Select Fields
+                </label>
+                {this.state.activeForm &&
+                  this.state.activeForm.columns &&
+                  this.state.activeForm.columns.map((item) => {
+                    return (
+                      <div className="custom-control custom-checkbox">
+                        <input
+                          id={item.id}
+                          className="custom-control-input"
+                          type="checkbox"
+                          checked={
+                            this.props.element.hasOwnProperty(
+                              `formField[${item.id}]`
+                            )
+                              ? this.props.element[`formField[${item.id}]`]
+                              : false
+                          }
+                          value={item.id}
+                          onChange={this.editElementProp.bind(
+                            this,
+                            `formField[${item.id}]`,
+                            "checked"
+                          )}
+                        />
+                        <label
+                          className="custom-control-label"
+                          htmlFor={item.id}
+                        >
+                          {item.label || item.text || ""}
+                        </label>
+                      </div>
+                    );
+                  })}
+                {/* <label className="control-label" htmlFor="formField">
                   Form Field
                 </label>
                 <select
@@ -1047,12 +1077,12 @@ export default class FormElementsEdit extends React.Component {
                     this.state.activeForm.columns &&
                     this.state.activeForm.columns.map((item) => {
                       return (
-                        <option value={item} key={item}>
-                          {item}
+                        <option value={item.id} key={item.id}>
+                          {item.label || item.text || ""}
                         </option>
                       );
                     })}
-                </select>
+                </select> */}
               </div>
             )}
           </div>

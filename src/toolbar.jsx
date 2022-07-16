@@ -226,7 +226,7 @@ export default class Toolbar extends React.Component {
         field_name: "data_source_",
         sourceType: "name",
         formSource: "",
-        formField: "",
+        formField: {},
         canHaveAnswer: true,
         label: "Placeholder Label",
       },

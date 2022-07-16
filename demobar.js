@@ -132,29 +132,29 @@ export default class Demobar extends React.Component {
                       name: "test",
                     };
                   }}
-                  getDataSource={(sourceType) => {
-                    if (sourceType === "name") {
+                  getDataSource={(data) => {
+                    if (data.sourceType === "name") {
                       return [
                         { id: 1, name: "NameA lastNameA" },
                         { id: 2, name: "NameB lastNameB" },
                       ];
                     }
 
-                    if (sourceType === "department") {
+                    if (data.sourceType === "department") {
                       return [
                         { id: 1, name: "departmentA" },
                         { id: 2, name: "departmentB" },
                       ];
                     }
 
-                    if (sourceType === "role") {
+                    if (data.sourceType === "role") {
                       return [
                         { id: 1, name: "roleA" },
                         { id: 2, name: "roleB" },
                       ];
                     }
 
-                    if (sourceType === "form") {
+                    if (data.sourceType === "form") {
                       return [
                         { id: 1, name: "formA" },
                         { id: 2, name: "formB" },
@@ -211,29 +211,29 @@ export default class Demobar extends React.Component {
                       name: "test",
                     };
                   }}
-                  getDataSource={(sourceType) => {
-                    if (sourceType === "name") {
+                  getDataSource={(data) => {
+                    if (data.sourceType === "name") {
                       return [
                         { id: 1, name: "NameA lastNameA" },
                         { id: 2, name: "NameB lastNameB" },
                       ];
                     }
 
-                    if (sourceType === "department") {
+                    if (data.sourceType === "department") {
                       return [
                         { id: 1, name: "departmentA" },
                         { id: 2, name: "departmentB" },
                       ];
                     }
 
-                    if (sourceType === "role") {
+                    if (data.sourceType === "role") {
                       return [
                         { id: 1, name: "roleA" },
                         { id: 2, name: "roleB" },
                       ];
                     }
 
-                    if (sourceType === "form") {
+                    if (data.sourceType === "form") {
                       return [
                         { id: 1, name: "formA" },
                         { id: 2, name: "formB" },
@@ -286,29 +286,29 @@ export default class Demobar extends React.Component {
                       name: "test",
                     };
                   }}
-                  getDataSource={(sourceType) => {
-                    if (sourceType === "name") {
+                  getDataSource={(data) => {
+                    if (data.sourceType === "name") {
                       return [
                         { id: 1, name: "NameA lastNameA" },
                         { id: 2, name: "NameB lastNameB" },
                       ];
                     }
 
-                    if (sourceType === "department") {
+                    if (data.sourceType === "department") {
                       return [
                         { id: 1, name: "departmentA" },
                         { id: 2, name: "departmentB" },
                       ];
                     }
 
-                    if (sourceType === "role") {
+                    if (data.sourceType === "role") {
                       return [
                         { id: 1, name: "roleA" },
                         { id: 2, name: "roleB" },
                       ];
                     }
 
-                    if (sourceType === "form") {
+                    if (data.sourceType === "form") {
                       return [
                         { id: 1, name: "formA" },
                         { id: 2, name: "formB" },

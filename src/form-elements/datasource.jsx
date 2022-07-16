@@ -26,8 +26,7 @@ class DataSource extends React.Component {
       this.props.getDataSource &&
       typeof this.props.getDataSource === "function"
     ) {
-      const data = this.props.getDataSource(this.props.data.sourceType) || [];
-      console.log("getDataSource componentDidMount data: ", data);
+      const data = this.props.getDataSource(this.props.data) || [];
       this.setState({
         sourceList: data,
         matchedList: data,
@@ -36,12 +35,10 @@ class DataSource extends React.Component {
   }
 
   static getDerivedStateFromProps = (props, state) => {
-    console.log("111 DataSource >> getDerivedStateFromProps");
     if (props.getDataSource !== state.getDataSource) {
       let data = [];
       if (props.getDataSource && typeof props.getDataSource === "function") {
-        data = props.getDataSource(props.data.sourceType) || [];
-        console.log("getDataSource data: ", data);
+        data = props.getDataSource(props.data) || [];
       }
       return {
         sourceList: data,
@@ -53,10 +50,6 @@ class DataSource extends React.Component {
       JSON.stringify(props.defaultValue.selectedItem) !==
         JSON.stringify(state.defaultSelectedItem)
     ) {
-      console.log(
-        "333 DataSource >> getDerivedStateFromProps => props changed"
-      );
-
       const defaultValue = props.defaultValue || {};
       return {
         searchText: defaultValue.value,
@@ -83,8 +76,6 @@ class DataSource extends React.Component {
   };
 
   debounceOnChange = (value) => {
-    console.log("handleOnChange => ", value);
-
     const matchData = this.state.sourceList.filter((item) => {
       return `${item.name}`
         .toLocaleLowerCase()
