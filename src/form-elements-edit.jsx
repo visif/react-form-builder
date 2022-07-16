@@ -1037,15 +1037,15 @@ export default class FormElementsEdit extends React.Component {
                           type="checkbox"
                           checked={
                             this.props.element.hasOwnProperty(
-                              `formField[${item.id}]`
+                              `formField${item.id}`
                             )
-                              ? this.props.element[`formField[${item.id}]`]
+                              ? this.props.element[`formField${item.id}`]
                               : false
                           }
                           value={item.id}
                           onChange={this.editElementProp.bind(
                             this,
-                            `formField[${item.id}]`,
+                            `formField${item.id}`,
                             "checked"
                           )}
                         />
