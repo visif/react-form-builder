@@ -21,12 +21,12 @@ class DataSource extends React.Component {
     };
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     if (
       this.props.getDataSource &&
       typeof this.props.getDataSource === "function"
     ) {
-      const data = this.props.getDataSource(this.props.data) || [];
+      const data = (await this.props.getDataSource(this.props.data)) || [];
       this.setState({
         sourceList: data,
         matchedList: data,
@@ -34,11 +34,11 @@ class DataSource extends React.Component {
     }
   }
 
-  static getDerivedStateFromProps = (props, state) => {
+  static getDerivedStateFromProps = async (props, state) => {
     if (props.getDataSource !== state.getDataSource) {
       let data = [];
       if (props.getDataSource && typeof props.getDataSource === "function") {
-        data = props.getDataSource(props.data) || [];
+        data = (await props.getDataSource(props.data)) || [];
       }
       return {
         sourceList: data,
