@@ -1032,26 +1032,28 @@ export default class FormElementsEdit extends React.Component {
                     return (
                       <div className="custom-control custom-checkbox">
                         <input
-                          id={item.id}
+                          id={item.field_name}
                           className="custom-control-input"
                           type="checkbox"
                           checked={
                             this.props.element.hasOwnProperty(
-                              `formField${item.id}`
+                              `formField${item.field_name}`
                             )
-                              ? this.props.element[`formField${item.id}`]
+                              ? this.props.element[
+                                  `formField${item.field_name}`
+                                ]
                               : false
                           }
-                          value={item.id}
+                          value={item.field_name}
                           onChange={this.editElementProp.bind(
                             this,
-                            `formField${item.id}`,
+                            `formField${item.field_name}`,
                             "checked"
                           )}
                         />
                         <label
                           className="custom-control-label"
-                          htmlFor={item.id}
+                          htmlFor={item.field_name}
                         >
                           {item.label || item.text || ""}
                         </label>
