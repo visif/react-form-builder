@@ -1021,7 +1021,7 @@ export default class FormElementsEdit extends React.Component {
                 </select>
               </div>
             )}
-            {this.props.element.hasOwnProperty("formField") && (
+            {this.props.element.sourceType === "form" && (
               <div className="form-group">
                 <label className="control-label" htmlFor="formSource">
                   Select Fields

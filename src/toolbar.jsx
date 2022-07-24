@@ -517,7 +517,7 @@ export default class Toolbar extends React.Component {
     if (item.key === "DataSource") {
       elementOptions.sourceType = item.sourceType;
       elementOptions.formSource = item.formSource;
-      elementOptions.formField = item.formField;
+      elementOptions.formField = item.formField || {};
     }
 
     if (item.key === "FileUpload") {
