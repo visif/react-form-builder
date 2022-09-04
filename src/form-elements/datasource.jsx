@@ -22,11 +22,10 @@ class DataSource extends React.Component {
   }
 
   async componentDidMount() {
-    if (
-      this.props.getDataSource &&
-      typeof this.props.getDataSource === "function"
-    ) {
-      const data = (await this.props.getDataSource(this.props.data)) || [];
+    console.log("<<<<<<<<<<<<<<<< componentDidMount >>>>>>>>>>>>>>>>");
+
+    if (typeof this.props.getDataSource === "function") {
+      const data = await this.props.getDataSource(this.props.data);
       this.setState({
         sourceList: data,
         matchedList: data,
@@ -35,17 +34,9 @@ class DataSource extends React.Component {
   }
 
   static getDerivedStateFromProps = async (props, state) => {
-    if (props.getDataSource !== state.getDataSource) {
-      let data = [];
-      if (props.getDataSource && typeof props.getDataSource === "function") {
-        data = (await props.getDataSource(props.data)) || [];
-      }
-      return {
-        sourceList: data,
-        matchedList: data,
-        getDataSource: props.getDataSource,
-      };
-    } else if (
+    console.log("getDerivedStateFromProps ");
+
+    if (
       props.defaultValue &&
       JSON.stringify(props.defaultValue.selectedItem) !==
         JSON.stringify(state.defaultSelectedItem)
