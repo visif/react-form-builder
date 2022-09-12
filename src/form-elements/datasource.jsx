@@ -133,6 +133,8 @@ class DataSource extends React.Component {
                 top: "100%",
                 left: 0,
                 right: 0,
+                height: 250,
+                overflowY: "auto",
                 display: this.state.isShowingList ? "block" : "none",
               }}
             >
