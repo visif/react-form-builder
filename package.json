@@ -45,6 +45,7 @@
     "immutability-helper": "^3.1.1",
     "isomorphic-fetch": "^3.0.0",
     "lodash-es": "^4.17.21",
+    "node-sass": "^7.0.3",
     "prop-types": "^15.7.2",
     "react-bootstrap-slider": "^2.2.3",
     "react-datepicker": "^3.4.1",
@@ -54,6 +55,7 @@
     "react-select": "^3.2.0",
     "react-signature-canvas": "^1.0.3",
     "react-textarea-autosize": "^8.3.4",
+    "sass": "^1.55.0",
     "xss": "^1.0.8"
   },
   "peerDependencies": {
@@ -84,7 +86,6 @@
     "eslint-plugin-react": "^7.22.0",
     "express": "^4.17.1",
     "multer": "^1.4.2",
-    "node-sass": "^6.0.1",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
     "rimraf": "^3.0.2",
