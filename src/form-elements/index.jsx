@@ -130,6 +130,10 @@ class TextInput extends React.Component {
     this.inputField = React.createRef();
   }
 
+  userProperties = this.props.getActiveUserProperties();
+  savedEditor = this.props.data.defaultValue.editor;
+  isSameEditor = savedEditor && savedEditor.xx;
+
   render() {
     const props = {};
     props.type = "text";
@@ -744,6 +748,7 @@ const Image = (props) => {
       <ComponentHeader {...props} />
       {props.data.src && (
         <img
+          style={{ maxWidth: "100%", height: "auto" }}
           src={props.data.src}
           width={props.data.width}
           height={props.data.height}

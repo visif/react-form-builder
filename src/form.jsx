@@ -199,6 +199,7 @@ export default class ReactForm extends React.Component {
       custom_name: item.custom_name || item.field_name,
     };
     const ref = this.inputs[item.field_name];
+    const activeUser = this.props.getActiveUserProperties();
 
     if (item.element === "Checkboxes" || item.element === "RadioButtons") {
       const checked_options = [];
@@ -221,15 +222,24 @@ export default class ReactForm extends React.Component {
             key: option.key,
             value: true,
             info: info,
+            editor: activeUser,
           });
         }
       });
 
       itemData.value = checked_options;
     } else {
-      if (!ref) return null;
-      itemData.value = this._getItemValue(item, ref).value;
+      if (!ref) {
+        return null;
+      }
+
+      const valueItem = this._getItemValue(item, ref).value;
+      itemData.value = {
+        ...valueItem,
+        editor: activeUser,
+      };
     }
+
     return itemData;
   }
 
