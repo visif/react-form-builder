@@ -130,9 +130,9 @@ class TextInput extends React.Component {
     this.inputField = React.createRef();
   }
 
-  userProperties = this.props.getActiveUserProperties();
-  savedEditor = this.props.data.defaultValue.editor;
-  isSameEditor = savedEditor && savedEditor.xx;
+  // userProperties = this.props.getActiveUserProperties();
+  // savedEditor = this.props.data.defaultValue.editor;
+  // isSameEditor = savedEditor && savedEditor.xx;
 
   render() {
     const props = {};
