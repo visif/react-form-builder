@@ -130,11 +130,16 @@ class TextInput extends React.Component {
     this.inputField = React.createRef();
   }
 
-  // userProperties = this.props.getActiveUserProperties();
-  // savedEditor = this.props.data.defaultValue.editor;
-  // isSameEditor = savedEditor && savedEditor.xx;
-
   render() {
+    const userProperties = this.props.getActiveUserProperties();
+
+    const savedEditor =
+      this.props.data.defaultValue && this.props.data.defaultValue.editor;
+    let isSameEditor = true;
+    if (savedEditor && savedEditor.userId) {
+      isSameEditor = userProperties.userId === savedEditor.userId;
+    }
+
     const props = {};
     props.type = "text";
     props.className = "form-control";
@@ -149,7 +154,7 @@ class TextInput extends React.Component {
       baseClasses += " alwaysbreak";
     }
 
-    if (this.props.read_only) {
+    if (this.props.read_only || !isSameEditor) {
       props.disabled = "disabled";
     }
 

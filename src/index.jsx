@@ -92,6 +92,7 @@ class ReactFormBuilder extends React.Component {
                 getActiveUserProperties={() => {
                   return {
                     name: "test",
+                    userId: "id001",
                   };
                 }}
                 // getDataSource={(data) => {

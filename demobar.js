@@ -130,6 +130,7 @@ export default class Demobar extends React.Component {
                   getActiveUserProperties={() => {
                     return {
                       name: "test",
+                      userId: "id001",
                     };
                   }}
                   getDataSource={(data) => {
@@ -209,6 +210,7 @@ export default class Demobar extends React.Component {
                   getActiveUserProperties={() => {
                     return {
                       name: "test",
+                      userId: "id001",
                     };
                   }}
                   getDataSource={(data) => {
@@ -284,6 +286,7 @@ export default class Demobar extends React.Component {
                   getActiveUserProperties={() => {
                     return {
                       name: "test",
+                      userId: "id001",
                     };
                   }}
                   getDataSource={(data) => {
