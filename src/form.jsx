@@ -222,22 +222,27 @@ export default class ReactForm extends React.Component {
             key: option.key,
             value: true,
             info: info,
-            editor: activeUser,
           });
         }
       });
 
       itemData.value = checked_options;
+      itemData.editor = activeUser;
     } else {
       if (!ref) {
         return null;
       }
 
-      const valueItem = this._getItemValue(item, ref).value;
-      itemData.value = {
-        ...valueItem,
-        editor: activeUser,
-      };
+      const valueItem = this._getItemValue(item, ref);
+
+      itemData.value = valueItem.value;
+      itemData.editor = activeUser;
+
+      // const valueItem = this._getItemValue(item, ref).value;
+      // itemData.value = {
+      //   ...valueItem,
+      //   editor: activeUser,
+      // };
     }
 
     return itemData;
