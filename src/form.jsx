@@ -61,6 +61,10 @@ export default class ReactForm extends React.Component {
     return this.state.answerData[item.field_name];
   }
 
+  _getEditor(item) {
+    return this.props.answer_data["editor"];
+  }
+
   _optionsDefaultValue(item) {
     const defaultValue = this._getDefaultValue(item);
     if (defaultValue) {
@@ -452,6 +456,7 @@ export default class ReactForm extends React.Component {
         data={item}
         read_only={this.props.read_only}
         defaultValue={this._getDefaultValue(item)}
+        editor={this._getEditor(item)}
         getActiveUserProperties={this.props.getActiveUserProperties}
         getDataSource={this.props.getDataSource}
         onUploadFile={this.props.onUploadFile}
