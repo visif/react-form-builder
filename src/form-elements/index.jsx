@@ -131,7 +131,9 @@ class TextInput extends React.Component {
   }
 
   render() {
-    const userProperties = this.props.getActiveUserProperties();
+    const userProperties =
+      this.props.getActiveUserProperties &&
+      this.props.getActiveUserProperties();
 
     const savedEditor = this.props.editor;
     let isSameEditor = true;
