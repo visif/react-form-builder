@@ -572,6 +572,7 @@ export default class ReactForm extends React.Component {
                 data={item}
                 read_only={this.props.read_only}
                 defaultValue={this._getDefaultValue(item)}
+                editor={this._getEditor(item)}
                 getDataSource={this.props.getDataSource}
               />
             );
@@ -592,6 +593,7 @@ export default class ReactForm extends React.Component {
                 key={`form_${item.id}`}
                 data={item}
                 defaultValue={this._getDefaultValue(item)}
+                editor={this._getEditor(item)}
               />
             );
           case "Signature2":
@@ -604,6 +606,7 @@ export default class ReactForm extends React.Component {
                 data={item}
                 defaultValue={this._getDefaultValue(item)}
                 getActiveUserProperties={this.props.getActiveUserProperties}
+                editor={this._getEditor(item)}
               />
             );
           case "Checkboxes":
@@ -616,6 +619,7 @@ export default class ReactForm extends React.Component {
                 key={`form_${item.id}`}
                 data={item}
                 defaultValue={this._optionsDefaultValue(item)}
+                editor={this._getEditor(item)}
               />
             );
           case "Image":
@@ -627,6 +631,7 @@ export default class ReactForm extends React.Component {
                 key={`form_${item.id}`}
                 data={item}
                 defaultValue={this._getDefaultValue(item)}
+                editor={this._getEditor(item)}
               />
             );
           case "Download":
@@ -636,6 +641,7 @@ export default class ReactForm extends React.Component {
                 mutable={true}
                 key={`form_${item.id}`}
                 data={item}
+                editor={this._getEditor(item)}
               />
             );
           case "Camera":
@@ -647,6 +653,7 @@ export default class ReactForm extends React.Component {
                 key={`form_${item.id}`}
                 data={item}
                 defaultValue={this._getDefaultValue(item)}
+                editor={this._getEditor(item)}
               />
             );
           case "FileUpload":
@@ -660,6 +667,7 @@ export default class ReactForm extends React.Component {
                 defaultValue={this._getDefaultValue(item)}
                 onUploadFile={this.props.onUploadFile}
                 onDownloadFile={this.props.onDownloadFile}
+                editor={this._getEditor(item)}
               />
             );
           case "ImageUpload":
@@ -672,6 +680,7 @@ export default class ReactForm extends React.Component {
                 data={item}
                 defaultValue={this._getDefaultValue(item)}
                 onUploadImage={this.props.onUploadImage}
+                editor={this._getEditor(item)}
               />
             );
           default:
