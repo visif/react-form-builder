@@ -62,7 +62,13 @@ export default class ReactForm extends React.Component {
   }
 
   _getEditor(item) {
-    return this.props.answer_data && this.props.answer_data["editor"];
+    if (!this.props.answer_data || !Array.isArray(this.props.answer_data)) {
+      return null;
+    }
+    const itemAns = this.props.answer_data.find(
+      (x) => x.name === item.field_name
+    );
+    return itemAns && itemAns.editor;
   }
 
   _optionsDefaultValue(item) {
