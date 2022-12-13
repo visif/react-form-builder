@@ -26,7 +26,7 @@ const convert = (answers) => {
   if (Array.isArray(answers)) {
     const result = {};
     answers.forEach((x) => {
-      if (x.name.indexOf("tags_") > -1) {
+      if (x.name && x.name.indexOf("tags_") > -1) {
         result[x.name] = x.value.map((y) => y.value);
       } else {
         result[x.name] = x.value;
@@ -237,7 +237,7 @@ export default class ReactForm extends React.Component {
       });
 
       itemData.value = checked_options;
-      itemData.editor = activeUser;
+      itemData.editor = checked_options.length > 0 ? activeUser : null;
     } else {
       if (!ref) {
         return null;
@@ -246,13 +246,19 @@ export default class ReactForm extends React.Component {
       const valueItem = this._getItemValue(item, ref);
 
       itemData.value = valueItem.value;
-      itemData.editor = activeUser;
-
-      // const valueItem = this._getItemValue(item, ref).value;
-      // itemData.value = {
-      //   ...valueItem,
-      //   editor: activeUser,
-      // };
+      itemData.editor = valueItem.value ? activeUser : null;
+      if (item.element === "Signature2") {
+        itemData.editor = valueItem.value.isSigned ? activeUser : null;
+      } else if (item.element === "DataSource" && ref.state.searchText) {
+        itemData.editor = valueItem.value.value ? activeUser : null;
+      } else if (item.element === "FileUpload") {
+        itemData.editor =
+          valueItem.value.fileList && valueItem.value.fileList.length
+            ? activeUser
+            : null;
+      } else if (item.element === "ImageUpload") {
+        itemData.editor = valueItem.value.filePath ? activeUser : null;
+      }
     }
 
     return itemData;
