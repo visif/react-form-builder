@@ -137,7 +137,7 @@ class TextInput extends React.Component {
 
     const savedEditor = this.props.editor;
     let isSameEditor = true;
-    if (savedEditor && savedEditor.userId) {
+    if (savedEditor && savedEditor.userId && !!userProperties) {
       isSameEditor = userProperties.userId === savedEditor.userId;
     }
 
