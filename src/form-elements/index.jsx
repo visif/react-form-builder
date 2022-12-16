@@ -214,13 +214,25 @@ class TextArea extends React.Component {
     super(props);
     this.inputField = React.createRef();
   }
-
   render() {
+    const userProperties =
+      this.props.getActiveUserProperties &&
+      this.props.getActiveUserProperties();
+
+    const savedEditor = this.props.editor;
+    let isSameEditor = true;
+    if (savedEditor && savedEditor.userId && !!userProperties) {
+      isSameEditor = userProperties.userId === savedEditor.userId;
+    }
+
     const props = {};
     props.className = "form-control";
     props.name = this.props.data.field_name;
 
-    if (this.props.read_only) {
+    // if (this.props.read_only) {
+    //   props.disabled = "disabled";
+    // }
+    if (this.props.read_only || !isSameEditor) {
       props.disabled = "disabled";
     }
 
@@ -550,10 +562,10 @@ class Checkboxes extends React.Component {
                       const newActiveVal = activeVal
                         ? { ...activeVal, value: !activeVal.value }
                         : {
-                            key: option.key,
-                            value: true,
-                            info: "",
-                          };
+                          key: option.key,
+                          value: true,
+                          info: "",
+                        };
 
                       if (!current) {
                         return current;
@@ -903,8 +915,8 @@ class Camera extends React.Component {
         <div className="form-group">
           <ComponentLabel {...this.props} />
           {this.props.read_only === true &&
-          this.props.defaultValue &&
-          this.props.defaultValue.length > 0 ? (
+            this.props.defaultValue &&
+            this.props.defaultValue.length > 0 ? (
             <div>
               <img src={sourceDataURL} />
             </div>
