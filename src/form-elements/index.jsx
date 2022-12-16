@@ -178,6 +178,16 @@ class NumberInput extends React.Component {
   }
 
   render() {
+    const userProperties =
+      this.props.getActiveUserProperties &&
+      this.props.getActiveUserProperties();
+
+    const savedEditor = this.props.editor;
+    let isSameEditor = true;
+    if (savedEditor && savedEditor.userId && !!userProperties) {
+      isSameEditor = userProperties.userId === savedEditor.userId;
+    }
+
     const props = {};
     props.type = "number";
     props.className = "form-control";
@@ -188,7 +198,11 @@ class NumberInput extends React.Component {
       props.ref = this.inputField;
     }
 
-    if (this.props.read_only) {
+    //if (this.props.read_only) {
+    //  props.disabled = "disabled";
+    //}
+
+    if (this.props.read_only || !isSameEditor) {
       props.disabled = "disabled";
     }
 
@@ -292,6 +306,16 @@ class Dropdown extends React.Component {
   };
 
   render() {
+    const userProperties =
+      this.props.getActiveUserProperties &&
+      this.props.getActiveUserProperties();
+
+    const savedEditor = this.props.editor;
+    let isSameEditor = true;
+    if (savedEditor && savedEditor.userId && !!userProperties) {
+      isSameEditor = userProperties.userId === savedEditor.userId;
+    }
+
     const props = {};
     props.className = "form-control";
     props.name = this.props.data.field_name;
@@ -303,7 +327,11 @@ class Dropdown extends React.Component {
       props.ref = this.inputField;
     }
 
-    if (this.props.read_only) {
+    //if (this.props.read_only) {
+    //  props.disabled = "disabled";
+    //}
+
+    if (this.props.read_only || !isSameEditor) {
       props.disabled = "disabled";
     }
 
@@ -352,6 +380,16 @@ class Signature extends React.Component {
   };
 
   render() {
+    const userProperties =
+      this.props.getActiveUserProperties &&
+      this.props.getActiveUserProperties();
+
+    const savedEditor = this.props.editor;
+    let isSameEditor = true;
+    if (savedEditor && savedEditor.userId && !!userProperties) {
+      isSameEditor = userProperties.userId === savedEditor.userId;
+    }
+
     const { defaultValue } = this.state;
     let canClear = !!defaultValue;
     const props = {};
@@ -367,7 +405,11 @@ class Signature extends React.Component {
     if (this.props.mutable) {
       pad_props.defaultValue = defaultValue;
       pad_props.ref = this.canvas;
-      canClear = !this.props.read_only;
+      canClear = !this.props.read_only || isSameEditor;
+    }
+
+    if (this.props.read_only || !isSameEditor) {
+      props.disabled = "disabled";
     }
 
     let baseClasses = "SortableItem rfb-item";
@@ -385,7 +427,7 @@ class Signature extends React.Component {
         <ComponentHeader {...this.props} />
         <div className="form-group">
           <ComponentLabel {...this.props} />
-          {this.props.read_only === true || !!sourceDataURL ? (
+          {this.props.read_only === true || !isSameEditor || !!sourceDataURL ? (
             <img src={sourceDataURL} />
           ) : (
             <SignaturePad {...pad_props} />
@@ -444,7 +486,8 @@ class Tags extends React.Component {
       props.value = options[0].text;
     } // to show a sample of what tags looks like
     if (this.props.mutable) {
-      props.isDisabled = this.props.read_only;
+      //props.isDisabled = this.props.read_only;
+      props.isDisabled = (this.props.read_only || !isSameEditor) ? true : false;
       props.value = this.state.value;
       props.ref = this.inputField;
     }
@@ -500,6 +543,16 @@ class Checkboxes extends React.Component {
   };
 
   render() {
+    const userProperties =
+      this.props.getActiveUserProperties &&
+      this.props.getActiveUserProperties();
+
+    const savedEditor = this.props.editor;
+    let isSameEditor = true;
+    if (savedEditor && savedEditor.userId && !!userProperties) {
+      isSameEditor = userProperties.userId === savedEditor.userId;
+    }
+
     const self = this;
     let classNames = "custom-control custom-checkbox";
     if (this.props.data.inline) {
@@ -533,7 +586,11 @@ class Checkboxes extends React.Component {
               props.checked = answerItem?.value ?? false;
             }
 
-            if (this.props.read_only) {
+            //if (this.props.read_only) {
+            //  props.disabled = "disabled";
+            //}
+
+            if (this.props.read_only || !isSameEditor) {
               props.disabled = "disabled";
             }
 
@@ -652,6 +709,16 @@ class RadioButtons extends React.Component {
   };
 
   render() {
+    const userProperties =
+      this.props.getActiveUserProperties &&
+      this.props.getActiveUserProperties();
+
+    const savedEditor = this.props.editor;
+    let isSameEditor = true;
+    if (savedEditor && savedEditor.userId && !!userProperties) {
+      isSameEditor = userProperties.userId === savedEditor.userId;
+    }
+
     const self = this;
     let classNames = "custom-control custom-radio";
     if (this.props.data.inline) {
@@ -684,7 +751,10 @@ class RadioButtons extends React.Component {
             if (self.props.mutable) {
               props.checked = answerItem?.value ?? false;
             }
-            if (this.props.read_only) {
+            //if (this.props.read_only) {
+            //  props.disabled = "disabled";
+            //}
+            if (this.props.read_only || !isSameEditor) {
               props.disabled = "disabled";
             }
 
@@ -784,6 +854,16 @@ class Rating extends React.Component {
   }
 
   render() {
+    const userProperties =
+      this.props.getActiveUserProperties &&
+      this.props.getActiveUserProperties();
+
+    const savedEditor = this.props.editor;
+    let isSameEditor = true;
+    if (savedEditor && savedEditor.userId && !!userProperties) {
+      isSameEditor = userProperties.userId === savedEditor.userId;
+    }
+
     const props = {};
     props.name = this.props.data.field_name;
     props.ratingAmount = 5;
@@ -794,7 +874,8 @@ class Rating extends React.Component {
           ? parseFloat(this.props.defaultValue, 10)
           : 0;
       props.editing = true;
-      props.disabled = this.props.read_only;
+      //props.disabled = this.props.read_only ||;
+      props.disabled = (this.props.read_only || !isSameEditor) ? true : false;
       props.ref = this.inputField;
     }
 

@@ -76,7 +76,7 @@ class DatePicker extends React.Component {
     if (updated
       || (props.data.defaultToday !== state.defaultToday)
       || (state.defaultValue !== props.defaultValue)
-      ) {
+    ) {
       const newState = DatePicker.updateDateTime(props, state, formatMask);
       return newState;
     }
@@ -84,6 +84,16 @@ class DatePicker extends React.Component {
   }
 
   render() {
+    const userProperties =
+      this.props.getActiveUserProperties &&
+      this.props.getActiveUserProperties();
+
+    const savedEditor = this.props.editor;
+    let isSameEditor = true;
+    if (savedEditor && savedEditor.userId && !!userProperties) {
+      isSameEditor = userProperties.userId === savedEditor.userId;
+    }
+
     const { showTimeSelect, showTimeSelectOnly } = this.props.data;
     const props = {};
     props.type = 'date';
@@ -107,33 +117,33 @@ class DatePicker extends React.Component {
         <div className="form-group">
           <ComponentLabel {...this.props} />
           <div>
-            { readOnly &&
+            {(readOnly || !isSameEditor) &&
               <input type="text"
-                     name={props.name}
-                     ref={props.ref}
-                     readOnly={readOnly}
-                     placeholder={this.state.placeholder}
-                     value={this.state.value}
-                     className="form-control" />
+                name={props.name}
+                ref={props.ref}
+                readOnly={readOnly}
+                placeholder={this.state.placeholder}
+                value={this.state.value}
+                className="form-control" />
             }
-            { iOS && !readOnly &&
+            {iOS && !readOnly &&
               <input type="date"
-                     name={props.name}
-                     ref={props.ref}
-                     onChange={this.handleChange}
-                     dateFormat="MM/DD/YYYY"
-                     placeholder={this.state.placeholder}
-                     value={this.state.value}
-                     className = "form-control" />
+                name={props.name}
+                ref={props.ref}
+                onChange={this.handleChange}
+                dateFormat="MM/DD/YYYY"
+                placeholder={this.state.placeholder}
+                value={this.state.value}
+                className="form-control" />
             }
-            { !iOS && !readOnly &&
+            {!iOS && !readOnly &&
               <ReactDatePicker
                 name={props.name}
                 ref={props.ref}
                 onChange={this.handleChange}
                 selected={this.state.internalValue}
                 todayButton={'Today'}
-                className = "form-control"
+                className="form-control"
                 isClearable={true}
                 showTimeSelect={showTimeSelect}
                 showTimeSelectOnly={showTimeSelectOnly}
