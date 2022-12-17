@@ -81,6 +81,16 @@ class Signature2 extends React.Component {
   };
 
   render() {
+    const userProperties =
+      this.props.getActiveUserProperties &&
+      this.props.getActiveUserProperties();
+
+    const savedEditor = this.props.editor;
+    let isSameEditor = true;
+    if (savedEditor && savedEditor.userId && !!userProperties) {
+      isSameEditor = userProperties.userId === savedEditor.userId;
+    }
+
     const hasRequiredLabel =
       this.props.data.hasOwnProperty("required") &&
       this.props.data.required === true &&
@@ -89,14 +99,17 @@ class Signature2 extends React.Component {
     return (
       <div
         ref={this.tableRef}
-        className={`SortableItem rfb-item${
-          this.props.data.pageBreakBefore ? " alwaysbreak" : ""
-        }`}
+        className={`SortableItem rfb-item${this.props.data.pageBreakBefore ? " alwaysbreak" : ""
+          }`}
       >
         <ComponentHeader {...this.props} />
         <div
           className="form-group"
-          onClick={this.clickToSign}
+          onClick={() => {
+            if (isSameEditor) {
+              this.clickToSign();
+            }
+          }}
           style={{ cursor: "pointer" }}
         >
           {hasRequiredLabel && (

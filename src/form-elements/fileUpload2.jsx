@@ -20,7 +20,7 @@ class FileUpload extends React.Component {
     if (
       props.defaultValue &&
       JSON.stringify(props.defaultValue.fileList) !==
-        JSON.stringify(state.defaultValue)
+      JSON.stringify(state.defaultValue)
     ) {
       const fileList =
         (props.defaultValue && props.defaultValue.fileList) || [];
@@ -100,12 +100,21 @@ class FileUpload extends React.Component {
   };
 
   render() {
+    const userProperties =
+      this.props.getActiveUserProperties &&
+      this.props.getActiveUserProperties();
+
+    const savedEditor = this.props.editor;
+    let isSameEditor = true;
+    if (savedEditor && savedEditor.userId && !!userProperties) {
+      isSameEditor = userProperties.userId === savedEditor.userId;
+    }
+
     return (
       <div
         ref={this.tableRef}
-        className={`SortableItem rfb-item${
-          this.props.data.pageBreakBefore ? " alwaysbreak" : ""
-        }`}
+        className={`SortableItem rfb-item${this.props.data.pageBreakBefore ? " alwaysbreak" : ""
+          }`}
       >
         <ComponentHeader {...this.props} />
         <div className="form-group">
@@ -165,7 +174,9 @@ class FileUpload extends React.Component {
                           marginTop: 4,
                         }}
                         onClick={() => {
-                          this.onRemoveFile(file);
+                          if (isSameEditor) {
+                            this.onRemoveFile(file);
+                          }
                         }}
                       >
                         <i className="fas fa-trash"></i>

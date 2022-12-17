@@ -99,7 +99,8 @@ class DatePicker extends React.Component {
     props.type = 'date';
     props.className = 'form-control';
     props.name = this.props.data.field_name;
-    const readOnly = this.props.data.readOnly || this.props.read_only;
+    //const readOnly = this.props.data.readOnly || this.props.read_only;
+    const readOnly = this.props.data.readOnly || this.props.read_only || !isSameEditor;
     const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     const placeholderText = this.state.formatMask.toLowerCase();
 
@@ -117,7 +118,7 @@ class DatePicker extends React.Component {
         <div className="form-group">
           <ComponentLabel {...this.props} />
           <div>
-            {(readOnly || !isSameEditor) &&
+            {(readOnly) &&
               <input type="text"
                 name={props.name}
                 ref={props.ref}
