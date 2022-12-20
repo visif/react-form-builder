@@ -108,7 +108,7 @@ class ImageUpload extends React.Component {
               <i className="is-isolated fas fa-trash"></i>
             </div>
             <img
-              style={{ width: "50vw" }}
+              style={{ width: "70vw" }}
               src={
                 this.state.blobUrl || this.state.filePath
                   ? this.state.blobUrl || this.state.filePath
