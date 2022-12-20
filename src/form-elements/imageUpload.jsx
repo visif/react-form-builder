@@ -89,9 +89,8 @@ class ImageUpload extends React.Component {
     return (
       <div
         ref={this.tableRef}
-        className={`SortableItem rfb-item${
-          this.props.data.pageBreakBefore ? " alwaysbreak" : ""
-        }`}
+        className={`SortableItem rfb-item${this.props.data.pageBreakBefore ? " alwaysbreak" : ""
+          }`}
       >
         <ComponentHeader {...this.props} />
         <div className="form-group">
@@ -109,7 +108,7 @@ class ImageUpload extends React.Component {
               <i className="is-isolated fas fa-trash"></i>
             </div>
             <img
-              style={{ width: 200 }}
+              style={{ width: "50vw" }}
               src={
                 this.state.blobUrl || this.state.filePath
                   ? this.state.blobUrl || this.state.filePath
