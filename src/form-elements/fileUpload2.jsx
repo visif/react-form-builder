@@ -99,7 +99,7 @@ class FileUpload extends React.Component {
     console.log("download filtPath: ", file);
 
     if (!isSameEditor) {
-      props.disabled = "disabled";
+      props.disabled = "true";
     }
 
   };

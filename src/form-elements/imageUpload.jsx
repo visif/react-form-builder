@@ -85,7 +85,7 @@ class ImageUpload extends React.Component {
     });
 
     if (!isSameEditor) {
-      props.disabled = "disabled";
+      props.disabled = "true";
     }
   };
 

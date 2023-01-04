@@ -113,7 +113,7 @@ class DataSource extends React.Component {
     }
 
     if (this.props.read_only || !isSameEditor) {
-      props.disabled = "disabled";
+      props.disabled = "true";
     }
 
     return (

@@ -14,9 +14,9 @@ export default class Table extends React.Component {
       columns: props.data.columns,
       defaultValue: props.defaultValue,
       inputs: Table.getInputValues(
-        props.defaultValue, 
-        props.data.columns, 
-        Number(props.data.rows), 
+        props.defaultValue,
+        props.data.columns,
+        Number(props.data.rows),
         rowsAdded,
         props.data.rowLabels,
       ),
@@ -45,7 +45,7 @@ export default class Table extends React.Component {
 
   static getDerivedStateFromProps = (props, state) => {
     console.log('Table getDerivedStateFromProps')
-    if (Number(props.data.rows) !== Number(state.rows) 
+    if (Number(props.data.rows) !== Number(state.rows)
       || (JSON.stringify(props.data.columns) !== JSON.stringify(state.columns))
       || (JSON.stringify(state.rowLabels) !== JSON.stringify(props.data.rowLabels))
     ) {
@@ -94,53 +94,53 @@ export default class Table extends React.Component {
 
   renderRows = () => {
     const isFixedRow = this.state.rowLabels?.length > 0;
-    const activeRows =  isFixedRow ? this.state.rowLabels?.length : (this.state.rows + this.state.rowsAdded);
+    const activeRows = isFixedRow ? this.state.rowLabels?.length : (this.state.rows + this.state.rowsAdded);
     return (
       <tbody>
-      {
+        {
 
-        Array.from(Array(Number(activeRows)).keys()).map((i) => (
-          <tr key={"row" + i}>
-          {
-            this.props.data?.columns?.map((j, jIndex) => {
-              const isLabel =  (isFixedRow && jIndex === 0);
+          Array.from(Array(Number(activeRows)).keys()).map((i) => (
+            <tr key={"row" + i}>
+              {
+                this.props.data?.columns?.map((j, jIndex) => {
+                  const isLabel = (isFixedRow && jIndex === 0);
 
-              if (isLabel) {
-                return (
-                  <td>
-                    <label>
-                      {this.state.rowLabels[i].text}
-                    </label>
-                  </td>
-                );
+                  if (isLabel) {
+                    return (
+                      <td>
+                        <label>
+                          {this.state.rowLabels[i].text}
+                        </label>
+                      </td>
+                    );
+                  }
+
+                  const value = this.state.inputs[i] ? (this.state.inputs[i][jIndex] ?? '') : '';
+                  return (
+                    <td>
+                      <textarea
+                        className="form-control"
+                        style={isLabel ? { border: 0, backgroundColor: 'inherit' } : {}}
+                        disabled={isLabel || !isSameEditor}
+                        type="text"
+                        value={value}
+                        rows={1}
+                        onChange={(event) => {
+                          const value = event.target.value;
+                          const array = this.state.inputs;
+                          array[i][jIndex] = value;
+                          this.setState({
+                            inputs: array
+                          })
+                        }}
+                      />
+                    </td>
+                  );
+                })
               }
-                
-              const value = this.state.inputs[i] ? (this.state.inputs[i][jIndex] ?? '') : '';
-              return (
-                <td>
-                  <textarea
-                    className="form-control"
-                    style={isLabel ? { border: 0, backgroundColor: 'inherit'} : {}}
-                    disabled={isLabel}
-                    type="text"
-                    value={value}
-                    rows={1}
-                    onChange={(event) => {
-                      const value = event.target.value;
-                      const array = this.state.inputs;
-                      array[i][jIndex] = value;
-                      this.setState({
-                        inputs: array
-                      })
-                    }}
-                  />
-                </td>
-              );
-            })
-          }
-          </tr>
-        ))
-      }
+            </tr>
+          ))
+        }
       </tbody>
     );
   }
@@ -150,7 +150,17 @@ export default class Table extends React.Component {
     return `${(currentWidth / totalWidthCount) * 100}%`;
   }
 
-  render () {
+  render() {
+    const userProperties =
+      this.props.getActiveUserProperties &&
+      this.props.getActiveUserProperties();
+
+    const savedEditor = this.props.editor;
+    let isSameEditor = true;
+    if (savedEditor && savedEditor.userId && !!userProperties) {
+      isSameEditor = userProperties.userId === savedEditor.userId;
+    }
+
     let baseClasses = 'SortableItem rfb-item';
     if (this.props?.data?.pageBreakBefore) { baseClasses += ' alwaysbreak'; }
     const totalWidthCount = this.props.data?.columns.reduce((previous, current) => {
@@ -163,23 +173,23 @@ export default class Table extends React.Component {
         <ComponentHeader {...this.props} />
         <div className="form-group">
           <ComponentLabel {...this.props} />
-          <table 
+          <table
             className="table table-bordered"
             ref={this.tableRef}
             key={`table-${this.props.id}`}
           >
             <thead>
               <tr>
-              {
-                this.props.data?.columns?.map((col) => {
-                  return (
-                    <th 
-                      scope="col"
-                      style={{ width: this.getColumnWidth(totalWidthCount, col.width)}}
-                    >{col.text}</th>
-                  );
-                })
-              }
+                {
+                  this.props.data?.columns?.map((col) => {
+                    return (
+                      <th
+                        scope="col"
+                        style={{ width: this.getColumnWidth(totalWidthCount, col.width) }}
+                      >{col.text}</th>
+                    );
+                  })
+                }
               </tr>
             </thead>
             {
@@ -189,16 +199,17 @@ export default class Table extends React.Component {
           {
             !isFixedRow &&
             <div style={{ textAlign: 'right' }}>
-              <button 
-                type="button" 
-                class="btn btn-secondary" 
+              <button
+                type="button"
+                class="btn btn-secondary"
                 onClick={this.removeRow}
-                style={{ marginRight: 8, display: this.state.inputs.length > 0 ? 'initial' : 'none'}}
+                style={{ marginRight: 8, display: this.state.inputs.length > 0 ? 'initial' : 'none' }}
+                disabled={!isSameEditor}
               >Remove Row</button>
-              <button type="button" class="btn btn-info" onClick={this.addRow}>Add Row</button>
+              <button type="button" class="btn btn-info" disabled={!isSameEditor} onClick={this.addRow}>Add Row</button>
             </div>
           }
-        </div>  
+        </div>
       </div>
     )
   }
