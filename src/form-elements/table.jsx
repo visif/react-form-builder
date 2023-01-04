@@ -93,8 +93,19 @@ export default class Table extends React.Component {
   }
 
   renderRows = () => {
+    const userProperties =
+      this.props.getActiveUserProperties &&
+      this.props.getActiveUserProperties();
+
+    const savedEditor = this.props.editor;
+    let isSameEditor = true;
+    if (savedEditor && savedEditor.userId && !!userProperties) {
+      isSameEditor = userProperties.userId === savedEditor.userId;
+    }
+
     const isFixedRow = this.state.rowLabels?.length > 0;
     const activeRows = isFixedRow ? this.state.rowLabels?.length : (this.state.rows + this.state.rowsAdded);
+
     return (
       <tbody>
         {
