@@ -112,10 +112,6 @@ class DataSource extends React.Component {
       baseClasses += " alwaysbreak";
     }
 
-    if (this.props.read_only || !isSameEditor) {
-      props.disabled = "true";
-    }
-
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
@@ -134,6 +130,7 @@ class DataSource extends React.Component {
                 onFocus={this.handleInputFocus}
                 onBlur={this.handleInputBlur}
                 onChange={this.handleOnChange}
+                disabled={!isSameEditor}
               />
             </div>
             <div

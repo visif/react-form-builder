@@ -83,10 +83,6 @@ class ImageUpload extends React.Component {
       blobUrl,
       filePath: `${filePath}${extension}`,
     });
-
-    if (!isSameEditor) {
-      props.disabled = "true";
-    }
   };
 
   render() {
@@ -138,6 +134,7 @@ class ImageUpload extends React.Component {
               title=" "
               style={{ display: "none" }}
               onChange={this.uploadImageFile}
+              disabled={!isSameEditor}
             />
             <a
               href=""
