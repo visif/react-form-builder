@@ -134,15 +134,16 @@ class ImageUpload extends React.Component {
               title=" "
               style={{ display: "none" }}
               onChange={this.uploadImageFile}
-              disabled={!isSameEditor}
             />
             <a
               href=""
               className="btn btn-secondary"
               style={{ display: this.state.filePath ? "none" : "inline-block" }}
               onClick={(e) => {
-                this.inputField && this.inputField.current.click();
-                e.preventDefault();
+                if (isSameEditor) {
+                  this.inputField && this.inputField.current.click();
+                  e.preventDefault();
+                }
               }}
             >
               Upload Image

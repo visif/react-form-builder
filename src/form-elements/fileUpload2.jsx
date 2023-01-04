@@ -139,13 +139,15 @@ class FileUpload extends React.Component {
               style={{ marginTop: 6 }}
               className="btn btn-secondary"
               onClick={(e) => {
-                e.preventDefault();
-                this.inputField && this.inputField.current.click();
+                if (isSameEditor) {
+                  e.preventDefault();
+                  this.inputField && this.inputField.current.click();
+                }
               }}
             >
               Upload files
             </a>
-            {this.state.fileList && this.state.fileList.length && (
+            {this.state.fileList && this.state.fileList.length > 0 && (
               <ul
                 style={{
                   display: "flex",

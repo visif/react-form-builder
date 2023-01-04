@@ -130,7 +130,6 @@ class DataSource extends React.Component {
                 onFocus={this.handleInputFocus}
                 onBlur={this.handleInputBlur}
                 onChange={this.handleOnChange}
-                disabled={!isSameEditor}
               />
             </div>
             <div
@@ -143,6 +142,7 @@ class DataSource extends React.Component {
                 height: 250,
                 overflowY: "auto",
                 display: this.state.isShowingList ? "block" : "none",
+                backgroundColor: isSameEditor ? "grey" : inherit
               }}
             >
               {(this.state.matchedList || []).map((item) => {
@@ -158,10 +158,11 @@ class DataSource extends React.Component {
                       border: "1px solid rgba(0, 0, 0, 0.125)",
                     }}
                     onClick={() => {
-                      this.setState({
-                        selectedItem: item,
-                        searchText: item.name,
-                      });
+                      isSameEditor &&
+                        this.setState({
+                          selectedItem: item,
+                          searchText: item.name,
+                        });
                     }}
                   >
                     {item.name}
