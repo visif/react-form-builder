@@ -79,10 +79,12 @@ class DataSource extends React.Component {
   };
 
   handleOnChange = (event) => {
-    if (event.key === "Enter") {
-      return;
+    if (isSameEditor) {
+      if (event.key === "Enter") {
+        return;
+      }
+      this.debounceOnChange(event.target.value);
     }
-    this.debounceOnChange(event.target.value);
   };
 
   render() {

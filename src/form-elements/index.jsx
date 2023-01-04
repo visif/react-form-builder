@@ -524,9 +524,7 @@ class Checkboxes extends React.Component {
 
   static getDerivedStateFromProps(props, state) {
     console.log("Checkboxes getDerivedStateFromProps");
-    if (
-      JSON.stringify(state.defaultValue) !== JSON.stringify(props.defaultValue)
-    ) {
+    if (isSameEditor && JSON.stringify(state.defaultValue) !== JSON.stringify(props.defaultValue)) {
       console.log(
         "Checkboxes default prop changed",
         state.defaultValue,
