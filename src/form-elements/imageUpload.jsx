@@ -133,24 +133,24 @@ class ImageUpload extends React.Component {
               name="fileUpload"
               title=" "
               style={{ display: "none" }}
-              onChange={this.uploadImageFile}
+              onChange={
+                this.uploadImageFile
+              }
             />
             <a
               href=""
               className="btn btn-secondary"
-              style={{ display: this.state.filePath ? "none" : "inline-block" }}
+              style={{ display: this.state.filePath ? "none" : "inline-block", pointerEvents: isSameEditor ? "auto" : "none" }}
               onClick={(e) => {
-                if (isSameEditor) {
-                  this.inputField && this.inputField.current.click();
-                  e.preventDefault();
-                }
+                this.inputField && this.inputField.current.click();
+                e.preventDefault();
               }}
             >
               Upload Image
             </a>
           </div>
         </div>
-      </div>
+      </div >
     );
   }
 }

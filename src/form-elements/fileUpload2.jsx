@@ -131,18 +131,20 @@ class FileUpload extends React.Component {
               name="fileUpload"
               title=" "
               style={{ display: "none" }}
-              onChange={this.onUploadMultipleFiles}
+              onChange={() => {
+                if (isSameEditor) {
+                  this.onUploadMultipleFiles();
+                }
+              }}
               disabled={!isSameEditor}
             />
             <a
               href="#"
-              style={{ marginTop: 6 }}
+              style={{ marginTop: 6, pointerEvents: isSameEditor ? "auto" : "none" }}
               className="btn btn-secondary"
               onClick={(e) => {
-                if (isSameEditor) {
-                  e.preventDefault();
-                  this.inputField && this.inputField.current.click();
-                }
+                e.preventDefault();
+                this.inputField && this.inputField.current.click();
               }}
             >
               Upload files
@@ -180,11 +182,10 @@ class FileUpload extends React.Component {
                           float: "right",
                           cursor: "pointer",
                           marginTop: 4,
+                          pointerEvents: isSameEditor ? "auto" : "none"
                         }}
                         onClick={() => {
-                          if (isSameEditor) {
-                            this.onRemoveFile(file);
-                          }
+                          this.onRemoveFile(file);
                         }}
                       >
                         <i className="fas fa-trash"></i>

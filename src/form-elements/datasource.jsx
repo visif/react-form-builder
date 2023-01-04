@@ -157,14 +157,13 @@ class DataSource extends React.Component {
                       marginBottom: -1,
                       backgroundColor: isSameEditor ? "#fff" : "grey",
                       border: "1px solid rgba(0, 0, 0, 0.125)",
+                      pointerEvents: isSameEditor ? "auto" : "none"
                     }}
                     onClick={() => {
-                      if (isSameEditor) {
-                        this.setState({
-                          selectedItem: item,
-                          searchText: item.name,
-                        });
-                      }
+                      this.setState({
+                        selectedItem: item,
+                        searchText: item.name,
+                      });
                     }}
                   >
                     {item.name}
