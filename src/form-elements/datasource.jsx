@@ -39,7 +39,7 @@ class DataSource extends React.Component {
     if (
       props.defaultValue &&
       JSON.stringify(props.defaultValue.selectedItem) !==
-        JSON.stringify(state.defaultSelectedItem)
+      JSON.stringify(state.defaultSelectedItem)
     ) {
       const defaultValue = props.defaultValue || {};
       return {
@@ -86,6 +86,16 @@ class DataSource extends React.Component {
   };
 
   render() {
+    const userProperties =
+      this.props.getActiveUserProperties &&
+      this.props.getActiveUserProperties();
+
+    const savedEditor = this.props.editor;
+    let isSameEditor = true;
+    if (savedEditor && savedEditor.userId && !!userProperties) {
+      isSameEditor = userProperties.userId === savedEditor.userId;
+    }
+
     const props = {};
     props.type = "text";
     props.className = "form-control";
@@ -102,7 +112,7 @@ class DataSource extends React.Component {
       baseClasses += " alwaysbreak";
     }
 
-    if (this.props.read_only) {
+    if (this.props.read_only || !isSameEditor) {
       props.disabled = "disabled";
     }
 

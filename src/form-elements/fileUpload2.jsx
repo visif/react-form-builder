@@ -97,6 +97,11 @@ class FileUpload extends React.Component {
     console.log("Downloading File file.....");
     await this.props.onDownloadFile(file);
     console.log("download filtPath: ", file);
+
+    if (!isSameEditor) {
+      props.disabled = "disabled";
+    }
+
   };
 
   render() {
@@ -127,6 +132,7 @@ class FileUpload extends React.Component {
               title=" "
               style={{ display: "none" }}
               onChange={this.onUploadMultipleFiles}
+              disabled={!isSameEditor}
             />
             <a
               href="#"

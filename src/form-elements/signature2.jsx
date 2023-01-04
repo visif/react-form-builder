@@ -130,7 +130,7 @@ class Signature2 extends React.Component {
               textAlign: "center",
               marginTop: 8,
               marginBottom: 8,
-              color: this.state.isError ? "red" : "inherit",
+              color: this.state.isError ? "red" : "black",
             }}
           >
             {this.state.isError

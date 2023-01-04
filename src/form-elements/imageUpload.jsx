@@ -83,9 +83,23 @@ class ImageUpload extends React.Component {
       blobUrl,
       filePath: `${filePath}${extension}`,
     });
+
+    if (!isSameEditor) {
+      props.disabled = "disabled";
+    }
   };
 
   render() {
+    const userProperties =
+      this.props.getActiveUserProperties &&
+      this.props.getActiveUserProperties();
+
+    const savedEditor = this.props.editor;
+    let isSameEditor = true;
+    if (savedEditor && savedEditor.userId && !!userProperties) {
+      isSameEditor = userProperties.userId === savedEditor.userId;
+    }
+
     return (
       <div
         ref={this.tableRef}

@@ -125,6 +125,7 @@ class DatePicker extends React.Component {
                 readOnly={readOnly}
                 placeholder={this.state.placeholder}
                 value={this.state.value}
+                disabled={!isSameEditor}
                 className="form-control" />
             }
             {iOS && !readOnly &&
@@ -135,6 +136,7 @@ class DatePicker extends React.Component {
                 dateFormat="MM/DD/YYYY"
                 placeholder={this.state.placeholder}
                 value={this.state.value}
+                disabled={!isSameEditor}
                 className="form-control" />
             }
             {!iOS && !readOnly &&
@@ -151,6 +153,7 @@ class DatePicker extends React.Component {
                 dateFormat={this.state.formatMask}
                 portalId="root-portal"
                 autoComplete="off"
+                disabled={!isSameEditor}
                 placeholderText={placeholderText} />
             }
           </div>
