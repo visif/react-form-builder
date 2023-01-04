@@ -142,7 +142,7 @@ class DataSource extends React.Component {
                 height: 250,
                 overflowY: "auto",
                 display: this.state.isShowingList ? "block" : "none",
-                backgroundColor: isSameEditor ? "grey" : inherit
+                backgroundColor: isSameEditor ? inherit : "grey"
               }}
             >
               {(this.state.matchedList || []).map((item) => {
@@ -158,11 +158,12 @@ class DataSource extends React.Component {
                       border: "1px solid rgba(0, 0, 0, 0.125)",
                     }}
                     onClick={() => {
-                      isSameEditor &&
+                      if (isSameEditor) {
                         this.setState({
                           selectedItem: item,
                           searchText: item.name,
                         });
+                      }
                     }}
                   >
                     {item.name}
