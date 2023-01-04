@@ -141,8 +141,7 @@ class DataSource extends React.Component {
                 right: 0,
                 height: 250,
                 overflowY: "auto",
-                display: this.state.isShowingList ? "block" : "none",
-                backgroundColor: isSameEditor ? inherit : "grey"
+                display: this.state.isShowingList ? "block" : "none"
               }}
             >
               {(this.state.matchedList || []).map((item) => {
@@ -154,7 +153,7 @@ class DataSource extends React.Component {
                       display: "block",
                       padding: "0.75rem 1.25rem",
                       marginBottom: -1,
-                      backgroundColor: "#fff",
+                      backgroundColor: isSameEditor ? "#fff" : "grey",
                       border: "1px solid rgba(0, 0, 0, 0.125)",
                     }}
                     onClick={() => {
