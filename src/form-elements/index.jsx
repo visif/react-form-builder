@@ -302,7 +302,9 @@ class Dropdown extends React.Component {
   }
 
   handleChange = (e) => {
-    this.setState({ value: e.target.value });
+    if (isSameEditor) {
+      this.setState({ value: e.target.value });
+    }
   };
 
   render() {
@@ -611,33 +613,35 @@ class Checkboxes extends React.Component {
                     }
                   }}
                   onChange={() => {
-                    self.setState((current) => {
-                      const activeVal = self.getActiveValue(
-                        current && current.value,
-                        option.key
-                      );
-                      const newActiveVal = activeVal
-                        ? { ...activeVal, value: !activeVal.value }
-                        : {
-                          key: option.key,
-                          value: true,
-                          info: "",
+                    if (isSameEditor) {
+                      self.setState((current) => {
+                        const activeVal = self.getActiveValue(
+                          current && current.value,
+                          option.key
+                        );
+                        const newActiveVal = activeVal
+                          ? { ...activeVal, value: !activeVal.value }
+                          : {
+                            key: option.key,
+                            value: true,
+                            info: "",
+                          };
+
+                        if (!current) {
+                          return current;
+                        }
+
+                        return {
+                          ...current,
+                          value: [
+                            ...(current.value || []).filter(
+                              (item) => item.key !== option.key
+                            ),
+                            newActiveVal,
+                          ],
                         };
-
-                      if (!current) {
-                        return current;
-                      }
-
-                      return {
-                        ...current,
-                        value: [
-                          ...(current.value || []).filter(
-                            (item) => item.key !== option.key
-                          ),
-                          newActiveVal,
-                        ],
-                      };
-                    });
+                      });
+                    }
                   }}
                   {...props}
                 />
