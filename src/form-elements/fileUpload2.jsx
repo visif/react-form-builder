@@ -101,7 +101,6 @@ class FileUpload extends React.Component {
     if (!isSameEditor) {
       props.disabled = "disabled";
     }
-
   };
 
   render() {
@@ -131,16 +130,12 @@ class FileUpload extends React.Component {
               name="fileUpload"
               title=" "
               style={{ display: "none" }}
-              onChange={() => {
-                if (isSameEditor) {
-                  this.onUploadMultipleFiles();
-                }
-              }}
+              onChange={this.onUploadMultipleFiles}
               disabled={!isSameEditor}
             />
             <a
               href="#"
-              style={{ marginTop: 6, pointerEvents: isSameEditor ? "auto" : "none" }}
+              style={{ marginTop: 6 }}
               className="btn btn-secondary"
               onClick={(e) => {
                 e.preventDefault();
@@ -181,8 +176,7 @@ class FileUpload extends React.Component {
                         style={{
                           float: "right",
                           cursor: "pointer",
-                          marginTop: 4,
-                          pointerEvents: isSameEditor ? "auto" : "none"
+                          marginTop: 4
                         }}
                         onClick={() => {
                           this.onRemoveFile(file);
