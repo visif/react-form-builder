@@ -593,6 +593,7 @@ export default class ReactForm extends React.Component {
                 defaultValue={this._getDefaultValue(item)}
                 editor={this._getEditor(item)}
                 getDataSource={this.props.getDataSource}
+                getActiveUserProperties={this.props.getActiveUserProperties}
               />
             );
           case "CustomElement":
@@ -613,6 +614,7 @@ export default class ReactForm extends React.Component {
                 data={item}
                 defaultValue={this._getDefaultValue(item)}
                 editor={this._getEditor(item)}
+                getActiveUserProperties={this.props.getActiveUserProperties}
               />
             );
           case "Signature2":
@@ -638,6 +640,7 @@ export default class ReactForm extends React.Component {
                 key={`form_${item.id}`}
                 data={item}
                 defaultValue={this._optionsDefaultValue(item)}
+                getActiveUserProperties={this.props.getActiveUserProperties}
                 editor={this._getEditor(item)}
               />
             );
@@ -650,6 +653,7 @@ export default class ReactForm extends React.Component {
                 key={`form_${item.id}`}
                 data={item}
                 defaultValue={this._getDefaultValue(item)}
+                getActiveUserProperties={this.props.getActiveUserProperties}
                 editor={this._getEditor(item)}
               />
             );
@@ -661,6 +665,7 @@ export default class ReactForm extends React.Component {
                 key={`form_${item.id}`}
                 data={item}
                 editor={this._getEditor(item)}
+                getActiveUserProperties={this.props.getActiveUserProperties}
               />
             );
           case "Camera":
@@ -687,6 +692,7 @@ export default class ReactForm extends React.Component {
                 onUploadFile={this.props.onUploadFile}
                 onDownloadFile={this.props.onDownloadFile}
                 editor={this._getEditor(item)}
+                getActiveUserProperties={this.props.getActiveUserProperties}
               />
             );
           case "ImageUpload":
@@ -700,6 +706,7 @@ export default class ReactForm extends React.Component {
                 defaultValue={this._getDefaultValue(item)}
                 onUploadImage={this.props.onUploadImage}
                 editor={this._getEditor(item)}
+                getActiveUserProperties={this.props.getActiveUserProperties}
               />
             );
           default:
