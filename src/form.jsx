@@ -116,15 +116,20 @@ export default class ReactForm extends React.Component {
         selectedItem: ref.state.selectedItem,
       };
     } else if (item.element === "FileUpload") {
-      $item.value = {
-        fileList: ref.state.fileList,
-      };
+      $item.value =
+        ref.state.fileList && ref.state.fileList.length > 0
+          ? {
+              fileList: ref.state.fileList,
+            }
+          : null;
     } else if (item.element === "ImageUpload") {
-      $item.value = {
-        filePath: ref.state.filePath,
-        fileName: ref.state.fileName,
-        blobUrl: ref.state.blobUrl,
-      };
+      $item.value = !!ref.state.filePath
+        ? {
+            filePath: ref.state.filePath,
+            fileName: ref.state.fileName,
+            blobUrl: ref.state.blobUrl,
+          }
+        : null;
     } else if (ref && ref.inputField && ref.inputField.current) {
       $item = ReactDOM.findDOMNode(ref.inputField.current);
       if ($item && typeof $item.value === "string") {
