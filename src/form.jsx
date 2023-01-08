@@ -116,20 +116,15 @@ export default class ReactForm extends React.Component {
         selectedItem: ref.state.selectedItem,
       };
     } else if (item.element === "FileUpload") {
-      $item.value =
-        ref.state.fileList && ref.state.fileList.length > 0
-          ? {
-              fileList: ref.state.fileList,
-            }
-          : null;
+      $item.value = {
+        fileList: ref.state.fileList,
+      };
     } else if (item.element === "ImageUpload") {
-      $item.value = !!ref.state.filePath
-        ? {
-            filePath: ref.state.filePath,
-            fileName: ref.state.fileName,
-            blobUrl: ref.state.blobUrl,
-          }
-        : null;
+      $item.value = {
+        filePath: ref.state.filePath,
+        fileName: ref.state.fileName,
+        blobUrl: ref.state.blobUrl,
+      };
     } else if (ref && ref.inputField && ref.inputField.current) {
       $item = ReactDOM.findDOMNode(ref.inputField.current);
       if ($item && typeof $item.value === "string") {
@@ -196,6 +191,13 @@ export default class ReactForm extends React.Component {
           if ($item.value === 0) {
             invalid = true;
           }
+        } else if (
+          $item.element === "FileUpload" &&
+          (!$item.value.fileList || $item.value.fileList.length <= 0)
+        ) {
+          invalid = true;
+        } else if (item.element === "ImageUpload" && !item.value.filePath) {
+          invalid = true;
         } else if (
           $item.value === undefined ||
           $item.value === null ||
@@ -426,7 +428,11 @@ export default class ReactForm extends React.Component {
               item.element !== "Dropdown" &&
               item.element !== "Range" &&
               ((Array.isArray(item.value) && item.value.length > 0) ||
-                (!Array.isArray(item.value) && !!item.value))
+                (!Array.isArray(item.value) && !!item.value) ||
+                (item.element === "FileUpload" &&
+                  item.value.fileList &&
+                  item.value.fileList.length > 0) ||
+                (item.element === "ImageUpload" && !!item.value.filePath))
           );
 
           activeSectionFound = !!fillingItems;
