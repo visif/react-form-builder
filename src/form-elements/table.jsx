@@ -12,7 +12,7 @@ export default class Table extends React.Component {
       rows: Number(props.data.rows),
       rowLabels: props.data.rowLabels,
       columns: props.data.columns,
-      //defaultValue: props.defaultValue,
+      defaultValue: props.defaultValue,
       inputs: Table.getInputValues(
         props.defaultValue,
         props.data.columns,
@@ -31,7 +31,8 @@ export default class Table extends React.Component {
     Array.from(Array(Number(activeRows)).keys()).map((i) => {
       const current = []
       columns.map((j, jIndex) => {
-        let value = defaultValue[i] ? (defaultValue[i][jIndex] ?? '') : '';
+        // let value = defaultValue[i] ? (defaultValue[i][jIndex] ?? '') : '';
+        let value = '';
         if (isFixedRow && jIndex === 0) {
           value = rowLabels[i].text;
         }
@@ -53,7 +54,7 @@ export default class Table extends React.Component {
       return {
         rows: Number(props.data.rows),
         columns: props.data.columns,
-        //defaultValue: state.defaultValue,
+        defaultValue: state.defaultValue,
         inputs: Table.getInputValues(state.inputs, props.data.columns, Number(props.data.rows), state.rowsAdded, props.data.rowLabels),
         rowsAdded: state.rowsAdded,
         rowLabels: props.data.rowLabels,
@@ -66,7 +67,7 @@ export default class Table extends React.Component {
       return {
         rows: Number(props.data.rows),
         columns: props.data.columns,
-        //defaultValue: props.defaultValue,
+        defaultValue: props.defaultValue,
         inputs: Table.getInputValues(props.defaultValue, props.data.columns, Number(props.data.rows), rowsAdded, props.data.rowLabels),
         rowsAdded,
         rowLabels: props.data.rowLabels,
