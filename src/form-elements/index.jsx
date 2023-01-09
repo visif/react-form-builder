@@ -278,7 +278,8 @@ class Dropdown extends React.Component {
     this.inputField = React.createRef();
 
     this.state = {
-      defaultValue: props.defaultValue,
+      //defaultValue: props.defaultValue,
+      defaultValue: null,
       value: props.defaultValue,
     };
   }

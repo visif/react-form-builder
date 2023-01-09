@@ -12,7 +12,7 @@ export default class Table extends React.Component {
       rows: Number(props.data.rows),
       rowLabels: props.data.rowLabels,
       columns: props.data.columns,
-      defaultValue: props.defaultValue,
+      //defaultValue: props.defaultValue,
       inputs: Table.getInputValues(
         props.defaultValue,
         props.data.columns,
@@ -53,7 +53,7 @@ export default class Table extends React.Component {
       return {
         rows: Number(props.data.rows),
         columns: props.data.columns,
-        defaultValue: state.defaultValue,
+        //defaultValue: state.defaultValue,
         inputs: Table.getInputValues(state.inputs, props.data.columns, Number(props.data.rows), state.rowsAdded, props.data.rowLabels),
         rowsAdded: state.rowsAdded,
         rowLabels: props.data.rowLabels,
@@ -66,7 +66,7 @@ export default class Table extends React.Component {
       return {
         rows: Number(props.data.rows),
         columns: props.data.columns,
-        defaultValue: props.defaultValue,
+        //defaultValue: props.defaultValue,
         inputs: Table.getInputValues(props.defaultValue, props.data.columns, Number(props.data.rows), rowsAdded, props.data.rowLabels),
         rowsAdded,
         rowLabels: props.data.rowLabels,
@@ -215,9 +215,11 @@ export default class Table extends React.Component {
                 class="btn btn-secondary"
                 onClick={this.removeRow}
                 style={{ marginRight: 8, display: this.state.inputs.length > 0 ? 'initial' : 'none' }}
-                disabled={!isSameEditor}
+              //disabled={!isSameEditor}
               >Remove Row</button>
-              <button type="button" class="btn btn-info" disabled={!isSameEditor} onClick={this.addRow}>Add Row</button>
+              <button type="button" class="btn btn-info"
+                //disabled={!isSameEditor}
+                onClick={this.addRow}>Add Row</button>
             </div>
           }
         </div>
