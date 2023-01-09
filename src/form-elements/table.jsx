@@ -31,8 +31,7 @@ export default class Table extends React.Component {
     Array.from(Array(Number(activeRows)).keys()).map((i) => {
       const current = []
       columns.map((j, jIndex) => {
-        // let value = defaultValue[i] ? (defaultValue[i][jIndex] ?? '') : '';
-        let value = '';
+        let value = defaultValue[i] ? (defaultValue[i][jIndex] ?? '') : '';
         if (isFixedRow && jIndex === 0) {
           value = rowLabels[i].text;
         }
@@ -133,7 +132,7 @@ export default class Table extends React.Component {
                       <textarea
                         className="form-control"
                         style={isLabel ? { border: 0, backgroundColor: 'inherit' } : {}}
-                        disabled={isLabel || !isSameEditor}
+                        disabled={isLabel && !isSameEditor}
                         type="text"
                         value={value}
                         rows={1}
@@ -216,10 +215,10 @@ export default class Table extends React.Component {
                 class="btn btn-secondary"
                 onClick={this.removeRow}
                 style={{ marginRight: 8, display: this.state.inputs.length > 0 ? 'initial' : 'none' }}
-              //disabled={!isSameEditor}
+                disabled={!isSameEditor}
               >Remove Row</button>
               <button type="button" class="btn btn-info"
-                //disabled={!isSameEditor}
+                disabled={!isSameEditor}
                 onClick={this.addRow}>Add Row</button>
             </div>
           }

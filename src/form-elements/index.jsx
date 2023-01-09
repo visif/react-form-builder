@@ -296,7 +296,7 @@ class Dropdown extends React.Component {
       );
       return {
         defaultValue: props.defaultValue,
-        //value: props.defaultValue,
+        value: props.defaultValue,
         value: null
       };
     }
@@ -331,11 +331,7 @@ class Dropdown extends React.Component {
       props.ref = this.inputField;
     }
 
-    //if (this.props.read_only) {
-    //  props.disabled = "disabled";
-    //}
-
-    if (this.props.read_only || !isSameEditor) {
+    if (this.props.read_only) {
       props.disabled = "disabled";
     }
 
