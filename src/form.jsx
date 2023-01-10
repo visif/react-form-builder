@@ -217,7 +217,7 @@ export default class ReactForm extends React.Component {
     };
     const ref = this.inputs[item.field_name];
     const activeUser = this.props.getActiveUserProperties();
-    const activeEditor = this._getEditor(item);
+    const oldEditor = this._getEditor(item);
 
     if (item.element === "Checkboxes" || item.element === "RadioButtons") {
       const checked_options = [];
@@ -245,8 +245,11 @@ export default class ReactForm extends React.Component {
       });
 
       itemData.value = checked_options;
-      itemData.editor =
-        !activeEditor && checked_options.length > 0 ? activeUser : null;
+      itemData.editor = oldEditor
+        ? oldEditor
+        : checked_options.length > 0
+        ? activeUser
+        : null;
     } else {
       if (!ref) {
         return null;
@@ -255,23 +258,35 @@ export default class ReactForm extends React.Component {
       const valueItem = this._getItemValue(item, ref);
 
       itemData.value = valueItem.value;
-      itemData.editor = !activeEditor && valueItem.value ? activeUser : null;
+      itemData.editor = oldEditor
+        ? oldEditor
+        : valueItem.value
+        ? activeUser
+        : null;
       if (item.element === "Signature2") {
-        itemData.editor =
-          !activeEditor && valueItem.value.isSigned ? activeUser : null;
+        itemData.editor = oldEditor
+          ? oldEditor
+          : valueItem.value.isSigned
+          ? activeUser
+          : null;
       } else if (item.element === "DataSource" && ref.state.searchText) {
-        itemData.editor =
-          !activeEditor && valueItem.value.value ? activeUser : null;
+        itemData.editor = oldEditor
+          ? oldEditor
+          : valueItem.value.value
+          ? activeUser
+          : null;
       } else if (item.element === "FileUpload") {
-        itemData.editor =
-          !activeEditor &&
-          valueItem.value.fileList &&
-          valueItem.value.fileList.length
-            ? activeUser
-            : null;
+        itemData.editor = oldEditor
+          ? oldEditor
+          : valueItem.value.fileList && valueItem.value.fileList.length > 0
+          ? activeUser
+          : null;
       } else if (item.element === "ImageUpload") {
-        itemData.editor =
-          !activeEditor && valueItem.value.filePath ? activeUser : null;
+        itemData.editor = oldEditor
+          ? oldEditor
+          : valueItem.value.filePath
+          ? activeUser
+          : null;
       }
     }
 
