@@ -79,12 +79,10 @@ class DataSource extends React.Component {
   };
 
   handleOnChange = (event) => {
-    if (isSameEditor) {
-      if (event.key === "Enter") {
-        return;
-      }
-      this.debounceOnChange(event.target.value);
+    if (event.key === "Enter") {
+      return;
     }
+    this.debounceOnChange(event.target.value);
   };
 
   render() {
@@ -155,9 +153,9 @@ class DataSource extends React.Component {
                       display: "block",
                       padding: "0.75rem 1.25rem",
                       marginBottom: -1,
-                      disabled: isSameEditor ? false : true,
+                      //disabled: isSameEditor ? false : true,
                       border: "1px solid rgba(0, 0, 0, 0.125)",
-                      pointerEvents: isSameEditor ? "auto" : "none"
+                      //pointerEvents: isSameEditor ? "auto" : "none"
                     }}
                     onClick={() => {
                       this.setState({
