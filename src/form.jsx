@@ -443,7 +443,9 @@ export default class ReactForm extends React.Component {
               item.element !== "Dropdown" &&
               item.element !== "Range" &&
               ((Array.isArray(item.value) && item.value.length > 0) ||
-                (!Array.isArray(item.value) && !!item.value) ||
+                (typeof item.value !== "object" &&
+                  !Array.isArray(item.value) &&
+                  !!item.value) ||
                 (item.element === "FileUpload" &&
                   item.value.fileList &&
                   item.value.fileList.length > 0) ||
