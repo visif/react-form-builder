@@ -331,7 +331,7 @@ class Dropdown extends React.Component {
       props.ref = this.inputField;
     }
 
-    if (this.props.read_only) {
+    if (this.props.read_only || !isSameEditor) {
       props.disabled = "disabled";
     }
 
