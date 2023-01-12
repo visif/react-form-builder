@@ -324,7 +324,7 @@ class Dropdown extends React.Component {
     props.className = "form-control";
     props.name = this.props.data.field_name;
     props.value = this.state.value;
-    props.onChange = isSameEditor && this.handleChange;
+    props.onChange = this.handleChange;
 
     if (this.props.mutable) {
       props.defaultValue = this.state.value;
