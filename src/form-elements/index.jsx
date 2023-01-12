@@ -280,7 +280,7 @@ class Dropdown extends React.Component {
     this.state = {
       defaultValue: props.defaultValue,
       //value: props.defaultValue,
-      value: null
+      value: null,
     };
   }
 
@@ -297,7 +297,7 @@ class Dropdown extends React.Component {
       return {
         defaultValue: props.defaultValue,
         value: props.defaultValue,
-        value: null
+        value: null,
       };
     }
     return state;
@@ -346,6 +346,9 @@ class Dropdown extends React.Component {
         <div className="form-group">
           <ComponentLabel {...this.props} />
           <select {...props}>
+            <option value="" key="default-0">
+              please select
+            </option>
             {this.props.data.options.map((option) => {
               const this_key = `preview_${option.key}`;
               return (
@@ -487,7 +490,7 @@ class Tags extends React.Component {
     } // to show a sample of what tags looks like
     if (this.props.mutable) {
       //props.isDisabled = this.props.read_only;
-      props.isDisabled = (this.props.read_only || !isSameEditor) ? true : false;
+      props.isDisabled = this.props.read_only || !isSameEditor ? true : false;
       props.value = this.state.value;
       props.ref = this.inputField;
     }
@@ -522,7 +525,9 @@ class Checkboxes extends React.Component {
 
   static getDerivedStateFromProps(props, state) {
     console.log("Checkboxes getDerivedStateFromProps");
-    if (JSON.stringify(state.defaultValue) !== JSON.stringify(props.defaultValue)) {
+    if (
+      JSON.stringify(state.defaultValue) !== JSON.stringify(props.defaultValue)
+    ) {
       console.log(
         "Checkboxes default prop changed",
         state.defaultValue,
@@ -618,10 +623,10 @@ class Checkboxes extends React.Component {
                         const newActiveVal = activeVal
                           ? { ...activeVal, value: !activeVal.value }
                           : {
-                            key: option.key,
-                            value: true,
-                            info: "",
-                          };
+                              key: option.key,
+                              value: true,
+                              info: "",
+                            };
 
                         if (!current) {
                           return current;
@@ -875,7 +880,7 @@ class Rating extends React.Component {
           : 0;
       props.editing = true;
       //props.disabled = this.props.read_only ||;
-      props.disabled = (this.props.read_only || !isSameEditor) ? true : false;
+      props.disabled = this.props.read_only || !isSameEditor ? true : false;
       props.ref = this.inputField;
     }
 
@@ -996,8 +1001,8 @@ class Camera extends React.Component {
         <div className="form-group">
           <ComponentLabel {...this.props} />
           {this.props.read_only === true &&
-            this.props.defaultValue &&
-            this.props.defaultValue.length > 0 ? (
+          this.props.defaultValue &&
+          this.props.defaultValue.length > 0 ? (
             <div>
               <img src={sourceDataURL} />
             </div>
