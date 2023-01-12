@@ -304,9 +304,9 @@ class Dropdown extends React.Component {
   }
 
   handleChange = (e) => {
-    if (isSameEditor) {
-      this.setState({ value: e.target.value });
-    }
+    // if (isSameEditor) {
+    this.setState({ value: e.target.value });
+    // }
   };
 
   render() {
@@ -324,7 +324,7 @@ class Dropdown extends React.Component {
     props.className = "form-control";
     props.name = this.props.data.field_name;
     props.value = this.state.value;
-    props.onChange = this.handleChange;
+    props.onChange = isSameEditor && this.handleChange;
 
     if (this.props.mutable) {
       props.defaultValue = this.state.value;
@@ -347,7 +347,7 @@ class Dropdown extends React.Component {
           <ComponentLabel {...this.props} />
           <select {...props}>
             <option value="" key="default-0">
-              please select
+              Please Select
             </option>
             {this.props.data.options.map((option) => {
               const this_key = `preview_${option.key}`;
@@ -623,10 +623,10 @@ class Checkboxes extends React.Component {
                         const newActiveVal = activeVal
                           ? { ...activeVal, value: !activeVal.value }
                           : {
-                              key: option.key,
-                              value: true,
-                              info: "",
-                            };
+                            key: option.key,
+                            value: true,
+                            info: "",
+                          };
 
                         if (!current) {
                           return current;
@@ -1001,8 +1001,8 @@ class Camera extends React.Component {
         <div className="form-group">
           <ComponentLabel {...this.props} />
           {this.props.read_only === true &&
-          this.props.defaultValue &&
-          this.props.defaultValue.length > 0 ? (
+            this.props.defaultValue &&
+            this.props.defaultValue.length > 0 ? (
             <div>
               <img src={sourceDataURL} />
             </div>
