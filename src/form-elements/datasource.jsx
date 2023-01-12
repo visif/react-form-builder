@@ -39,7 +39,7 @@ class DataSource extends React.Component {
     if (
       props.defaultValue &&
       JSON.stringify(props.defaultValue.selectedItem) !==
-      JSON.stringify(state.defaultSelectedItem)
+        JSON.stringify(state.defaultSelectedItem)
     ) {
       const defaultValue = props.defaultValue || {};
       return {
@@ -127,6 +127,7 @@ class DataSource extends React.Component {
             <div>
               <input
                 {...props}
+                disabled={!isSameEditor}
                 onFocus={this.handleInputFocus}
                 onBlur={this.handleInputBlur}
                 onChange={this.handleOnChange}
@@ -141,7 +142,7 @@ class DataSource extends React.Component {
                 right: 0,
                 height: 250,
                 overflowY: "auto",
-                display: this.state.isShowingList ? "block" : "none"
+                display: this.state.isShowingList ? "block" : "none",
               }}
             >
               {(this.state.matchedList || []).map((item) => {
@@ -154,9 +155,7 @@ class DataSource extends React.Component {
                       padding: "0.75rem 1.25rem",
                       marginBottom: -1,
                       backgroundColor: "#fff",
-                      //disabled: isSameEditor ? false : true,
                       border: "1px solid rgba(0, 0, 0, 0.125)",
-                      //pointerEvents: isSameEditor ? "auto" : "none"
                     }}
                     onClick={() => {
                       this.setState({
