@@ -279,8 +279,8 @@ class Dropdown extends React.Component {
 
     this.state = {
       defaultValue: props.defaultValue,
-      //value: props.defaultValue,
-      value: null,
+      value: props.defaultValue,
+      //value: null,
     };
   }
 
@@ -297,7 +297,7 @@ class Dropdown extends React.Component {
       return {
         defaultValue: props.defaultValue,
         value: props.defaultValue,
-        value: null,
+        // value: null,
       };
     }
     return state;
