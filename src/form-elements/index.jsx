@@ -304,9 +304,7 @@ class Dropdown extends React.Component {
   }
 
   handleChange = (e) => {
-    if (isSameEditor) {
-      this.setState({ value: e.target.value });
-    }
+    this.setState({ value: e.target.value });
   };
 
   render() {
