@@ -303,11 +303,11 @@ class Dropdown extends React.Component {
     return state;
   }
 
-  //handleChange = (e) => {
-  //  if (isSameEditor) {
-  //    this.setState({ value: e.target.value });
-  //  }
-  //};
+  handleChange = (e) => {
+    if (isSameEditor) {
+      this.setState({ value: e.target.value });
+    }
+  };
 
   render() {
     const userProperties =
@@ -324,12 +324,7 @@ class Dropdown extends React.Component {
     props.className = "form-control";
     props.name = this.props.data.field_name;
     props.value = this.state.value;
-    //props.onChange = this.handleChange(e);
-    props.onChange = (e) => {
-      if (isSameEditor) {
-        this.setState({ value: e.target.value });
-      }
-    };
+    props.onChange = this.handleChange;
 
     if (this.props.mutable) {
       props.defaultValue = this.state.value;
