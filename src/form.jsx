@@ -287,6 +287,14 @@ export default class ReactForm extends React.Component {
           : valueItem.value.filePath
           ? activeUser
           : null;
+      } else if (item.element === "Table") {
+        itemData.editor = oldEditor
+          ? oldEditor
+          : valueItem.value.find((itemRow) => {
+              return itemRow.find((val) => !!val);
+            })
+          ? activeUser
+          : null;
       }
     }
 
