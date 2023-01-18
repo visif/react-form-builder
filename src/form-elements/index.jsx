@@ -246,6 +246,7 @@ class TextArea extends React.Component {
     // if (this.props.read_only) {
     //   props.disabled = "disabled";
     // }
+
     if (this.props.read_only || !isSameEditor) {
       props.disabled = "disabled";
     }
