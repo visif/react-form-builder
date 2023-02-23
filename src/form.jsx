@@ -46,8 +46,10 @@ export default class ReactForm extends React.Component {
     super(props);
     this.emitter = new EventEmitter();
     this.getDataById = this.getDataById.bind(this);
+    this.headerRef = [];
     this.state = {
       answerData: convert(props.answer_data),
+      headerNavWidth: 0,
     };
   }
 
@@ -543,7 +545,16 @@ export default class ReactForm extends React.Component {
 
   getSimpleElement(item) {
     const Element = FormElements[item.element];
-    return <Element mutable={true} key={`form_${item.id}`} data={item} />;
+    return (
+      <Element
+        mutable={true}
+        key={`form_${item.id}`}
+        data={item}
+        ref={(c) => {
+          this.inputs[item.id] = c;
+        }}
+      />
+    );
   }
 
   getCustomElement(item) {
@@ -580,8 +591,29 @@ export default class ReactForm extends React.Component {
     );
   };
 
+  openNav = () => {
+    this.setState(() => ({
+      headerNavWidth: 250,
+    }));
+  };
+
+  /* Set the width of the sidebar to 0 (hide it) */
+  closeNav = () => {
+    this.setState(() => ({
+      headerNavWidth: 0,
+    }));
+  };
+
+  scrollToElement = (item) => {
+    this.inputs[item.id].inputField.current.scrollIntoView();
+  };
+
   render() {
     let data_items = this.props.data;
+
+    const headerElements = data_items.filter(
+      (item) => item.element === "Header"
+    );
 
     if (this.props.display_short) {
       data_items = this.props.data.filter((i) => i.alternateForm === true);
@@ -758,6 +790,68 @@ export default class ReactForm extends React.Component {
 
     return (
       <div>
+        {headerElements.length > 0 && (
+          <div style={{ position: "relative" }}>
+            <div
+              id="mySidepanel"
+              style={{
+                height: "250px",
+                width: this.state.headerNavWidth,
+                position: "absolute",
+                top: 0,
+                left: -30,
+                zIndex: 1,
+                backgroundColor: "#111",
+                overflowX: "hidden",
+                paddingTop: 60,
+                transition: "0.5s",
+              }}
+            >
+              <a
+                href="javascript:void(0)"
+                style={{
+                  padding: "8px 8px 8px 32px",
+                  textDecoration: "none",
+                  fontSize: 25,
+                  color: "#818181",
+                  display: "block",
+                  transition: "0.3s",
+                  position: "absolute",
+                  top: 0,
+                  right: 8,
+                }}
+                onClick={this.closeNav}
+              >
+                ×
+              </a>
+              {headerElements.map((header) => {
+                return (
+                  <a
+                    href="#"
+                    style={{ display: "block" }}
+                    onClick={() => {
+                      this.scrollToElement(header);
+                      this.closeNav();
+                    }}
+                  >
+                    {header.content}
+                  </a>
+                );
+              })}
+            </div>
+            <button
+              style={{
+                position: "absolute",
+                top: 0,
+                left: -22,
+                zIndex: 1,
+              }}
+              onClick={this.openNav}
+            >
+              ☰
+            </button>
+          </div>
+        )}
         <FormValidator emitter={this.emitter} />
         <div className="react-form-builder-form">
           <form
@@ -783,7 +877,7 @@ export default class ReactForm extends React.Component {
               </div>
             )}
             {items}
-            <div className="btn-toolbar">
+            <div className="btn-toolbar" ref={this.headerRef}>
               {!this.props.hide_actions && this.handleRenderSubmit()}
               {!this.props.hide_actions && this.props.back_action && (
                 <a

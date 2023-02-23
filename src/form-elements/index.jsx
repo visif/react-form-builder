@@ -21,6 +21,11 @@ import ImageUpload from "./imageUpload";
 const FormElements = {};
 
 class Header extends React.Component {
+  constructor(props) {
+    super(props);
+    this.inputField = React.createRef();
+  }
+
   render() {
     // const headerClasses = `dynamic-input ${this.props.data.element}-input`;
     let classNames = "static";
@@ -40,6 +45,7 @@ class Header extends React.Component {
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
         <h3
+          ref={this.inputField}
           className={classNames}
           dangerouslySetInnerHTML={{
             __html: myxss.process(this.props.data.content),
@@ -472,6 +478,16 @@ class Tags extends React.Component {
   };
 
   render() {
+    const userProperties =
+      this.props.getActiveUserProperties &&
+      this.props.getActiveUserProperties();
+
+    const savedEditor = this.props.editor;
+    let isSameEditor = true;
+    if (savedEditor && savedEditor.userId && !!userProperties) {
+      isSameEditor = userProperties.userId === savedEditor.userId;
+    }
+
     const options = this.props.data.options.map((option) => {
       option.label = option.text;
       return option;
@@ -620,10 +636,10 @@ class Checkboxes extends React.Component {
                         const newActiveVal = activeVal
                           ? { ...activeVal, value: !activeVal.value }
                           : {
-                            key: option.key,
-                            value: true,
-                            info: "",
-                          };
+                              key: option.key,
+                              value: true,
+                              info: "",
+                            };
 
                         if (!current) {
                           return current;
@@ -998,8 +1014,8 @@ class Camera extends React.Component {
         <div className="form-group">
           <ComponentLabel {...this.props} />
           {this.props.read_only === true &&
-            this.props.defaultValue &&
-            this.props.defaultValue.length > 0 ? (
+          this.props.defaultValue &&
+          this.props.defaultValue.length > 0 ? (
             <div>
               <img src={sourceDataURL} />
             </div>
