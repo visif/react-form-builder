@@ -1,302 +1,33 @@
-// import React from "react";
-// import ComponentHeader from "./component-header";
-// import ComponentLabel from "./component-label";
-
-// export default class Table extends React.Component {
-//   self = this;
-//   constructor(props) {
-//     super(props);
-//     this.tableRef = React.createRef();
-//     const rowsAdded =
-//       (props.defaultValue
-//         ? props.defaultValue.length
-//         : Number(props.data.rows)) - Number(props.data.rows);
-//     this.state = {
-//       rows: Number(props.data.rows),
-//       rowLabels: props.data.rowLabels,
-//       columns: props.data.columns,
-//       defaultValue: props.defaultValue,
-//       inputs: Table.getInputValues(
-//         props.defaultValue,
-//         props.data.columns,
-//         Number(props.data.rows),
-//         rowsAdded,
-//         props.data.rowLabels
-//       ),
-//       rowsAdded,
-//     };
-//   }
-
-//   static getInputValues = (
-//     defaultValue = [],
-//     columns,
-//     rows,
-//     addingRows,
-//     rowLabels
-//   ) => {
-//     const result = [];
-//     const isFixedRow = rowLabels?.length > 0;
-//     const activeRows = isFixedRow ? rowLabels?.length : rows + addingRows;
-//     Array.from(Array(Number(activeRows)).keys()).map((i) => {
-//       const current = [];
-//       columns.map((j, jIndex) => {
-//         let value = defaultValue[i] ? defaultValue[i][jIndex] ?? "" : "";
-//         if (isFixedRow && jIndex === 0) {
-//           value = rowLabels[i].text;
-//         }
-//         current.push(value);
-//       });
-//       result.push(current);
-//     });
-
-//     return result;
-//   };
-
-//   static getDerivedStateFromProps = (props, state) => {
-//     console.log("Table getDerivedStateFromProps");
-//     if (
-//       Number(props.data.rows) !== Number(state.rows) ||
-//       JSON.stringify(props.data.columns) !== JSON.stringify(state.columns) ||
-//       JSON.stringify(state.rowLabels) !== JSON.stringify(props.data.rowLabels)
-//     ) {
-//       console.log("Table default columns/rows changed");
-//       return {
-//         rows: Number(props.data.rows),
-//         columns: props.data.columns,
-//         defaultValue: state.defaultValue,
-//         inputs: Table.getInputValues(
-//           state.inputs,
-//           props.data.columns,
-//           Number(props.data.rows),
-//           state.rowsAdded,
-//           props.data.rowLabels
-//         ),
-//         rowsAdded: state.rowsAdded,
-//         rowLabels: props.data.rowLabels,
-//       };
-//     }
-
-//     if (
-//       JSON.stringify(state.defaultValue) !== JSON.stringify(props.defaultValue)
-//     ) {
-//       console.log(
-//         "Table default prop changed",
-//         state.defaultValue,
-//         props.defaultValue
-//       );
-//       const rowsAdded =
-//         (props.defaultValue
-//           ? props.defaultValue.length
-//           : Number(props.data.rows)) - Number(props.data.rows);
-//       return {
-//         rows: Number(props.data.rows),
-//         columns: props.data.columns,
-//         defaultValue: props.defaultValue,
-//         inputs: Table.getInputValues(
-//           props.defaultValue,
-//           props.data.columns,
-//           Number(props.data.rows),
-//           rowsAdded,
-//           props.data.rowLabels
-//         ),
-//         rowsAdded,
-//         rowLabels: props.data.rowLabels,
-//       };
-//     }
-
-//     return state;
-//   };
-
-//   addRow = () => {
-//     this.setState((current) => ({
-//       ...current,
-//       rowsAdded: current.rowsAdded + 1,
-//       inputs: Table.getInputValues(
-//         current.inputs,
-//         current.columns,
-//         current.rows,
-//         current.rowsAdded + 1
-//       ),
-//     }));
-//   };
-
-//   removeRow = () => {
-//     this.setState((current) => ({
-//       ...current,
-//       rowsAdded: current.rowsAdded - 1,
-//       inputs: Table.getInputValues(
-//         current.inputs,
-//         current.columns,
-//         current.rows,
-//         current.rowsAdded - 1
-//       ),
-//     }));
-//   };
-
-//   renderRows = () => {
-//     const userProperties =
-//       this.props.getActiveUserProperties &&
-//       this.props.getActiveUserProperties();
-
-//     const savedEditor = this.props.editor;
-//     let isSameEditor = true;
-//     if (savedEditor && savedEditor.userId && !!userProperties) {
-//       isSameEditor = userProperties.userId === savedEditor.userId;
-//     }
-
-//     const isFixedRow = this.state.rowLabels?.length > 0;
-//     const activeRows = isFixedRow
-//       ? this.state.rowLabels?.length
-//       : this.state.rows + this.state.rowsAdded;
-
-//     return (
-//       <tbody>
-//         {Array.from(Array(Number(activeRows)).keys()).map((i) => (
-//           <tr key={"row" + i}>
-//             {this.props.data?.columns?.map((j, jIndex) => {
-//               const isLabel = isFixedRow && jIndex === 0;
-
-//               if (isLabel) {
-//                 return (
-//                   <td>
-//                     <label>{this.state.rowLabels[i].text}</label>
-//                   </td>
-//                 );
-//               }
-
-//               const value = this.state.inputs[i]
-//                 ? this.state.inputs[i][jIndex] ?? ""
-//                 : "";
-
-//               return (
-//                 <td>
-//                   <textarea
-//                     className="form-control"
-//                     style={
-//                       isLabel ? { border: 0, backgroundColor: "inherit" } : {}
-//                     }
-//                     disabled={isLabel || !isSameEditor}
-//                     type="text"
-//                     value={value}
-//                     rows={1}
-//                     onChange={(event) => {
-//                       const value = event.target.value;
-//                       const array = this.state.inputs;
-//                       array[i][jIndex] = value;
-//                       this.setState({
-//                         inputs: array,
-//                       });
-//                     }}
-//                   />
-//                 </td>
-//               );
-//             })}
-//           </tr>
-//         ))}
-//       </tbody>
-//     );
-//   };
-
-//   getColumnWidth = (totalWidthCount, width) => {
-//     const currentWidth = parseInt(width) ? Number(width) : 1;
-//     return `${(currentWidth / totalWidthCount) * 100}%`;
-//   };
-
-//   render() {
-//     const userProperties =
-//       this.props.getActiveUserProperties &&
-//       this.props.getActiveUserProperties();
-
-//     const savedEditor = this.props.editor;
-//     let isSameEditor = true;
-//     if (savedEditor && savedEditor.userId && !!userProperties) {
-//       isSameEditor = userProperties.userId === savedEditor.userId;
-//     }
-
-//     let baseClasses = "SortableItem rfb-item";
-//     if (this.props?.data?.pageBreakBefore) {
-//       baseClasses += " alwaysbreak";
-//     }
-//     const totalWidthCount = this.props.data?.columns.reduce(
-//       (previous, current) => {
-//         return previous + (parseInt(current.width) ? Number(current.width) : 1);
-//       },
-//       0
-//     );
-//     const isFixedRow = this.state.rowLabels?.length > 0;
-
-//     return (
-//       <div className={baseClasses} key={`table-container-${this.props.id}`}>
-//         <ComponentHeader {...this.props} />
-//         <div className="form-group">
-//           <ComponentLabel {...this.props} />
-//           <table
-//             className="table table-bordered"
-//             ref={this.tableRef}
-//             key={`table-${this.props.id}`}
-//           >
-//             <thead>
-//               <tr>
-//                 {this.props.data?.columns?.map((col) => {
-//                   return (
-//                     <th
-//                       scope="col"
-//                       style={{
-//                         width: this.getColumnWidth(totalWidthCount, col.width),
-//                       }}
-//                     >
-//                       {col.text}
-//                     </th>
-//                   );
-//                 })}
-//               </tr>
-//             </thead>
-//             {this.renderRows()}
-//           </table>
-//           {!isFixedRow && (
-//             <div style={{ textAlign: "right" }}>
-//               <button
-//                 type="button"
-//                 class="btn btn-secondary"
-//                 onClick={this.removeRow}
-//                 style={{
-//                   marginRight: 8,
-//                   display: this.state.inputs.length > 0 ? "initial" : "none",
-//                 }}
-//                 disabled={!isSameEditor}
-//               >
-//                 Remove Row
-//               </button>
-//               <button
-//                 type="button"
-//                 class="btn btn-info"
-//                 disabled={!isSameEditor}
-//                 onClick={this.addRow}
-//               >
-//                 Add Row
-//               </button>
-//             </div>
-//           )}
-//         </div>
-//       </div>
-//     );
-//   }
-// }
-
-import React, { useState, useRef } from "react";
+import React from "react";
 import ComponentHeader from "./component-header";
 import ComponentLabel from "./component-label";
 
-const Table = (props) => {
-  const [rows, setRows] = useState(Number(props.data.rows));
-  const [rowLabels, setRowLabels] = useState(props.data.rowLabels);
-  const [columns, setColumns] = useState(props.data.columns);
-  const [rowsAdded, setRowsAdded] = useState(
-    (props.defaultValue ? props.defaultValue.length : Number(props.data.rows)) -
-      Number(props.data.rows)
-  );
-  
-  const getInputValues = (
+export default class Table extends React.Component {
+  self = this;
+  constructor(props) {
+    super(props);
+    this.tableRef = React.createRef();
+    const rowsAdded =
+      (props.defaultValue
+        ? props.defaultValue.length
+        : Number(props.data.rows)) - Number(props.data.rows);
+    this.state = {
+      rows: Number(props.data.rows),
+      rowLabels: props.data.rowLabels,
+      columns: props.data.columns,
+      defaultValue: props.defaultValue,
+      inputs: Table.getInputValues(
+        props.defaultValue,
+        props.data.columns,
+        Number(props.data.rows),
+        rowsAdded,
+        props.data.rowLabels
+      ),
+      rowsAdded,
+    };
+  }
+
+  static getInputValues = (
     defaultValue = [],
     columns,
     rows,
@@ -321,57 +52,121 @@ const Table = (props) => {
     return result;
   };
 
-  const [inputs, setInputs] = useState(
-    getInputValues(
-      props.defaultValue,
-      props.data.columns,
-      Number(props.data.rows),
-      rowsAdded,
-      props.data.rowLabels
-    )
-  );
+  static getDerivedStateFromProps = (props, state) => {
+    console.log("Table getDerivedStateFromProps");
+    if (
+      Number(props.data.rows) !== Number(state.rows) ||
+      JSON.stringify(props.data.columns) !== JSON.stringify(state.columns) ||
+      JSON.stringify(state.rowLabels) !== JSON.stringify(props.data.rowLabels)
+    ) {
+      console.log("Table default columns/rows changed");
+      return {
+        rows: Number(props.data.rows),
+        columns: props.data.columns,
+        defaultValue: state.defaultValue,
+        inputs: Table.getInputValues(
+          state.inputs,
+          props.data.columns,
+          Number(props.data.rows),
+          state.rowsAdded,
+          props.data.rowLabels
+        ),
+        rowsAdded: state.rowsAdded,
+        rowLabels: props.data.rowLabels,
+      };
+    }
 
-  const tableRef = useRef(null);
+    if (
+      JSON.stringify(state.defaultValue) !== JSON.stringify(props.defaultValue)
+    ) {
+      console.log(
+        "Table default prop changed",
+        state.defaultValue,
+        props.defaultValue
+      );
+      const rowsAdded =
+        (props.defaultValue
+          ? props.defaultValue.length
+          : Number(props.data.rows)) - Number(props.data.rows);
+      return {
+        rows: Number(props.data.rows),
+        columns: props.data.columns,
+        defaultValue: props.defaultValue,
+        inputs: Table.getInputValues(
+          props.defaultValue,
+          props.data.columns,
+          Number(props.data.rows),
+          rowsAdded,
+          props.data.rowLabels
+        ),
+        rowsAdded,
+        rowLabels: props.data.rowLabels,
+      };
+    }
 
-  const addRow = () => {
-    setRowsAdded(rowsAdded + 1);
-    setInputs(getInputValues(inputs, columns, rows, rowsAdded + 1, rowLabels));
+    return state;
   };
 
-  const removeRow = () => {
-    setRowsAdded(rowsAdded - 1);
-    setInputs(getInputValues(inputs, columns, rows, rowsAdded - 1, rowLabels));
+  addRow = () => {
+    this.setState((current) => ({
+      ...current,
+      rowsAdded: current.rowsAdded + 1,
+      inputs: Table.getInputValues(
+        current.inputs,
+        current.columns,
+        current.rows,
+        current.rowsAdded + 1
+      ),
+    }));
   };
 
-  const renderRows = () => {
+  removeRow = () => {
+    this.setState((current) => ({
+      ...current,
+      rowsAdded: current.rowsAdded - 1,
+      inputs: Table.getInputValues(
+        current.inputs,
+        current.columns,
+        current.rows,
+        current.rowsAdded - 1
+      ),
+    }));
+  };
+
+  renderRows = () => {
     const userProperties =
-      props.getActiveUserProperties && props.getActiveUserProperties();
+      this.props.getActiveUserProperties &&
+      this.props.getActiveUserProperties();
 
-    const savedEditor = props.editor;
+    const savedEditor = this.props.editor;
     let isSameEditor = true;
     if (savedEditor && savedEditor.userId && !!userProperties) {
       isSameEditor = userProperties.userId === savedEditor.userId;
     }
 
-    const isFixedRow = rowLabels?.length > 0;
-    const activeRows = isFixedRow ? rowLabels?.length : rows + rowsAdded;
+    const isFixedRow = this.state.rowLabels?.length > 0;
+    const activeRows = isFixedRow
+      ? this.state.rowLabels?.length
+      : this.state.rows + this.state.rowsAdded;
 
     return (
       <tbody>
         {Array.from(Array(Number(activeRows)).keys()).map((i) => (
           <tr key={"row" + i}>
-            {props.data?.columns?.map((j, jIndex) => {
+            {this.props.data?.columns?.map((j, jIndex) => {
               const isLabel = isFixedRow && jIndex === 0;
 
               if (isLabel) {
                 return (
                   <td>
-                    <label>{rowLabels[i].text}</label>
+                    <label>{this.state.rowLabels[i].text}</label>
                   </td>
                 );
               }
 
-              const value = inputs[i] ? inputs[i][jIndex] ?? "" : "";
+              const value = this.state.inputs[i]
+                ? this.state.inputs[i][jIndex] ?? ""
+                : "";
 
               return (
                 <td>
@@ -386,9 +181,11 @@ const Table = (props) => {
                     rows={1}
                     onChange={(event) => {
                       const value = event.target.value;
-                      const array = inputs;
+                      const array = this.state.inputs;
                       array[i][jIndex] = value;
-                      setInputs(array);
+                      this.setState({
+                        inputs: array,
+                      });
                     }}
                   />
                 </td>
@@ -400,76 +197,279 @@ const Table = (props) => {
     );
   };
 
-  const getColumnWidth = (totalWidthCount, width) => {
+  getColumnWidth = (totalWidthCount, width) => {
     const currentWidth = parseInt(width) ? Number(width) : 1;
     return `${(currentWidth / totalWidthCount) * 100}%`;
   };
 
-  let baseClasses = "SortableItem rfb-item";
-  if (props?.data?.pageBreakBefore) {
-    baseClasses += " alwaysbreak";
-  }
+  render() {
+    const userProperties =
+      this.props.getActiveUserProperties &&
+      this.props.getActiveUserProperties();
 
-  const isFixedRow = rowLabels?.length > 0;
+    const savedEditor = this.props.editor;
+    let isSameEditor = true;
+    if (savedEditor && savedEditor.userId && !!userProperties) {
+      isSameEditor = userProperties.userId === savedEditor.userId;
+    }
 
-  const userProperties =
-    props.getActiveUserProperties && props.getActiveUserProperties();
-  const savedEditor = props.editor;
-  let isSameEditor = true;
-  if (savedEditor && savedEditor.userId && !!userProperties) {
-    isSameEditor = userProperties.userId === savedEditor.userId;
-  }
+    let baseClasses = "SortableItem rfb-item";
+    if (this.props?.data?.pageBreakBefore) {
+      baseClasses += " alwaysbreak";
+    }
+    const totalWidthCount = this.props.data?.columns.reduce(
+      (previous, current) => {
+        return previous + (parseInt(current.width) ? Number(current.width) : 1);
+      },
+      0
+    );
+    const isFixedRow = this.state.rowLabels?.length > 0;
 
-  return (
-    <div className={baseClasses} key={`table-container-${props.id}`}>
-      <ComponentHeader {...props} />
-      <div className="form-group">
-        <ComponentLabel {...props} />
-        <table className="table" ref={tableRef} key={`table-${props.id}`}>
-          <thead>
-            <tr>
-              {props.data?.columns?.map((column) => (
-                <th
-                  key={column}
-                  scope="col"
-                  style={{
-                    width: getColumnWidth(columns.length, column.width),
-                  }}
-                >
-                  {column.text}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          {renderRows()}
-        </table>
-        {!isFixedRow && (
-          <div style={{ textAlign: "right" }}>
-            <button
-              type="button"
-              class="btn btn-secondary"
-              onClick={removeRow}
-              style={{
-                marginRight: 8,
-                display: inputs.length > 0 ? "initial" : "none",
-              }}
-              disabled={!isSameEditor}
-            >
-              Remove Row
-            </button>
-            <button
-              type="button"
-              class="btn btn-info"
-              disabled={!isSameEditor}
-              onClick={addRow}
-            >
-              Add Row
-            </button>
-          </div>
-        )}
+    return (
+      <div className={baseClasses} key={`table-container-${this.props.id}`}>
+        <ComponentHeader {...this.props} />
+        <div className="form-group">
+          <ComponentLabel {...this.props} />
+          <table
+            className="table table-bordered"
+            ref={this.tableRef}
+            key={`table-${this.props.id}`}
+          >
+            <thead>
+              <tr>
+                {this.props.data?.columns?.map((col) => {
+                  return (
+                    <th
+                      scope="col"
+                      style={{
+                        width: this.getColumnWidth(totalWidthCount, col.width),
+                      }}
+                    >
+                      {col.text}
+                    </th>
+                  );
+                })}
+              </tr>
+            </thead>
+            {this.renderRows()}
+          </table>
+          {!isFixedRow && (
+            <div style={{ textAlign: "right" }}>
+              <button
+                type="button"
+                class="btn btn-secondary"
+                onClick={this.removeRow}
+                style={{
+                  marginRight: 8,
+                  display: this.state.inputs.length > 0 ? "initial" : "none",
+                }}
+                disabled={!isSameEditor}
+              >
+                Remove Row
+              </button>
+              <button
+                type="button"
+                class="btn btn-info"
+                disabled={!isSameEditor}
+                onClick={this.addRow}
+              >
+                Add Row
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  }
+}
 
-export default Table;
+// import React, { useState, useRef } from "react";
+// import ComponentHeader from "./component-header";
+// import ComponentLabel from "./component-label";
+
+// const Table = (props) => {
+//   const [rows, setRows] = useState(Number(props.data.rows));
+//   const [rowLabels, setRowLabels] = useState(props.data.rowLabels);
+//   const [columns, setColumns] = useState(props.data.columns);
+//   const [rowsAdded, setRowsAdded] = useState(
+//     (props.defaultValue ? props.defaultValue.length : Number(props.data.rows)) -
+//       Number(props.data.rows)
+//   );
+
+//   const getInputValues = (
+//     defaultValue = [],
+//     columns,
+//     rows,
+//     addingRows,
+//     rowLabels
+//   ) => {
+//     const result = [];
+//     const isFixedRow = rowLabels?.length > 0;
+//     const activeRows = isFixedRow ? rowLabels?.length : rows + addingRows;
+//     Array.from(Array(Number(activeRows)).keys()).map((i) => {
+//       const current = [];
+//       columns.map((j, jIndex) => {
+//         let value = defaultValue[i] ? defaultValue[i][jIndex] ?? "" : "";
+//         if (isFixedRow && jIndex === 0) {
+//           value = rowLabels[i].text;
+//         }
+//         current.push(value);
+//       });
+//       result.push(current);
+//     });
+
+//     return result;
+//   };
+
+//   const [inputs, setInputs] = useState(
+//     getInputValues(
+//       props.defaultValue,
+//       props.data.columns,
+//       Number(props.data.rows),
+//       rowsAdded,
+//       props.data.rowLabels
+//     )
+//   );
+
+//   const tableRef = useRef(null);
+
+//   const addRow = () => {
+//     setRowsAdded(rowsAdded + 1);
+//     setInputs(getInputValues(inputs, columns, rows, rowsAdded + 1, rowLabels));
+//   };
+
+//   const removeRow = () => {
+//     setRowsAdded(rowsAdded - 1);
+//     setInputs(getInputValues(inputs, columns, rows, rowsAdded - 1, rowLabels));
+//   };
+
+//   const renderRows = () => {
+//     const userProperties =
+//       props.getActiveUserProperties && props.getActiveUserProperties();
+
+//     const savedEditor = props.editor;
+//     let isSameEditor = true;
+//     if (savedEditor && savedEditor.userId && !!userProperties) {
+//       isSameEditor = userProperties.userId === savedEditor.userId;
+//     }
+
+//     const isFixedRow = rowLabels?.length > 0;
+//     const activeRows = isFixedRow ? rowLabels?.length : rows + rowsAdded;
+
+//     return (
+//       <tbody>
+//         {Array.from(Array(Number(activeRows)).keys()).map((i) => (
+//           <tr key={"row" + i}>
+//             {props.data?.columns?.map((j, jIndex) => {
+//               const isLabel = isFixedRow && jIndex === 0;
+
+//               if (isLabel) {
+//                 return (
+//                   <td>
+//                     <label>{rowLabels[i].text}</label>
+//                   </td>
+//                 );
+//               }
+
+//               const value = inputs[i] ? inputs[i][jIndex] ?? "" : "";
+
+//               return (
+//                 <td>
+//                   <textarea
+//                     className="form-control"
+//                     style={
+//                       isLabel ? { border: 0, backgroundColor: "inherit" } : {}
+//                     }
+//                     disabled={isLabel || !isSameEditor}
+//                     type="text"
+//                     value={value}
+//                     rows={1}
+//                     onChange={(event) => {
+//                       const value = event.target.value;
+//                       const array = inputs;
+//                       array[i][jIndex] = value;
+//                       setInputs(array);
+//                     }}
+//                   />
+//                 </td>
+//               );
+//             })}
+//           </tr>
+//         ))}
+//       </tbody>
+//     );
+//   };
+
+//   const getColumnWidth = (totalWidthCount, width) => {
+//     const currentWidth = parseInt(width) ? Number(width) : 1;
+//     return `${(currentWidth / totalWidthCount) * 100}%`;
+//   };
+
+//   let baseClasses = "SortableItem rfb-item";
+//   if (props?.data?.pageBreakBefore) {
+//     baseClasses += " alwaysbreak";
+//   }
+
+//   const isFixedRow = rowLabels?.length > 0;
+
+//   const userProperties =
+//     props.getActiveUserProperties && props.getActiveUserProperties();
+//   const savedEditor = props.editor;
+//   let isSameEditor = true;
+//   if (savedEditor && savedEditor.userId && !!userProperties) {
+//     isSameEditor = userProperties.userId === savedEditor.userId;
+//   }
+
+//   return (
+//     <div className={baseClasses} key={`table-container-${props.id}`}>
+//       <ComponentHeader {...props} />
+//       <div className="form-group">
+//         <ComponentLabel {...props} />
+//         <table className="table" ref={tableRef} key={`table-${props.id}`}>
+//           <thead>
+//             <tr>
+//               {props.data?.columns?.map((column) => (
+//                 <th
+//                   key={column}
+//                   scope="col"
+//                   style={{
+//                     width: getColumnWidth(columns.length, column.width),
+//                   }}
+//                 >
+//                   {column.text}
+//                 </th>
+//               ))}
+//             </tr>
+//           </thead>
+//           {renderRows()}
+//         </table>
+//         {!isFixedRow && (
+//           <div style={{ textAlign: "right" }}>
+//             <button
+//               type="button"
+//               class="btn btn-secondary"
+//               onClick={removeRow}
+//               style={{
+//                 marginRight: 8,
+//                 display: inputs.length > 0 ? "initial" : "none",
+//               }}
+//               disabled={!isSameEditor}
+//             >
+//               Remove Row
+//             </button>
+//             <button
+//               type="button"
+//               class="btn btn-info"
+//               disabled={!isSameEditor}
+//               onClick={addRow}
+//             >
+//               Add Row
+//             </button>
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Table;
