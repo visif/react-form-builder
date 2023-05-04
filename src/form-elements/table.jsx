@@ -295,6 +295,7 @@ const Table = (props) => {
     (props.defaultValue ? props.defaultValue.length : Number(props.data.rows)) -
       Number(props.data.rows)
   );
+  
   const getInputValues = (
     defaultValue = [],
     columns,
