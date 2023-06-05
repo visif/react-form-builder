@@ -9,6 +9,8 @@ import FormElements from "./form-elements";
 import { TwoColumnRow, ThreeColumnRow, FourColumnRow } from "./multi-column";
 import CustomElement from "./form-elements/custom-element";
 import Registry from "./stores/registry";
+import { Provider } from "react-redux";
+import store from "./redux/store";
 
 const {
   Image,
@@ -89,7 +91,7 @@ export default class ReactForm extends React.Component {
   _getItemValue(item, ref) {
     let $item = {
       element: item.element,
-      value: "",
+      value: ref && ref.value,
     };
     if (item.element === "Rating") {
       $item.value = ref.inputField.current.state.rating;
@@ -757,46 +759,48 @@ export default class ReactForm extends React.Component {
     const backName = this.props.back_name ? this.props.back_name : "Cancel";
 
     return (
-      <div>
-        <FormValidator emitter={this.emitter} />
-        <div className="react-form-builder-form">
-          <form
-            encType="multipart/form-data"
-            ref={(c) => (this.form = c)}
-            action={this.props.form_action}
-            onSubmit={this.handleSubmit.bind(this)}
-            method={this.props.form_method}
-          >
-            {this.props.authenticity_token && (
-              <div style={formTokenStyle}>
-                <input name="utf8" type="hidden" value="&#x2713;" />
-                <input
-                  name="authenticity_token"
-                  type="hidden"
-                  value={this.props.authenticity_token}
-                />
-                <input
-                  name="task_id"
-                  type="hidden"
-                  value={this.props.task_id}
-                />
-              </div>
-            )}
-            {items}
-            <div className="btn-toolbar">
-              {!this.props.hide_actions && this.handleRenderSubmit()}
-              {!this.props.hide_actions && this.props.back_action && (
-                <a
-                  href={this.props.back_action}
-                  className="btn btn-default btn-cancel btn-big"
-                >
-                  {backName}
-                </a>
+      <Provider store={store}>
+        <div>
+          <FormValidator emitter={this.emitter} />
+          <div className="react-form-builder-form">
+            <form
+              encType="multipart/form-data"
+              ref={(c) => (this.form = c)}
+              action={this.props.form_action}
+              onSubmit={this.handleSubmit.bind(this)}
+              method={this.props.form_method}
+            >
+              {this.props.authenticity_token && (
+                <div style={formTokenStyle}>
+                  <input name="utf8" type="hidden" value="&#x2713;" />
+                  <input
+                    name="authenticity_token"
+                    type="hidden"
+                    value={this.props.authenticity_token}
+                  />
+                  <input
+                    name="task_id"
+                    type="hidden"
+                    value={this.props.task_id}
+                  />
+                </div>
               )}
-            </div>
-          </form>
+              {items}
+              <div className="btn-toolbar">
+                {!this.props.hide_actions && this.handleRenderSubmit()}
+                {!this.props.hide_actions && this.props.back_action && (
+                  <a
+                    href={this.props.back_action}
+                    className="btn btn-default btn-cancel btn-big"
+                  >
+                    {backName}
+                  </a>
+                )}
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
+      </Provider>
     );
   }
 }

@@ -1,5 +1,5 @@
 // eslint-disable-next-line max-classes-per-file
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, forwardRef } from "react";
 import Select from "react-select";
 import SignaturePad from "react-signature-canvas";
 import ReactBootstrapSlider from "react-bootstrap-slider";
@@ -261,8 +261,11 @@ function LineBreak(props) {
 //   }
 // }
 
-function TextInput(props) {
-  const inputField = useRef(null);
+// const ChildComponent = forwardRef((props, ref) => {
+//   return <input ref={ref} />;
+// });
+const TextInput = forwardRef((props, ref) => {
+  // const inputField = useRef(null);
 
   const userProperties =
     props.getActiveUserProperties && props.getActiveUserProperties();
@@ -280,7 +283,7 @@ function TextInput(props) {
   };
   if (props.mutable) {
     inputProps.defaultValue = props.defaultValue;
-    inputProps.ref = inputField;
+    inputProps.ref = ref;
   }
 
   let baseClasses = "SortableItem rfb-item";
@@ -301,7 +304,7 @@ function TextInput(props) {
       </div>
     </div>
   );
-}
+});
 
 // class NumberInput extends React.Component {
 //   constructor(props) {
@@ -2079,30 +2082,30 @@ function Range(props) {
   );
 }
 
-FormElements.Header = Header;
-FormElements.HeaderBar = HeaderBar;
-FormElements.Paragraph = Paragraph;
-FormElements.Label = Label;
-FormElements.LineBreak = LineBreak;
-FormElements.TextInput = TextInput;
-FormElements.NumberInput = NumberInput;
-FormElements.TextArea = TextArea;
-FormElements.Dropdown = Dropdown;
-FormElements.Signature = Signature;
-FormElements.Checkboxes = Checkboxes;
-FormElements.DatePicker = DatePicker;
-FormElements.RadioButtons = RadioButtons;
-FormElements.Image = Image;
-FormElements.Rating = Rating;
-FormElements.Tags = Tags;
+FormElements.Header = Header; // migrated
+FormElements.HeaderBar = HeaderBar; // migrated
+FormElements.Paragraph = Paragraph; // migrated
+FormElements.Label = Label; // migrated
+FormElements.LineBreak = LineBreak; // migrated
+FormElements.TextInput = TextInput; // migrated
+FormElements.NumberInput = NumberInput; // migrated
+FormElements.TextArea = TextArea; // migrated
+FormElements.Dropdown = Dropdown; // migrated
+FormElements.Signature = Signature; // migrated
+FormElements.Checkboxes = Checkboxes; // migrated
+FormElements.DatePicker = DatePicker; // migrated
+FormElements.RadioButtons = RadioButtons; // migrated
+FormElements.Image = Image; // migrated
+FormElements.Rating = Rating; //  =======>>> not migrate
+FormElements.Tags = Tags; // migrated
 FormElements.HyperLink = HyperLink;
-FormElements.Download = Download;
-FormElements.Camera = Camera;
-FormElements.Range = Range;
-FormElements.Table = Table;
-FormElements.Section = Section;
-FormElements.Signature2 = Signature2;
-FormElements.DataSource = DataSource;
-FormElements.FileUpload = FileUpload;
-FormElements.ImageUpload = ImageUpload;
+FormElements.Download = Download; // migrated
+FormElements.Camera = Camera; // migrated
+FormElements.Range = Range; // migrated
+FormElements.Table = Table; // =======>>> not migrate
+FormElements.Section = Section; // migrated
+FormElements.Signature2 = Signature2; // migrated
+FormElements.DataSource = DataSource; // migrated
+FormElements.FileUpload = FileUpload; // migrated
+FormElements.ImageUpload = ImageUpload; // migrated
 export default FormElements;
