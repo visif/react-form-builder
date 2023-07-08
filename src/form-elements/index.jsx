@@ -261,12 +261,7 @@ function LineBreak(props) {
 //   }
 // }
 
-// const ChildComponent = forwardRef((props, ref) => {
-//   return <input ref={ref} />;
-// });
 const TextInput = forwardRef((props, ref) => {
-  // const inputField = useRef(null);
-
   const userProperties =
     props.getActiveUserProperties && props.getActiveUserProperties();
 
@@ -358,9 +353,7 @@ const TextInput = forwardRef((props, ref) => {
 //   }
 // }
 
-function NumberInput(props) {
-  const inputField = useRef(null);
-
+const NumberInput = forwardRef((props, ref) => {
   const userProperties =
     props.getActiveUserProperties && props.getActiveUserProperties();
 
@@ -377,7 +370,7 @@ function NumberInput(props) {
   };
   if (props.mutable) {
     inputProps.defaultValue = props.defaultValue;
-    inputProps.ref = inputField;
+    inputProps.ref = ref;
   }
 
   if (props.read_only || !isSameEditor) {
@@ -398,7 +391,7 @@ function NumberInput(props) {
       </div>
     </div>
   );
-}
+});
 
 // class TextArea extends React.Component {
 //   constructor(props) {
@@ -446,9 +439,7 @@ function NumberInput(props) {
 //   }
 // }
 
-function TextArea(props) {
-  const inputField = useRef(null);
-
+const TextArea = forwardRef((props, ref) => {
   const userProperties =
     props.getActiveUserProperties && props.getActiveUserProperties();
 
@@ -468,7 +459,7 @@ function TextArea(props) {
 
   if (props.mutable) {
     inputProps.defaultValue = props.defaultValue;
-    inputProps.ref = inputField;
+    inputProps.ref = ref;
   }
 
   let baseClasses = "SortableItem rfb-item";
@@ -485,7 +476,7 @@ function TextArea(props) {
       </div>
     </div>
   );
-}
+});
 
 // class Dropdown extends React.Component {
 //   constructor(props) {
@@ -575,9 +566,7 @@ function TextArea(props) {
 //   }
 // }
 
-function Dropdown(props) {
-  const inputField = useRef(null);
-
+const Dropdown = forwardRef((props, ref) => {
   const [defaultValue, setDefaultValue] = useState(props.defaultValue);
   const [value, setValue] = useState(props.defaultValue);
 
@@ -622,7 +611,7 @@ function Dropdown(props) {
           value={value}
           onChange={handleChange}
           defaultValue={value}
-          ref={inputField}
+          ref={ref}
           disabled={props.read_only || !isSameEditor}
         >
           <option value="" key="default-0">
@@ -640,7 +629,7 @@ function Dropdown(props) {
       </div>
     </div>
   );
-}
+});
 
 // class Signature extends React.Component {
 //   constructor(props) {
@@ -727,9 +716,8 @@ function Dropdown(props) {
 //   }
 // }
 
-function Signature(props) {
+const Signature = forwardRef((props, ref) => {
   const [defaultValue, setDefaultValue] = useState(props.defaultValue);
-  const inputField = useRef();
   const canvas = useRef();
 
   const clear = () => {
@@ -756,7 +744,7 @@ function Signature(props) {
 
   if (props.mutable) {
     inputProps.defaultValue = defaultValue;
-    inputProps.ref = inputField;
+    inputProps.ref = ref;
   }
 
   const padProps = {};
@@ -801,7 +789,7 @@ function Signature(props) {
       </div>
     </div>
   );
-}
+});
 
 // class Tags extends React.Component {
 //   constructor(props) {
@@ -866,8 +854,7 @@ function Signature(props) {
 //   }
 // }
 
-const Tags = (props) => {
-  const inputField = useRef(null);
+const Tags = forwardRef((props, ref) => {
   const [value, setValue] = useState(
     getDefaultValue(props.defaultValue, props.data.options)
   );
@@ -915,7 +902,7 @@ const Tags = (props) => {
   if (props.mutable) {
     selectProps.isDisabled = props.read_only || !isSameEditor ? true : false;
     selectProps.value = value;
-    selectProps.ref = inputField;
+    selectProps.ref = ref;
   }
 
   let baseClasses = "SortableItem rfb-item";
@@ -932,7 +919,7 @@ const Tags = (props) => {
       </div>
     </div>
   );
-};
+});
 
 // class Checkboxes extends React.Component {
 //   constructor(props) {
@@ -1065,7 +1052,7 @@ const Tags = (props) => {
 //                         };
 //                       });
 //                     }
-//                   }}
+//                   }x}
 //                   {...props}
 //                 />
 //                 <label
@@ -1102,9 +1089,12 @@ const Tags = (props) => {
 //   }
 // }
 
-function Checkboxes(props) {
+const Checkboxes = forwardRef((props, ref) => {
+  // not working
   const [defaultValue, setDefaultValue] = useState(props.defaultValue);
   const [value, setValue] = useState(props.defaultValue);
+  const optionsRef = useRef({});
+  // ref = optionsRef;
 
   const options = {};
   const infos = {};
@@ -1194,7 +1184,7 @@ function Checkboxes(props) {
                 className="custom-control-input"
                 ref={(c) => {
                   if (c && props.mutable) {
-                    options[`child_ref_${option.key}`] = c;
+                    ref[`child_ref_${option.key}`] = c;
                   }
                 }}
                 onChange={() => handleChange(option)}
@@ -1231,7 +1221,7 @@ function Checkboxes(props) {
       </div>
     </div>
   );
-}
+});
 
 // class RadioButtons extends React.Component {
 //   constructor(props) {
@@ -1382,6 +1372,7 @@ function Checkboxes(props) {
 // }
 
 function RadioButtons(props) {
+  // not working
   const [defaultValue, setDefaultValue] = useState(props.defaultValue);
   const [value, setValue] = useState(props.defaultValue);
   const optionsRef = useRef({});
@@ -1524,7 +1515,7 @@ function RadioButtons(props) {
 //   );
 // };
 
-const Image = (props) => {
+const Image = forwardRef((props, ref) => {
   const style = props.data.center ? { textAlign: "center" } : null;
 
   let baseClasses = "SortableItem rfb-item";
@@ -1537,6 +1528,7 @@ const Image = (props) => {
       <ComponentHeader {...props} />
       {props.data.src && (
         <img
+          ref={ref}
           style={{ maxWidth: "100%", height: "auto" }}
           src={props.data.src}
           width={props.data.width}
@@ -1546,7 +1538,7 @@ const Image = (props) => {
       {!props.data.src && <div className="no-image">No Image</div>}
     </div>
   );
-};
+});
 
 // class Rating extends React.Component {
 //   constructor(props) {
@@ -1597,9 +1589,7 @@ const Image = (props) => {
 //   }
 // }
 
-const Rating = (props) => {
-  const inputField = React.useRef(null);
-
+const Rating = forwardRef((props, ref) => {
   const userProperties =
     props.getActiveUserProperties && props.getActiveUserProperties();
 
@@ -1618,7 +1608,7 @@ const Rating = (props) => {
       props.defaultValue !== undefined ? parseFloat(props.defaultValue, 10) : 0;
     ratingProps.editing = true;
     ratingProps.disabled = props.read_only || !isSameEditor ? true : false;
-    ratingProps.ref = inputField;
+    ratingProps.ref = ref;
   }
 
   let baseClasses = "SortableItem rfb-item";
@@ -1635,7 +1625,7 @@ const Rating = (props) => {
       </div>
     </div>
   );
-};
+});
 
 // class HyperLink extends React.Component {
 //   render() {
@@ -1657,7 +1647,7 @@ const Rating = (props) => {
 //   }
 // }
 
-const HyperLink = (props) => {
+const HyperLink = forwardRef((props, ref) => {
   let baseClasses = "SortableItem rfb-item";
   if (props.data.pageBreakBefore) {
     baseClasses += " alwaysbreak";
@@ -1673,7 +1663,7 @@ const HyperLink = (props) => {
       </div>
     </div>
   );
-};
+});
 
 // class Download extends React.Component {
 //   render() {
@@ -1697,7 +1687,8 @@ const HyperLink = (props) => {
 //   }
 // }
 
-function Download(props) {
+const Download = forwardRef((props, ref) => {
+  // not working
   let baseClasses = "SortableItem rfb-item";
   if (props.data.pageBreakBefore) {
     baseClasses += " alwaysbreak";
@@ -1713,7 +1704,7 @@ function Download(props) {
       </div>
     </div>
   );
-}
+});
 
 // class Camera extends React.Component {
 //   constructor(props) {
@@ -1821,7 +1812,7 @@ function Download(props) {
 //   }
 // }
 
-function Camera(props) {
+const Camera = forwardRef((props, ref) => {
   const [img, setImg] = useState(null);
 
   function displayImage(e) {
@@ -1872,7 +1863,7 @@ function Camera(props) {
         props.defaultValue &&
         props.defaultValue.length > 0 ? (
           <div>
-            <img src={sourceDataURL} />
+            <img src={sourceDataURL} ref={ref} />
           </div>
         ) : (
           <div className="image-upload-container">
@@ -1895,7 +1886,12 @@ function Camera(props) {
 
             {img && (
               <div>
-                <img src={img} height="100" className="image-upload-preview" />
+                <img
+                  src={img}
+                  height="100"
+                  className="image-upload-preview"
+                  ref={ref}
+                />
                 <br />
                 <div className="btn btn-image-clear" onClick={clearImage}>
                   <i className="fas fa-times"></i> Clear Photo
@@ -1907,7 +1903,7 @@ function Camera(props) {
       </div>
     </div>
   );
-}
+});
 
 // class Range extends React.Component {
 //   constructor(props) {
@@ -2000,8 +1996,8 @@ function Camera(props) {
 //   }
 // }
 
-function Range(props) {
-  const inputField = useRef();
+const Range = forwardRef((props, ref) => {
+  // not working
   const [value, setValue] = useState(
     props.defaultValue !== undefined
       ? parseInt(props.defaultValue, 10)
@@ -2024,9 +2020,9 @@ function Range(props) {
     onChange: changeValue,
   };
 
-  if (props.mutable) {
-    rangeProps.ref = inputField;
-  }
+  // if (props.mutable) {
+  //   rangeProps.ref = ref;
+  // }
 
   const datalist = [];
   for (
@@ -2075,12 +2071,12 @@ function Range(props) {
           <ReactBootstrapSlider {...rangeProps} />
         </div>
         <div className="visible_marks">{visible_marks}</div>
-        <input name={name} value={value} type="hidden" />
+        <input name={name} value={value} type="hidden" ref={ref} />
         <datalist id={rangeProps.list}>{_datalist}</datalist>
       </div>
     </div>
   );
-}
+});
 
 FormElements.Header = Header; // migrated
 FormElements.HeaderBar = HeaderBar; // migrated

@@ -94,14 +94,14 @@ export default class ReactForm extends React.Component {
       value: ref && ref.value,
     };
     if (item.element === "Rating") {
-      $item.value = ref.inputField.current.state.rating;
+      $item.value = ref.state.rating;
     } else if (item.element === "Tags") {
-      $item.value = ref.inputField.current.state.value;
+      $item.value = ref.state.value;
     } else if (item.element === "DatePicker") {
       $item.value = ref.state.value;
     } else if (item.element === "Camera") {
-      $item.value = ref.state.img
-        ? ref.state.img.replace("data:image/png;base64,", "")
+      $item.value = ref.src
+        ? ref.src.replace("data:image/png;base64,", "")
         : "";
     } else if (item.element === "Table") {
       $item.value = ref.state.inputs;
