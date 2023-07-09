@@ -98,7 +98,7 @@ export default class ReactForm extends React.Component {
     } else if (item.element === "Tags") {
       $item.value = ref.state.value;
     } else if (item.element === "DatePicker") {
-      $item.value = ref.state.value;
+      $item.value = ref.input.value;
     } else if (item.element === "Camera") {
       $item.value = ref.src
         ? ref.src.replace("data:image/png;base64,", "")

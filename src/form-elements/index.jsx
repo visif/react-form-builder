@@ -2078,17 +2078,21 @@ const Range = forwardRef((props, ref) => {
   );
 });
 
-FormElements.Header = Header; // migrated
-FormElements.HeaderBar = HeaderBar; // migrated
-FormElements.Paragraph = Paragraph; // migrated
-FormElements.Label = Label; // migrated
-FormElements.LineBreak = LineBreak; // migrated
-FormElements.TextInput = TextInput; // migrated
-FormElements.NumberInput = NumberInput; // migrated
-FormElements.TextArea = TextArea; // migrated
-FormElements.Dropdown = Dropdown; // migrated
-FormElements.Signature = Signature; // migrated
-FormElements.Checkboxes = Checkboxes; // migrated
+FormElements.Header = Header; // migrated, no value
+FormElements.HeaderBar = HeaderBar; // migrated, no value
+FormElements.Paragraph = Paragraph; // migrated, no value
+FormElements.Label = Label; // migrated, no value
+FormElements.LineBreak = LineBreak; // migrated, no value
+
+FormElements.TextInput = TextInput; // migrated, value done
+FormElements.NumberInput = NumberInput; // migrated, value done
+FormElements.TextArea = TextArea; // migrated, value done
+FormElements.Dropdown = Dropdown; // migrated, value done
+
+FormElements.Signature = Signature; // migrated, value failed, no used
+
+FormElements.Checkboxes = Checkboxes; // migrated, value failed
+
 FormElements.DatePicker = DatePicker; // migrated
 FormElements.RadioButtons = RadioButtons; // migrated
 FormElements.Image = Image; // migrated
