@@ -1528,7 +1528,7 @@ const Image = forwardRef((props, ref) => {
       <ComponentHeader {...props} />
       {props.data.src && (
         <img
-          ref={ref}
+          // ref={ref}
           style={{ maxWidth: "100%", height: "auto" }}
           src={props.data.src}
           width={props.data.width}
@@ -2083,29 +2083,30 @@ FormElements.HeaderBar = HeaderBar; // migrated, no value
 FormElements.Paragraph = Paragraph; // migrated, no value
 FormElements.Label = Label; // migrated, no value
 FormElements.LineBreak = LineBreak; // migrated, no value
+FormElements.Image = Image; // migrated, no value
+FormElements.HyperLink = HyperLink; // migrated, no value
+FormElements.Section = Section; // migrated, no value
 
 FormElements.TextInput = TextInput; // migrated, value done
 FormElements.NumberInput = NumberInput; // migrated, value done
 FormElements.TextArea = TextArea; // migrated, value done
 FormElements.Dropdown = Dropdown; // migrated, value done
+FormElements.DatePicker = DatePicker; // migrated, value done
+FormElements.Tags = Tags; // migrated, value done
+FormElements.Camera = Camera; // migrated, value done
 
 FormElements.Signature = Signature; // migrated, value failed, no used
 
 FormElements.Checkboxes = Checkboxes; // migrated, value failed
-
-FormElements.DatePicker = DatePicker; // migrated
-FormElements.RadioButtons = RadioButtons; // migrated
-FormElements.Image = Image; // migrated
-FormElements.Rating = Rating; //  =======>>> not migrate
-FormElements.Tags = Tags; // migrated
-FormElements.HyperLink = HyperLink;
-FormElements.Download = Download; // migrated
-FormElements.Camera = Camera; // migrated
-FormElements.Range = Range; // migrated
-FormElements.Table = Table; // =======>>> not migrate
-FormElements.Section = Section; // migrated
-FormElements.Signature2 = Signature2; // migrated
-FormElements.DataSource = DataSource; // migrated
-FormElements.FileUpload = FileUpload; // migrated
+FormElements.RadioButtons = RadioButtons; // migrated, value failed
+FormElements.Download = Download; // migrated, value failed
+FormElements.Range = Range; // migrated, value failed
+FormElements.Signature2 = Signature2; // migrated, value failed
+FormElements.DataSource = DataSource; // migrated, value failed
+FormElements.FileUpload = FileUpload; // migrated, value failed
 FormElements.ImageUpload = ImageUpload; // migrated
+
+FormElements.Rating = Rating; //  =======>>> not migrate
+FormElements.Table = Table; // =======>>> not migrate
+
 export default FormElements;
