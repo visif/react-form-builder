@@ -10,6 +10,7 @@ import Toolbar from "./toolbar";
 import ReactFormGenerator from "./form";
 import store from "./stores/store";
 import Registry from "./stores/registry";
+import { FormProvider } from "./context/form-context";
 
 class ReactFormBuilder extends React.Component {
   constructor(props) {
@@ -56,8 +57,9 @@ class ReactFormBuilder extends React.Component {
     }
     return (
       <DndProvider backend={HTML5Backend}>
-        <div>
-          {/* <div>
+        <FormProvider>
+          <div>
+            {/* <div>
            <p>
              It is easy to implement a sortable interface with React DnD. Just make
              the same component both a drag source and a drop target, and reorder
@@ -65,53 +67,54 @@ class ReactFormBuilder extends React.Component {
            </p>
            <Container />
          </div> */}
-          <div className="react-form-builder clearfix">
-            <div>
-              <Preview
-                files={this.props.files}
-                manualEditModeOff={this.manualEditModeOff.bind(this)}
-                showCorrectColumn={this.props.showCorrectColumn}
-                parent={this}
-                data={this.props.data}
-                url={this.props.url}
-                saveUrl={this.props.saveUrl}
-                onLoad={this.props.onLoad}
-                onPost={this.props.onPost}
-                editModeOn={this.editModeOn}
-                editMode={this.state.editMode}
-                variables={this.props.variables}
-                registry={Registry}
-                editElement={this.state.editElement}
-                renderEditForm={this.props.renderEditForm}
-                onChange={this.props.onChange}
-                uploadUrl={this.props.uploadUrl}
-                onImageUpload={this.props.onImageUpload}
-                getDataSource={this.props.getDataSource}
-                getFormSource={this.props.getFormSource}
-                getFormContent={this.props.getFormContent}
-                getActiveUserProperties={() => {
-                  return {
-                    name: "test",
-                    userId: "id001",
-                  };
-                }}
-                onUploadFile={(file) => {
-                  return `${file.name}-${Math.random() * 10000000}`;
-                }}
-                onUploadImage={(file) => {
-                  return `path/${file.name}-${Math.random() * 10000000}`;
-                }}
-                onDownloadFile={(file) => {
-                  return `download_${file.name}-${Math.random() * 10000000}`;
-                }}
-              />
-              <Toolbar
-                {...toolbarProps}
-                customItems={this.props.customToolbarItems}
-              />
+            <div className="react-form-builder clearfix">
+              <div>
+                <Preview
+                  files={this.props.files}
+                  manualEditModeOff={this.manualEditModeOff.bind(this)}
+                  showCorrectColumn={this.props.showCorrectColumn}
+                  parent={this}
+                  data={this.props.data}
+                  url={this.props.url}
+                  saveUrl={this.props.saveUrl}
+                  onLoad={this.props.onLoad}
+                  onPost={this.props.onPost}
+                  editModeOn={this.editModeOn}
+                  editMode={this.state.editMode}
+                  variables={this.props.variables}
+                  registry={Registry}
+                  editElement={this.state.editElement}
+                  renderEditForm={this.props.renderEditForm}
+                  onChange={this.props.onChange}
+                  uploadUrl={this.props.uploadUrl}
+                  onImageUpload={this.props.onImageUpload}
+                  getDataSource={this.props.getDataSource}
+                  getFormSource={this.props.getFormSource}
+                  getFormContent={this.props.getFormContent}
+                  getActiveUserProperties={() => {
+                    return {
+                      name: "test",
+                      userId: "id001",
+                    };
+                  }}
+                  onUploadFile={(file) => {
+                    return `${file.name}-${Math.random() * 10000000}`;
+                  }}
+                  onUploadImage={(file) => {
+                    return `path/${file.name}-${Math.random() * 10000000}`;
+                  }}
+                  onDownloadFile={(file) => {
+                    return `download_${file.name}-${Math.random() * 10000000}`;
+                  }}
+                />
+                <Toolbar
+                  {...toolbarProps}
+                  customItems={this.props.customToolbarItems}
+                />
+              </div>
             </div>
           </div>
-        </div>
+        </FormProvider>
       </DndProvider>
     );
   }

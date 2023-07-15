@@ -17,12 +17,11 @@ ReactDOM.render(
     url={url}
     saveUrl={saveUrl}
     onImageUpload={() => {
-      // return Math.random(1000).toString()
       return "http://www.isocafe.com:8080/VisiforgeDC//temp/formimage/C27E1F69-7C67-4306-8A08-5A783F27F9F3.jpeg";
     }}
     // toolbarItems={items}
     onChange={(data) => {
-      console.log(">>>>>>", data);
+      // console.log(">>>>>>", data);
     }}
   />,
   document.getElementById("form-builder")
