@@ -806,7 +806,7 @@ const ReactForm = (props) => {
   const inputsRef = useRef({});
   const [answerData, setAnswerData] = useState(convert(props.answer_data));
 
-  const { formValues, dispatch } = useFormContext();
+  const { formValues } = useFormContext();
 
   useEffect(() => {
     setAnswerData(convert(props.answer_data));
@@ -1000,6 +1000,14 @@ const ReactForm = (props) => {
       itemData.editor = oldEditor
         ? oldEditor
         : checked_options.length > 0
+        ? activeUser
+        : null;
+    } else if (item.element === "FileUpload") {
+      const dataVal = formValues[item.field_name] || [];
+      itemData.value = dataVal;
+      itemData.editor = oldEditor
+        ? oldEditor
+        : dataVal.length > 0
         ? activeUser
         : null;
     } else {

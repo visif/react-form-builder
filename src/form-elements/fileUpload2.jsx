@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import ComponentHeader from "./component-header";
+import { useFormContext, FORM_ACTION } from "../context/form-context";
 
 // class FileUpload extends React.Component {
 //   constructor(props) {
@@ -197,6 +198,7 @@ import ComponentHeader from "./component-header";
 // }
 
 const FileUpload = (props) => {
+  const { dispatch } = useFormContext();
   const inputField = useRef(null);
   const tableRef = useRef(null);
 
@@ -247,6 +249,11 @@ const FileUpload = (props) => {
       }
     }
 
+    dispatch({
+      type: FORM_ACTION.UPDATE_VALUE,
+      name: props.data.field_name,
+      value: [...fileList, ...newResponse],
+    });
     setFileList([...fileList, ...newResponse]);
   };
 

@@ -16,6 +16,7 @@ import Signature2 from "./signature2";
 import FileUpload from "./fileUpload2";
 import DataSource from "./datasource";
 import ImageUpload from "./imageUpload";
+import { useFormContext } from "../context/form-context";
 
 const FormElements = {};
 
@@ -1997,7 +1998,6 @@ const Camera = forwardRef((props, ref) => {
 // }
 
 const Range = forwardRef((props, ref) => {
-  // not working
   const [value, setValue] = useState(
     props.defaultValue !== undefined
       ? parseInt(props.defaultValue, 10)
@@ -2017,7 +2017,7 @@ const Range = forwardRef((props, ref) => {
     max: props.data.max_value,
     step: props.data.step,
     value: value,
-    onChange: changeValue,
+    change: changeValue,
   };
 
   // if (props.mutable) {
@@ -2094,13 +2094,13 @@ FormElements.Dropdown = Dropdown; // migrated, value done
 FormElements.DatePicker = DatePicker; // migrated, value done
 FormElements.Tags = Tags; // migrated, value done
 FormElements.Camera = Camera; // migrated, value done
+FormElements.Range = Range; // migrated, value done
 
 FormElements.Signature = Signature; // migrated, value failed, no used
 
 FormElements.Checkboxes = Checkboxes; // migrated, value failed
 FormElements.RadioButtons = RadioButtons; // migrated, value failed
 FormElements.Download = Download; // migrated, value failed
-FormElements.Range = Range; // migrated, value failed
 FormElements.Signature2 = Signature2; // migrated, value failed
 FormElements.DataSource = DataSource; // migrated, value failed
 FormElements.FileUpload = FileUpload; // migrated, value failed

@@ -4,7 +4,7 @@ const FormContext = createContext({
   formValues: {},
 });
 
-const FORM_ACTION = {
+export const FORM_ACTION = {
   UPDATE_VALUE: "UPDATE_VALUE",
 };
 
