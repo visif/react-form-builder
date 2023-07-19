@@ -23,14 +23,6 @@ const formReducer = (state, action) => {
 export const FormProvider = ({ children }) => {
   const [formValues, dispatch] = useReducer(formReducer, {});
 
-  // const updateFormValue = (name, value) => {
-  //   dispatch({
-  //     type: "UPDATE_FORM_VALUE",
-  //     name,
-  //     value,
-  //   });
-  // };
-
   return (
     <FormContext.Provider value={{ formValues, dispatch }}>
       {children}

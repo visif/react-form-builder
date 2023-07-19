@@ -205,14 +205,16 @@ const FileUpload = (props) => {
   const [fileList, setFileList] = useState(
     (props.defaultValue && props.defaultValue.fileList) || []
   );
-  const [defaultValue, setDefaultValue] = useState(
-    props.defaultValue && props.defaultValue.fileList
-  );
 
   const onRemoveFile = (file) => {
     const remainList = fileList.filter(
       (item) => item.fileName !== file.fileName
     );
+    dispatch({
+      type: FORM_ACTION.UPDATE_VALUE,
+      name: props.data.field_name,
+      value: [...remainList],
+    });
     setFileList([...remainList]);
   };
 
