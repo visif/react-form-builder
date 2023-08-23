@@ -1,6 +1,7 @@
 import React from "react";
 import ComponentHeader from "./component-header";
-// import noImage from "./noImage.png";
+import Lightbox from "react-image-lightbox";
+import "react-image-lightbox/style.css"; // This only needs to be imported once in your app
 
 class ImageUpload extends React.Component {
   constructor(props) {
@@ -16,6 +17,7 @@ class ImageUpload extends React.Component {
       filePath,
       fileName,
       blobUrl,
+      isOpen: false,
     };
   }
 
@@ -99,8 +101,9 @@ class ImageUpload extends React.Component {
     return (
       <div
         ref={this.tableRef}
-        className={`SortableItem rfb-item${this.props.data.pageBreakBefore ? " alwaysbreak" : ""
-          }`}
+        className={`SortableItem rfb-item${
+          this.props.data.pageBreakBefore ? " alwaysbreak" : ""
+        }`}
       >
         <ComponentHeader {...this.props} />
         <div className="form-group">
@@ -118,7 +121,10 @@ class ImageUpload extends React.Component {
               <i className="is-isolated fas fa-trash"></i>
             </div>
             <img
-              style={{ width: "100%" }}
+              style={{ width: "100%", cursor: "pointer" }}
+              onClick={() => {
+                this.setState({ isOpen: true });
+              }}
               src={
                 this.state.blobUrl || this.state.filePath
                   ? this.state.blobUrl || this.state.filePath
@@ -133,14 +139,15 @@ class ImageUpload extends React.Component {
               name="fileUpload"
               title=" "
               style={{ display: "none" }}
-              onChange={
-                this.uploadImageFile
-              }
+              onChange={this.uploadImageFile}
             />
             <a
               href=""
               className="btn btn-secondary"
-              style={{ display: this.state.filePath ? "none" : "inline-block", pointerEvents: isSameEditor ? "auto" : "none" }}
+              style={{
+                display: this.state.filePath ? "none" : "inline-block",
+                pointerEvents: isSameEditor ? "auto" : "none",
+              }}
               onClick={(e) => {
                 this.inputField && this.inputField.current.click();
                 e.preventDefault();
@@ -150,7 +157,13 @@ class ImageUpload extends React.Component {
             </a>
           </div>
         </div>
-      </div >
+        {this.state.isOpen && (
+          <Lightbox
+            mainSrc={this.state.blobUrl || this.state.filePath}
+            onCloseRequest={() => this.setState({ isOpen: false })}
+          />
+        )}
+      </div>
     );
   }
 }
