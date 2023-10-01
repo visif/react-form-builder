@@ -1,6 +1,9 @@
 import React from "react";
 import ComponentHeader from "./component-header";
 import ComponentLabel from "./component-label";
+import FormElements from "../form-elements";
+
+const { Checkboxes } = FormElements || {};
 
 export default class Table extends React.Component {
   self = this;
@@ -169,8 +172,9 @@ export default class Table extends React.Component {
                 : "";
 
               return (
-                <td>
-                  <textarea
+                <td key={`td${i}${jIndex}`}>
+                  {this.getColumnInputType("Dropdown")}
+                  {/* <textarea
                     className="form-control"
                     style={
                       isLabel ? { border: 0, backgroundColor: "inherit" } : {}
@@ -187,7 +191,7 @@ export default class Table extends React.Component {
                         inputs: array,
                       });
                     }}
-                  />
+                  /> */}
                 </td>
               );
             })}
@@ -200,6 +204,69 @@ export default class Table extends React.Component {
   getColumnWidth = (totalWidthCount, width) => {
     const currentWidth = parseInt(width) ? Number(width) : 1;
     return `${(currentWidth / totalWidthCount) * 100}%`;
+  };
+
+  getInputElement(type) {
+    // if (item.custom) {
+    //   return this.getCustomElement(item);
+    // }
+    // const Input = FormElements[item.element];
+    const Input = FormElements[type];
+    // return null;
+    return (
+      <Input
+        hideHeader
+        // handleChange={this.handleChange}
+        // mutable={true}
+        // key={`form_${item.id}`}
+        data={{ options: [] }}
+        // defaultValue={this._getDefaultValue(item)}
+        // editor={this._getEditor(item)}
+        getActiveUserProperties={this.props.getActiveUserProperties}
+        getDataSource={this.props.getDataSource}
+        onUploadFile={this.props.onUploadFile}
+        onDownloadFile={this.props.onDownloadFile}
+        onUploadImage={this.props.onUploadImage}
+        getFormSource={this.props.getFormSource}
+      />
+    );
+  }
+
+  getColumnInputType = (type) => {
+    switch (type) {
+      case "Dropdown":
+        return this.getInputElement(type);
+      case "Checkboxes":
+        return (
+          <Checkboxes
+          // ref={(c) => (this.inputs[item.field_name] = c)}
+          // read_only={this.props.read_only}
+          // handleChange={this.handleChange}
+          // mutable={true}
+          // key={`form_${item.id}`}
+          // data={item}
+          // defaultValue={this._optionsDefaultValue(item)}
+          // getActiveUserProperties={this.props.getActiveUserProperties}
+          // editor={this._getEditor(item)}
+          />
+        );
+        return (
+          <ImageUpload
+            ref={(c) => (this.inputs[item.field_name] = c)}
+            read_only={this.props.read_only || item.readOnly}
+            mutable={true}
+            key={`form_${item.id}`}
+            data={item}
+            defaultValue={this._getDefaultValue(item)}
+            onUploadImage={this.props.onUploadImage}
+            editor={this._getEditor(item)}
+            getActiveUserProperties={this.props.getActiveUserProperties}
+          />
+        );
+      default:
+        // return this.getSimpleElement(item);
+        return null;
+    }
   };
 
   render() {
@@ -257,7 +324,7 @@ export default class Table extends React.Component {
             <div style={{ textAlign: "right" }}>
               <button
                 type="button"
-                class="btn btn-secondary"
+                className="btn btn-secondary"
                 onClick={this.removeRow}
                 style={{
                   marginRight: 8,
@@ -269,7 +336,7 @@ export default class Table extends React.Component {
               </button>
               <button
                 type="button"
-                class="btn btn-info"
+                className="btn btn-info"
                 disabled={!isSameEditor}
                 onClick={this.addRow}
               >

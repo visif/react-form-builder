@@ -339,7 +339,7 @@ class Dropdown extends React.Component {
 
     return (
       <div className={baseClasses}>
-        <ComponentHeader {...this.props} />
+        {!this.props.hideHeader && <ComponentHeader {...this.props} />}
         <div className="form-group">
           <ComponentLabel {...this.props} />
           <select {...props}>
@@ -620,10 +620,10 @@ class Checkboxes extends React.Component {
                         const newActiveVal = activeVal
                           ? { ...activeVal, value: !activeVal.value }
                           : {
-                            key: option.key,
-                            value: true,
-                            info: "",
-                          };
+                              key: option.key,
+                              value: true,
+                              info: "",
+                            };
 
                         if (!current) {
                           return current;
@@ -998,8 +998,8 @@ class Camera extends React.Component {
         <div className="form-group">
           <ComponentLabel {...this.props} />
           {this.props.read_only === true &&
-            this.props.defaultValue &&
-            this.props.defaultValue.length > 0 ? (
+          this.props.defaultValue &&
+          this.props.defaultValue.length > 0 ? (
             <div>
               <img src={sourceDataURL} />
             </div>
