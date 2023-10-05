@@ -973,33 +973,43 @@ const ReactForm = (props) => {
 
     if (item.element === "Checkboxes" || item.element === "RadioButtons") {
       const checked_options = [];
+      const dataVal =
+        (formValues[item.field_name] && formValues[item.field_name].value) ||
+        [];
 
-      item.options.forEach((option) => {
-        const $option = ReactDOM.findDOMNode(
-          ref.options[`child_ref_${option.key}`]
-        );
-        if ($option.checked) {
-          let info = "";
+      // item.options.forEach((option) => {
+      //   const $option = ReactDOM.findDOMNode(
+      //     ref.options[`child_ref_${option.key}`]
+      //   );
+      //   if ($option.checked) {
+      //     let info = "";
 
-          if (option.info) {
-            const $info = ReactDOM.findDOMNode(
-              ref.infos[`child_ref_${option.key}_info`]
-            );
-            info = $info ? $info.value : "";
-          }
+      //     if (option.info) {
+      //       const $info = ReactDOM.findDOMNode(
+      //         ref.infos[`child_ref_${option.key}_info`]
+      //       );
+      //       info = $info ? $info.value : "";
+      //     }
 
-          checked_options.push({
-            key: option.key,
-            value: true,
-            info: info,
-          });
-        }
-      });
+      //     checked_options.push({
+      //       key: option.key,
+      //       value: true,
+      //       info: info,
+      //     });
+      //   }
+      // });
 
-      itemData.value = checked_options;
+      // itemData.value = checked_options;
+      // itemData.editor = oldEditor
+      //   ? oldEditor
+      //   : checked_options.length > 0
+      //   ? activeUser
+      //   : null;
+
+      itemData.value = dataVal;
       itemData.editor = oldEditor
         ? oldEditor
-        : checked_options.length > 0
+        : dataVal.length > 0
         ? activeUser
         : null;
     } else if (item.element === "FileUpload") {

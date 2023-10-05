@@ -16,7 +16,8 @@ import Signature2 from "./signature2";
 import FileUpload from "./fileUpload2";
 import DataSource from "./datasource";
 import ImageUpload from "./imageUpload";
-import { useFormContext } from "../context/form-context";
+import { useFormContext, FORM_ACTION } from "../context/form-context";
+import DebouncedInput from "../hook/textInput";
 
 const FormElements = {};
 
@@ -1091,13 +1092,10 @@ const Tags = forwardRef((props, ref) => {
 // }
 
 const Checkboxes = forwardRef((props, ref) => {
-  // not working
-  const [defaultValue, setDefaultValue] = useState(props.defaultValue);
-  const [value, setValue] = useState(props.defaultValue);
-  const optionsRef = useRef({});
-  // ref = optionsRef;
+  const { dispatch } = useFormContext();
 
-  const options = {};
+  const [value, setValue] = useState(props.defaultValue);
+
   const infos = {};
 
   const getActiveValue = (values, key) => {
@@ -1125,29 +1123,77 @@ const Checkboxes = forwardRef((props, ref) => {
 
   const handleChange = (option) => {
     if (isSameEditor) {
+      let newVal;
       setValue((current) => {
-        const activeVal = getActiveValue(current && current.value, option.key);
+        const activeVal = getActiveValue(current, option.key);
         const newActiveVal = activeVal
-          ? { ...activeVal, value: !activeVal.value }
+          ? {
+              ...activeVal,
+              value: !activeVal.value,
+              info: activeVal.value ? "" : activeVal.info,
+            }
           : {
               key: option.key,
               value: true,
               info: "",
             };
 
-        if (!current) {
-          return current;
-        }
-
-        return {
-          ...current,
+        newVal = {
+          ...(current || {}),
           value: [
-            ...(current.value || []).filter((item) => item.key !== option.key),
+            ...((current && current.value) || []).filter(
+              (item) => item.key !== option.key
+            ),
             newActiveVal,
           ],
         };
+
+        dispatch({
+          type: FORM_ACTION.UPDATE_VALUE,
+          name: props.data.field_name,
+          value: newVal,
+        });
+
+        return newVal;
       });
     }
+  };
+
+  const handleInputChange = (option, valueInfo) => {
+    if (!isSameEditor) {
+      return;
+    }
+
+    let newVal;
+
+    setValue((current) => {
+      const activeVal = getActiveValue(current, option.key);
+      const newActiveVal = activeVal
+        ? { ...activeVal, info: valueInfo }
+        : {
+            key: option.key,
+            value: true,
+            info: valueInfo,
+          };
+
+      newVal = {
+        ...(current || {}),
+        value: [
+          ...((current && current.value) || []).filter(
+            (item) => item.key !== option.key
+          ),
+          newActiveVal,
+        ],
+      };
+
+      dispatch({
+        type: FORM_ACTION.UPDATE_VALUE,
+        name: props.data.field_name,
+        value: newVal,
+      });
+
+      return newVal;
+    });
   };
 
   return (
@@ -1198,22 +1244,18 @@ const Checkboxes = forwardRef((props, ref) => {
                 {option.text}
               </label>
               {inputProps.checked && option.info && (
-                <input
+                <DebouncedInput
                   id={"fid_" + this_key + "_info"}
-                  type="text"
-                  className="form-control"
                   style={{
                     width: "auto",
                     marginLeft: 16,
                     height: "calc(1.5em + .5rem)",
                     marginBottom: 4,
                   }}
-                  defaultValue={answerItem.info ?? ""}
-                  ref={(c) => {
-                    if (c && props.mutable) {
-                      infos[`child_ref_${option.key}_info`] = c;
-                    }
+                  onChange={(value) => {
+                    handleInputChange(option, value);
                   }}
+                  value={answerItem.info ?? ""}
                 />
               )}
             </div>
@@ -2095,15 +2137,15 @@ FormElements.DatePicker = DatePicker; // migrated, value done
 FormElements.Tags = Tags; // migrated, value done
 FormElements.Camera = Camera; // migrated, value done
 FormElements.Range = Range; // migrated, value done
+FormElements.FileUpload = FileUpload; // migrated, value done
+FormElements.Checkboxes = Checkboxes; // migrated, value done
 
 FormElements.Signature = Signature; // migrated, value failed, no used
 
-FormElements.Checkboxes = Checkboxes; // migrated, value failed
 FormElements.RadioButtons = RadioButtons; // migrated, value failed
 FormElements.Download = Download; // migrated, value failed
 FormElements.Signature2 = Signature2; // migrated, value failed
 FormElements.DataSource = DataSource; // migrated, value failed
-FormElements.FileUpload = FileUpload; // migrated, value failed
 FormElements.ImageUpload = ImageUpload; // migrated
 
 FormElements.Rating = Rating; //  =======>>> not migrate
