@@ -1096,8 +1096,6 @@ const Checkboxes = forwardRef((props, ref) => {
 
   const [value, setValue] = useState(props.defaultValue);
 
-  const infos = {};
-
   const getActiveValue = (values, key) => {
     return values?.value?.find((item) => item.key === key);
   };
@@ -1415,27 +1413,25 @@ const Checkboxes = forwardRef((props, ref) => {
 // }
 
 function RadioButtons(props) {
-  // not working
-  const [defaultValue, setDefaultValue] = useState(props.defaultValue);
-  const [value, setValue] = useState(props.defaultValue);
-  const optionsRef = useRef({});
-  const infosRef = useRef({});
+  const { dispatch } = useFormContext();
 
-  useEffect(() => {
-    console.log("RadioButtons getDerivedStateFromProps");
-    if (JSON.stringify(defaultValue) !== JSON.stringify(props.defaultValue)) {
-      console.log(
-        "RadioButtons default prop changed",
-        defaultValue,
-        props.defaultValue
-      );
-      setDefaultValue(props.defaultValue);
-      setValue(props.defaultValue);
-    }
-  }, [defaultValue, props.defaultValue]);
+  const [value, setValue] = useState(props.defaultValue);
+
+  // useEffect(() => {
+  //   console.log("RadioButtons getDerivedStateFromProps");
+  //   if (JSON.stringify(defaultValue) !== JSON.stringify(props.defaultValue)) {
+  //     console.log(
+  //       "RadioButtons default prop changed",
+  //       defaultValue,
+  //       props.defaultValue
+  //     );
+  //     setDefaultValue(props.defaultValue);
+  //     setValue(props.defaultValue);
+  //   }
+  // }, [defaultValue, props.defaultValue]);
 
   const getActiveValue = (values, key) => {
-    return values?.find((item) => item.key === key);
+    return (values || {}).key === key ? values : null;
   };
 
   const userProperties =
@@ -1456,6 +1452,49 @@ function RadioButtons(props) {
   if (props.data.pageBreakBefore) {
     baseClasses += " alwaysbreak";
   }
+
+  const handleChange = (option) => {
+    if (!isSameEditor) {
+      return;
+    }
+    setValue((current) => {
+      const activeVal = getActiveValue(current, option.key);
+      const newActiveVal = {
+        key: option.key,
+        value: true,
+        info: activeVal?.value ? activeVal.info : "",
+      };
+
+      dispatch({
+        type: FORM_ACTION.UPDATE_VALUE,
+        name: props.data.field_name,
+        value: { value: [newActiveVal] },
+      });
+
+      return newActiveVal;
+    });
+  };
+
+  const handleInputChange = (option, valueInfo) => {
+    if (!isSameEditor) {
+      return;
+    }
+    setValue(() => {
+      const newActiveVal = {
+        key: option.key,
+        value: true,
+        info: valueInfo,
+      };
+
+      dispatch({
+        type: FORM_ACTION.UPDATE_VALUE,
+        name: props.data.field_name,
+        value: { value: [newActiveVal] },
+      });
+
+      return newActiveVal;
+    });
+  };
 
   return (
     <div className={baseClasses}>
@@ -1486,20 +1525,7 @@ function RadioButtons(props) {
               <input
                 id={"fid_" + this_key}
                 className="custom-control-input"
-                ref={(c) => {
-                  if (c && props.mutable) {
-                    optionsRef.current[`child_ref_${option.key}`] = c;
-                  }
-                }}
-                onChange={() => {
-                  setValue([
-                    {
-                      key: option.key,
-                      value: true,
-                      info: "",
-                    },
-                  ]);
-                }}
+                onChange={() => handleChange(option)}
                 {...inputProps}
               />
               <label
@@ -1509,21 +1535,17 @@ function RadioButtons(props) {
                 {option.text}
               </label>
               {inputProps.checked && option.info && (
-                <input
+                <DebouncedInput
                   id={"fid_" + this_key + "_info"}
-                  type="text"
-                  class="form-control"
                   style={{
                     width: "auto",
                     marginLeft: 16,
                     height: "calc(1.5em + .5rem)",
                   }}
-                  defaultValue={answerItem.info ?? ""}
-                  ref={(c) => {
-                    if (c && props.mutable) {
-                      infosRef.current[`child_ref_${option.key}_info`] = c;
-                    }
+                  onChange={(value) => {
+                    handleInputChange(option, value);
                   }}
+                  value={answerItem.info ?? ""}
                 />
               )}
             </div>
@@ -2139,10 +2161,10 @@ FormElements.Camera = Camera; // migrated, value done
 FormElements.Range = Range; // migrated, value done
 FormElements.FileUpload = FileUpload; // migrated, value done
 FormElements.Checkboxes = Checkboxes; // migrated, value done
+FormElements.RadioButtons = RadioButtons; // migrated, value done
 
 FormElements.Signature = Signature; // migrated, value failed, no used
 
-FormElements.RadioButtons = RadioButtons; // migrated, value failed
 FormElements.Download = Download; // migrated, value failed
 FormElements.Signature2 = Signature2; // migrated, value failed
 FormElements.DataSource = DataSource; // migrated, value failed
