@@ -633,165 +633,165 @@ const Dropdown = forwardRef((props, ref) => {
   );
 });
 
-// class Signature extends React.Component {
-//   constructor(props) {
-//     super(props);
-//     this.state = {
-//       defaultValue: props.defaultValue,
-//     };
-//     this.inputField = React.createRef();
-//     this.canvas = React.createRef();
-//   }
+class Signature extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      defaultValue: props.defaultValue,
+    };
+    this.inputField = React.createRef();
+    this.canvas = React.createRef();
+  }
 
-//   clear = () => {
-//     if (this.state.defaultValue) {
-//       this.setState({ defaultValue: "" });
-//     } else if (this.canvas.current) {
-//       this.canvas.current.clear();
-//     }
-//   };
-
-//   render() {
-//     const userProperties =
-//       this.props.getActiveUserProperties &&
-//       this.props.getActiveUserProperties();
-
-//     const savedEditor = this.props.editor;
-//     let isSameEditor = true;
-//     if (savedEditor && savedEditor.userId && !!userProperties) {
-//       isSameEditor = userProperties.userId === savedEditor.userId;
-//     }
-
-//     const { defaultValue } = this.state;
-//     let canClear = !!defaultValue;
-//     const props = {};
-//     props.type = "hidden";
-//     props.name = this.props.data.field_name;
-
-//     if (this.props.mutable) {
-//       props.defaultValue = defaultValue;
-//       props.ref = this.inputField;
-//     }
-//     const pad_props = {};
-//     // umd requires canvasProps={{ width: 400, height: 150 }}
-//     if (this.props.mutable) {
-//       pad_props.defaultValue = defaultValue;
-//       pad_props.ref = this.canvas;
-//       canClear = !this.props.read_only || isSameEditor;
-//     }
-
-//     if (this.props.read_only || !isSameEditor) {
-//       props.disabled = "disabled";
-//     }
-
-//     let baseClasses = "SortableItem rfb-item";
-//     if (this.props.data.pageBreakBefore) {
-//       baseClasses += " alwaysbreak";
-//     }
-
-//     let sourceDataURL;
-//     if (defaultValue && defaultValue.length > 0) {
-//       sourceDataURL = `data:image/png;base64,${defaultValue}`;
-//     }
-
-//     return (
-//       <div className={baseClasses}>
-//         <ComponentHeader {...this.props} />
-//         <div className="form-group">
-//           <ComponentLabel {...this.props} />
-//           {this.props.read_only === true || !isSameEditor || !!sourceDataURL ? (
-//             <img src={sourceDataURL} />
-//           ) : (
-//             <SignaturePad {...pad_props} />
-//           )}
-//           {canClear && (
-//             <i
-//               className="fas fa-times clear-signature"
-//               onClick={this.clear}
-//               title="Clear Signature"
-//             ></i>
-//           )}
-//           <input {...props} />
-//         </div>
-//       </div>
-//     );
-//   }
-// }
-
-const Signature = forwardRef((props, ref) => {
-  const [defaultValue, setDefaultValue] = useState(props.defaultValue);
-  const canvas = useRef();
-
-  const clear = () => {
-    if (defaultValue) {
-      setDefaultValue("");
-    } else if (canvas.current) {
-      canvas.current.clear();
+  clear = () => {
+    if (this.state.defaultValue) {
+      this.setState({ defaultValue: "" });
+    } else if (this.canvas.current) {
+      this.canvas.current.clear();
     }
   };
 
-  const userProperties =
-    props.getActiveUserProperties && props.getActiveUserProperties();
+  render() {
+    const userProperties =
+      this.props.getActiveUserProperties &&
+      this.props.getActiveUserProperties();
 
-  const savedEditor = props.editor;
-  let isSameEditor = true;
-  if (savedEditor && savedEditor.userId && !!userProperties) {
-    isSameEditor = userProperties.userId === savedEditor.userId;
-  }
+    const savedEditor = this.props.editor;
+    let isSameEditor = true;
+    if (savedEditor && savedEditor.userId && !!userProperties) {
+      isSameEditor = userProperties.userId === savedEditor.userId;
+    }
 
-  let canClear = !!defaultValue;
-  const inputProps = {};
-  inputProps.type = "hidden";
-  inputProps.name = props.data.field_name;
+    const { defaultValue } = this.state;
+    let canClear = !!defaultValue;
+    const props = {};
+    props.type = "hidden";
+    props.name = this.props.data.field_name;
 
-  if (props.mutable) {
-    inputProps.defaultValue = defaultValue;
-    inputProps.ref = ref;
-  }
+    if (this.props.mutable) {
+      props.defaultValue = defaultValue;
+      props.ref = this.inputField;
+    }
+    const pad_props = {};
+    // umd requires canvasProps={{ width: 400, height: 150 }}
+    if (this.props.mutable) {
+      pad_props.defaultValue = defaultValue;
+      pad_props.ref = this.canvas;
+      canClear = !this.props.read_only || isSameEditor;
+    }
 
-  const padProps = {};
-  if (props.mutable) {
-    padProps.defaultValue = defaultValue;
-    padProps.ref = canvas;
-    canClear = !props.read_only || isSameEditor;
-  }
+    if (this.props.read_only || !isSameEditor) {
+      props.disabled = "disabled";
+    }
 
-  if (props.read_only || !isSameEditor) {
-    inputProps.disabled = "disabled";
-  }
+    let baseClasses = "SortableItem rfb-item";
+    if (this.props.data.pageBreakBefore) {
+      baseClasses += " alwaysbreak";
+    }
 
-  let baseClasses = "SortableItem rfb-item";
-  if (props.data.pageBreakBefore) {
-    baseClasses += " alwaysbreak";
-  }
+    let sourceDataURL;
+    if (defaultValue && defaultValue.length > 0) {
+      sourceDataURL = `data:image/png;base64,${defaultValue}`;
+    }
 
-  let sourceDataURL;
-  if (defaultValue && defaultValue.length > 0) {
-    sourceDataURL = `data:image/png;base64,${defaultValue}`;
-  }
-
-  return (
-    <div className={baseClasses}>
-      <ComponentHeader {...props} />
-      <div className="form-group">
-        <ComponentLabel {...props} />
-        {props.read_only === true || !isSameEditor || !!sourceDataURL ? (
-          <img src={sourceDataURL} />
-        ) : (
-          <SignaturePad {...padProps} />
-        )}
-        {canClear && (
-          <i
-            className="fas fa-times clear-signature"
-            onClick={clear}
-            title="Clear Signature"
-          ></i>
-        )}
-        <input {...inputProps} />
+    return (
+      <div className={baseClasses}>
+        <ComponentHeader {...this.props} />
+        <div className="form-group">
+          <ComponentLabel {...this.props} />
+          {this.props.read_only === true || !isSameEditor || !!sourceDataURL ? (
+            <img src={sourceDataURL} />
+          ) : (
+            <SignaturePad {...pad_props} />
+          )}
+          {canClear && (
+            <i
+              className="fas fa-times clear-signature"
+              onClick={this.clear}
+              title="Clear Signature"
+            ></i>
+          )}
+          <input {...props} />
+        </div>
       </div>
-    </div>
-  );
-});
+    );
+  }
+}
+
+// const Signature = forwardRef((props, ref) => {
+//   const [defaultValue, setDefaultValue] = useState(props.defaultValue);
+//   const canvas = useRef();
+
+//   const clear = () => {
+//     if (defaultValue) {
+//       setDefaultValue("");
+//     } else if (canvas.current) {
+//       canvas.current.clear();
+//     }
+//   };
+
+//   const userProperties =
+//     props.getActiveUserProperties && props.getActiveUserProperties();
+
+//   const savedEditor = props.editor;
+//   let isSameEditor = true;
+//   if (savedEditor && savedEditor.userId && !!userProperties) {
+//     isSameEditor = userProperties.userId === savedEditor.userId;
+//   }
+
+//   let canClear = !!defaultValue;
+//   const inputProps = {};
+//   inputProps.type = "hidden";
+//   inputProps.name = props.data.field_name;
+
+//   if (props.mutable) {
+//     inputProps.defaultValue = defaultValue;
+//     inputProps.ref = ref;
+//   }
+
+//   const padProps = {};
+//   if (props.mutable) {
+//     padProps.defaultValue = defaultValue;
+//     padProps.ref = canvas;
+//     canClear = !props.read_only || isSameEditor;
+//   }
+
+//   if (props.read_only || !isSameEditor) {
+//     inputProps.disabled = "disabled";
+//   }
+
+//   let baseClasses = "SortableItem rfb-item";
+//   if (props.data.pageBreakBefore) {
+//     baseClasses += " alwaysbreak";
+//   }
+
+//   let sourceDataURL;
+//   if (defaultValue && defaultValue.length > 0) {
+//     sourceDataURL = `data:image/png;base64,${defaultValue}`;
+//   }
+
+//   return (
+//     <div className={baseClasses}>
+//       <ComponentHeader {...props} />
+//       <div className="form-group">
+//         <ComponentLabel {...props} />
+//         {props.read_only === true || !isSameEditor || !!sourceDataURL ? (
+//           <img src={sourceDataURL} />
+//         ) : (
+//           <SignaturePad {...padProps} />
+//         )}
+//         {canClear && (
+//           <i
+//             className="fas fa-times clear-signature"
+//             onClick={clear}
+//             title="Clear Signature"
+//           ></i>
+//         )}
+//         <input {...inputProps} />
+//       </div>
+//     </div>
+//   );
+// });
 
 // class Tags extends React.Component {
 //   constructor(props) {
@@ -2162,16 +2162,14 @@ FormElements.Range = Range; // migrated, value done
 FormElements.FileUpload = FileUpload; // migrated, value done
 FormElements.Checkboxes = Checkboxes; // migrated, value done
 FormElements.RadioButtons = RadioButtons; // migrated, value done
+FormElements.Signature2 = Signature2; // migrated, value done
 
-FormElements.Signature2 = Signature2; // migrated, value failed
-
-FormElements.DataSource = DataSource; // migrated, value failed
-FormElements.ImageUpload = ImageUpload; // migrated
+FormElements.DataSource = DataSource; // not migrated yet, value failed
+FormElements.ImageUpload = ImageUpload; // not migrated yet, value failed
 
 FormElements.Download = Download; // =======>>> not migrate
 FormElements.Rating = Rating; //  =======>>> not migrate
 FormElements.Table = Table; // =======>>> not migrate
-
-FormElements.Signature = Signature; // migrated, value failed, no used
+FormElements.Signature = Signature; // =======>>> not migrate, no used
 
 export default FormElements;
