@@ -151,33 +151,18 @@
 
 // export default Signature2;
 
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import ComponentHeader from "./component-header";
+import { useFormContext, FORM_ACTION } from "../context/form-context";
 
 function Signature2(props) {
-  const inputField = useRef(null);
+  const { dispatch } = useFormContext();
 
-  const [defaultValue, setDefaultValue] = useState(
-    props.defaultValue && props.defaultValue.isSigned
-  );
-  const [isSigned, setIsSigned] = useState(
-    props.defaultValue && props.defaultValue.isSigned
-  );
-  const [signedPerson, setSignedPerson] = useState(
-    props.defaultValue && props.defaultValue.signedPerson
-  );
-  const [signedPersonId, setSignedPersonId] = useState(
-    props.defaultValue && props.defaultValue.signedPersonId
-  );
   const [isError, setIsError] = useState(false);
-
-  if (props.defaultValue && props.defaultValue.isSigned !== defaultValue) {
-    setDefaultValue(props.defaultValue && props.defaultValue.isSigned);
-    setIsSigned(props.defaultValue && props.defaultValue.isSigned);
-    setIsError(false);
-    setSignedPerson(props.defaultValue.signedPerson);
-    setSignedPersonId(props.defaultValue && props.defaultValue.signedPersonId);
-  }
+  const [isSigned, setIsSigned] = useState(props.defaultValue?.isSigned);
+  const [signedPerson, setSignedPerson] = useState(
+    props.defaultValue?.signedPerson
+  );
 
   const clickToSign = () => {
     if (typeof props.getActiveUserProperties !== "function") {
@@ -199,13 +184,31 @@ function Signature2(props) {
         (item) => `${item}`.toLocaleLowerCase().trim() === position
       )
     ) {
-      setIsSigned(!prevIsSigned);
-      setSignedPerson(!prevIsSigned ? userProperties.name : "");
-      setSignedPersonId(!prevIsSigned ? userProperties.userId : "");
+      const newVal = {
+        isSigned: !prevIsSigned,
+        signedPerson: !prevIsSigned ? userProperties.name : "",
+        signedPersonId: !prevIsSigned ? userProperties.userId : "",
+      };
+      setIsSigned(newVal.isSigned);
+      setSignedPerson(newVal.signedPerson);
+      dispatch({
+        type: FORM_ACTION.UPDATE_VALUE,
+        name: props.data.field_name,
+        value: newVal,
+      });
     } else if (props.data.specificRole === "notSpecific") {
-      setIsSigned(!prevIsSigned);
-      setSignedPerson(!prevIsSigned ? userProperties.name : "");
-      setSignedPersonId(!prevIsSigned ? userProperties.userId : "");
+      const newVal = {
+        isSigned: !prevIsSigned,
+        signedPerson: !prevIsSigned ? userProperties.name : "",
+        signedPersonId: !prevIsSigned ? userProperties.userId : "",
+      };
+      setIsSigned(newVal.isSigned);
+      setSignedPerson(newVal.signedPerson);
+      dispatch({
+        type: FORM_ACTION.UPDATE_VALUE,
+        name: props.data.field_name,
+        value: newVal,
+      });
     } else {
       if (!isError) {
         setIsError(true);
@@ -233,7 +236,6 @@ function Signature2(props) {
 
   return (
     <div
-      ref={inputField}
       className={`SortableItem rfb-item${
         props.data.pageBreakBefore ? " alwaysbreak" : ""
       }`}

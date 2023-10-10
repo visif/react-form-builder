@@ -856,12 +856,11 @@ const ReactForm = (props) => {
         : "";
     } else if (item.element === "Table") {
       $item.value = ref.state.inputs;
-    } else if (item.element === "Signature2" && ref.state.isSigned) {
-      $item.value = {
-        isSigned: ref.state.isSigned,
-        signedPerson: ref.state.signedPerson,
-        signedPersonId: ref.state.signedPersonId,
-      };
+    } else if (item.element === "Signature2") {
+      const dataVal = formValues[item.field_name]?.value || {};
+      if (dataVal.isSigned) {
+        $item.value = dataVal;
+      }
     } else if (item.element === "DataSource" && ref.state.searchText) {
       $item.value = {
         type: ref.props.data.sourceType,
@@ -972,39 +971,9 @@ const ReactForm = (props) => {
     const oldEditor = _getEditor(item);
 
     if (item.element === "Checkboxes" || item.element === "RadioButtons") {
-      const checked_options = [];
       const dataVal =
         (formValues[item.field_name] && formValues[item.field_name].value) ||
         [];
-
-      // item.options.forEach((option) => {
-      //   const $option = ReactDOM.findDOMNode(
-      //     ref.options[`child_ref_${option.key}`]
-      //   );
-      //   if ($option.checked) {
-      //     let info = "";
-
-      //     if (option.info) {
-      //       const $info = ReactDOM.findDOMNode(
-      //         ref.infos[`child_ref_${option.key}_info`]
-      //       );
-      //       info = $info ? $info.value : "";
-      //     }
-
-      //     checked_options.push({
-      //       key: option.key,
-      //       value: true,
-      //       info: info,
-      //     });
-      //   }
-      // });
-
-      // itemData.value = checked_options;
-      // itemData.editor = oldEditor
-      //   ? oldEditor
-      //   : checked_options.length > 0
-      //   ? activeUser
-      //   : null;
 
       itemData.value = dataVal;
       itemData.editor = oldEditor
@@ -1013,11 +982,17 @@ const ReactForm = (props) => {
         ? activeUser
         : null;
     } else if (item.element === "FileUpload") {
-      const dataVal = formValues[item.field_name] || [];
-      itemData.value = dataVal;
+      itemData.value = formValues[item.field_name] || [];
       itemData.editor = oldEditor
         ? oldEditor
-        : dataVal.length > 0
+        : itemData.value > 0
+        ? activeUser
+        : null;
+    } else if (item.element === "Signature2") {
+      itemData.value = formValues[item.field_name] || {};
+      itemData.editor = oldEditor
+        ? oldEditor
+        : itemData.value.isSigned
         ? activeUser
         : null;
     } else {

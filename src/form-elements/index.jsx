@@ -1730,46 +1730,46 @@ const HyperLink = forwardRef((props, ref) => {
   );
 });
 
-// class Download extends React.Component {
-//   render() {
-//     let baseClasses = "SortableItem rfb-item";
-//     if (this.props.data.pageBreakBefore) {
-//       baseClasses += " alwaysbreak";
-//     }
+class Download extends React.Component {
+  render() {
+    let baseClasses = "SortableItem rfb-item";
+    if (this.props.data.pageBreakBefore) {
+      baseClasses += " alwaysbreak";
+    }
 
-//     return (
-//       <div className={baseClasses}>
-//         <ComponentHeader {...this.props} />
-//         <div className="form-group">
-//           <a
-//             href={`${this.props.download_path}?id=${this.props.data.file_path}`}
-//           >
-//             {this.props.data.content}
-//           </a>
-//         </div>
-//       </div>
-//     );
-//   }
-// }
-
-const Download = forwardRef((props, ref) => {
-  // not working
-  let baseClasses = "SortableItem rfb-item";
-  if (props.data.pageBreakBefore) {
-    baseClasses += " alwaysbreak";
-  }
-
-  return (
-    <div className={baseClasses}>
-      <ComponentHeader {...props} />
-      <div className="form-group">
-        <a href={`${props.download_path}?id=${props.data.file_path}`}>
-          {props.data.content}
-        </a>
+    return (
+      <div className={baseClasses}>
+        <ComponentHeader {...this.props} />
+        <div className="form-group">
+          <a
+            href={`${this.props.download_path}?id=${this.props.data.file_path}`}
+          >
+            {this.props.data.content}
+          </a>
+        </div>
       </div>
-    </div>
-  );
-});
+    );
+  }
+}
+
+// const Download = forwardRef((props, ref) => {
+//   // not working
+//   let baseClasses = "SortableItem rfb-item";
+//   if (props.data.pageBreakBefore) {
+//     baseClasses += " alwaysbreak";
+//   }
+
+//   return (
+//     <div className={baseClasses}>
+//       <ComponentHeader {...props} />
+//       <div className="form-group">
+//         <a href={`${props.download_path}?id=${props.data.file_path}`}>
+//           {props.data.content}
+//         </a>
+//       </div>
+//     </div>
+//   );
+// });
 
 // class Camera extends React.Component {
 //   constructor(props) {
@@ -2163,14 +2163,15 @@ FormElements.FileUpload = FileUpload; // migrated, value done
 FormElements.Checkboxes = Checkboxes; // migrated, value done
 FormElements.RadioButtons = RadioButtons; // migrated, value done
 
-FormElements.Signature = Signature; // migrated, value failed, no used
-
-FormElements.Download = Download; // migrated, value failed
 FormElements.Signature2 = Signature2; // migrated, value failed
+
 FormElements.DataSource = DataSource; // migrated, value failed
 FormElements.ImageUpload = ImageUpload; // migrated
 
+FormElements.Download = Download; // =======>>> not migrate
 FormElements.Rating = Rating; //  =======>>> not migrate
 FormElements.Table = Table; // =======>>> not migrate
+
+FormElements.Signature = Signature; // migrated, value failed, no used
 
 export default FormElements;
