@@ -1,13 +1,9 @@
 {
   "name": "react-form-builder2",
-  "version": "0.8.7",
+  "version": "0.9.0",
   "description": "A complete form builder for react.",
   "main": "lib/index.js",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/kiho/react-form-builder.git"
-  },
   "files": [
     "lib",
     "dist"
@@ -24,14 +20,6 @@
   "engines": {
     "node": ">=12.0.0"
   },
-  "author": "Kiho Chang",
-  "contributors": [
-    {
-      "name": "Zach Robichaud",
-      "email": "zach2825@gmail.com",
-      "url": "https://turtlebytes.com"
-    }
-  ],
   "dependencies": {
     "@reduxjs/toolkit": "^1.9.5",
     "axios": "^0.21.1",
