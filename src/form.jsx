@@ -1357,4 +1357,5 @@ const ReactFormWrapper = (props) => {
   );
 };
 
-export default ReactFormWrapper;
+// export default ReactFormWrapper;
+export default () => <div>test</div>;

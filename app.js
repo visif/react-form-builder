@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import DemoBar from "./demobar";
 // eslint-disable-next-line no-unused-vars
-import FormBuilder, { Registry } from "./src/index";
+import FormBuilder from "./src/index";
 import * as variables from "./variables";
 
 // Add our stylesheets for the demo.
@@ -18,10 +18,6 @@ ReactDOM.render(
     saveUrl={saveUrl}
     onImageUpload={() => {
       return "http://www.isocafe.com:8080/VisiforgeDC//temp/formimage/C27E1F69-7C67-4306-8A08-5A783F27F9F3.jpeg";
-    }}
-    // toolbarItems={items}
-    onChange={(data) => {
-      // console.log(">>>>>>", data);
     }}
   />,
   document.getElementById("form-builder")
