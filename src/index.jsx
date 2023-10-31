@@ -10,7 +10,7 @@ import Toolbar from "./toolbar";
 import ReactFormGenerator from "./form";
 import store from "./stores/store";
 import Registry from "./stores/registry";
-import { FormProvider } from "./context/form-context";
+import { FormProvider } from "./context/form-context.js";
 
 const ReactFormBuilder = (props) => {
   // constructor(props) {
