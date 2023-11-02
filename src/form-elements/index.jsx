@@ -17,7 +17,7 @@ import Signature2 from "./signature2";
 import FileUpload from "./fileUpload2";
 import DataSource from "./datasource";
 import ImageUpload from "./imageUpload";
-import DebouncedInput from "../hook/textInput";
+import DebouncedInput from "../textInput";
 
 const FormElements = {};
 
