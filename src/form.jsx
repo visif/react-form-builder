@@ -6,7 +6,7 @@ import FormElements from "./form-elements";
 import { TwoColumnRow, ThreeColumnRow, FourColumnRow } from "./multi-column";
 import CustomElement from "./form-elements/custom-element";
 import Registry from "./stores/registry";
-import { FormProvider, useFormContext } from "./context/form-context.js";
+import { FormProvider, useFormContext } from "./index";
 
 const {
   Image,
