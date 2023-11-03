@@ -17,7 +17,7 @@ import Signature2 from "./signature2";
 import FileUpload from "./fileUpload2";
 import DataSource from "./datasource";
 import ImageUpload from "./imageUpload";
-import DebouncedInput from "./textInput";
+import DebouncedInput from "./debouncedInput";
 
 const FormElements = {};
 
@@ -2159,10 +2159,10 @@ FormElements.DatePicker = DatePicker; // migrated, value done
 FormElements.Tags = Tags; // migrated, value done
 FormElements.Camera = Camera; // migrated, value done
 FormElements.Range = Range; // migrated, value done
-FormElements.FileUpload = FileUpload; // migrated, value done
+// FormElements.FileUpload = FileUpload; // migrated, value done
 FormElements.Checkboxes = Checkboxes; // migrated, value done
 FormElements.RadioButtons = RadioButtons; // migrated, value done
-FormElements.Signature2 = Signature2; // migrated, value done
+// FormElements.Signature2 = Signature2; // migrated, value done
 
 FormElements.DataSource = DataSource; // not migrated yet, value failed
 FormElements.ImageUpload = ImageUpload; // not migrated yet, value failed

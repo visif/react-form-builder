@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 
 const delay = 500;
 
-function useDebounce(props) {
+const useDebounce = (props) => {
   const { value } = props;
 
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -19,9 +19,9 @@ function useDebounce(props) {
   }, [value, delay]);
 
   return debouncedValue;
-}
+};
 
-function DebouncedInput(props) {
+const DebouncedInput = (props) => {
   const { id, style, value, onChange } = props;
 
   const [inputValue, setInputValue] = useState(value);
@@ -45,6 +45,6 @@ function DebouncedInput(props) {
       onChange={handleChange}
     />
   );
-}
+};
 
 export default DebouncedInput;
