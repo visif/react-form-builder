@@ -1,6 +1,6 @@
 // eslint-disable-next-line max-classes-per-file
 import React, { useState, useEffect, useRef, forwardRef } from "react";
-import { useFormContext, FORM_ACTION } from "../form-elements";
+import { useFormContext, FORM_ACTION } from "../index";
 import Select from "react-select";
 import SignaturePad from "react-signature-canvas";
 import ReactBootstrapSlider from "react-bootstrap-slider";
@@ -17,7 +17,7 @@ import Signature2 from "./signature2";
 import FileUpload from "./fileUpload2";
 import DataSource from "./datasource";
 import ImageUpload from "./imageUpload";
-import DebouncedInput from "../textInput";
+import DebouncedInput from "./textInput";
 
 const FormElements = {};
 
