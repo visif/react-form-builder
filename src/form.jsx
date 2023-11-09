@@ -802,9 +802,10 @@ const convert = (answers) => {
 // }
 
 const ReactForm = (props) => {
-  const formRef = useRef(null);
+  // const formRef = useRef(null);
   const inputsRef = useRef({});
   const [answerData, setAnswerData] = useState(convert(props.answer_data));
+  const emitter = new EventEmitter();
 
   const { formValues } = useFormContext();
 
@@ -1095,7 +1096,7 @@ const ReactForm = (props) => {
       let errors = [];
       if (!props.skip_validations) {
         errors = validateForm();
-        props.emitter.emit("formValidation", errors);
+        emitter.emit("formValidation", errors);
       }
 
       if (errors.length < 1) {
@@ -1106,12 +1107,12 @@ const ReactForm = (props) => {
       let errors = [];
       if (!props.skip_validations) {
         errors = validateForm();
-        props.emitter.emit("formValidation", errors);
+        emitter.emit("formValidation", errors);
       }
 
       if (errors.length < 1) {
-        const $form = formRef.current;
-        $form.submit();
+        // const $form = formRef.current;
+        // $form.submit();
       }
     }
   }
@@ -1323,24 +1324,27 @@ const ReactForm = (props) => {
     });
 
     return (
-      <form
-        ref={formRef}
-        className="form-horizontal"
-        onSubmit={handleSubmit}
-        acceptCharset="UTF-8"
-        encType="multipart/form-data"
-        method="post"
-        autoComplete="off"
-      >
-        {formControls}
-        {!props.read_only && (
-          <div className="btn-toolbar">
-            <button className="btn btn-primary" type="submit">
-              Submit
-            </button>
-          </div>
-        )}
-      </form>
+      <>
+        <FormValidator emitter={emitter} />
+        <form
+          // ref={formRef}
+          className="form-horizontal"
+          onSubmit={handleSubmit}
+          acceptCharset="UTF-8"
+          encType="multipart/form-data"
+          method="post"
+          autoComplete="off"
+        >
+          {formControls}
+          {!props.read_only && (
+            <div className="btn-toolbar">
+              <button className="btn btn-primary" type="submit">
+                Submit
+              </button>
+            </div>
+          )}
+        </form>
+      </>
     );
   }
 
