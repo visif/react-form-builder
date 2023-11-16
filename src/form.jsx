@@ -1220,9 +1220,9 @@ const ReactForm = (props) => {
     return (
       <Input
         handleChange={handleChange}
-        ref={(c) => {
-          inputsRef.current[item.field_name] = c;
-        }}
+        // ref={(c) => {
+        //   inputsRef.current[item.field_name] = c;
+        // }}
         mutable={true}
         key={`form_${item.id}`}
         data={item}
@@ -1257,9 +1257,9 @@ const ReactForm = (props) => {
     return (
       <CustomComponent
         handleChange={handleChange}
-        ref={(c) => {
-          inputsRef.current[item.field_name] = c;
-        }}
+        // ref={(c) => {
+        //   inputsRef.current[item.field_name] = c;
+        // }}
         mutable={true}
         key={`form_${item.id}`}
         data={item}

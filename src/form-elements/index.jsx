@@ -1227,11 +1227,6 @@ const Checkboxes = forwardRef((props, ref) => {
               <input
                 id={"fid_" + this_key}
                 className="custom-control-input"
-                ref={(c) => {
-                  if (c && props.mutable) {
-                    ref[`child_ref_${option.key}`] = c;
-                  }
-                }}
                 onChange={() => handleChange(option)}
                 {...inputProps}
               />
