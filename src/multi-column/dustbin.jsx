@@ -97,9 +97,6 @@ const Dustbin = React.forwardRef(
 
     const element = getElement(item, rest);
     // console.log('accepts, canDrop', accepts, canDrop);
-
-    return <div style={getStyle(backgroundColor)}>{element}</div>
-
     return connectDropTarget(
       <div style={getStyle(backgroundColor)}>{element}</div>
     );
