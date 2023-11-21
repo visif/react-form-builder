@@ -8,6 +8,12 @@ import CustomElement from "./form-elements/custom-element";
 import Registry from "./stores/registry";
 import { FormProvider, useFormContext } from "./context/form-context";
 
+const columnsElement = {
+  TwoColumnRow: TwoColumnRow,
+  ThreeColumnRow: ThreeColumnRow,
+  FourColumnRow: FourColumnRow,
+};
+
 const {
   Image,
   Checkboxes,
@@ -1220,9 +1226,6 @@ const ReactForm = (props) => {
     return (
       <Input
         handleChange={handleChange}
-        // ref={(c) => {
-        //   inputsRef.current[item.field_name] = c;
-        // }}
         mutable={true}
         key={`form_${item.id}`}
         data={item}
@@ -1242,10 +1245,21 @@ const ReactForm = (props) => {
   function getContainerElement(item, Element) {
     const controls = item.childItems.map((x) => {
       const currentItem = getDataById(x);
-      return x && currentItem ? getInputElement(currentItem) : null;
+      return x && currentItem ? (
+        getInputElement(currentItem)
+      ) : (
+        <div>&nbsp;</div>
+      );
     });
 
-    return <Element key={`form_${item.id}`}>{controls}</Element>;
+    return (
+      <Element
+        mutable={true}
+        key={`form_${item.id}`}
+        data={item}
+        controls={controls}
+      />
+    );
   }
 
   function getCustomElement(item) {
@@ -1257,9 +1271,6 @@ const ReactForm = (props) => {
     return (
       <CustomComponent
         handleChange={handleChange}
-        // ref={(c) => {
-        //   inputsRef.current[item.field_name] = c;
-        // }}
         mutable={true}
         key={`form_${item.id}`}
         data={item}
@@ -1317,17 +1328,16 @@ const ReactForm = (props) => {
       if (item.parentId) {
         return null;
       }
-      if (item.element === "Column") {
-        return getContainerElement(item, "div");
+      if (item.element.indexOf("ColumnRow") > -1) {
+        return getContainerElement(item, columnsElement[item.element]);
       }
       return getInputElement(item);
     });
 
     return (
-      <>
+      <FormProvider>
         <FormValidator emitter={emitter} />
         <form
-          // ref={formRef}
           className="form-horizontal"
           onSubmit={handleSubmit}
           acceptCharset="UTF-8"
@@ -1344,7 +1354,7 @@ const ReactForm = (props) => {
             </div>
           )}
         </form>
-      </>
+      </FormProvider>
     );
   }
 
@@ -1353,12 +1363,4 @@ const ReactForm = (props) => {
 
 ReactForm.defaultProps = { validateForCorrectness: false };
 
-const ReactFormWrapper = (props) => {
-  return (
-    <FormProvider>
-      <ReactForm {...props} />
-    </FormProvider>
-  );
-};
-
-export default ReactFormWrapper;
+export default ReactForm;
