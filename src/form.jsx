@@ -569,6 +569,16 @@ const ReactForm = (props) => {
       return getInputElement(item);
     });
 
+    function handleRenderSubmit() {
+      const { actionName = "Submit", submitButton = false } = props;
+
+      return (
+        submitButton || (
+          <input type="submit" className="btn btn-big" value={actionName} />
+        )
+      );
+    }
+
     return (
       <FormProvider>
         <FormValidator emitter={emitter} />
@@ -581,13 +591,17 @@ const ReactForm = (props) => {
           autoComplete="off"
         >
           {formControls}
-          {!props.read_only && (
-            <div className="btn-toolbar">
-              <button className="btn btn-primary" type="submit">
-                Submit
-              </button>
-            </div>
-          )}
+          <div className="btn-toolbar">
+            {!props.hide_actions && handleRenderSubmit()}
+            {!props.hide_actions && props.back_action && (
+              <a
+                href={props.back_action}
+                className="btn btn-default btn-cancel btn-big"
+              >
+                {props.back_name ? props.back_name : "Cancel"}
+              </a>
+            )}
+          </div>
         </form>
       </FormProvider>
     );
