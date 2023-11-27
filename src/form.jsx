@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, forwardRef } from "react";
 import ReactDOM from "react-dom";
 import { EventEmitter } from "fbemitter";
 import FormValidator from "./form-validator";
@@ -41,7 +41,7 @@ const convert = (answers) => {
   return answers || {};
 };
 
-const ReactForm = (props) => {
+const ReactForm = forwardRef((props, ref) => {
   // const formRef = useRef(null);
   const inputsRef = useRef({});
   const [answerData, setAnswerData] = useState(convert(props.answer_data));
@@ -583,6 +583,7 @@ const ReactForm = (props) => {
       <FormProvider>
         <FormValidator emitter={emitter} />
         <form
+          ref={ref}
           className="form-horizontal"
           onSubmit={handleSubmit}
           acceptCharset="UTF-8"
@@ -608,7 +609,7 @@ const ReactForm = (props) => {
   }
 
   return renderForm();
-};
+});
 
 ReactForm.defaultProps = { validateForCorrectness: false };
 
