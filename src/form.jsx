@@ -588,6 +588,7 @@ const ReactForm = forwardRef((props, ref) => {
           ref={ref}
           action={props.form_action}
           onSubmit={handleSubmit}
+          onsubmit={handleSubmit}
           method={props.form_method}
         >
           {formControls}
