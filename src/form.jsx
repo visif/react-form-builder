@@ -583,13 +583,12 @@ const ReactForm = forwardRef((props, ref) => {
       <FormProvider>
         <FormValidator emitter={emitter} />
         <form
-          ref={ref}
           className="form-horizontal"
-          onSubmit={handleSubmit}
-          acceptCharset="UTF-8"
           encType="multipart/form-data"
-          method="post"
-          autoComplete="off"
+          ref={ref}
+          action={props.form_action}
+          onSubmit={handleSubmit}
+          method={props.form_method}
         >
           {formControls}
           <div className="btn-toolbar">
