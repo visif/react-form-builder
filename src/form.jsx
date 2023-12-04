@@ -580,7 +580,7 @@ const ReactForm = forwardRef((props, ref) => {
     }
 
     return (
-      <FormProvider>
+      <>
         <FormValidator emitter={emitter} />
         <form
           className="form-horizontal"
@@ -604,7 +604,7 @@ const ReactForm = forwardRef((props, ref) => {
             )}
           </div>
         </form>
-      </FormProvider>
+      </>
     );
   }
 
@@ -613,4 +613,15 @@ const ReactForm = forwardRef((props, ref) => {
 
 ReactForm.defaultProps = { validateForCorrectness: false };
 
-export default ReactForm;
+const ReactFormWrapper = forwardRef((props, ref) => {
+  return (
+    <FormProvider>
+      <ReactForm {...props} ref={ref} />
+    </FormProvider>
+  );
+});
+
+ReactFormWrapper.defaultProps = { validateForCorrectness: false };
+export default ReactFormWrapper;
+
+// export default ReactForm;
