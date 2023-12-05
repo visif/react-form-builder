@@ -459,6 +459,9 @@ const ReactForm = forwardRef((props, ref) => {
     const Input = FormElements[item.element];
     return (
       <Input
+        ref={(c) => {
+          inputsRef.current[item.field_name] = c;
+        }}
         handleChange={handleChange}
         mutable={true}
         key={`form_${item.id}`}
@@ -505,6 +508,9 @@ const ReactForm = forwardRef((props, ref) => {
     }
     return (
       <CustomElement
+        ref={(c) => {
+          inputsRef.current[item.field_name] = c;
+        }}
         handleChange={handleChange}
         mutable={true}
         key={`form_${item.id}`}
