@@ -133,17 +133,25 @@ const ReactForm = forwardRef((props, ref) => {
     if (item.canHaveAnswer) {
       const ref = inputsRef.current[item.field_name];
       if (item.element === "Checkboxes" || item.element === "RadioButtons") {
-        item.options.forEach((option) => {
-          const $option = ReactDOM.findDOMNode(
-            ref.options[`child_ref_${option.key}`]
-          );
-          if (
-            (option.hasOwnProperty("correct") && !$option.checked) ||
-            (!option.hasOwnProperty("correct") && $option.checked)
-          ) {
-            incorrect = true;
-          }
-        });
+        // TODO: to fix this later
+        // item.options.forEach((option) => {
+        //   const $option = ReactDOM.findDOMNode(
+        //     ref.options[`child_ref_${option.key}`]
+        //   );
+        //   if (
+        //     (option.hasOwnProperty("correct") && !$option.checked) ||
+        //     (!option.hasOwnProperty("correct") && $option.checked)
+        //   ) {
+        //     incorrect = true;
+        //   }
+        // });
+        // const dataVal =
+        //   (formValues[item.field_name] && formValues[item.field_name].value) ||
+        //   [];
+        // const checkedItems = dataVal.find((item) => item.value);
+        // if (!checkedItems) {
+        //   invalid = true;
+        // }
       } else {
         const $item = _getItemValue(item, ref);
         if (item.element === "Rating") {
@@ -165,16 +173,12 @@ const ReactForm = forwardRef((props, ref) => {
     if (item.required === true) {
       const ref = inputsRef.current[item.field_name];
       if (item.element === "Checkboxes" || item.element === "RadioButtons") {
-        let checked_options = 0;
-        item.options.forEach((option) => {
-          const $option = ReactDOM.findDOMNode(
-            ref.options[`child_ref_${option.key}`]
-          );
-          if ($option.checked) {
-            checked_options += 1;
-          }
-        });
-        if (checked_options < 1) {
+        const dataVal =
+          (formValues[item.field_name] && formValues[item.field_name].value) ||
+          [];
+
+        const checkedItems = dataVal.find((item) => item.value);
+        if (!checkedItems) {
           invalid = true;
         }
       } else {
