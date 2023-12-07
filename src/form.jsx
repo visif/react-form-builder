@@ -41,11 +41,12 @@ const convert = (answers) => {
   return answers || {};
 };
 
+const emitter = new EventEmitter();
+
 const ReactForm = forwardRef((props, ref) => {
   // const formRef = useRef(null);
   const inputsRef = useRef({});
   const [answerData, setAnswerData] = useState(convert(props.answer_data));
-  const emitter = new EventEmitter();
 
   const { formValues } = useFormContext();
 
