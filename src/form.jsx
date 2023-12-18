@@ -411,7 +411,6 @@ const ReactForm = forwardRef((props, ref) => {
           fillingItems = items.find(
             (item) =>
               item.element !== "Table" &&
-              item.element !== "Dropdown" &&
               ((Array.isArray(item.value) && item.value.length > 0) ||
                 (typeof item.value !== "object" &&
                   !Array.isArray(item.value) &&
