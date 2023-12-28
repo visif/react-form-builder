@@ -533,7 +533,7 @@ export default class Toolbar extends React.Component {
 
   render() {
     return (
-      <div className="col-md-3 react-form-builder-toolbar float-right">
+      <div className="react-form-builder-toolbar" style={{ marginTop: 0 }}>
         <h4>Toolbox</h4>
         <ul>
           {this.state.items.map((item) => (
