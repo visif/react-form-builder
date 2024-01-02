@@ -56,75 +56,71 @@ class ReactFormBuilder extends React.Component {
     }
     return (
       <DndProvider backend={HTML5Backend}>
-        <div>
-          <div className="react-form-builder clearfix">
+        <div className="react-form-builder clearfix" style={{ height: "100%" }}>
+          <div style={{ display: "flex", height: "100%", overflow: "hidden" }}>
             <div
-              style={{ display: "flex", height: "100vh", overflow: "hidden" }}
+              style={{
+                flex: 1,
+                overflowY: "auto",
+                height: "100%",
+              }}
             >
-              <div
-                style={{
-                  flex: 1,
-                  overflowY: "auto",
-                  height: "calc(100vh - 100px)",
+              <Preview
+                files={this.props.files}
+                manualEditModeOff={this.manualEditModeOff.bind(this)}
+                showCorrectColumn={this.props.showCorrectColumn}
+                parent={this}
+                data={this.props.data}
+                url={this.props.url}
+                saveUrl={this.props.saveUrl}
+                onLoad={this.props.onLoad}
+                onPost={this.props.onPost}
+                editModeOn={this.editModeOn}
+                editMode={this.state.editMode}
+                variables={this.props.variables}
+                registry={Registry}
+                editElement={this.state.editElement}
+                renderEditForm={this.props.renderEditForm}
+                onChange={this.props.onChange}
+                uploadUrl={this.props.uploadUrl}
+                onImageUpload={this.props.onImageUpload}
+                getDataSource={this.props.getDataSource}
+                getFormSource={this.props.getFormSource}
+                getFormContent={this.props.getFormContent}
+                getActiveUserProperties={() => {
+                  return {
+                    name: "test",
+                    userId: "id001",
+                  };
                 }}
-              >
-                <Preview
-                  files={this.props.files}
-                  manualEditModeOff={this.manualEditModeOff.bind(this)}
-                  showCorrectColumn={this.props.showCorrectColumn}
-                  parent={this}
-                  data={this.props.data}
-                  url={this.props.url}
-                  saveUrl={this.props.saveUrl}
-                  onLoad={this.props.onLoad}
-                  onPost={this.props.onPost}
-                  editModeOn={this.editModeOn}
-                  editMode={this.state.editMode}
-                  variables={this.props.variables}
-                  registry={Registry}
-                  editElement={this.state.editElement}
-                  renderEditForm={this.props.renderEditForm}
-                  onChange={this.props.onChange}
-                  uploadUrl={this.props.uploadUrl}
-                  onImageUpload={this.props.onImageUpload}
-                  getDataSource={this.props.getDataSource}
-                  getFormSource={this.props.getFormSource}
-                  getFormContent={this.props.getFormContent}
-                  getActiveUserProperties={() => {
-                    return {
-                      name: "test",
-                      userId: "id001",
-                    };
-                  }}
-                  onUploadFile={(file) => {
-                    return `${file.name}-${Math.random() * 10000000}`;
-                  }}
-                  onUploadImage={(file) => {
-                    return `path/${file.name}-${Math.random() * 10000000}`;
-                  }}
-                  onDownloadFile={(file) => {
-                    return `download_${file.name}-${Math.random() * 10000000}`;
-                  }}
-                />
-              </div>
-              <div
-                style={{
-                  width: "300px",
-                  position: "fixed",
-                  top: 0,
-                  right: 0,
-                  bottom: 0,
-                  overflowY: "auto",
-                  position: "sticky",
-                  paddingLeft: "15px",
-                  height: "calc(100vh - 100px)",
+                onUploadFile={(file) => {
+                  return `${file.name}-${Math.random() * 10000000}`;
                 }}
-              >
-                <Toolbar
-                  {...toolbarProps}
-                  customItems={this.props.customToolbarItems}
-                />
-              </div>
+                onUploadImage={(file) => {
+                  return `path/${file.name}-${Math.random() * 10000000}`;
+                }}
+                onDownloadFile={(file) => {
+                  return `download_${file.name}-${Math.random() * 10000000}`;
+                }}
+              />
+            </div>
+            <div
+              style={{
+                width: "300px",
+                position: "fixed",
+                top: 0,
+                right: 0,
+                bottom: 0,
+                overflowY: "auto",
+                position: "sticky",
+                paddingLeft: "15px",
+                height: "100%",
+              }}
+            >
+              <Toolbar
+                {...toolbarProps}
+                customItems={this.props.customToolbarItems}
+              />
             </div>
           </div>
         </div>
