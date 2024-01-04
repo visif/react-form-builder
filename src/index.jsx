@@ -63,6 +63,7 @@ class ReactFormBuilder extends React.Component {
                 flex: 1,
                 overflowY: "auto",
                 height: "100%",
+                scrollbarWidth: "none",
               }}
             >
               <Preview
@@ -115,6 +116,7 @@ class ReactFormBuilder extends React.Component {
                 position: "sticky",
                 paddingLeft: "15px",
                 height: "100%",
+                scrollbarWidth: "none",
               }}
             >
               <Toolbar
