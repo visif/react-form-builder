@@ -22,8 +22,6 @@ class DataSource extends React.Component {
   }
 
   async componentDidMount() {
-    console.log("<<<<<<<<<<<<<<<< componentDidMount >>>>>>>>>>>>>>>>");
-
     if (typeof this.props.getDataSource === "function") {
       const data = await this.props.getDataSource(this.props.data);
       this.setState({
@@ -34,8 +32,6 @@ class DataSource extends React.Component {
   }
 
   static getDerivedStateFromProps = async (props, state) => {
-    console.log("getDerivedStateFromProps ");
-
     if (
       props.defaultValue &&
       JSON.stringify(props.defaultValue.selectedItem) !==

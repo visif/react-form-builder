@@ -1,5 +1,5 @@
-import Store from 'beedle';
-import { get, post } from './requests';
+import Store from "beedle";
+import { get, post } from "./requests";
 
 let _saveUrl;
 let _onPost;
@@ -7,65 +7,71 @@ let _onLoad;
 
 const store = new Store({
   actions: {
-    setData(context, data, saveData) {
-      context.commit('setData', data);
-      if (saveData) this.save(data);
+    setData(context, data, saveData, action) {
+      context.commit("setState", { data, action });
+      if (saveData) this.save(data, action);
     },
 
-    load(context, { loadUrl, saveUrl, data }) {
+    load(context, { loadUrl, saveUrl, data, action }) {
       _saveUrl = saveUrl;
       if (_onLoad) {
-        _onLoad().then(x => this.setData(context, x));
+        _onLoad().then((x) => this.setData(context, x));
       } else if (loadUrl) {
-        get(loadUrl).then(x => {
+        get(loadUrl).then((x) => {
           if (data && data.length > 0 && x.length === 0) {
-            data.forEach(y => x.push(y));
+            data.forEach((y) => x.push(y));
           }
           this.setData(context, x);
         });
       } else {
-        this.setData(context, data);
+        this.setData(context, data, false, action);
       }
     },
 
     create(context, element) {
-      const { data } = context.state;
+      const {
+        payload: { data },
+      } = context.state;
       data.push(element);
       this.setData(context, data, true);
     },
 
     delete(context, element) {
-      const { data } = context.state;
+      const {
+        payload: { data },
+      } = context.state;
       data.splice(data.indexOf(element), 1);
       this.setData(context, data, true);
     },
 
     updateOrder(context, elements) {
-      const newData = elements.filter(x => x && !x.parentId);
-      elements.filter(x => x && x.parentId).forEach(x => newData.push(x));
-      // console.log('setAsChild', newData);
+      const newData = elements.filter((x) => x && !x.parentId);
+      elements.filter((x) => x && x.parentId).forEach((x) => newData.push(x));
       this.setData(context, newData, true);
     },
 
-    save(data) {
+    save(data, action) {
       if (_onPost) {
-        _onPost({ task_data: data });
+        _onPost({ task_data: data, action });
       } else if (_saveUrl) {
-        post(_saveUrl, { task_data: data });
+        post(_saveUrl, { task_data: data, action });
       }
     },
   },
 
   mutations: {
-    setData(state, payload) {
+    setState(state, payload) {
       // eslint-disable-next-line no-param-reassign
-      state.data = payload;
+      state.payload = payload;
       return state;
     },
   },
 
   initialState: {
-    data: [],
+    payload: {
+      data: [],
+      action: undefined,
+    },
   },
 });
 

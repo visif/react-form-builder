@@ -285,15 +285,9 @@ class Dropdown extends React.Component {
   }
 
   static getDerivedStateFromProps(props, state) {
-    console.log("Dropdown getDerivedStateFromProps");
     if (
       JSON.stringify(state.defaultValue) !== JSON.stringify(props.defaultValue)
     ) {
-      console.log(
-        "Dropdown default prop changed",
-        state.defaultValue,
-        props.defaultValue
-      );
       return {
         defaultValue: props.defaultValue,
         value: props.defaultValue,
@@ -594,8 +588,6 @@ class Checkboxes extends React.Component {
               props.disabled = "disabled";
             }
 
-            console.log("Checkbox =>> ", props);
-
             return (
               <div
                 className={classNames}
@@ -620,10 +612,10 @@ class Checkboxes extends React.Component {
                         const newActiveVal = activeVal
                           ? { ...activeVal, value: !activeVal.value }
                           : {
-                            key: option.key,
-                            value: true,
-                            info: "",
-                          };
+                              key: option.key,
+                              value: true,
+                              info: "",
+                            };
 
                         if (!current) {
                           return current;
@@ -998,8 +990,8 @@ class Camera extends React.Component {
         <div className="form-group">
           <ComponentLabel {...this.props} />
           {this.props.read_only === true &&
-            this.props.defaultValue &&
-            this.props.defaultValue.length > 0 ? (
+          this.props.defaultValue &&
+          this.props.defaultValue.length > 0 ? (
             <div>
               <img src={sourceDataURL} />
             </div>
