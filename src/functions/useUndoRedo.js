@@ -11,11 +11,13 @@ const useUndoRedo = () => {
   const [history, setHistory] = useState([currentState]);
   const [index, setIndex] = useState(0);
 
-  const updateState = (newState, action) => {
+  const updateState = (newState, historyIndex) => {
     let currentStateIndex = history.length;
     setHistory((currentHistory) => {
-      currentStateIndex = currentHistory.length;
-      return [...currentHistory, [...newState]];
+      console.log("history index: ", historyIndex);
+      const newHistory = currentHistory; //.slice(historyIndex + 1);
+      currentStateIndex = newHistory.length;
+      return [...newHistory, [...newState]];
     });
     setIndex(() => {
       return currentStateIndex;
@@ -55,10 +57,10 @@ const useUndoRedo = () => {
       }
     };
 
-    window.addEventListener("keydown", handleKeyPress);
+    document.addEventListener("keydown", handleKeyPress);
 
     return () => {
-      window.removeEventListener("keydown", handleKeyPress);
+      document.removeEventListener("keydown", handleKeyPress);
     };
   }, [index, undo, redo]);
 

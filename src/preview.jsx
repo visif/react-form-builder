@@ -22,9 +22,9 @@ const Preview = (props) => {
     setData(data || []);
     setAnswerData({});
     seq = 0;
-    const onUpdate = _onChange;
+
     store.subscribe((state) => {
-      onUpdate(state.payload);
+      _onChange(state.payload);
     });
 
     store.dispatch("load", { loadUrl: url, saveUrl, data: data || [] });
@@ -85,6 +85,7 @@ const Preview = (props) => {
     }
 
     if (action !== ACTION.UNDO && action !== ACTION.REDO) {
+      console.log("history index before: ", historyIndex);
       updateState(data, historyIndex);
     }
   };
