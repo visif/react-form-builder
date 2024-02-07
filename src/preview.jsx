@@ -305,8 +305,6 @@ const Preview = (props) => {
 
   const items = data.map((item, index) => getElement(item, index));
 
-  console.log(`returning check index: ${historyIndex} history: `, history);
-
   return (
     <div className={classes} style={{ height: "100%", scrollbarWidth: "none" }}>
       <div className="edit-form" ref={editForm}>

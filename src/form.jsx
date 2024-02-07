@@ -587,7 +587,7 @@ export default class ReactForm extends React.Component {
       data_items = this.props.data.filter((i) => i.alternateForm === true);
     }
 
-    data_items.forEach((item) => {
+    data_items?.forEach((item) => {
       if (
         item &&
         item.readOnly &&
@@ -600,7 +600,7 @@ export default class ReactForm extends React.Component {
     });
 
     const items = data_items
-      .filter((x) => !x.parentId)
+      ?.filter((x) => !x.parentId)
       .map((item) => {
         if (!item) return null;
         switch (item.element) {
