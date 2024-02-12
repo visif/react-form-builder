@@ -28,6 +28,10 @@ const store = new Store({
       }
     },
 
+    update(context, { data, action }) {
+      this.setData(context, data, false, action);
+    },
+
     create(context, element) {
       const {
         payload: { data },

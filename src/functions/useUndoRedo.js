@@ -29,7 +29,7 @@ const useUndoRedo = () => {
     if (index > 0) {
       setIndex(index - 1);
       setCurrentState(history[index - 1]);
-      store.dispatch("load", {
+      store.dispatch("update", {
         data: history[index - 1] || [],
         action: ACTION.UNDO,
       });
@@ -40,7 +40,7 @@ const useUndoRedo = () => {
     if (index < history.length - 1) {
       setIndex(index + 1);
       setCurrentState(history[index + 1]);
-      store.dispatch("load", {
+      store.dispatch("update", {
         data: history[index + 1] || [],
         action: ACTION.REDO,
       });
