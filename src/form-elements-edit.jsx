@@ -921,7 +921,7 @@ export default class FormElementsEdit extends React.Component {
             canHaveOptionCorrect={canHaveOptionCorrect}
             canHaveOptionValue={canHaveOptionValue}
             canHaveInfo={canHaveInfo}
-            data={this.props.preview.state.data}
+            data={this.props.preview?.state?.data}
             updateElement={this.props.updateElement}
             preview={this.props.preview}
             element={this.props.element}
