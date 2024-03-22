@@ -945,7 +945,7 @@ export default class FormElementsEdit extends React.Component {
         )}
         {this.props.element.hasOwnProperty("rowLabels") && (
           <FixedRowList
-            data={this.props.preview.state.data}
+            data={this.props.preview?.state?.data}
             updateElement={this.props.updateElement}
             preview={this.props.preview}
             element={this.props.element}
@@ -954,7 +954,7 @@ export default class FormElementsEdit extends React.Component {
         )}
         {this.props.element.hasOwnProperty("columns") && (
           <DynamicColumnList
-            data={this.props.preview.state.data}
+            data={this.props.preview?.state?.data}
             updateElement={this.props.updateElement}
             preview={this.props.preview}
             element={this.props.element}
