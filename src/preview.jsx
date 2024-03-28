@@ -307,16 +307,7 @@ const Preview = (props) => {
 
   return (
     <div className={classes} style={{ height: "100%", scrollbarWidth: "none" }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          backgroundColor: "#f8f8f8",
-          borderBottom: "1px solid #ddd",
-          padding: "6px 12px",
-          cursor: "pointer",
-        }}
-      >
+      <div className="preview-toolbar">
         <span
           style={{
             border: "1px solid #ddd",
