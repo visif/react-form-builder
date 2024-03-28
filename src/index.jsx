@@ -67,49 +67,6 @@ class ReactFormBuilder extends React.Component {
           >
             <div
               style={{
-                position: "absolute",
-                margin: 8,
-                padding: 8,
-                zIndex: 1000,
-                cursor: "pointer",
-              }}
-            >
-              <span
-                style={{
-                  border: "1px dashed #ddd",
-                  padding: 8,
-                  marginRight: "4px",
-                  backgroundColor: "#ffffff",
-                }}
-                onClick={() => {
-                  const event = new KeyboardEvent("keydown", {
-                    key: "z",
-                    ctrlKey: true,
-                  });
-                  document.dispatchEvent(event);
-                }}
-              >
-                <i class="fas fa-history" />
-              </span>
-              <span
-                style={{
-                  border: "1px dashed #ddd",
-                  padding: 8,
-                  backgroundColor: "#ffffff",
-                }}
-                onClick={() => {
-                  const event = new KeyboardEvent("keydown", {
-                    key: "y",
-                    ctrlKey: true,
-                  });
-                  document.dispatchEvent(event);
-                }}
-              >
-                <i className="fas fa-redo" />
-              </span>
-            </div>
-            <div
-              style={{
                 flex: 1,
                 overflowY: "auto",
                 height: "100%",

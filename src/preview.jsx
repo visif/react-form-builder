@@ -307,6 +307,52 @@ const Preview = (props) => {
 
   return (
     <div className={classes} style={{ height: "100%", scrollbarWidth: "none" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          backgroundColor: "#f8f8f8",
+          borderBottom: "1px solid #ddd",
+          padding: "6px 12px",
+          cursor: "pointer",
+        }}
+      >
+        <span
+          style={{
+            border: "1px solid #ddd",
+            padding: 8,
+            marginRight: "4px",
+            backgroundColor: "#ffffff",
+          }}
+          onClick={() => {
+            const event = new KeyboardEvent("keydown", {
+              key: "z",
+              ctrlKey: true,
+            });
+            document.dispatchEvent(event);
+          }}
+        >
+          <i class="fas fa-history" style={{ marginRight: 8 }} />
+          Undo
+        </span>
+        <span
+          style={{
+            border: "1px solid #ddd",
+            padding: 8,
+            backgroundColor: "#ffffff",
+          }}
+          onClick={() => {
+            const event = new KeyboardEvent("keydown", {
+              key: "y",
+              ctrlKey: true,
+            });
+            document.dispatchEvent(event);
+          }}
+        >
+          <i className="fas fa-redo" style={{ marginRight: 8 }} />
+          Redo
+        </span>
+      </div>
       <div className="edit-form" ref={editForm}>
         {props.editElement !== null && showEditForm()}
       </div>
