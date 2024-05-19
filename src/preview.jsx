@@ -294,6 +294,7 @@ const Preview = (props) => {
       updateElement: handleUpdateElement,
       getFormSource: props.getFormSource,
       getFormContent: props.getFormContent,
+      onImageUpload: props.onImageUpload,
     };
     return props.renderEditForm(formElementEditProps);
   };
