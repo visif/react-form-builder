@@ -48,17 +48,17 @@ export default class Toolbar extends React.Component {
       case "Dropdown":
         return [
           {
-            value: "place_holder_option_1",
+            value: "1",
             text: "Place holder option 1",
             key: `dropdown_option_${ID.uuid()}`,
           },
           {
-            value: "place_holder_option_2",
+            value: "2",
             text: "Place holder option 2",
             key: `dropdown_option_${ID.uuid()}`,
           },
           {
-            value: "place_holder_option_3",
+            value: "3",
             text: "Place holder option 3",
             key: `dropdown_option_${ID.uuid()}`,
           },
@@ -66,17 +66,17 @@ export default class Toolbar extends React.Component {
       case "Tags":
         return [
           {
-            value: "place_holder_tag_1",
+            value: "1",
             text: "Place holder tag 1",
             key: `tags_option_${ID.uuid()}`,
           },
           {
-            value: "place_holder_tag_2",
+            value: "2",
             text: "Place holder tag 2",
             key: `tags_option_${ID.uuid()}`,
           },
           {
-            value: "place_holder_tag_3",
+            value: "3",
             text: "Place holder tag 3",
             key: `tags_option_${ID.uuid()}`,
           },
@@ -84,17 +84,17 @@ export default class Toolbar extends React.Component {
       case "Checkboxes":
         return [
           {
-            value: "place_holder_option_1",
+            value: "1",
             text: "Place holder option 1",
             key: `checkboxes_option_${ID.uuid()}`,
           },
           {
-            value: "place_holder_option_2",
+            value: "2",
             text: "Place holder option 2",
             key: `checkboxes_option_${ID.uuid()}`,
           },
           {
-            value: "place_holder_option_3",
+            value: "3",
             text: "Place holder option 3",
             key: `checkboxes_option_${ID.uuid()}`,
           },
@@ -102,17 +102,17 @@ export default class Toolbar extends React.Component {
       case "RadioButtons":
         return [
           {
-            value: "place_holder_option_1",
+            value: "1",
             text: "Place holder option 1",
             key: `radiobuttons_option_${ID.uuid()}`,
           },
           {
-            value: "place_holder_option_2",
+            value: "2",
             text: "Place holder option 2",
             key: `radiobuttons_option_${ID.uuid()}`,
           },
           {
-            value: "place_holder_option_3",
+            value: "3",
             text: "Place holder option 3",
             key: `radiobuttons_option_${ID.uuid()}`,
           },

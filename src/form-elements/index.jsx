@@ -481,8 +481,8 @@ class Tags extends React.Component {
     } // to show a sample of what tags looks like
 
     const userProperties =
-    this.props.getActiveUserProperties &&
-    this.props.getActiveUserProperties();
+      this.props.getActiveUserProperties &&
+      this.props.getActiveUserProperties();
 
     const savedEditor = this.props.editor;
     let isSameEditor = true;
@@ -590,10 +590,6 @@ class Checkboxes extends React.Component {
             if (self.props.mutable) {
               props.checked = answerItem?.value ?? false;
             }
-
-            //if (this.props.read_only) {
-            //  props.disabled = "disabled";
-            //}
 
             if (this.props.read_only || !isSameEditor) {
               props.disabled = "disabled";
