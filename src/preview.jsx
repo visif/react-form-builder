@@ -10,6 +10,11 @@ import SortableFormElements from "./sortable-form-elements";
 
 const { PlaceHolder } = SortableFormElements;
 
+export const ACTION = {
+  UNDO: "undo",
+  REDO: "redo",
+};
+
 export default class Preview extends React.Component {
   state = {
     data: [],
@@ -26,11 +31,15 @@ export default class Preview extends React.Component {
     this.state = {
       data: props.data || [],
       answer_data: {},
+      currentState: [],
+      history: [[]],
+      index: 0,
     };
+
     this.seq = 0;
 
     const onUpdate = this._onChange;
-    store.subscribe((state) => onUpdate(state.data));
+    store.subscribe((state) => onUpdate(state.payload));
 
     this.getDataById = this.getDataById.bind(this);
     this.moveCard = this.moveCard.bind(this);
@@ -44,15 +53,80 @@ export default class Preview extends React.Component {
     const { data, url, saveUrl } = this.props;
     store.dispatch("load", { loadUrl: url, saveUrl, data: data || [] });
     document.addEventListener("mousedown", this.editModeOff);
+    window.addEventListener("keydown", this.handleKeyPress);
   }
 
   componentWillUnmount() {
     document.removeEventListener("mousedown", this.editModeOff);
+    window.removeEventListener("keydown", this.handleKeyPress);
   }
 
   editModeOff = (e) => {
     if (this.editForm.current && !this.editForm.current.contains(e.target)) {
       this.manualEditModeOff();
+    }
+  };
+
+  updateState = (newState) => {
+    let currentStateIndex = this.state.history.length;
+    this.setState((current) => {
+      return {
+        history: [...current.history, [...newState]],
+        currentState: newState,
+        index: currentStateIndex,
+      };
+    });
+  };
+
+  undo = () => {
+    if (this.state.index > 0) {
+      this.setState((current) => {
+        const index = current.index;
+        const history = current.history;
+
+        const newIndex = index - 1;
+        const newCurrentState = history[newIndex];
+
+        store.dispatch("load", {
+          data: newCurrentState || [],
+          action: ACTION.UNDO,
+        });
+
+        return {
+          index: newIndex,
+          currentState: newCurrentState,
+        };
+      });
+    }
+  };
+
+  redo = () => {
+    if (this.state.index < this.state.history.length - 1) {
+      this.setState((current) => {
+        const index = current.index;
+        const history = current.history;
+
+        const newIndex = index + 1;
+        const newCurrentState = history[newIndex];
+
+        store.dispatch("load", {
+          data: newCurrentState || [],
+          action: ACTION.REDO,
+        });
+
+        return {
+          index: newIndex,
+          currentState: newCurrentState,
+        };
+      });
+    }
+  };
+
+  handleKeyPress = (event) => {
+    if (event.ctrlKey && event.key === "z") {
+      this.undo();
+    } else if (event.ctrlKey && event.key === "y") {
+      this.redo();
     }
   };
 
@@ -87,8 +161,9 @@ export default class Preview extends React.Component {
     }
   }
 
-  _onChange = (data) => {
+  _onChange = (payload) => {
     const answer_data = {};
+    const { data, action } = payload;
 
     data.forEach((item) => {
       if (item && item.readOnly && this.props.variables[item.variableKey]) {
@@ -100,6 +175,10 @@ export default class Preview extends React.Component {
       data,
       answer_data,
     });
+
+    if (action !== ACTION.UNDO && action !== ACTION.REDO) {
+      this.updateState(data);
+    }
 
     if (typeof this.props.onChange === "function") {
       this.props.onChange(data);
@@ -168,7 +247,6 @@ export default class Preview extends React.Component {
     const toRemove = list.filter((x) => item.childItems.indexOf(x.id) === -1);
     let newData = data;
     if (toRemove.length) {
-      // console.log('toRemove', toRemove);
       newData = data.filter((x) => toRemove.indexOf(x) === -1);
     }
     if (!this.getDataById(child.id)) {
@@ -354,6 +432,43 @@ export default class Preview extends React.Component {
         className={classes}
         style={{ height: "100%", scrollbarWidth: "none" }}
       >
+        <div className="preview-toolbar">
+          <span
+            style={{
+              border: "1px solid #ddd",
+              padding: 8,
+              marginRight: "4px",
+              backgroundColor: "#ffffff",
+            }}
+            onClick={() => {
+              const event = new KeyboardEvent("keydown", {
+                key: "z",
+                ctrlKey: true,
+              });
+              document.dispatchEvent(event);
+            }}
+          >
+            <i class="fas fa-history" style={{ marginRight: 8 }} />
+            Undo
+          </span>
+          <span
+            style={{
+              border: "1px solid #ddd",
+              padding: 8,
+              backgroundColor: "#ffffff",
+            }}
+            onClick={() => {
+              const event = new KeyboardEvent("keydown", {
+                key: "y",
+                ctrlKey: true,
+              });
+              document.dispatchEvent(event);
+            }}
+          >
+            <i className="fas fa-redo" style={{ marginRight: 8 }} />
+            Redo
+          </span>
+        </div>
         <div className="edit-form" ref={this.editForm}>
           {this.props.editElement !== null && this.showEditForm()}
         </div>

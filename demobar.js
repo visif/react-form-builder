@@ -28,7 +28,7 @@ export default class Demobar extends React.Component {
     const update = this._onChange.bind(this);
     this._onSubmit = this._onSubmit.bind(this);
 
-    store.subscribe((state) => update(state.data));
+    store.subscribe((state) => update(state.payload));
   }
 
   showPreview() {
@@ -57,9 +57,9 @@ export default class Demobar extends React.Component {
     });
   }
 
-  _onChange(data) {
+  _onChange(payload) {
     this.setState({
-      data,
+      data: payload.data,
     });
   }
 

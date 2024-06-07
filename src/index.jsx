@@ -57,7 +57,57 @@ class ReactFormBuilder extends React.Component {
     return (
       <DndProvider backend={HTML5Backend}>
         <div className="react-form-builder clearfix" style={{ height: "100%" }}>
-          <div style={{ display: "flex", height: "100%", overflow: "hidden" }}>
+          <div
+            style={{
+              display: "flex",
+              height: "100%",
+              overflow: "hidden",
+              position: "relative",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                margin: 8,
+                padding: 8,
+                zIndex: 1000,
+                cursor: "pointer",
+              }}
+            >
+              <span
+                style={{
+                  border: "1px dashed #ddd",
+                  padding: 8,
+                  marginRight: "4px",
+                  backgroundColor: "#ffffff",
+                }}
+                onClick={() => {
+                  const event = new KeyboardEvent("keydown", {
+                    key: "z",
+                    ctrlKey: true,
+                  });
+                  document.dispatchEvent(event);
+                }}
+              >
+                <i class="fas fa-history" />
+              </span>
+              <span
+                style={{
+                  border: "1px dashed #ddd",
+                  padding: 8,
+                  backgroundColor: "#ffffff",
+                }}
+                onClick={() => {
+                  const event = new KeyboardEvent("keydown", {
+                    key: "y",
+                    ctrlKey: true,
+                  });
+                  document.dispatchEvent(event);
+                }}
+              >
+                <i className="fas fa-redo" />
+              </span>
+            </div>
             <div
               style={{
                 flex: 1,

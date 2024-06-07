@@ -485,6 +485,17 @@ class Tags extends React.Component {
     if (!this.props.mutable) {
       props.value = options[0].text;
     } // to show a sample of what tags looks like
+
+    const userProperties =
+      this.props.getActiveUserProperties &&
+      this.props.getActiveUserProperties();
+
+    const savedEditor = this.props.editor;
+    let isSameEditor = true;
+    if (savedEditor && savedEditor.userId && !!userProperties) {
+      isSameEditor = userProperties.userId === savedEditor.userId;
+    }
+
     if (this.props.mutable) {
       //props.isDisabled = this.props.read_only;
       props.isDisabled = this.props.read_only || !isSameEditor ? true : false;
@@ -620,10 +631,10 @@ class Checkboxes extends React.Component {
                         const newActiveVal = activeVal
                           ? { ...activeVal, value: !activeVal.value }
                           : {
-                            key: option.key,
-                            value: true,
-                            info: "",
-                          };
+                              key: option.key,
+                              value: true,
+                              info: "",
+                            };
 
                         if (!current) {
                           return current;
@@ -998,8 +1009,8 @@ class Camera extends React.Component {
         <div className="form-group">
           <ComponentLabel {...this.props} />
           {this.props.read_only === true &&
-            this.props.defaultValue &&
-            this.props.defaultValue.length > 0 ? (
+          this.props.defaultValue &&
+          this.props.defaultValue.length > 0 ? (
             <div>
               <img src={sourceDataURL} />
             </div>

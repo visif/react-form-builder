@@ -4,7 +4,7 @@
     // width: 70%;
     border: 1px solid #ddd;
     background: #fafafa;
-    padding: 10px;
+    padding: 0 0 10px 0;
     box-shadow: 0 0 2px 1px rgba(0,0,0,0.1);
     min-height: 750px;
     width:100%;
@@ -219,6 +219,19 @@
         left: 0;
         transition: .5s;
       }
+    }
+
+    .preview-toolbar {
+      display: flex;
+      align-items: center;
+      background-color: "#f8f8f8";
+      border-bottom: 1px solid #ddd;
+      padding: 6px 12px;
+      cursor: pointer;
+      position: -webkit-sticky;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
     }
   }
 
