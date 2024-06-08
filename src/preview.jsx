@@ -445,7 +445,7 @@ export default class Preview extends React.Component {
                 key: "z",
                 ctrlKey: true,
               });
-              document.dispatchEvent(event);
+              window.dispatchEvent(event);
             }}
           >
             <i class="fas fa-history" style={{ marginRight: 8 }} />
@@ -462,7 +462,7 @@ export default class Preview extends React.Component {
                 key: "y",
                 ctrlKey: true,
               });
-              document.dispatchEvent(event);
+              window.dispatchEvent(event);
             }}
           >
             <i className="fas fa-redo" style={{ marginRight: 8 }} />
