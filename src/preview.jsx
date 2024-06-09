@@ -87,7 +87,7 @@ export default class Preview extends React.Component {
         const newIndex = index - 1;
         const newCurrentState = history[newIndex];
 
-        store.dispatch("load", {
+        store.dispatch("update", {
           data: newCurrentState || [],
           action: ACTION.UNDO,
         });
@@ -109,7 +109,7 @@ export default class Preview extends React.Component {
         const newIndex = index + 1;
         const newCurrentState = history[newIndex];
 
-        store.dispatch("load", {
+        store.dispatch("update", {
           data: newCurrentState || [],
           action: ACTION.REDO,
         });
