@@ -4,7 +4,7 @@ import moment from "moment";
 import ComponentHeader from "./component-header";
 import ComponentLabel from "./component-label";
 
-const DEFAULT_DATE_FORMAT = "dd MMMM yyyy";
+const DEFAULT_DATE_FORMAT = "DD MMMM yyyy";
 
 class DatePicker extends React.Component {
   constructor(props) {
@@ -22,7 +22,7 @@ class DatePicker extends React.Component {
     debugger;
     this.setState({
       value: dateString,
-      internalValue: moment(date.$d).format(formatMask),
+      internalValue: moment(date.$d, formatMask),
       placeholder: formatMask.toLowerCase(),
     });
 
