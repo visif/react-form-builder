@@ -7,7 +7,7 @@ export default class Section extends React.Component {
     if (this.props.data.pageBreakBefore) { baseClasses += ' alwaysbreak'; }
 
     return (
-      <div className={baseClasses}>
+      <div className={baseClasses} id={this.props.data.header}>
         <ComponentHeader {...this.props} />
         <h6>{this.props.data.header}</h6>
         <hr />
