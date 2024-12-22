@@ -4,7 +4,7 @@ import ReactDatePicker from "react-datepicker";
 import ComponentHeader from "./component-header";
 import ComponentLabel from "./component-label";
 
-const DEFAULT_DATE_FORMAT = "DD MMMM yyyy";
+const DEFAULT_DATE_FORMAT = "dd MMMM yyyy";
 
 class DatePicker extends React.Component {
   constructor(props) {
