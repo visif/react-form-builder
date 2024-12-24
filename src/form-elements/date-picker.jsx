@@ -109,11 +109,10 @@ class DatePicker extends React.Component {
     props.type = "date";
     props.className = "form-control";
     props.name = this.props.data.field_name;
-    //const readOnly = this.props.data.readOnly || this.props.read_only;
+
     const readOnly =
       this.props.data.readOnly || this.props.read_only || !isSameEditor;
-    const iOS =
-      /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
     const placeholderText = this.state.formatMask.toLowerCase();
 
     if (this.props.mutable) {
@@ -125,6 +124,9 @@ class DatePicker extends React.Component {
     if (this.props.data.pageBreakBefore) {
       baseClasses += " alwaysbreak";
     }
+
+    console.log("placeholderText", placeholderText);
+    console.log("this.state.formatMask", this.state.formatMask);
 
     return (
       <div className={baseClasses}>
@@ -144,21 +146,9 @@ class DatePicker extends React.Component {
                 className="form-control"
               />
             )}
-            {iOS && !readOnly && (
-              <input
-                type="date"
-                name={props.name}
-                ref={props.ref}
-                onChange={this.handleChange}
-                dateFormat={this.state.formatMask}
-                placeholder={this.state.placeholder}
-                value={this.state.value}
-                disabled={!isSameEditor}
-                className="form-control"
-              />
-            )}
-            {!iOS && !readOnly && (
+            {!readOnly && (
               <ReactDatePicker
+                id={this.props.data.field_name}
                 name={props.name}
                 ref={props.ref}
                 onChange={this.handleChange}
