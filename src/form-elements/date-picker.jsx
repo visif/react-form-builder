@@ -158,11 +158,11 @@ class DatePicker extends React.Component {
                 isClearable={true}
                 showTimeSelect={showTimeSelect}
                 showTimeSelectOnly={showTimeSelectOnly}
-                dateFormat={this.state.formatMask}
+                dateFormat={DEFAULT_DATE_FORMAT}
                 portalId="root-portal"
                 autoComplete="off"
                 disabled={!isSameEditor}
-                placeholderText={placeholderText}
+                placeholderText={DEFAULT_DATE_FORMAT}
               />
             )}
           </div>
