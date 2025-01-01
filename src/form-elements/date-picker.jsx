@@ -14,7 +14,8 @@ class DatePicker extends React.Component {
 
   handleChange = (dt) => {
     let placeholder;
-    const { formatMask } = this.state;
+    // const { formatMask } = this.state;
+    const { formatMask } = DEFAULT_DATE_FORMAT;
     if (dt && dt.target) {
       placeholder =
         dt && dt.target && dt.target.value === ""
@@ -39,8 +40,9 @@ class DatePicker extends React.Component {
 
   static updateFormat(props, oldFormatMask) {
     const { showTimeSelect, showTimeSelectOnly } = props.data;
-    const dateFormat =
-      showTimeSelect && showTimeSelectOnly ? "" : props.data.dateFormat;
+    // const dateFormat =
+    //   showTimeSelect && showTimeSelectOnly ? "" : props.data.dateFormat;
+    const dateFormat = DEFAULT_DATE_FORMAT;
     const timeFormat = showTimeSelect ? props.data.timeFormat : "";
     const formatMask = `${dateFormat} ${timeFormat}`.trim();
     const updated = formatMask !== oldFormatMask;
@@ -80,14 +82,15 @@ class DatePicker extends React.Component {
   static getDerivedStateFromProps(props, state) {
     const { updated, formatMask } = DatePicker.updateFormat(
       props,
-      state.formatMask
+      // state.formatMask
+      DEFAULT_DATE_FORMAT
     );
     if (
       updated ||
       props.data.defaultToday !== state.defaultToday ||
       state.defaultValue !== props.defaultValue
     ) {
-      const newState = DatePicker.updateDateTime(props, formatMask);
+      const newState = DatePicker.updateDateTime(props, DEFAULT_DATE_FORMAT);
       return newState;
     }
     return null;
@@ -113,7 +116,8 @@ class DatePicker extends React.Component {
     const readOnly =
       this.props.data.readOnly || this.props.read_only || !isSameEditor;
 
-    const placeholderText = this.state.formatMask.toLowerCase();
+    // const placeholderText = this.state.formatMask.toLowerCase();
+    const placeholderText = DEFAULT_DATE_FORMAT.toLowerCase();
 
     if (this.props.mutable) {
       props.defaultValue = this.props.defaultValue;
