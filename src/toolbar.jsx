@@ -27,7 +27,7 @@ function buildItems(items, defaultItems) {
   });
 }
 
-const DATE_FORMAT = "dd MMM yyyy";
+const DATE_FORMAT = "DD MMM YYYY";
 
 export default class Toolbar extends React.Component {
   constructor(props) {
