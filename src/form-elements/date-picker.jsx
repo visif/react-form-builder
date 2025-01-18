@@ -32,12 +32,11 @@ class DatePicker extends React.Component {
     this.state = DatePicker.updateDateTime(props, formatMask);
   }
 
-  handleChange = (date, dateString) => {
+  handleChange = (date) => {
     const { formatMask } = this.state;
-    debugger;
+    const isoDate = date ? date.toISOString() : null;
     this.setState({
-      value: dateString,
-      internalValue: date?.$d ? date.$d : undefined,
+      value: isoDate,
       placeholder: formatMask.toLowerCase(),
     });
   };
@@ -51,23 +50,20 @@ class DatePicker extends React.Component {
 
   static updateDateTime(props, formatMask) {
     let value;
-    let internalValue;
     const { defaultToday } = props.data;
     if (defaultToday && !props.defaultValue) {
-      value = dayjs().format(formatMask);
-      internalValue = dayjs();
+      value = dayjs().toISOString;
     } else {
-      value = props.defaultValue;
-
-      if (!value) {
-        internalValue = undefined;
-      } else {
-        internalValue = dayjs(value, formatMask);
+      if (props.defaultValue) {
+        const isMMDDYYYY = /^\d{2}\/\d{2}\/\d{4}$/.test(props.defaultValue);
+        value = dayjs(
+          props.defaultValue,
+          isMMDDYYYY ? "MM/DD/YYYY" : undefined
+        ).toISOString();
       }
     }
     return {
       value,
-      internalValue,
       placeholder: formatMask.toLowerCase(),
       defaultToday,
       formatMask,
@@ -116,7 +112,11 @@ class DatePicker extends React.Component {
                 ref={props.ref}
                 readOnly={readOnly}
                 placeholder={this.state.placeholder}
-                value={this.state.value}
+                value={
+                  this.state.value
+                    ? dayjs(this.state.value).format(this.state.formatMask)
+                    : ""
+                }
                 disabled={!isSameEditor}
                 className="form-control"
               />
@@ -126,12 +126,7 @@ class DatePicker extends React.Component {
                 name={props.name}
                 ref={props.ref}
                 onChange={this.handleChange}
-                // selected={this.state.internalValue}
-                value={
-                  this.state.internalValue
-                    ? dayjs(this.state.internalValue)
-                    : null
-                }
+                value={!!this.state.value && dayjs(this.state.value)}
                 className="form-control"
                 format={this.state.formatMask}
                 showTime={showTimeSelect}

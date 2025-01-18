@@ -41,12 +41,6 @@ class ReactFormBuilder extends React.Component {
     }
   }
 
-  // onPost () {
-  //   if (typeof this.props.onPost === 'function') {
-  //     this.props.onPost(data)
-  //   }
-  // }
-
   render() {
     const toolbarProps = {
       showDescription: this.props.show_description,
