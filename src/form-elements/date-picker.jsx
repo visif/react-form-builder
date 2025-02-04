@@ -41,6 +41,14 @@ class DatePicker extends React.Component {
     });
   };
 
+  static getDerivedStateFromProps = async (props, state) => {
+    if (props.defaultValue && props.defaultValue !== state.defaultValue) {
+      debugger;
+      const { formatMask } = DatePicker.updateFormat(props, null);
+      this.state = DatePicker.updateDateTime(props, formatMask);
+    }
+  };
+
   static updateFormat(props, oldFormatMask) {
     const formatMask = getDateFormat() || "DD MMMM YYYY";
     const updated = formatMask !== oldFormatMask;
