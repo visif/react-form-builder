@@ -43,7 +43,6 @@ class DatePicker extends React.Component {
 
   static getDerivedStateFromProps = async (props, state) => {
     if (props.defaultValue && props.defaultValue !== state.defaultValue) {
-      debugger;
       const { formatMask } = DatePicker.updateFormat(props, null);
       this.state = DatePicker.updateDateTime(props, formatMask);
     }
@@ -134,7 +133,7 @@ class DatePicker extends React.Component {
                 name={props.name}
                 ref={props.ref}
                 onChange={this.handleChange}
-                value={!!this.state.value && dayjs(this.state.value)}
+                value={!!this.state.value ? dayjs(this.state.value) : null}
                 className="form-control"
                 format={this.state.formatMask}
                 showTime={showTimeSelect}
