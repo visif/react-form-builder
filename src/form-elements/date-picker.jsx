@@ -7,29 +7,62 @@ import ComponentLabel from "./component-label";
 const keyDateFormat = "setting_date_format";
 
 const dateFormatList = {
-  "dd MMMM yyyy": "DD MMMM YYYY", //"DD MMMM yyyy",
+  "dd MMMM yyyy": "DD MMMM YYYY",
   "dd-MMM-yyyy": "DD-MMM-YYYY",
   "dd-MMM-yy": "DD-MMM-YY",
   "yyyy-MM-dd": "YYYY-MM-DD",
-  "MM/dd/yyyy": "MM/DD/YYYY", //"MM/DD/yyyy",
-  "dd/MM/yyyy": "DD/MM/YYYY", //"DD/MM/yyyy",
-  "MMM dd, yyyy": "MMM DD, YYYY", //"MMM DD, yyyy"
+  "MM/dd/yyyy": "MM/DD/YYYY",
+  "dd/MM/yyyy": "DD/MM/YYYY",
+  "MMM dd, yyyy": "MMM DD, YYYY",
 };
 
 export const getDateFormat = () => {
   const key = dateFormatList[localStorage.getItem(keyDateFormat)];
-  if (!key) {
-    return "DD MMMM YYYY";
-  } else return key;
+  return key || "DD MMMM YYYY";
 };
 
 class DatePicker extends React.Component {
   constructor(props) {
     super(props);
     this.inputField = React.createRef();
+    this.mounted = false;
 
     const { formatMask } = DatePicker.updateFormat(props, null);
-    this.state = DatePicker.updateDateTime(props, formatMask);
+    this.state = {
+      ...DatePicker.updateDateTime(props, formatMask),
+      loading: true
+    };
+  }
+
+  componentDidMount() {
+    this.mounted = true;
+    this.checkForValue();
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
+  }
+
+  checkForValue = () => {
+    const { defaultValue } = this.props;
+    if (!this.state.value && defaultValue) {
+      // If value hasn't loaded yet, check again in a moment
+      setTimeout(() => {
+        if (this.mounted && !this.state.value) {
+          const { formatMask } = this.state;
+          this.setState({
+            ...DatePicker.updateDateTime(this.props, formatMask),
+            loading: false
+          });
+          // Keep checking if still no value
+          if (!this.state.value) {
+            this.checkForValue();
+          }
+        }
+      }, 500);
+    } else {
+      this.setState({ loading: false });
+    }
   }
 
   handleChange = (date) => {
@@ -41,34 +74,39 @@ class DatePicker extends React.Component {
     });
   };
 
-  static getDerivedStateFromProps = async (props, state) => {
+  static getDerivedStateFromProps(props, state) {
     if (props.defaultValue && props.defaultValue !== state.defaultValue) {
       const { formatMask } = DatePicker.updateFormat(props, null);
-      this.state = DatePicker.updateDateTime(props, formatMask);
+      return DatePicker.updateDateTime(props, formatMask);
     }
-  };
+    return null;
+  }
 
   static updateFormat(props, oldFormatMask) {
-    const formatMask = getDateFormat() || "DD MMMM YYYY";
+    const formatMask = getDateFormat();
     const updated = formatMask !== oldFormatMask;
-
     return { updated, formatMask };
   }
 
   static updateDateTime(props, formatMask) {
     let value;
     const { defaultToday } = props.data;
+    
     if (defaultToday && !props.defaultValue) {
-      value = dayjs().toISOString;
-    } else {
-      if (props.defaultValue) {
+      value = dayjs().toISOString();
+    } else if (props.defaultValue) {
+      try {
         const isMMDDYYYY = /^\d{2}\/\d{2}\/\d{4}$/.test(props.defaultValue);
         value = dayjs(
           props.defaultValue,
           isMMDDYYYY ? "MM/DD/YYYY" : undefined
         ).toISOString();
+      } catch (error) {
+        console.warn('Invalid date value:', props.defaultValue);
+        value = null;
       }
     }
+
     return {
       value,
       placeholder: formatMask.toLowerCase(),
@@ -79,22 +117,22 @@ class DatePicker extends React.Component {
   }
 
   render() {
-    const userProperties =
-      this.props.getActiveUserProperties &&
-      this.props.getActiveUserProperties();
-
+    const { showTimeSelect } = this.props.data;
+    const userProperties = this.props.getActiveUserProperties && this.props.getActiveUserProperties();
+    
     const savedEditor = this.props.editor;
     let isSameEditor = true;
     if (savedEditor && savedEditor.userId && !!userProperties) {
       isSameEditor = userProperties.userId === savedEditor.userId;
     }
-    const { showTimeSelect } = this.props.data;
-    const props = {};
-    props.type = "date";
-    props.className = "form-control";
-    props.name = this.props.data.field_name;
-    const readOnly =
-      this.props.data.readOnly || this.props.read_only || !isSameEditor;
+
+    const props = {
+      type: "date",
+      className: "form-control",
+      name: this.props.data.field_name,
+    };
+
+    const readOnly = this.props.data.readOnly || this.props.read_only || !isSameEditor;
 
     if (this.props.mutable) {
       props.defaultValue = this.props.defaultValue;
@@ -112,7 +150,7 @@ class DatePicker extends React.Component {
         <div className="form-group">
           <ComponentLabel {...this.props} />
           <div>
-            {readOnly && (
+            {readOnly ? (
               <input
                 type="text"
                 name={props.name}
@@ -127,17 +165,16 @@ class DatePicker extends React.Component {
                 disabled={!isSameEditor}
                 className="form-control"
               />
-            )}
-            {!readOnly && (
+            ) : (
               <AntDatePicker
                 name={props.name}
                 ref={props.ref}
                 onChange={this.handleChange}
-                value={!!this.state.value ? dayjs(this.state.value) : null}
+                value={this.state.value ? dayjs(this.state.value) : null}
                 className="form-control"
                 format={this.state.formatMask}
                 showTime={showTimeSelect}
-                disabled={!isSameEditor}
+                disabled={!isSameEditor || this.state.loading}
                 placeholder={this.state.placeholder}
                 style={{ display: "inline-block", width: "auto" }}
               />
