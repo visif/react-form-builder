@@ -308,7 +308,7 @@ const Preview = (props) => {
 
   return (
     <div className={classes} style={{ height: "100%", scrollbarWidth: "none" }}>
-      <div className="preview-toolbar">
+      {/* <div className="preview-toolbar">
         <span
           style={{
             border: "1px solid #ddd",
@@ -344,7 +344,7 @@ const Preview = (props) => {
           <i className="fas fa-redo" style={{ marginRight: 8 }} />
           Redo
         </span>
-      </div>
+      </div> */}
       <div className="edit-form" ref={editForm}>
         {props.editElement !== null && showEditForm()}
       </div>
