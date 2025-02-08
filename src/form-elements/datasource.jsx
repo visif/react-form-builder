@@ -6,6 +6,7 @@ class DataSource extends React.Component {
   constructor(props) {
     super(props);
     this.inputField = React.createRef();
+    this.mounted = false;
 
     const defaultValue = props.defaultValue || {};
 
@@ -18,20 +19,66 @@ class DataSource extends React.Component {
       isShowingList: false,
       sourceType: props.data.sourceType,
       getDataSource: props.getDataSource,
+      loading: true
     };
   }
 
   async componentDidMount() {
-    if (typeof this.props.getDataSource === "function") {
-      const data = await this.props.getDataSource(this.props.data);
-      this.setState({
-        sourceList: data,
-        matchedList: data,
-      });
+    this.mounted = true;
+    await this.loadDataSource();
+    this.checkForValue();
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
+  }
+
+  checkForValue = () => {
+    const { defaultValue } = this.props;
+    if (!this.state.selectedItem && defaultValue?.selectedItem) {
+      // If value hasn't loaded yet, check again in a moment
+      setTimeout(() => {
+        if (this.mounted && !this.state.selectedItem) {
+          this.setState({
+            searchText: defaultValue.value,
+            selectedItem: defaultValue.selectedItem,
+            defaultSelectedItem: defaultValue.selectedItem,
+            loading: false
+          });
+          // Keep checking if still no value
+          if (!this.state.selectedItem) {
+            this.checkForValue();
+          }
+        }
+      }, 500);
+    } else {
+      this.setState({ loading: false });
     }
   }
 
-  static getDerivedStateFromProps = async (props, state) => {
+  async loadDataSource() {
+    if (typeof this.props.getDataSource === "function") {
+      try {
+        const data = await this.props.getDataSource(this.props.data);
+        if (this.mounted) {
+          this.setState({
+            sourceList: data,
+            matchedList: data,
+          });
+        }
+      } catch (error) {
+        console.warn('Error loading data source:', error);
+        if (this.mounted) {
+          this.setState({
+            sourceList: [],
+            matchedList: [],
+          });
+        }
+      }
+    }
+  }
+
+  static getDerivedStateFromProps(props, state) {
     if (
       props.defaultValue &&
       JSON.stringify(props.defaultValue.selectedItem) !==
@@ -44,9 +91,8 @@ class DataSource extends React.Component {
         defaultSelectedItem: defaultValue.selectedItem,
       };
     }
-
-    return state;
-  };
+    return null;
+  }
 
   handleInputFocus = () => {
     this.setState({
@@ -82,9 +128,7 @@ class DataSource extends React.Component {
   };
 
   render() {
-    const userProperties =
-      this.props.getActiveUserProperties &&
-      this.props.getActiveUserProperties();
+    const userProperties = this.props.getActiveUserProperties && this.props.getActiveUserProperties();
 
     const savedEditor = this.props.editor;
     let isSameEditor = true;
@@ -92,11 +136,12 @@ class DataSource extends React.Component {
       isSameEditor = userProperties.userId === savedEditor.userId;
     }
 
-    const props = {};
-    props.type = "text";
-    props.className = "form-control";
-    props.name = this.props.data.field_name;
-    props.value = this.state.searchText;
+    const props = {
+      type: "text",
+      className: "form-control",
+      name: this.props.data.field_name,
+      value: this.state.searchText,
+    };
 
     if (this.props.mutable) {
       props.defaultValue = this.props.defaultValue;
@@ -123,7 +168,7 @@ class DataSource extends React.Component {
             <div>
               <input
                 {...props}
-                disabled={!isSameEditor}
+                disabled={!isSameEditor || this.state.loading}
                 onFocus={this.handleInputFocus}
                 onBlur={this.handleInputBlur}
                 onChange={this.handleOnChange}
@@ -141,29 +186,28 @@ class DataSource extends React.Component {
                 display: this.state.isShowingList ? "block" : "none",
               }}
             >
-              {(this.state.matchedList || []).map((item) => {
-                return (
-                  <div
-                    key={item.id}
-                    style={{
-                      position: "relative",
-                      display: "block",
-                      padding: "0.75rem 1.25rem",
-                      marginBottom: -1,
-                      backgroundColor: "#fff",
-                      border: "1px solid rgba(0, 0, 0, 0.125)",
-                    }}
-                    onClick={() => {
-                      this.setState({
-                        selectedItem: item,
-                        searchText: item.name,
-                      });
-                    }}
-                  >
-                    {item.name}
-                  </div>
-                );
-              })}
+              {(this.state.matchedList || []).map((item) => (
+                <div
+                  key={item.id}
+                  style={{
+                    position: "relative",
+                    display: "block",
+                    padding: "0.75rem 1.25rem",
+                    marginBottom: -1,
+                    backgroundColor: "#fff",
+                    border: "1px solid rgba(0, 0, 0, 0.125)",
+                  }}
+                  onClick={() => {
+                    this.setState({
+                      selectedItem: item,
+                      searchText: item.name,
+                      isShowingList: false,
+                    });
+                  }}
+                >
+                  {item.name}
+                </div>
+              ))}
             </div>
           </div>
         </div>
