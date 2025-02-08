@@ -3,6 +3,8 @@ import { DatePicker as AntDatePicker } from "antd";
 import dayjs from "dayjs";
 import ComponentHeader from "./component-header";
 import ComponentLabel from "./component-label";
+import utc from 'dayjs/plugin/utc';
+dayjs.extend(utc);
 
 const keyDateFormat = "setting_date_format";
 
@@ -99,10 +101,11 @@ class DatePicker extends React.Component {
     } else if (props.defaultValue) {
       try {
         const isMMDDYYYY = /^\d{2}\/\d{2}\/\d{4}$/.test(props.defaultValue);
-        value = dayjs(
-          props.defaultValue,
-          isMMDDYYYY ? "MM/DD/YYYY" : undefined
-        ).locale().toISOString();
+        if (isMMDDYYYY) {
+          value = dayjs(props.defaultValue, "MM/DD/YYYY").toISOString();
+        } else {
+          value = dayjs(props.defaultValue).utc(true).toISOString();
+        }
       } catch (error) {
         console.warn('Invalid date value:', props.defaultValue);
         value = null;
@@ -161,7 +164,7 @@ class DatePicker extends React.Component {
                 placeholder={this.state.placeholder}
                 value={
                   this.state.value
-                    ? dayjs(this.state.value).format(this.state.formatMask)
+                    ? dayjs(this.state.value).utc(true).format(this.state.formatMask)
                     : ""
                 }
                 disabled={!isSameEditor}
@@ -172,7 +175,7 @@ class DatePicker extends React.Component {
                 name={props.name}
                 ref={props.ref}
                 onChange={this.handleChange}
-                value={this.state.value ? dayjs(this.state.value) : null}
+                value={this.state.value ? dayjs(this.state.value).utc(true) : null}
                 className="form-control"
                 format={this.state.formatMask}
                 showTime={showTimeSelect}
