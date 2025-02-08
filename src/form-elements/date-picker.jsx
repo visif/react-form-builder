@@ -4,7 +4,10 @@ import dayjs from "dayjs";
 import ComponentHeader from "./component-header";
 import ComponentLabel from "./component-label";
 import utc from 'dayjs/plugin/utc';
+import buddhistEra from 'dayjs/plugin/buddhistEra';
+
 dayjs.extend(utc);
+dayjs.extend(buddhistEra);
 
 const keyDateFormat = "setting_date_format";
 
@@ -21,6 +24,11 @@ const dateFormatList = {
 export const getDateFormat = () => {
   const key = dateFormatList[localStorage.getItem(keyDateFormat)];
   return key || "DD MMMM YYYY";
+};
+
+export const getCalendarType = () => {
+  var key = localStorage.getItem(keyCalendarType);
+  return key || "EN";
 };
 
 class DatePicker extends React.Component {
@@ -121,6 +129,17 @@ class DatePicker extends React.Component {
     };
   }
 
+  formatDate = (date, formatMask) => {
+    if (!date) return "";;
+    
+    if (getCalendarType() === "EN") {
+      return dayjs(date).utc(true).format(formatMask);
+    } else {
+      // Convert to Buddhist calendar (add 543 years)
+      return dayjs(date).utc(true).format(formatMask.replace('YYYY', 'BBBB'));
+    }
+  }
+
   render() {
     const { showTimeSelect } = this.props.data;
     const userProperties = this.props.getActiveUserProperties && this.props.getActiveUserProperties();
@@ -162,11 +181,7 @@ class DatePicker extends React.Component {
                 ref={props.ref}
                 readOnly={readOnly}
                 placeholder={this.state.placeholder}
-                value={
-                  this.state.value
-                    ? dayjs(this.state.value).utc(true).format(this.state.formatMask)
-                    : ""
-                }
+                value={this.state.value ? this.formatDate(this.state.value, this.state.formatMask) : ""}
                 disabled={!isSameEditor}
                 className="form-control"
               />
@@ -177,7 +192,7 @@ class DatePicker extends React.Component {
                 onChange={this.handleChange}
                 value={this.state.value ? dayjs(this.state.value).utc(true) : null}
                 className="form-control"
-                format={this.state.formatMask}
+                format={(value) => this.formatDate(value, this.state.formatMask)}
                 showTime={showTimeSelect}
                 disabled={!isSameEditor || this.state.loading}
                 placeholder={this.state.placeholder}
