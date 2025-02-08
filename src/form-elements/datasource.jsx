@@ -33,10 +33,11 @@ class DataSource extends React.Component {
     this.mounted = false;
   }
 
-  checkForValue = () => {
+  checkForValue = (attempt = 0) => {
     const { defaultValue } = this.props;
+    const maxRetries = 3;
+
     if (!this.state.selectedItem && defaultValue?.selectedItem) {
-      // If value hasn't loaded yet, check again in a moment
       setTimeout(() => {
         if (this.mounted && !this.state.selectedItem) {
           this.setState({
@@ -45,9 +46,8 @@ class DataSource extends React.Component {
             defaultSelectedItem: defaultValue.selectedItem,
             loading: false
           });
-          // Keep checking if still no value
-          if (!this.state.selectedItem) {
-            this.checkForValue();
+          if (!this.state.selectedItem && attempt < maxRetries) {
+            this.checkForValue(attempt + 1);
           }
         }
       }, 500);
