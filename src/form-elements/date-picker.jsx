@@ -10,6 +10,7 @@ dayjs.extend(utc);
 dayjs.extend(buddhistEra);
 
 const keyDateFormat = "setting_date_format";
+const keyCalendarType = "setting_calendar_type";
 
 const dateFormatList = {
   "dd MMMM yyyy": "DD MMMM YYYY",
