@@ -102,7 +102,7 @@ class DatePicker extends React.Component {
         value = dayjs(
           props.defaultValue,
           isMMDDYYYY ? "MM/DD/YYYY" : undefined
-        ).local().toISOString();
+        ).locale().toISOString();
       } catch (error) {
         console.warn('Invalid date value:', props.defaultValue);
         value = null;
