@@ -43,8 +43,10 @@ class DatePicker extends React.Component {
     this.mounted = false;
   }
 
-  checkForValue = () => {
+  checkForValue = (attempt = 0) => {
     const { defaultValue } = this.props;
+    const maxRetries = 3;
+
     if (!this.state.value && defaultValue) {
       // If value hasn't loaded yet, check again in a moment
       setTimeout(() => {
@@ -54,9 +56,9 @@ class DatePicker extends React.Component {
             ...DatePicker.updateDateTime(this.props, formatMask),
             loading: false
           });
-          // Keep checking if still no value
-          if (!this.state.value) {
-            this.checkForValue();
+          // Keep checking if still no value and attempts are less than maxRetries
+          if (!this.state.value && attempt < maxRetries) {
+            this.checkForValue(attempt + 1);
           }
         }
       }, 500);
