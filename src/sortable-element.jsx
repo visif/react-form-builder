@@ -25,52 +25,52 @@ const cardSource = {
 
 // Drop target specification
 const cardTarget = {
-  // drop(props, monitor, component) {
-  //   if (!component) return;
-  //   const item = monitor.getItem();
-  //   const dragIndex = item.index;
-  //   const hoverIndex = props.index;
-  //   if (props.data.isContainer || item.itemType === ItemTypes.CARD) {
-  //     return;
-  //   }
-  //   if (
-  //     item.data &&
-  //     typeof item.setAsChild === "function" &&
-  //     dragIndex === -1
-  //   ) {
-  //     props.insertCard(item, hoverIndex, item.id);
-  //   }
-  // },
-  // hover(props, monitor, component) {
-  //   const item = monitor.getItem();
-  //   const dragIndex = item.index;
-  //   const hoverIndex = props.index;
-  //   if (item.data && typeof item.setAsChild === "function") {
-  //     return;
-  //   }
-  //   if (dragIndex === hoverIndex) {
-  //     return;
-  //   }
-  //   if (dragIndex === -1) {
-  //     if (props.data && props.data.isContainer) {
-  //       return;
-  //     }
-  //     item.index = hoverIndex;
-  //     props.insertCard(item.onCreate(item.data), hoverIndex);
-  //   }
-  //   const hoverBoundingRect = findDOMNode(component).getBoundingClientRect();
-  //   const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-  //   const clientOffset = monitor.getClientOffset();
-  //   const hoverClientY = clientOffset.y - hoverBoundingRect.top;
-  //   if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
-  //     return;
-  //   }
-  //   if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
-  //     return;
-  //   }
-  //   props.moveCard(dragIndex, hoverIndex);
-  //   item.index = hoverIndex;
-  // },
+  drop(props, monitor, component) {
+    if (!component) return;
+    const item = monitor.getItem();
+    const dragIndex = item.index;
+    const hoverIndex = props.index;
+    if (props.data.isContainer || item.itemType === ItemTypes.CARD) {
+      return;
+    }
+    if (
+      item.data &&
+      typeof item.setAsChild === "function" &&
+      dragIndex === -1
+    ) {
+      props.insertCard(item, hoverIndex, item.id);
+    }
+  },
+  hover(props, monitor, component) {
+    const item = monitor.getItem();
+    const dragIndex = item.index;
+    const hoverIndex = props.index;
+    if (item.data && typeof item.setAsChild === "function") {
+      return;
+    }
+    if (dragIndex === hoverIndex) {
+      return;
+    }
+    if (dragIndex === -1) {
+      if (props.data && props.data.isContainer) {
+        return;
+      }
+      item.index = hoverIndex;
+      props.insertCard(item.onCreate(item.data), hoverIndex);
+    }
+    const hoverBoundingRect = findDOMNode(component).getBoundingClientRect();
+    const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+    const clientOffset = monitor.getClientOffset();
+    const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+    if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+      return;
+    }
+    if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+      return;
+    }
+    props.moveCard(dragIndex, hoverIndex);
+    item.index = hoverIndex;
+  },
 };
 
 const withDragAndDrop = (ComposedComponent) => {
