@@ -1,15 +1,16 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 
-const PLACE_HOLDER = 'form-place-holder';
+const PLACE_HOLDER = "form-place-holder";
 
 export default class PlaceHolder extends React.Component {
   render() {
     return (
-      this.props.show &&
-      <div className={PLACE_HOLDER} >
-        <div>{this.props.text}</div>
-      </div>
+      this.props.show && (
+        <div className={PLACE_HOLDER}>
+          <div>{this.props.text}</div>
+        </div>
+      )
     );
   }
 }
@@ -20,6 +21,6 @@ PlaceHolder.propTypes = {
 };
 
 PlaceHolder.defaultProps = {
-  text: 'Dropzone',
+  text: "Dropzone",
   show: false,
 };
