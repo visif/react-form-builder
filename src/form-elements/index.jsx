@@ -242,10 +242,7 @@ class TextArea extends React.Component {
     const props = {};
     props.className = "form-control";
     props.name = this.props.data.field_name;
-
-    // if (this.props.read_only) {
-    //   props.disabled = "disabled";
-    // }
+    props.minRows = 3;
 
     if (this.props.read_only || !isSameEditor) {
       props.disabled = "disabled";
