@@ -880,10 +880,10 @@ export default class FormElementsEdit extends React.Component {
               )}
             >
               <option value="specific" key="specific">
-                Specific
+                Specific role only
               </option>
               <option value="notSpecific" key="notSpecific">
-                Not specific
+                Anyone can sign
               </option>
             </select>
           </div>

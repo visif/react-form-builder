@@ -147,9 +147,9 @@ class Signature2 extends React.Component {
             {this.props.data.position || "Placeholder Text"}
           </h6>
           {this.state.signedDateTime && (
-            <div style={{ textAlign: "center" }}>
+            <h6 style={{ textAlign: "center" }}>
               {formatDate(this.state.signedDateTime)}
-            </div>
+            </h6>
           )}
         </div>
       </div>
