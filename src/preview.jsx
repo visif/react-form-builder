@@ -304,7 +304,9 @@ const Preview = (props) => {
     classes += " is-editing";
   }
 
-  const items = data.map((item, index) => getElement(item, index));
+  const items = data
+    .filter((item) => !!item && !item.parentId)
+    .map((item, index) => getElement(item, index));
 
   return (
     <div className={classes} style={{ height: "100%", scrollbarWidth: "none" }}>
