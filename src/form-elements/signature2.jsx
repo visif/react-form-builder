@@ -1,5 +1,6 @@
 import React from "react";
 import ComponentHeader from "./component-header";
+import { formatDate } from "../functions/dateUtil";
 
 class Signature2 extends React.Component {
   constructor(props) {
@@ -57,6 +58,7 @@ class Signature2 extends React.Component {
         isSigned: !current.isSigned,
         signedPerson: !current.isSigned ? userProperties.name : "",
         signedPersonId: !current.isSigned ? userProperties.userId : "",
+        signedDateTime: !current.isSigned ? new Date().toLocaleString() : null,
       }));
     } else if (this.props.data.specificRole === "notSpecific") {
       this.setState((current) => ({
@@ -64,6 +66,7 @@ class Signature2 extends React.Component {
         isSigned: !current.isSigned,
         signedPerson: !current.isSigned ? userProperties.name : "",
         signedPersonId: !current.isSigned ? userProperties.userId : "",
+        signedDateTime: !current.isSigned ? new Date().toLocaleString() : null,
       }));
     } else {
       if (!this.state.isError) {
@@ -143,6 +146,11 @@ class Signature2 extends React.Component {
           <h6 style={{ textAlign: "center" }}>
             {this.props.data.position || "Placeholder Text"}
           </h6>
+          {this.state.signedDateTime && (
+            <div style={{ textAlign: "center" }}>
+              {formatDate(this.state.signedDateTime)}
+            </div>
+          )}
         </div>
       </div>
     );
