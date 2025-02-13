@@ -1,4 +1,3 @@
-
 import dayjs from "dayjs";
 import utc from 'dayjs/plugin/utc';
 import buddhistEra from 'dayjs/plugin/buddhistEra';
@@ -20,22 +19,22 @@ const dateFormatList = {
 };
 
 export const getDateFormat = () => {
-  const key = dateFormatList[localStorage.getItem(keyDateFormat)];
-  return key || "DD MMMM YYYY";
+  return dateFormatList[localStorage.getItem(keyDateFormat)] || "DD MMMM YYYY";
 };
 
 export const getCalendarType = () => {
-  var key = localStorage.getItem(keyCalendarType);
-  return key || "EN";
+  return localStorage.getItem(keyCalendarType) || "EN";
 };
 
 export const formatDate = (date) => {
-  if (!date) return "";;
-  
+  if (!date) return "";
+
+  const format = getDateFormat();
+
   if (getCalendarType() === "EN") {
-    return dayjs(date).utc(true).format(getDateFormat());
+    return dayjs(date).utc(true).format(format);
   } else {
-    // Convert to Buddhist calendar (add 543 years)
-    return dayjs(date).utc(true).getDateFormat().replace('YYYY', 'BBBB');
+    // Use Buddhist Era (BBBB) formatting
+    return dayjs(date).utc(true).format(format.replace("YYYY", "BBBB"));
   }
-}
+};
