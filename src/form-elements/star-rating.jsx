@@ -249,9 +249,7 @@ export default class StarRating extends React.Component {
       <span className="react-star-rating">
         <span ref={c => this.rootNode = c} style={{ cursor: 'pointer' }} className={classes}>
           {starRating}
-          <input type="hidden" name={this.props.name} value={this.state.ratingCache.rating} style={{ display: 'none !important' }} min={this.min} max={this.max} readOnly style={{
-            width: 65,
-          }}/>
+          <input type="hidden" name={this.props.name} value={this.state.ratingCache.rating} style={{ display: 'none', width: 65 }} min={this.min} max={this.max} readOnly/>
         </span>
       </span>
     );
