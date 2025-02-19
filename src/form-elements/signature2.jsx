@@ -1,6 +1,8 @@
 import React from "react";
 import ComponentHeader from "./component-header";
 import { formatDate } from "../functions/dateUtil";
+import dayjs from "dayjs";
+import utc from 'dayjs/plugin/utc';
 
 class Signature2 extends React.Component {
   constructor(props) {
@@ -58,7 +60,7 @@ class Signature2 extends React.Component {
         isSigned: !current.isSigned,
         signedPerson: !current.isSigned ? userProperties.name : "",
         signedPersonId: !current.isSigned ? userProperties.userId : "",
-        signedDateTime: !current.isSigned ? new Date().toLocaleString() : null,
+        signedDateTime: !current.isSigned ? dayjs().utc(true) : null,
       }));
     } else if (this.props.data.specificRole === "notSpecific") {
       this.setState((current) => ({
@@ -66,7 +68,7 @@ class Signature2 extends React.Component {
         isSigned: !current.isSigned,
         signedPerson: !current.isSigned ? userProperties.name : "",
         signedPersonId: !current.isSigned ? userProperties.userId : "",
-        signedDateTime: !current.isSigned ? new Date().toLocaleString() : null,
+        signedDateTime: !current.isSigned ? dayjs().utc(true) : null,
       }));
     } else {
       if (!this.state.isError) {
