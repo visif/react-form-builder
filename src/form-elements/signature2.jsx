@@ -2,7 +2,6 @@ import React from "react";
 import ComponentHeader from "./component-header";
 import { formatDate } from "../functions/dateUtil";
 import dayjs from "dayjs";
-import utc from 'dayjs/plugin/utc';
 
 class Signature2 extends React.Component {
   constructor(props) {
@@ -14,6 +13,7 @@ class Signature2 extends React.Component {
       isSigned: props.defaultValue && props.defaultValue.isSigned,
       signedPerson: props.defaultValue && props.defaultValue.signedPerson,
       signedPersonId: props.defaultValue && props.defaultValue.signedPersonId,
+      signedDateTime: props.defaultValue && props.defaultValue.signedDateTime,
       isError: false,
     };
   }
