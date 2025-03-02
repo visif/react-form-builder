@@ -14,6 +14,7 @@ import DynamicColumnList from "./dynamic-column-list";
 import FixedRowList from "./fixed-row-list";
 import { get } from "./stores/requests";
 import ID from "./UUID";
+import FormulaInput from "./form-elements/formula-input"; // Import the FormulaInput component
 
 const toolbar = {
   options: ["inline", "list", "textAlign", "fontSize", "link", "history"],
@@ -1088,6 +1089,15 @@ export default class FormElementsEdit extends React.Component {
               </div>
             )}
           </div>
+        )}
+        {this.props.element.hasOwnProperty("formula") && (
+          <FormulaInput
+            formula={this.props.element.formula}
+            variables={this.props.element.variables}
+            data={this.props.element}
+            updateElement={this.updateElement.bind(this)}
+            editElementProp={this.editElementProp.bind(this)}
+          />
         )}
       </div>
     );

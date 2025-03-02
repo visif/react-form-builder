@@ -126,6 +126,10 @@ export default class ReactForm extends React.Component {
         fileName: ref.state.fileName,
         blobUrl: ref.state.blobUrl,
       };
+    }else if (item.element === "FormulaInput") {
+      $item.value = {
+        formula: ref.state.formula,
+      };
     } else if (ref && ref.inputField && ref.inputField.current) {
       $item = ReactDOM.findDOMNode(ref.inputField.current);
       if ($item && typeof $item.value === "string") {
@@ -614,6 +618,7 @@ export default class ReactForm extends React.Component {
           case "RadioButtons":
           case "Rating":
           case "Tags":
+          case "FormulaInput":
           case "Range":
             return this.getInputElement(item);
           case "DataSource":

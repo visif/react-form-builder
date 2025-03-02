@@ -206,6 +206,14 @@ export default class Toolbar extends React.Component {
         field_name: "text_input_",
       },
       {
+        key: "FormulaInput", // Add FormulaInput to the default items
+        name: "Formula Input",
+        icon: "fas fa-calculator",
+        field_name: "formula_input_",
+        formula: "",
+        variables: {},
+      },
+      {
         key: "NumberInput",
         canHaveAnswer: true,
         name: "Number Input",
@@ -523,6 +531,9 @@ export default class Toolbar extends React.Component {
     }
 
     if (item.key === "FileUpload") {
+    }
+    if (item.key === "FormulaInput") {
+      elementOptions.formula = item.formula;
     }
 
     return elementOptions;

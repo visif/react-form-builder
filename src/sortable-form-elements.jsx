@@ -30,6 +30,7 @@ const {
   Section,
   FileUpload,
   ImageUpload,
+  FormulaInput
 } = BaseFormElements;
 
 const FormElements = {};
@@ -64,5 +65,6 @@ FormElements.Signature2 = SortableElement(Signature2);
 FormElements.DataSource = SortableElement(DataSource);
 FormElements.FileUpload = SortableElement(FileUpload);
 FormElements.ImageUpload = SortableElement(ImageUpload);
+FormElements.FormulaInput = SortableElement(FormulaInput);
 
 export default FormElements;
