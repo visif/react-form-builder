@@ -1,34 +1,33 @@
 /**
  * <ReactFormBuilder />
  */
-
-import React from "react";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import Preview from "./preview";
-import Toolbar from "./toolbar";
-import ReactFormGenerator from "./form";
-import store from "./stores/store";
-import Registry from "./stores/registry";
+import React from 'react'
+import { DndProvider } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
+import ReactFormGenerator from './form'
+import Preview from './preview'
+import Registry from './stores/registry'
+import store from './stores/store'
+import Toolbar from './toolbar'
 
 class ReactFormBuilder extends React.Component {
   constructor(props) {
-    super(props);
+    super(props)
 
     this.state = {
       editMode: false,
       editElement: null,
-    };
-    this.editModeOn = this.editModeOn.bind(this);
+    }
+    this.editModeOn = this.editModeOn.bind(this)
   }
 
   editModeOn(data, e) {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault()
+    e.stopPropagation()
     if (this.state.editMode) {
-      this.setState({ editMode: !this.state.editMode, editElement: null });
+      this.setState({ editMode: !this.state.editMode, editElement: null })
     } else {
-      this.setState({ editMode: !this.state.editMode, editElement: data });
+      this.setState({ editMode: !this.state.editMode, editElement: data })
     }
   }
 
@@ -37,34 +36,34 @@ class ReactFormBuilder extends React.Component {
       this.setState({
         editMode: false,
         editElement: null,
-      });
+      })
     }
   }
 
   render() {
     const toolbarProps = {
       showDescription: this.props.show_description,
-    };
+    }
     if (this.props.toolbarItems) {
-      toolbarProps.items = this.props.toolbarItems;
+      toolbarProps.items = this.props.toolbarItems
     }
     return (
       <DndProvider backend={HTML5Backend}>
-        <div className="react-form-builder clearfix" style={{ height: "100%" }}>
+        <div className="react-form-builder clearfix" style={{ height: '100%' }}>
           <div
             style={{
-              display: "flex",
-              height: "100%",
-              overflow: "hidden",
-              position: "relative",
+              display: 'flex',
+              height: '100%',
+              overflow: 'hidden',
+              position: 'relative',
             }}
           >
             <div
               style={{
                 flex: 1,
-                overflowY: "auto",
-                height: "100%",
-                scrollbarWidth: "none",
+                overflowY: 'auto',
+                height: '100%',
+                scrollbarWidth: 'none',
               }}
             >
               <Preview
@@ -91,58 +90,50 @@ class ReactFormBuilder extends React.Component {
                 getFormContent={this.props.getFormContent}
                 getActiveUserProperties={() => {
                   return {
-                    name: "test",
-                    userId: "id001",
-                  };
+                    name: 'test',
+                    userId: 'id001',
+                  }
                 }}
                 onUploadFile={(file) => {
-                  return `${file.name}-${Math.random() * 10000000}`;
+                  return `${file.name}-${Math.random() * 10000000}`
                 }}
                 onUploadImage={(file) => {
-                  return `path/${file.name}-${Math.random() * 10000000}`;
+                  return `path/${file.name}-${Math.random() * 10000000}`
                 }}
                 onDownloadFile={(file) => {
-                  return `download_${file.name}-${Math.random() * 10000000}`;
+                  return `download_${file.name}-${Math.random() * 10000000}`
                 }}
               />
             </div>
             <div
               style={{
-                width: "300px",
-                position: "fixed",
+                width: '300px',
+                position: 'fixed',
                 top: 0,
                 right: 0,
                 bottom: 0,
-                overflowY: "auto",
-                position: "sticky",
-                paddingLeft: "15px",
-                height: "100%",
-                scrollbarWidth: "none",
+                overflowY: 'auto',
+                position: 'sticky',
+                paddingLeft: '15px',
+                height: '100%',
+                scrollbarWidth: 'none',
               }}
             >
-              <Toolbar
-                {...toolbarProps}
-                customItems={this.props.customToolbarItems}
-              />
+              <Toolbar {...toolbarProps} customItems={this.props.customToolbarItems} />
             </div>
           </div>
         </div>
       </DndProvider>
-    );
+    )
   }
 }
 
-const FormBuilders = {};
-FormBuilders.ReactFormBuilder = ReactFormBuilder;
-FormBuilders.ReactFormGenerator = ReactFormGenerator;
-FormBuilders.ElementStore = store;
-FormBuilders.Registry = Registry;
+const FormBuilders = {}
+FormBuilders.ReactFormBuilder = ReactFormBuilder
+FormBuilders.ReactFormGenerator = ReactFormGenerator
+FormBuilders.ElementStore = store
+FormBuilders.Registry = Registry
 
-export default FormBuilders;
+export default FormBuilders
 
-export {
-  ReactFormBuilder,
-  ReactFormGenerator,
-  store as ElementStore,
-  Registry,
-};
+export { ReactFormBuilder, ReactFormGenerator, store as ElementStore, Registry }

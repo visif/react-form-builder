@@ -1,12 +1,12 @@
 /* eslint-disable no-use-before-define */
 function regg() {
-  const registry = {};
+  const registry = {}
 
   const self = {
     register,
     list,
     get,
-  };
+  }
 
   /**
    * Registers a entry and make it read only
@@ -15,35 +15,35 @@ function regg() {
    */
   function register(name, entry) {
     if (!name) {
-      throw new Error('You must provide a valid name for this entry.');
+      throw new Error('You must provide a valid name for this entry.')
     }
 
     if (registry[name] !== undefined) {
-      throw new Error(`'${name}' already registered`);
+      throw new Error(`'${name}' already registered`)
     }
 
     if (!entry) {
-      throw new Error(`You must provide something to register as '${name}'`);
+      throw new Error(`You must provide something to register as '${name}'`)
     }
 
-    registry[name] = entry;
+    registry[name] = entry
 
-    return self;
+    return self
   }
 
   function get(name) {
     // eslint-disable-next-line no-prototype-builtins
     if (!registry.hasOwnProperty(name)) {
-      console.error(`No such entry '${name}'`);
+      console.error(`No such entry '${name}'`)
     }
-    return registry[name];
+    return registry[name]
   }
 
   function list() {
-    return Object.keys(registry);
+    return Object.keys(registry)
   }
 
-  return self;
+  return self
 }
 
-module.exports = regg();
+module.exports = regg()

@@ -1,17 +1,21 @@
 {
   "parser": "babel-eslint",
-  "extends": ["airbnb-base"],
-  "plugins": [
-    "react","prettier"
+  "extends": [
+    "airbnb",
+    "plugin:react/recommended",
+    "plugin:jsx-a11y/recommended",
+    "plugin:import/errors",
+    "plugin:import/warnings"
   ],
+  "plugins": ["react", "jsx-a11y", "import"],
   "globals": {
     "window": true,
     "document": true,
     "navigator": true
   },
   "rules": {
-    "max-len": [1, 180, 2, {"ignoreComments": true}],
-    "semi": [2, "always"],
+    "max-len": [1, 180, 2, { "ignoreComments": true }],
+    "semi": [2, "never"],
     "comma-dangle": "warn",
     "camelcase": "warn",
     "prefer-destructuring": "warn",
@@ -22,11 +26,13 @@
     "class-methods-use-this": "off",
     "arrow-parens": "off",
     "indent": "off",
-    "no-plusplus": "off",   
-    "no-return-assign": "off", 
+    "no-plusplus": "off",
+    "no-return-assign": "off",
+    "object-curly-newline": "off",
     "no-prototype-builtins": "warn",
     "react/jsx-uses-vars": [2],
-    "react/jsx-uses-react": 1
+    "react/jsx-uses-react": 1,
+    "react/react-in-jsx-scope": "off"
   },
   "settings": {
     "import/resolver": {

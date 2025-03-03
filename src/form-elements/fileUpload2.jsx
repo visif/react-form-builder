@@ -1,124 +1,119 @@
-import React from "react";
-import ComponentHeader from "./component-header";
+import React from 'react'
+import ComponentHeader from './component-header'
 
 class FileUpload extends React.Component {
   constructor(props) {
-    super(props);
-    this.inputField = React.createRef(null);
+    super(props)
+    this.inputField = React.createRef(null)
 
-    const fileList = (props.defaultValue && props.defaultValue.fileList) || [];
+    const fileList = (props.defaultValue && props.defaultValue.fileList) || []
 
     this.state = {
       defaultValue: props.defaultValue && props.defaultValue.fileList,
       fileList: [...fileList],
-    };
+    }
   }
 
   static getDerivedStateFromProps = (props, state) => {
-    console.log("FileUpload >> getDerivedStateFromProps");
-    console.log(props.defaultValue);
+    console.log('FileUpload >> getDerivedStateFromProps')
+    console.log(props.defaultValue)
     if (
       props.defaultValue &&
-      JSON.stringify(props.defaultValue.fileList) !==
-      JSON.stringify(state.defaultValue)
+      JSON.stringify(props.defaultValue.fileList) !== JSON.stringify(state.defaultValue)
     ) {
-      const fileList =
-        (props.defaultValue && props.defaultValue.fileList) || [];
+      const fileList = (props.defaultValue && props.defaultValue.fileList) || []
       return {
         defaultValue: props.defaultValue && props.defaultValue.fileList,
         fileList: [...fileList],
-      };
+      }
     }
 
-    return state;
-  };
+    return state
+  }
 
   onRemoveFile = (file) => {
     this.setState((current) => {
       const remainList = current.fileList.filter(
         (item) => item.fileName !== file.fileName
-      );
+      )
       return {
         fileList: [...remainList],
-      };
-    });
-  };
+      }
+    })
+  }
 
   uploadAttachFile = async (file) => {
-    if (typeof this.props.onUploadFile !== "function") {
-      console.log(
-        "FileUpload >>>>> not upload function found",
-        this.props.onUploadFile
-      );
-      return;
+    if (typeof this.props.onUploadFile !== 'function') {
+      console.log('FileUpload >>>>> not upload function found', this.props.onUploadFile)
+      return
     }
 
-    console.log("Uploading file.....");
-    const fileName = await this.props.onUploadFile(file);
+    console.log('Uploading file.....')
+    const fileName = await this.props.onUploadFile(file)
     return {
       originalName: file.name,
       fileName,
-    };
-  };
+    }
+  }
 
   onUploadMultipleFiles = async (event) => {
-    event.persist();
+    event.persist()
 
     if (!event || !event.target || !event.target.files) {
-      return;
+      return
     }
 
-    const newFileList = Array.from(event.target.files);
-    const newResponse = [];
+    const newFileList = Array.from(event.target.files)
+    const newResponse = []
     for (let i = 0; i < newFileList.length; i = i + 1) {
-      const currentFile = newFileList[i];
-      const response = await this.uploadAttachFile(currentFile);
+      const currentFile = newFileList[i]
+      const response = await this.uploadAttachFile(currentFile)
       if (response) {
-        newResponse.push(response);
+        newResponse.push(response)
       }
     }
 
     this.setState((current) => {
       return {
         fileList: [...current.fileList, ...newResponse],
-      };
-    });
-  };
+      }
+    })
+  }
 
   onDownloadFile = async (file) => {
-    if (typeof this.props.onDownloadFile !== "function") {
+    if (typeof this.props.onDownloadFile !== 'function') {
       console.log(
-        "FileUpload >>>>> no download function found",
+        'FileUpload >>>>> no download function found',
         this.props.onDownloadFile
-      );
-      return;
+      )
+      return
     }
 
-    console.log("Downloading File file.....");
-    await this.props.onDownloadFile(file);
-    console.log("download filtPath: ", file);
+    console.log('Downloading File file.....')
+    await this.props.onDownloadFile(file)
+    console.log('download filtPath: ', file)
 
     if (!isSameEditor) {
-      props.disabled = "disabled";
+      props.disabled = 'disabled'
     }
-  };
+  }
 
   render() {
     const userProperties =
-      this.props.getActiveUserProperties &&
-      this.props.getActiveUserProperties();
+      this.props.getActiveUserProperties && this.props.getActiveUserProperties()
 
-    const savedEditor = this.props.editor;
-    let isSameEditor = true;
+    const savedEditor = this.props.editor
+    let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId;
+      isSameEditor = userProperties.userId === savedEditor.userId
     }
 
     return (
       <div
         ref={this.tableRef}
-        className={`SortableItem rfb-item${this.props.data.pageBreakBefore ? " alwaysbreak" : ""
-          }`}
+        className={`SortableItem rfb-item${
+          this.props.data.pageBreakBefore ? ' alwaysbreak' : ''
+        }`}
       >
         <ComponentHeader {...this.props} />
         <div className="form-group">
@@ -129,7 +124,7 @@ class FileUpload extends React.Component {
               type="file"
               name="fileUpload"
               title=" "
-              style={{ display: "none" }}
+              style={{ display: 'none' }}
               onChange={this.onUploadMultipleFiles}
               disabled={!isSameEditor}
             />
@@ -138,8 +133,8 @@ class FileUpload extends React.Component {
               style={{ marginTop: 6 }}
               className="btn btn-secondary"
               onClick={(e) => {
-                e.preventDefault();
-                this.inputField && this.inputField.current.click();
+                e.preventDefault()
+                this.inputField && this.inputField.current.click()
               }}
             >
               Upload files
@@ -147,10 +142,10 @@ class FileUpload extends React.Component {
             {this.state.fileList && this.state.fileList.length > 0 && (
               <ul
                 style={{
-                  display: "flex",
-                  maxWidth: "450px",
-                  flexDirection: "column",
-                  marginTop: "1rem",
+                  display: 'flex',
+                  maxWidth: '450px',
+                  flexDirection: 'column',
+                  marginTop: '1rem',
                 }}
               >
                 {this.state.fileList.map((file, index) => {
@@ -158,42 +153,42 @@ class FileUpload extends React.Component {
                     <li
                       key={`file${index}`}
                       style={{
-                        listStyleType: "none",
+                        listStyleType: 'none',
                         fontSize: 16,
-                        display: "block",
+                        display: 'block',
                       }}
                     >
                       <span
-                        style={{ float: "left", cursor: "pointer" }}
+                        style={{ float: 'left', cursor: 'pointer' }}
                         onClick={() => {
-                          this.onDownloadFile(file);
+                          this.onDownloadFile(file)
                         }}
                       >
-                        <span style={{ marginRight: 4 }}>{index + 1}.</span>{" "}
+                        <span style={{ marginRight: 4 }}>{index + 1}.</span>{' '}
                         {file.originalName}
                       </span>
                       <span
                         style={{
-                          float: "right",
-                          cursor: "pointer",
-                          marginTop: 4
+                          float: 'right',
+                          cursor: 'pointer',
+                          marginTop: 4,
                         }}
                         onClick={() => {
-                          this.onRemoveFile(file);
+                          this.onRemoveFile(file)
                         }}
                       >
                         <i className="fas fa-trash"></i>
                       </span>
                     </li>
-                  );
+                  )
                 })}
               </ul>
             )}
           </div>
         </div>
       </div>
-    );
+    )
   }
 }
 
-export default FileUpload;
+export default FileUpload
