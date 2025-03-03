@@ -1091,13 +1091,19 @@ export default class FormElementsEdit extends React.Component {
           </div>
         )}
         {this.props.element.hasOwnProperty("formula") && (
-          <FormulaInput
-            formula={this.props.element.formula}
-            variables={this.props.element.variables}
-            data={this.props.element}
-            updateElement={this.updateElement.bind(this)}
-            editElementProp={this.editElementProp.bind(this)}
-          />
+          <div className="form-group">
+            <label className="control-label" htmlFor="rowInput">
+              Formula
+            </label>
+            <input
+              id="formula"
+              type="text"
+              className="form-control"
+              defaultValue={this.props.element.formula}
+              onBlur={this.updateElement.bind(this)}
+              onChange={this.editElementProp.bind(this, "formula", "value")}
+            />
+          </div>
         )}
       </div>
     );

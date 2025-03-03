@@ -208,10 +208,10 @@ export default class Toolbar extends React.Component {
       {
         key: "FormulaInput", // Add FormulaInput to the default items
         name: "Formula Input",
+        label: "Placeholder Label",
         icon: "fas fa-calculator",
         field_name: "formula_input_",
         formula: "",
-        variables: {},
       },
       {
         key: "NumberInput",
