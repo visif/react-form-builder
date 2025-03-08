@@ -44,6 +44,7 @@
     "es6-promise": "^4.2.8",
     "fbemitter": "^3.0.0",
     "file-loader": "^6.2.0",
+    "hot-formula-parser": "^4.0.0",
     "immutability-helper": "^3.1.1",
     "isomorphic-fetch": "^3.0.0",
     "lodash-es": "^4.17.21",
@@ -75,6 +76,7 @@
     "@babel/preset-env": "^7.12.11",
     "@babel/preset-react": "^7.14.5",
     "@babel/runtime-corejs2": "^7.12.5",
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "add": "^2.0.6",
     "babel-eslint": "^10.1.0",
     "babel-loader": "^8.2.2",
@@ -88,6 +90,7 @@
     "eslint-plugin-react": "^7.22.0",
     "express": "^4.17.1",
     "multer": "^1.4.2",
+    "prettier": "^3.5.3",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
     "rimraf": "^3.0.2",
@@ -110,6 +113,7 @@
     "start": "webpack-dev-server --hot --inline --mode development",
     "serve:api": "node server/index.js",
     "pretranspile": "rimraf lib",
-    "transpile": "babel --out-dir lib src --copy-files"
+    "transpile": "babel --out-dir lib src --copy-files",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
   }
 }

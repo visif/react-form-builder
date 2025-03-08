@@ -1,4 +1,4 @@
-import xss from 'xss';
+import xss from 'xss'
 
 const myxss = new xss.FilterXSS({
   whiteList: {
@@ -18,6 +18,6 @@ const myxss = new xss.FilterXSS({
     strong: [],
     span: ['style'],
   },
-});
+})
 
-export default myxss;
+export default myxss
