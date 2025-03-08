@@ -214,7 +214,7 @@ class DatePicker extends React.Component {
                 value={this.state.value ? dayjs(this.state.value).utc(true) : null}
                 className="form-control bold-date-picker"
                 format={(value) => this.formatDate(value, this.state.formatMask)}
-                showTime={showTimeSelect}
+                showTime={showTimeSelect? { format: "HH:mm", showSecond: false } : null}
                 disabled={!isSameEditor || this.state.loading}
                 placeholder={this.state.placeholder}
                 style={{ display: "inline-block", width: "auto" }}
@@ -229,6 +229,8 @@ class DatePicker extends React.Component {
                 disabled={!isSameEditor || this.state.loading}
                 placeholder={this.state.placeholder}
                 style={{ display: "inline-block", width: "auto" }}
+                format="HH:mm"
+                minuteStep={1}
               />
             )}
           </div>
