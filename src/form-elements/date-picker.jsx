@@ -1,5 +1,5 @@
 import React from "react";
-import { DatePicker as AntDatePicker } from "antd";
+import { DatePicker as AntDatePicker, TimePicker as AntTimePicker } from "antd";
 import dayjs from "dayjs";
 import ComponentHeader from "./component-header";
 import ComponentLabel from "./component-label";
@@ -22,9 +22,21 @@ const dateFormatList = {
   "MMM dd, yyyy": "MMM DD, YYYY",
 };
 
-export const getDateFormat = () => {
-  const key = dateFormatList[localStorage.getItem(keyDateFormat)];
-  return key || "DD MMMM YYYY";
+const dateTimeFormatList = {
+  "dd MMMM yyyy": "DD MMMM YYYY HH:MM",
+  "dd-MMM-yyyy": "DD-MMM-YYYY HH:MM",
+  "dd-MMM-yy": "DD-MMM-YY HH:MM",
+  "yyyy-MM-dd": "YYYY-MM-DD HH:MM",
+  "MM/dd/yyyy": "MM/DD/YYYY HH:MM",
+  "dd/MM/yyyy": "DD/MM/YYYY HH:MM",
+  "MMM dd, yyyy": "MMM DD, YYYY HH:MM",
+};
+
+export const getDateFormat = (showTimeSelect) => {
+  const key = showTimeSelect 
+    ? dateTimeFormatList[localStorage.getItem(keyDateFormat)] 
+    : dateFormatList[localStorage.getItem(keyDateFormat)];
+  return key || (showTimeSelect ? "DD MMMM YYYY HH:MM" : "DD MMMM YYYY");
 };
 
 export const getCalendarType = () => {
@@ -87,6 +99,14 @@ class DatePicker extends React.Component {
     });
   };
 
+  handleTimeChange = (time) => {
+    const isoTime = time ? time.toISOString() : null;
+    this.setState({
+      value: isoTime,
+      placeholder: "HH:MM",
+    });
+  };
+
   static getDerivedStateFromProps(props, state) {
     if (props.defaultValue && props.defaultValue !== state.defaultValue) {
       const { formatMask } = DatePicker.updateFormat(props, null);
@@ -96,7 +116,7 @@ class DatePicker extends React.Component {
   }
 
   static updateFormat(props, oldFormatMask) {
-    const formatMask = getDateFormat();
+    const formatMask = getDateFormat(props.data.showTimeSelect);
     const updated = formatMask !== oldFormatMask;
     return { updated, formatMask };
   }
@@ -142,7 +162,7 @@ class DatePicker extends React.Component {
   }
 
   render() {
-    const { showTimeSelect } = this.props.data;
+    const { showTimeSelect, showTimeSelectOnly } = this.props.data;
     const userProperties = this.props.getActiveUserProperties && this.props.getActiveUserProperties();
     
     const savedEditor = this.props.editor;
@@ -186,7 +206,7 @@ class DatePicker extends React.Component {
                 disabled={!isSameEditor}
                 className="form-control"
               />
-            ) : (
+            ) : !showTimeSelectOnly ? (
               <AntDatePicker
                 name={props.name}
                 ref={props.ref}
@@ -195,6 +215,17 @@ class DatePicker extends React.Component {
                 className="form-control bold-date-picker"
                 format={(value) => this.formatDate(value, this.state.formatMask)}
                 showTime={showTimeSelect}
+                disabled={!isSameEditor || this.state.loading}
+                placeholder={this.state.placeholder}
+                style={{ display: "inline-block", width: "auto" }}
+              />
+            ) : (
+              <AntTimePicker
+                name={props.name}
+                ref={props.ref}
+                onChange={this.handleTimeChange}
+                value={this.state.value ? dayjs(this.state.value).utc(true) : null}
+                className="form-control bold-time-picker"
                 disabled={!isSameEditor || this.state.loading}
                 placeholder={this.state.placeholder}
                 style={{ display: "inline-block", width: "auto" }}
