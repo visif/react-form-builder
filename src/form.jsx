@@ -1,5 +1,5 @@
 /**
- * <Form />
+ * <Form Generator/>
  */
 import React from 'react'
 import ReactDOM from 'react-dom'
@@ -479,6 +479,10 @@ export default class ReactForm extends React.Component {
     return item
   }
 
+  handleChange = (propKey, value) => {
+    console.log('handleChange', propKey, value)
+  }
+
   getInputElement(item) {
     if (item.custom) {
       return this.getCustomElement(item)
@@ -534,6 +538,7 @@ export default class ReactForm extends React.Component {
       defaultValue: this._getDefaultValue(item),
       ref: (c) => (this.inputs[item.field_name] = c),
     }
+
     return (
       <CustomElement
         mutable={true}
