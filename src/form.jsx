@@ -481,6 +481,7 @@ export default class ReactForm extends React.Component {
 
   handleChange = (propKey, value) => {
     console.log('handleChange', propKey, value)
+    this.emitter.emit('variableChange', { propKey, value })
   }
 
   getInputElement(item) {
@@ -506,6 +507,8 @@ export default class ReactForm extends React.Component {
         onDownloadFile={this.props.onDownloadFile}
         onUploadImage={this.props.onUploadImage}
         getFormSource={this.props.getFormSource}
+        broadcastChange={this.broadcastChange}
+        emitter={this.emitter}
       />
     )
   }
@@ -608,6 +611,7 @@ export default class ReactForm extends React.Component {
                 editor={this._getEditor(item)}
                 getDataSource={this.props.getDataSource}
                 getActiveUserProperties={this.props.getActiveUserProperties}
+                emitter={this.emitter}
               />
             )
           case 'CustomElement':
