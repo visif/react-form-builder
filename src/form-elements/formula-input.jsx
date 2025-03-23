@@ -6,26 +6,28 @@ import ComponentLabel from './component-label'
 class FormulaInput extends Component {
   constructor(props) {
     super(props)
-    this.state = {
-      // formula: props.data.formula,
-      error: '', // Error message from the parser
-      variables: {}, // Variables to pass into parser.
-      value: '', // The value of the formula
+
+    let newValue = ''
+    if (props.data?.formula && props.variables) {
+      const parser = new Parser()
+      Object.entries(props.variables).forEach(([key, value]) => {
+        const parsedValue = parseFloat(value)
+        if (!Number.isNaN(parsedValue)) {
+          parser.setVariable(key, parsedValue)
+        }
+      })
+      newValue = parser.parse(props.data.formula)?.result || ''
     }
-    this.parser = new Parser()
+
+    this.state = {
+      error: '',
+      formula: props.data?.formula || '',
+      variables: props.variables || {},
+      value: newValue,
+    }
+
     this.handleVariableChange = this.handleVariableChange.bind(this)
   }
-
-  // componentDidMount() {
-  //   this.setVariables()
-  //   this.handleChange()
-  //   if (this.props.emitter && typeof this.props.emitter.on === 'function') {
-  //     this.subscription = this.props.emitter.addListener(
-  //       'formValidation',
-  //       this.handleFormValidation
-  //     )
-  //   }
-  // }
 
   componentDidMount() {
     this.subscription = this.props.emitter?.addListener(
@@ -38,63 +40,50 @@ class FormulaInput extends Component {
     this.subscription?.remove()
   }
 
-  componentDidUpdate(prevProps) {
+  static getDerivedStateFromProps(props, state) {
     if (
-      prevProps.formula !== this.props.formula ||
-      JSON.stringify(prevProps.variables) !== JSON.stringify(this.props.variables)
+      props.data.formula !== state.formula ||
+      JSON.stringify(props.variables) !== JSON.stringify(state.variables)
     ) {
-      // this.setVariables()
-      // this.handleChange()
+      if (props.variables) {
+        const parser = new Parser()
+        const newVariables = { ...state.variables, ...props.variables }
+        Object.entries(newVariables).forEach(([key, value]) => {
+          const parsedValue = parseFloat(value)
+          if (!Number.isNaN(parsedValue)) {
+            parser.setVariable(key, parsedValue)
+          }
+        })
+        return {
+          ...state,
+          variables: newVariables,
+          value: parser.parse(props.data.formula)?.result || '',
+        }
+      }
     }
+
+    return state
   }
 
-  // setVariables() {
-  //   this.parser.setVariable('ERROR', '')
-  //   // Set the variables from props
-  //   if (this.props.variables) {
-  //     Object.entries(this.props.variables).forEach(([key, value]) => {
-  //       // Check if the value is numeric before setting it as a variable
-  //       const parsedValue = parseFloat(value)
-  //       if (!isNaN(parsedValue)) {
-  //         this.parser.setVariable(key, parsedValue)
-  //       } else {
-  //         this.parser.setVariable('ERROR', `variable ${key} is not a number`)
-  //       }
-  //     })
-  //   }
-  // }
-
-  // handleChange = () => {
-  //   const formula = this.props.formula?.trim() // Ensure it's a valid string
-  //   if (!formula) {
-  //     this.setState({ error: '', formula: '' })
-  //     return
-  //   }
-
-  //   const result = this.parser.parse(formula)
-  //   if (result.error || this.parser.getVariable('ERROR')) {
-  //     this.setState({
-  //       error: result.error || this.parser.getVariable('ERROR'),
-  //       formula: '',
-  //     })
-  //   } else {
-  //     this.setState({ error: '', formula: result.result })
-  //   }
-  // }
-
   handleVariableChange(params) {
-    const { formula } = this.props.data
+    const { formula } = this.state
     if (!formula) {
       errors.push(`${this.props.data.label} is invalid!`)
       return
     }
 
+    const parser = new Parser()
     const parsedValue = parseFloat(params.value)
+    let newVariables = { ...this.state.variables }
     if (!Number.isNaN(parsedValue)) {
-      this.parser.setVariable([params.propKey], parsedValue)
+      newVariables = { ...this.state.variables, [params.propKey]: parsedValue }
+      Object.entries(newVariables).forEach(([key, value]) => {
+        if (!Number.isNaN(value)) {
+          parser.setVariable(key, value)
+        }
+      })
     }
-    const newValue = this.parser.parse(formula)?.result || ''
-    const newVariables = { ...this.state.variables, [params.propKey]: params.value }
+    const newValue = parser.parse(formula)?.result || ''
 
     this.setState((prevState) => ({
       ...prevState,

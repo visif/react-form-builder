@@ -46,15 +46,36 @@ export default class ReactForm extends React.Component {
     super(props)
     this.emitter = new EventEmitter()
     this.getDataById = this.getDataById.bind(this)
+    const ansData = convert(props.answer_data)
     this.state = {
-      answerData: convert(props.answer_data),
+      answerData: ansData,
+      variables: this._getVariableValue(ansData, props.data),
     }
   }
 
   static getDerivedStateFromProps(props) {
+    const ansData = convert(props.answer_data)
+
     return {
-      answerData: convert(props.answer_data),
+      answerData: ansData,
+      variables: ReactForm.prototype._getVariableValue.call(
+        { props },
+        ansData,
+        props.data
+      ),
     }
+  }
+
+  _getVariableValue(ansData, items) {
+    const formularItems = items.filter((item) => !!item.formularKey)
+    const variables = {}
+    formularItems.forEach((item) => {
+      const value = ansData[item.field_name]
+      if (value !== undefined) {
+        variables[item.formularKey] = value
+      }
+    })
+    return variables
   }
 
   _getDefaultValue(item) {
@@ -480,7 +501,6 @@ export default class ReactForm extends React.Component {
   }
 
   handleChange = (propKey, value) => {
-    console.log('handleChange', propKey, value)
     this.emitter.emit('variableChange', { propKey, value })
   }
 
@@ -509,6 +529,7 @@ export default class ReactForm extends React.Component {
         getFormSource={this.props.getFormSource}
         broadcastChange={this.broadcastChange}
         emitter={this.emitter}
+        variables={this.state.variables}
       />
     )
   }

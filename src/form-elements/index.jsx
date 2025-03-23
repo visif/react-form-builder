@@ -194,8 +194,6 @@ class NumberInput extends React.Component {
     const { data, handleChange } = this.props
     const { formularKey } = data
     if (formularKey && handleChange) {
-      console.log('formularKey', formularKey)
-      console.log('e.target.value', e.target.value)
       handleChange(formularKey, e.target.value)
     }
   }
@@ -316,8 +314,6 @@ class Dropdown extends React.Component {
     const { data, handleChange } = this.props
     const { formularKey } = data
     if (formularKey && handleChange) {
-      console.log('formularKey', formularKey)
-      console.log('e.target.value', constValue)
       handleChange(formularKey, constValue)
     }
   }
