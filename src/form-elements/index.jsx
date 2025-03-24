@@ -128,6 +128,17 @@ class TextInput extends React.Component {
   constructor(props) {
     super(props)
     this.inputField = React.createRef()
+    this.handleChange = this.handleChange.bind(this)
+  }
+
+  handleChange(e) {
+    const { data, handleChange } = this.props
+    const { formularKey } = data
+    if (formularKey && handleChange) {
+      console.log('formularKey', formularKey)
+      console.log('e.target.value', e.target.value)
+      handleChange(formularKey, e.target.value)
+    }
   }
 
   render() {
@@ -144,6 +155,8 @@ class TextInput extends React.Component {
     props.type = 'text'
     props.className = 'form-control'
     props.name = this.props.data.field_name
+    props.onChange = this.handleChange
+
     if (this.props.mutable) {
       props.defaultValue = this.props.defaultValue
       props.ref = this.inputField
@@ -174,6 +187,15 @@ class NumberInput extends React.Component {
   constructor(props) {
     super(props)
     this.inputField = React.createRef()
+    this.handleChange = this.handleChange.bind(this)
+  }
+
+  handleChange(e) {
+    const { data, handleChange } = this.props
+    const { formularKey } = data
+    if (formularKey && handleChange) {
+      handleChange(formularKey, e.target.value)
+    }
   }
 
   render() {
@@ -190,15 +212,12 @@ class NumberInput extends React.Component {
     props.type = 'number'
     props.className = 'form-control'
     props.name = this.props.data.field_name
+    props.onChange = this.handleChange
 
     if (this.props.mutable) {
       props.defaultValue = this.props.defaultValue
       props.ref = this.inputField
     }
-
-    //if (this.props.read_only) {
-    //  props.disabled = "disabled";
-    //}
 
     if (this.props.read_only || !isSameEditor) {
       props.disabled = 'disabled'
@@ -289,7 +308,14 @@ class Dropdown extends React.Component {
   }
 
   handleChange = (e) => {
-    this.setState({ value: e.target.value })
+    const constValue = e.target.value
+    this.setState({ value: constValue })
+
+    const { data, handleChange } = this.props
+    const { formularKey } = data
+    if (formularKey && handleChange) {
+      handleChange(formularKey, constValue)
+    }
   }
 
   render() {
@@ -708,6 +734,9 @@ class RadioButtons extends React.Component {
       baseClasses += ' alwaysbreak'
     }
 
+    const { data, handleChange } = this.props
+    const { formularKey } = data
+
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
@@ -726,14 +755,10 @@ class RadioButtons extends React.Component {
             if (self.props.mutable) {
               props.checked = answerItem?.value ?? false
             }
-            //if (this.props.read_only) {
-            //  props.disabled = "disabled";
-            //}
+
             if (this.props.read_only || !isSameEditor) {
               props.disabled = 'disabled'
             }
-
-            console.log('Radio =>> ', props)
 
             return (
               <div
@@ -751,6 +776,12 @@ class RadioButtons extends React.Component {
                   }}
                   onChange={() => {
                     self.setState((current) => {
+                      if (formularKey && handleChange) {
+                        console.log('formularKey', formularKey)
+                        console.log('option.value', option.value)
+                        handleChange(formularKey, option.value)
+                      }
+
                       return {
                         ...current,
                         value: [

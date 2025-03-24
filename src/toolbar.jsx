@@ -164,6 +164,7 @@ export default class Toolbar extends React.Component {
         label: 'Placeholder Label',
         field_name: 'dropdown_',
         options: [],
+        formularKey: '',
       },
       {
         key: 'Tags',
@@ -193,6 +194,7 @@ export default class Toolbar extends React.Component {
         label: 'Placeholder Label',
         field_name: 'radiobuttons_',
         options: [],
+        formularKey: '',
       },
       {
         key: 'TextInput',
@@ -201,6 +203,7 @@ export default class Toolbar extends React.Component {
         label: 'Placeholder Label',
         icon: 'fas fa-font',
         field_name: 'text_input_',
+        formularKey: '',
       },
       {
         key: 'FormulaInput', // Add FormulaInput to the default items
@@ -217,6 +220,7 @@ export default class Toolbar extends React.Component {
         label: 'Placeholder Label',
         icon: 'fas fa-plus',
         field_name: 'number_input_',
+        formularKey: '',
       },
       {
         key: 'TextArea',
@@ -523,8 +527,10 @@ export default class Toolbar extends React.Component {
       elementOptions.formField = item.formField || {}
     }
 
-    if (item.key === 'FileUpload') {
+    if (item.formularKey !== undefined) {
+      elementOptions.formularKey = item.formularKey
     }
+
     if (item.key === 'FormulaInput') {
       elementOptions.formula = item.formula
     }

@@ -6,7 +6,12 @@ const ComponentLabel = (props) => {
     props.data.hasOwnProperty('required') &&
     props.data.required === true &&
     !props.read_only
-  const labelText = myxss.process(props.data.label)
+
+  let labelText = myxss.process(props.data.label)
+  if (props.data.formularKey) {
+    labelText = `${labelText} (${props.data.formularKey})`
+  }
+
   return (
     <label className={props.className || ''}>
       <span dangerouslySetInnerHTML={{ __html: labelText }} />

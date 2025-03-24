@@ -1,5 +1,5 @@
 /**
- * <Form />
+ * <Form Generator/>
  */
 import React from 'react'
 import ReactDOM from 'react-dom'
@@ -46,15 +46,36 @@ export default class ReactForm extends React.Component {
     super(props)
     this.emitter = new EventEmitter()
     this.getDataById = this.getDataById.bind(this)
+    const ansData = convert(props.answer_data)
     this.state = {
-      answerData: convert(props.answer_data),
+      answerData: ansData,
+      variables: this._getVariableValue(ansData, props.data),
     }
   }
 
   static getDerivedStateFromProps(props) {
+    const ansData = convert(props.answer_data)
+
     return {
-      answerData: convert(props.answer_data),
+      answerData: ansData,
+      variables: ReactForm.prototype._getVariableValue.call(
+        { props },
+        ansData,
+        props.data
+      ),
     }
+  }
+
+  _getVariableValue(ansData, items) {
+    const formularItems = items.filter((item) => !!item.formularKey)
+    const variables = {}
+    formularItems.forEach((item) => {
+      const value = ansData[item.field_name]
+      if (value !== undefined) {
+        variables[item.formularKey] = value
+      }
+    })
+    return variables
   }
 
   _getDefaultValue(item) {
@@ -479,6 +500,10 @@ export default class ReactForm extends React.Component {
     return item
   }
 
+  handleChange = (propKey, value) => {
+    this.emitter.emit('variableChange', { propKey, value })
+  }
+
   getInputElement(item) {
     if (item.custom) {
       return this.getCustomElement(item)
@@ -502,6 +527,9 @@ export default class ReactForm extends React.Component {
         onDownloadFile={this.props.onDownloadFile}
         onUploadImage={this.props.onUploadImage}
         getFormSource={this.props.getFormSource}
+        broadcastChange={this.broadcastChange}
+        emitter={this.emitter}
+        variables={this.state.variables}
       />
     )
   }
@@ -534,6 +562,7 @@ export default class ReactForm extends React.Component {
       defaultValue: this._getDefaultValue(item),
       ref: (c) => (this.inputs[item.field_name] = c),
     }
+
     return (
       <CustomElement
         mutable={true}
@@ -603,6 +632,7 @@ export default class ReactForm extends React.Component {
                 editor={this._getEditor(item)}
                 getDataSource={this.props.getDataSource}
                 getActiveUserProperties={this.props.getActiveUserProperties}
+                emitter={this.emitter}
               />
             )
           case 'CustomElement':
