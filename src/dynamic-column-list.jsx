@@ -124,12 +124,13 @@ export default class DynamicColumnList extends React.Component {
                     onChange={this.editColumn.bind(this, index, 'type')}
                     onBlur={this.updateColumn.bind(this)}
                   >
-                    <option value="checkbox">Checkbox</option>
                     <option value="multiple">Multiple Choice</option>
                     <option value="text">Text Input</option>
+                    ฒ<option value="textarea">Multi-line Input</option>
                     <option value="number">Number Input</option>
                     <option value="date">Date</option>
                     <option value="signature">Signature</option>
+                    <option value="checkbox">Checkboxes</option>
                   </select>
                   <button
                     onClick={() => window.alert(`Column: ${option.text || 'Unnamed column'}`)}
