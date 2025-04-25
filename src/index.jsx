@@ -107,7 +107,7 @@ class ReactFormBuilder extends React.Component {
             </div>
             <div
               style={{
-                width: '300px',
+                width: '600px',
                 position: 'fixed',
                 top: 0,
                 right: 0,
