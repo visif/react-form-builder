@@ -18,6 +18,7 @@ const MultiColumnRow = (props) => {
     seq,
     className,
     index,
+    rows,
   } = props
 
   const { childItems = [], pageBreakBefore } = data // Default childItems to an empty array
@@ -56,16 +57,30 @@ const MultiColumnRow = (props) => {
   )
 }
 
-const createColumnRow =
-  (defaultClassName, numberOfColumns) =>
-  ({ data = {}, class_name, ...rest }) => {
+/**
+ * Creates a higher-order component (HOC) for rendering a multi-column row.
+ *
+ * @param {string} defaultClassName - The default CSS class name to apply to the row.
+ * @param {number} numberOfColumns - The number of columns to initialize in the row.
+ * @returns {Function} A React functional component that renders a `MultiColumnRow` with the specified properties.
+ *
+ * The returned component:
+ * - Accepts `data`, `class_name`, and other props.
+ * - Initializes `data.childItems` as an array of `numberOfColumns` elements if not already defined.
+ * - Sets `data.isContainer` to `true` if `data.childItems` is initialized.
+ * - Applies the provided `class_name` or falls back to `defaultClassName`.
+ */
+const createColumnRow = (defaultClassName, numberOfColumns, numberOfRows) => {
+  return ({ data = {}, class_name, ...rest }) => {
     const className = class_name || defaultClassName
+    const rows = data.rows || numberOfRows
     if (!data.childItems) {
       data.childItems = Array(numberOfColumns).fill(null)
       data.isContainer = true
     }
-    return <MultiColumnRow {...rest} className={className} data={data} />
+    return <MultiColumnRow {...rest} className={className} rows={rows} data={data} />
   }
+}
 
 const TwoColumnRow = createColumnRow('col-md-6', 2)
 const ThreeColumnRow = createColumnRow('col-md-4', 3)
