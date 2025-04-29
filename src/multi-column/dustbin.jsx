@@ -5,7 +5,19 @@ import CustomElement from '../form-elements/custom-element'
 import ItemTypes from '../ItemTypes'
 import Registry from '../stores/registry'
 
-function getCustomElement(item, props) {
+// Styles
+const dustbinStyles = (backgroundColor) => ({
+  border: '1px solid rgba(0,0,0,0.2)',
+  minHeight: '2rem',
+  minWidth: '12rem',
+  width: '100%',
+  backgroundColor,
+  padding: 0,
+  float: 'left',
+})
+
+// Helper Functions
+const renderCustomElement = (item, props) => {
   if (!item.component || typeof item.component !== 'function') {
     item.component = Registry.get(item.key)
     if (!item.component) {
@@ -15,10 +27,11 @@ function getCustomElement(item, props) {
   return <CustomElement {...props} mutable={false} key={`form_${item.id}`} data={item} />
 }
 
-function getElement(item, props) {
+const renderElement = (item, props) => {
   if (!item) return null
+
   const Element = item.custom
-    ? () => getCustomElement(item, props)
+    ? () => renderCustomElement(item, props)
     : FormElements[item.element || item.key]
 
   return (
@@ -28,19 +41,7 @@ function getElement(item, props) {
   )
 }
 
-function getStyle(backgroundColor) {
-  return {
-    border: '1px solid rgba(0,0,0,0.2)',
-    minHeight: '2rem',
-    minWidth: '12rem',
-    width: '100%',
-    backgroundColor,
-    padding: 0,
-    float: 'left',
-  }
-}
-
-function isContainer(item) {
+const isContainerItem = (item) => {
   if (item.itemType !== ItemTypes.CARD) {
     const { data } = item
     if (data) {
@@ -50,6 +51,7 @@ function isContainer(item) {
   return false
 }
 
+// Main Component
 const Dustbin = React.forwardRef(
   (
     {
@@ -59,6 +61,7 @@ const Dustbin = React.forwardRef(
       connectDropTarget,
       items,
       col,
+      row,
       getDataById,
       setAsChild,
       ...rest
@@ -66,6 +69,8 @@ const Dustbin = React.forwardRef(
     ref
   ) => {
     const item = getDataById(items[col])
+
+    // Handle drop operations
     useImperativeHandle(
       ref,
       () => ({
@@ -73,39 +78,40 @@ const Dustbin = React.forwardRef(
           if (dropped.data && typeof setAsChild === 'function') {
             const isNew = !dropped.data.id
             const data = isNew ? dropped.onCreate(dropped.data) : dropped.data
-            setAsChild(rest.data, data, col)
+            setAsChild(rest.data, data, row, col)
           }
         },
       }),
       [setAsChild, col, rest.data]
     )
 
-    let backgroundColor = 'rgba(0, 0, 0, .03)'
-    if (isOverCurrent || (isOver && greedy)) {
-      backgroundColor = 'darkgreen'
-    }
+    // Determine background color based on drag state
+    const backgroundColor =
+      isOverCurrent || (isOver && greedy) ? 'darkgreen' : 'rgba(0, 0, 0, .03)'
 
-    const element = getElement(item, rest)
-    return connectDropTarget(<div style={getStyle(backgroundColor)}>{element}</div>)
+    const element = renderElement(item, rest)
+
+    return connectDropTarget(<div style={dustbinStyles(backgroundColor)}>{element}</div>)
   }
 )
 
-export default DropTarget(
-  (props) => props.accepts,
-  {
-    drop(props, monitor, component) {
-      if (!component) return
+// Drop Target Configuration
+const dropTargetSpec = {
+  drop(props, monitor, component) {
+    if (!component) return
 
-      const item = monitor.getItem()
-      if (!isContainer(item)) {
-        component.onDrop(item)
-      }
-    },
+    const item = monitor.getItem()
+    if (!isContainerItem(item)) {
+      component.onDrop(item)
+    }
   },
-  (connect, monitor) => ({
-    connectDropTarget: connect.dropTarget(),
-    isOver: monitor.isOver(),
-    isOverCurrent: monitor.isOver({ shallow: true }),
-    canDrop: monitor.canDrop(),
-  })
-)(Dustbin)
+}
+
+const collect = (connect, monitor) => ({
+  connectDropTarget: connect.dropTarget(),
+  isOver: monitor.isOver(),
+  isOverCurrent: monitor.isOver({ shallow: true }),
+  canDrop: monitor.canDrop(),
+})
+
+export default DropTarget((props) => props.accepts, dropTargetSpec, collect)(Dustbin)

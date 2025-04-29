@@ -26,32 +26,38 @@ const MultiColumnRow = (props) => {
 
   return (
     <div className={baseClasses}>
-      <ComponentHeader {...props} /> {/* Pass all props to ComponentHeader */}
+      <ComponentHeader {...props} />
       <div>
-        <ComponentLabel {...props} /> {/* Pass data explicitly to ComponentLabel */}
-        <div className="row">
-          {childItems.map((item, columnIndex) => (
-            <div key={`${columnIndex}_${item || '_'}`} className={className}>
-              {controls ? (
-                controls[columnIndex]
-              ) : (
-                <Dustbin
-                  style={{ width: '100%' }}
-                  data={data}
-                  accepts={accepts}
-                  items={childItems}
-                  col={columnIndex}
-                  parentIndex={index}
-                  editModeOn={editModeOn}
-                  _onDestroy={() => removeChild(data, columnIndex)}
-                  getDataById={getDataById}
-                  setAsChild={setAsChild}
-                  seq={seq}
-                />
-              )}
-            </div>
-          ))}
-        </div>
+        <ComponentLabel {...props} />
+        {childItems.map((row, rowIndex) => (
+          <div key={`row_${rowIndex}`} className="row">
+            {row.map((item, columnIndex) => (
+              <div
+                key={`${rowIndex}_${columnIndex}_${item || '_'}`}
+                className={className}
+              >
+                {controls ? (
+                  controls[rowIndex]?.[columnIndex]
+                ) : (
+                  <Dustbin
+                    style={{ width: '100%' }}
+                    data={data}
+                    accepts={accepts}
+                    items={childItems[rowIndex]}
+                    row={rowIndex}
+                    col={columnIndex}
+                    parentIndex={index}
+                    editModeOn={editModeOn}
+                    _onDestroy={() => removeChild(data, rowIndex, columnIndex)}
+                    getDataById={getDataById}
+                    setAsChild={setAsChild}
+                    seq={seq}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -70,14 +76,21 @@ const MultiColumnRow = (props) => {
  * - Sets `data.isContainer` to `true` if `data.childItems` is initialized.
  * - Applies the provided `class_name` or falls back to `defaultClassName`.
  */
-const createColumnRow = (defaultClassName, numberOfColumns, numberOfRows) => {
+const createColumnRow = (defaultClassName, numberOfColumns, numberOfRows = 1) => {
   return ({ data = {}, class_name, ...rest }) => {
-    const className = class_name || defaultClassName
+    const className = `${class_name || defaultClassName} mb-2`
     const rows = data.rows || numberOfRows
+
     if (!data.childItems) {
-      data.childItems = Array(numberOfColumns).fill(null)
+      data.childItems = Array(rows)
+        .fill()
+        .map(() => Array(numberOfColumns).fill(null))
       data.isContainer = true
+    } else if (!Array.isArray(data.childItems[0])) {
+      // Convert existing 1D array to 2D for backward compatibility
+      data.childItems = [data.childItems]
     }
+
     return <MultiColumnRow {...rest} className={className} rows={rows} data={data} />
   }
 }

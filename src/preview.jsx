@@ -107,40 +107,60 @@ const Preview = (props) => {
     return item
   }
 
-  const swapChildren = (item, child, col) => {
-    if (child.col !== undefined && item.id !== child.parentId) {
+  const swapChildren = (item, child, row, col) => {
+    if (
+      child.row !== undefined &&
+      child.col !== undefined &&
+      item.id !== child.parentId
+    ) {
       return false
     }
-    if (!(child.col !== undefined && child.col !== col && item.childItems[col])) {
-      // No child was assigned yet in both source and target.
+
+    if (
+      child.row === undefined ||
+      child.col === undefined ||
+      (child.row === row && child.col === col) ||
+      !item.childItems[row][col]
+    ) {
       return false
     }
-    const oldId = item.childItems[col]
+
+    const oldId = item.childItems[row][col]
     const oldItem = getDataById(oldId)
+    const oldRow = child.row || 0
     const oldCol = child.col
-    item.childItems[oldCol] = oldId
+
+    item.childItems[oldRow][oldCol] = oldId
+    oldItem.row = oldRow
     oldItem.col = oldCol
-    item.childItems[col] = child.id
+
+    item.childItems[row][col] = child.id
+    child.row = row
     child.col = col
+
     store.dispatch('updateOrder', data)
     return true
   }
 
-  const setAsChild = (item, child, col) => {
-    if (swapChildren(item, child, col)) {
+  const setAsChild = (item, child, row, col) => {
+    if (swapChildren(item, child, row, col)) {
       return
     }
     const oldParent = getDataById(child.parentId)
+    const oldRow = child.row
     const oldCol = child.col
-    item.childItems[col] = child.id
+    item.childItems[row][col] = child.id
+    child.row = row
     child.col = col
     child.parentId = item.id
     child.parentIndex = data.indexOf(item)
     if (oldParent) {
-      oldParent.childItems[oldCol] = null
+      oldParent.childItems[oldRow][oldCol] = null
     }
     const list = data.filter((x) => x && x.parentId === item.id)
-    const toRemove = list.filter((x) => item.childItems.indexOf(x.id) === -1)
+    // const toRemove = list.filter((x) => item.childItems.indexOf(x.id) === -1)
+    const flatChildItems = item.childItems.flat().filter(Boolean)
+    const toRemove = list.filter((x) => !flatChildItems.includes(x.id))
     let newData = data
     if (toRemove.length) {
       newData = data.filter((x) => toRemove.indexOf(x) === -1)
@@ -151,12 +171,12 @@ const Preview = (props) => {
     store.dispatch('updateOrder', newData)
   }
 
-  const removeChild = (item, col) => {
-    const oldId = item.childItems[col]
+  const removeChild = (item, row = 0, col) => {
+    const oldId = item.childItems[row][col]
     const oldItem = getDataById(oldId)
     if (oldItem) {
       const newData = data.filter((x) => x !== oldItem)
-      item.childItems[col] = null
+      item.childItems[row][col] = null
       seq = seq > 100000 ? 0 : seq + 1
       store.dispatch('updateOrder', newData)
       setData(newData)
