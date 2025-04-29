@@ -96,9 +96,9 @@ export default class DynamicColumnList extends React.Component {
             </li>
             <li className="clearfix">
               <div className="row">
-                <div className="col-sm-3">Header Text</div>
+                <div className="col-sm-6">Header Text</div>
                 <div className="col-sm-2">Width</div>
-                <div className="col-sm-3">Type</div>
+                {/* <div className="col-sm-3">Type</div> */}
                 <div className="col-sm-3" />
               </div>
             </li>
@@ -107,7 +107,7 @@ export default class DynamicColumnList extends React.Component {
               return (
                 <li className="clearfix" key={editKey}>
                   <div className="row">
-                    <div className="col-sm-3">
+                    <div className="col-sm-6">
                       <input
                         tabIndex={index + 1}
                         className="form-control"
@@ -133,7 +133,7 @@ export default class DynamicColumnList extends React.Component {
                         onChange={(e) => this.editColumn(index, 'width', e)}
                       />
                     </div>
-                    <div className="col-sm-3">
+                    {/* <div className="col-sm-3">
                       <div className="dynamic-options-actions-buttons">
                         <select
                           className="form-control"
@@ -156,7 +156,7 @@ export default class DynamicColumnList extends React.Component {
                           <i className="fas fa-cog" />
                         </button>
                       </div>
-                    </div>
+                    </div> */}
                     <div className="col-sm-3">
                       <div className="dynamic-options-actions-buttons">
                         <button
