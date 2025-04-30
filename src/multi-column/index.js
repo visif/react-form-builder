@@ -1,3 +1,8 @@
-import { FourColumnRow, ThreeColumnRow, TwoColumnRow } from './MultiColumnRow'
+import {
+  DynamicColumnRow,
+  FourColumnRow,
+  ThreeColumnRow,
+  TwoColumnRow,
+} from './MultiColumnRow'
 
-export { TwoColumnRow, ThreeColumnRow, FourColumnRow }
+export { TwoColumnRow, ThreeColumnRow, FourColumnRow, DynamicColumnRow }

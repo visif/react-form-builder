@@ -275,6 +275,16 @@ export default class Toolbar extends React.Component {
         field_name: 'four_col_row_',
       },
       {
+        key: 'DynamicColumnRow',
+        name: 'Dynamic Columns',
+        icon: 'fas fa-columns',
+        content: 'Dynamic Column Layout',
+        element: 'DynamicColumnRow',
+        field_name: 'dynamic_col_row_',
+        rows: 1,
+        columns: [],
+      },
+      {
         key: 'Image',
         name: 'Image',
         label: '',
@@ -497,7 +507,7 @@ export default class Toolbar extends React.Component {
       }
     }
 
-    if (item.key === 'Table') {
+    if (item.key === 'Table' || item.key === 'DynamicColumnRow') {
       if (item.columns.length > 0) {
         elementOptions.columns = item.columns
       } else {

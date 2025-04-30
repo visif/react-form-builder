@@ -18,10 +18,9 @@ const MultiColumnRow = (props) => {
     seq,
     className,
     index,
-    rows,
   } = props
 
-  const { childItems = [], pageBreakBefore } = data // Default childItems to an empty array
+  const { childItems = [], pageBreakBefore } = data
   const baseClasses = `SortableItem rfb-item ${pageBreakBefore ? 'alwaysbreak' : ''}`
 
   return (
@@ -95,8 +94,58 @@ const createColumnRow = (defaultClassName, numberOfColumns, numberOfRows = 1) =>
   }
 }
 
+/**
+ * Creates a dynamic column row component that supports any number of rows and columns.
+ * The number of rows and columns is determined by the data.rows and data.columns properties.
+ *
+ * @param {Object} props - Component props
+ * @param {Object} props.data - Data object containing configuration
+ * @param {number} props.data.rows - Number of rows (default: 1)
+ * @param {number} props.data.columns - Number of columns (default: 2)
+ * @param {string} props.class_name - Optional custom class name
+ * @returns {JSX.Element} A MultiColumnRow component with dynamic rows and columns
+ */
+const DynamicColumnRow = ({ data = {}, class_name, ...rest }) => {
+  const rows = Number(data.rows) || 1
+  const columns = data.columns?.length || 2
+  const defaultClassName = `col-md-${Math.floor(12 / columns)}`
+  const className = `${class_name || defaultClassName} mb-2`
+
+  if (!data.childItems) {
+    data.childItems = Array(rows)
+      .fill()
+      .map(() => Array(columns).fill(null))
+    data.isContainer = true
+  } else if (!Array.isArray(data.childItems[0])) {
+    // Convert existing 1D array to 2D for backward compatibility
+    data.childItems = [data.childItems]
+  }
+
+  // Ensure childItems array matches the desired dimensions
+  if (data.childItems.length !== rows || data.childItems[0].length !== columns) {
+    const newChildItems = Array(rows)
+      .fill()
+      .map(() => Array(columns).fill(null))
+
+    // Copy over existing items where possible
+    data.childItems.forEach((row, rowIndex) => {
+      if (rowIndex < rows) {
+        row.forEach((item, colIndex) => {
+          if (colIndex < columns) {
+            newChildItems[rowIndex][colIndex] = item
+          }
+        })
+      }
+    })
+
+    data.childItems = newChildItems
+  }
+
+  return <MultiColumnRow {...rest} className={className} rows={rows} data={data} />
+}
+
 const TwoColumnRow = createColumnRow('col-md-6', 2)
 const ThreeColumnRow = createColumnRow('col-md-4', 3)
 const FourColumnRow = createColumnRow('col-md-3', 4)
 
-export { TwoColumnRow, ThreeColumnRow, FourColumnRow }
+export { TwoColumnRow, ThreeColumnRow, FourColumnRow, DynamicColumnRow }
