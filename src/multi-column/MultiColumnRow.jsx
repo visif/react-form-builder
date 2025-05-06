@@ -28,6 +28,15 @@ const MultiColumnRow = (props) => {
       <ComponentHeader {...props} />
       <div>
         <ComponentLabel {...props} />
+        {data.columns && (
+          <div className="row">
+            {data.columns.map((column, columnIndex) => (
+              <div key={`header_${columnIndex}`} className={className}>
+                <strong>{column.text}</strong>
+              </div>
+            ))}
+          </div>
+        )}
         {childItems.map((row, rowIndex) => (
           <div key={`row_${rowIndex}`} className="row">
             {row.map((item, columnIndex) => (
