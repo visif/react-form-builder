@@ -7,7 +7,12 @@ import { EventEmitter } from 'fbemitter'
 import FormElements from './form-elements'
 import CustomElement from './form-elements/custom-element'
 import FormValidator from './form-validator'
-import { FourColumnRow, ThreeColumnRow, TwoColumnRow } from './multi-column'
+import {
+  DynamicColumnRow,
+  FourColumnRow,
+  ThreeColumnRow,
+  TwoColumnRow,
+} from './multi-column'
 import Registry from './stores/registry'
 
 const {
@@ -535,10 +540,27 @@ export default class ReactForm extends React.Component {
   }
 
   getContainerElement(item, Element) {
-    const controls = item.childItems.map((x) => {
-      const currentItem = this.getDataById(x)
-      return x && currentItem ? this.getInputElement(currentItem) : <div>&nbsp;</div>
-    })
+    const controls = Array.isArray(item.childItems[0])
+      ? item.childItems.map((row) => {
+          return row.map((x) => {
+            const currentItem = this.getDataById(x)
+            return x && currentItem ? (
+              this.getInputElement(currentItem)
+            ) : (
+              <div>&nbsp;</div>
+            )
+          })
+        })
+      : [
+          item.childItems.map((x) => {
+            const currentItem = this.getDataById(x)
+            return x && currentItem ? (
+              this.getInputElement(currentItem)
+            ) : (
+              <div>&nbsp;</div>
+            )
+          }),
+        ]
     return (
       <Element mutable={true} key={`form_${item.id}`} data={item} controls={controls} />
     )
@@ -643,6 +665,8 @@ export default class ReactForm extends React.Component {
             return this.getContainerElement(item, ThreeColumnRow)
           case 'TwoColumnRow':
             return this.getContainerElement(item, TwoColumnRow)
+          case 'DynamicColumnRow':
+            return this.getContainerElement(item, DynamicColumnRow)
           case 'Signature':
             return (
               <Signature
