@@ -278,7 +278,6 @@ export default class Toolbar extends React.Component {
         key: 'DynamicColumnRow',
         name: 'Dynamic Columns',
         icon: 'fas fa-columns',
-        content: 'Dynamic Column Layout',
         element: 'DynamicColumnRow',
         field_name: 'dynamic_col_row_',
         rows: 1,

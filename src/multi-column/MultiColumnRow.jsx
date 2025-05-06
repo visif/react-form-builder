@@ -28,44 +28,50 @@ const MultiColumnRow = (props) => {
       <ComponentHeader {...props} />
       <div>
         <ComponentLabel {...props} />
-        {data.columns && (
-          <div className="row">
-            {data.columns.map((column, columnIndex) => (
-              <div key={`header_${columnIndex}`} className={className}>
-                <strong>{column.text}</strong>
-              </div>
+        <table className="table table-bordered" style={{ borderCollapse: 'collapse' }}>
+          {data.columns && (
+            <thead>
+              <tr>
+                {data.columns.map((column, columnIndex) => (
+                  <th key={`header_${columnIndex}`} style={{ textAlign: 'center' }}>
+                    {column.text}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+          )}
+          <tbody>
+            {childItems.map((row, rowIndex) => (
+              <tr key={`row_${rowIndex}`}>
+                {row.map((item, columnIndex) => (
+                  <td
+                    key={`${rowIndex}_${columnIndex}_${item || '_'}`}
+                    style={{ paddingLeft: '8px', paddingRight: '8px' }}
+                  >
+                    {controls ? (
+                      controls[rowIndex]?.[columnIndex]
+                    ) : (
+                      <Dustbin
+                        style={{ width: '100%' }}
+                        data={data}
+                        accepts={accepts}
+                        items={childItems[rowIndex]}
+                        row={rowIndex}
+                        col={columnIndex}
+                        parentIndex={index}
+                        editModeOn={editModeOn}
+                        _onDestroy={() => removeChild(data, rowIndex, columnIndex)}
+                        getDataById={getDataById}
+                        setAsChild={setAsChild}
+                        seq={seq}
+                      />
+                    )}
+                  </td>
+                ))}
+              </tr>
             ))}
-          </div>
-        )}
-        {childItems.map((row, rowIndex) => (
-          <div key={`row_${rowIndex}`} className="row">
-            {row.map((item, columnIndex) => (
-              <div
-                key={`${rowIndex}_${columnIndex}_${item || '_'}`}
-                className={className}
-              >
-                {controls ? (
-                  controls[rowIndex]?.[columnIndex]
-                ) : (
-                  <Dustbin
-                    style={{ width: '100%' }}
-                    data={data}
-                    accepts={accepts}
-                    items={childItems[rowIndex]}
-                    row={rowIndex}
-                    col={columnIndex}
-                    parentIndex={index}
-                    editModeOn={editModeOn}
-                    _onDestroy={() => removeChild(data, rowIndex, columnIndex)}
-                    getDataById={getDataById}
-                    setAsChild={setAsChild}
-                    seq={seq}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-        ))}
+          </tbody>
+        </table>
       </div>
     </div>
   )
