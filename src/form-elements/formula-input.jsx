@@ -110,7 +110,7 @@ class FormulaInput extends Component {
     return (
       <div style={{ ...this.props.style }} className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} />
           <input {...inputProps} />
           {error && <div className="invalid-feedback">{error}</div>}

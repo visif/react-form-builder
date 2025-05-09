@@ -155,7 +155,7 @@ class DataSource extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} style={{ display: 'block' }} />
           <div
             style={{

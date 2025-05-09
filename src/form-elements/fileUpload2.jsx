@@ -116,7 +116,7 @@ class FileUpload extends React.Component {
         }`}
       >
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <div>
             <input
               multiple

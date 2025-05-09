@@ -107,7 +107,7 @@ class ImageUpload extends React.Component {
         }`}
       >
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <div style={{ position: 'relative' }}>
             <div
               className="btn is-isolated"

@@ -172,7 +172,7 @@ class TextInput extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} />
           <input {...props} />
         </div>
@@ -229,7 +229,7 @@ class NumberInput extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} />
           <input {...props} />
         </div>
@@ -275,7 +275,7 @@ class TextArea extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} />
           <TextAreaAutosize {...props} />
         </div>
@@ -349,7 +349,7 @@ class Dropdown extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} />
           <select {...props}>
             <option value="" key="default-0">
@@ -433,7 +433,7 @@ class Signature extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} />
           {this.props.read_only === true || !isSameEditor || !!sourceDataURL ? (
             <img src={sourceDataURL} />
@@ -518,7 +518,7 @@ class Tags extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} />
           <Select {...props} />
         </div>
@@ -582,7 +582,7 @@ class Checkboxes extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel className="form-label" {...this.props} />
           {this.props.data.options.map((option) => {
             const this_key = `preview_${option.key}`
@@ -738,7 +738,7 @@ class RadioButtons extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel className="form-label" {...this.props} />
           {this.props.data.options.map((option) => {
             const this_key = `preview_${option.key}`
@@ -885,7 +885,7 @@ class Rating extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} />
           <StarRating {...props} />
         </div>
@@ -904,7 +904,7 @@ class HyperLink extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <a target="_blank" href={this.props.data.href}>
             {this.props.data.content}
           </a>
@@ -924,7 +924,7 @@ class Download extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <a href={`${this.props.download_path}?id=${this.props.data.file_path}`}>
             {this.props.data.content}
           </a>
@@ -989,7 +989,7 @@ class Camera extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} />
           {this.props.read_only === true &&
           this.props.defaultValue &&
@@ -1110,7 +1110,7 @@ class Range extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} />
           <div className="range">
             <div className="clearfix">
