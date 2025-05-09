@@ -147,7 +147,7 @@ class DataSource extends React.Component {
       props.ref = this.inputField
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }

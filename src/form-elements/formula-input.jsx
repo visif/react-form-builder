@@ -102,8 +102,8 @@ class FormulaInput extends Component {
       disabled: true,
     }
 
-    let baseClasses = 'SortableItem rfb-item'
-    if (this.props.data?.pageBreakBefore) {
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
+    if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
 

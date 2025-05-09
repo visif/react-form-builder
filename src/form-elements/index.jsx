@@ -31,7 +31,7 @@ class Header extends React.Component {
       classNames += ' italic'
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -60,7 +60,7 @@ class Paragraph extends React.Component {
       classNames += ' italic'
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -89,7 +89,7 @@ class Label extends React.Component {
       classNames += ' italic'
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -110,7 +110,7 @@ class Label extends React.Component {
 
 class LineBreak extends React.Component {
   render() {
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -160,7 +160,7 @@ class TextInput extends React.Component {
       props.ref = this.inputField
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -221,7 +221,7 @@ class NumberInput extends React.Component {
       props.disabled = 'disabled'
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -267,7 +267,7 @@ class TextArea extends React.Component {
       props.ref = this.inputField
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -341,7 +341,7 @@ class Dropdown extends React.Component {
       props.disabled = 'disabled'
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -420,7 +420,7 @@ class Signature extends React.Component {
       props.disabled = 'disabled'
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -510,7 +510,7 @@ class Tags extends React.Component {
       props.ref = this.inputField
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -574,7 +574,7 @@ class Checkboxes extends React.Component {
       classNames += ' option-inline'
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -727,7 +727,7 @@ class RadioButtons extends React.Component {
       classNames += ' option-inline'
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -825,7 +825,7 @@ class RadioButtons extends React.Component {
 const Image = (props) => {
   const style = props.data.center ? { textAlign: 'center' } : null
 
-  let baseClasses = 'SortableItem rfb-item'
+  let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
   if (props.data.pageBreakBefore) {
     baseClasses += ' alwaysbreak'
   }
@@ -877,7 +877,7 @@ class Rating extends React.Component {
       props.ref = this.inputField
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -896,7 +896,7 @@ class Rating extends React.Component {
 
 class HyperLink extends React.Component {
   render() {
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -916,7 +916,7 @@ class HyperLink extends React.Component {
 
 class Download extends React.Component {
   render() {
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -967,7 +967,11 @@ class Camera extends React.Component {
   }
 
   render() {
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
+    if (this.props.data.pageBreakBefore) {
+      baseClasses += ' alwaysbreak'
+    }
+
     const name = this.props.data.field_name
     const fileInputStyle = this.state.img ? { display: 'none' } : null
     if (this.props.data.pageBreakBefore) {
@@ -1102,7 +1106,7 @@ class Range extends React.Component {
       return <label {...option_props}>{d}</label>
     })
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }

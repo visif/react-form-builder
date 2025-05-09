@@ -26,7 +26,7 @@ class CustomElement extends Component {
     if (!this.props.data.component) return null
     const Element = this.props.data.component
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
