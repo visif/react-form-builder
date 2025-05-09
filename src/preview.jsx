@@ -150,10 +150,13 @@ const Preview = (props) => {
     const oldRow = child.row
     const oldCol = child.col
     item.childItems[row][col] = child.id
+
     child.row = row
     child.col = col
     child.parentId = item.id
     child.parentIndex = data.indexOf(item)
+    child.isShowLabel = item.element !== 'DynamicColumnRow'
+
     if (oldParent) {
       oldParent.childItems[oldRow][oldCol] = null
     }

@@ -2,6 +2,10 @@ import React from 'react'
 import myxss from './myxss'
 
 const ComponentLabel = (props) => {
+  if (props.data.isShowLabel !== undefined && props.data.isShowLabel === false) {
+    return null
+  }
+
   const hasRequiredLabel =
     props.data.hasOwnProperty('required') &&
     props.data.required === true &&

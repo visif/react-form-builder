@@ -135,8 +135,6 @@ class TextInput extends React.Component {
     const { data, handleChange } = this.props
     const { formularKey } = data
     if (formularKey && handleChange) {
-      console.log('formularKey', formularKey)
-      console.log('e.target.value', e.target.value)
       handleChange(formularKey, e.target.value)
     }
   }
@@ -777,8 +775,6 @@ class RadioButtons extends React.Component {
                   onChange={() => {
                     self.setState((current) => {
                       if (formularKey && handleChange) {
-                        console.log('formularKey', formularKey)
-                        console.log('option.value', option.value)
                         handleChange(formularKey, option.value)
                       }
 
