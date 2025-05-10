@@ -30,12 +30,12 @@ class FormulaInput extends React.Component {
       // Create updated data object with the new value
       const updatedData = {
         ...this.props.data,
-        value: value
+        value: value,
       }
-      
+
       // Send it for synchronization across columns
       this.props.onElementChange(updatedData)
-      
+
       // Immediately apply changes to this component's data
       if (this.props.data.dirty === undefined || this.props.data.dirty) {
         updatedData.dirty = true

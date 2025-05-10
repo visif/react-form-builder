@@ -9,17 +9,22 @@ const ComponentLabel = (props) => {
   ) {
     return null
   }
-  
+
   // Hide label in preview if element is in a DynamicColumnRow, but not other column types
   if (props.data.parentId) {
     // Try to find the parent element via props.mutable
-    const parentElement = props.mutable && 
-                          props.mutable.getDataById && 
-                          props.mutable.getDataById(props.data.parentId);
-    
+    const parentElement =
+      props.mutable &&
+      props.mutable.getDataById &&
+      props.mutable.getDataById(props.data.parentId)
+
     // If parent exists and is specifically a DynamicColumnRow, don't show label unless displayLabelInColumn is true
-    if (parentElement && parentElement.element === 'DynamicColumnRow' && props.data.displayLabelInColumn !== true) {
-      return null;
+    if (
+      parentElement &&
+      parentElement.element === 'DynamicColumnRow' &&
+      props.data.displayLabelInColumn !== true
+    ) {
+      return null
     }
 
     // For other column types (Two, Three, Four Column Row), we DO want to show the label

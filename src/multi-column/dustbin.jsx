@@ -33,20 +33,23 @@ const renderElement = (item, props) => {
   const Element = item.custom
     ? () => renderCustomElement(item, props)
     : FormElements[item.element || item.key]
-  
+
   // Add an onChange handler for column synchronization
   const elementProps = { ...props }
-  
+
   // Check if this is a syncable element type (Checkboxes, RadioButtons, Dropdown)
   // AND we're in edit mode (not preview mode)
-  if (['Checkboxes', 'RadioButtons', 'Dropdown'].includes(item.element) && 
-      props.syncColumnChanges && 
-      props.editModeOn) {  // Only synchronize in edit mode
+  if (
+    ['Checkboxes', 'RadioButtons', 'Dropdown'].includes(item.element) &&
+    props.syncColumnChanges &&
+    props.editModeOn
+  ) {
+    // Only synchronize in edit mode
     // Create an onElementChange handler
     elementProps.onElementChange = (changedData) => {
       // Synchronize changes across the column
-      props.syncColumnChanges(props.row, props.col, item.element, changedData);
-    };
+      props.syncColumnChanges(props.row, props.col, item.element, changedData)
+    }
   }
 
   return (
@@ -106,7 +109,13 @@ const Dustbin = React.forwardRef(
     const backgroundColor =
       isOverCurrent || (isOver && greedy) ? 'darkgreen' : 'rgba(0, 0, 0, .03)'
 
-    const element = renderElement(item, {...rest, row, col, syncColumnChanges, updateElement})
+    const element = renderElement(item, {
+      ...rest,
+      row,
+      col,
+      syncColumnChanges,
+      updateElement,
+    })
 
     return connectDropTarget(<div style={dustbinStyles(backgroundColor)}>{element}</div>)
   }

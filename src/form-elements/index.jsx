@@ -130,31 +130,31 @@ class TextInput extends React.Component {
     this.inputField = React.createRef()
     this.handleChange = this.handleChange.bind(this)
     this.state = {
-      value: props.defaultValue || ''
+      value: props.defaultValue || '',
     }
   }
 
   handleChange(e) {
     const value = e.target.value
     this.setState({ value })
-    
+
     const { data, handleChange } = this.props
     const { formularKey } = data
     if (formularKey && handleChange) {
       handleChange(formularKey, value)
     }
-    
+
     // If onElementChange is provided, call it to synchronize changes across the column
     if (this.props.onElementChange) {
       // Create updated data object with the new value
       const updatedData = {
         ...this.props.data,
-        value: value
+        value: value,
       }
-      
+
       // Send it for synchronization across columns
       this.props.onElementChange(updatedData)
-      
+
       // Immediately apply changes to this component's data
       if (this.props.data.dirty === undefined || this.props.data.dirty) {
         updatedData.dirty = true
@@ -214,31 +214,31 @@ class NumberInput extends React.Component {
     this.inputField = React.createRef()
     this.handleChange = this.handleChange.bind(this)
     this.state = {
-      value: props.defaultValue || ''
+      value: props.defaultValue || '',
     }
   }
 
   handleChange(e) {
     const value = e.target.value
     this.setState({ value })
-    
+
     const { data, handleChange } = this.props
     const { formularKey } = data
     if (formularKey && handleChange) {
       handleChange(formularKey, value)
     }
-    
+
     // If onElementChange is provided, call it to synchronize changes across the column
     if (this.props.onElementChange) {
       // Create updated data object with the new value
       const updatedData = {
         ...this.props.data,
-        value: value
+        value: value,
       }
-      
+
       // Send it for synchronization across columns
       this.props.onElementChange(updatedData)
-      
+
       // Immediately apply changes to this component's data
       if (this.props.data.dirty === undefined || this.props.data.dirty) {
         updatedData.dirty = true
@@ -298,31 +298,31 @@ class TextArea extends React.Component {
     this.inputField = React.createRef()
     this.handleChange = this.handleChange.bind(this)
     this.state = {
-      value: props.defaultValue || ''
+      value: props.defaultValue || '',
     }
   }
-  
+
   handleChange(e) {
     const value = e.target.value
     this.setState({ value })
-    
+
     const { data, handleChange } = this.props
     const { formularKey } = data
     if (formularKey && handleChange) {
       handleChange(formularKey, value)
     }
-    
+
     // If onElementChange is provided, call it to synchronize changes across the column
     if (this.props.onElementChange) {
       // Create updated data object with the new value
       const updatedData = {
         ...this.props.data,
-        value: value
+        value: value,
       }
-      
+
       // Send it for synchronization across columns
       this.props.onElementChange(updatedData)
-      
+
       // Immediately apply changes to this component's data
       if (this.props.data.dirty === undefined || this.props.data.dirty) {
         updatedData.dirty = true
@@ -332,7 +332,7 @@ class TextArea extends React.Component {
       }
     }
   }
-  
+
   render() {
     const userProperties =
       this.props.getActiveUserProperties && this.props.getActiveUserProperties()
@@ -406,18 +406,18 @@ class Dropdown extends React.Component {
     if (formularKey && handleChange) {
       handleChange(formularKey, constValue)
     }
-    
+
     // If onElementChange is provided, call it to synchronize changes across the column
     if (this.props.onElementChange) {
       // Create updated data object with the new value
       const updatedData = {
         ...this.props.data,
-        value: constValue
+        value: constValue,
       }
-      
+
       // Send it for synchronization across columns
       this.props.onElementChange(updatedData)
-      
+
       // Immediately apply changes to this component's data
       // This makes changes visible in edit mode instantly
       if (this.props.data.dirty === undefined || this.props.data.dirty) {
@@ -496,16 +496,16 @@ class Signature extends React.Component {
   clear = () => {
     if (this.state.defaultValue) {
       this.setState({ defaultValue: '' })
-      
+
       // Immediately apply changes to this component's data when clearing signature
       if (this.props.onElementChange) {
         const updatedData = {
           ...this.props.data,
-          value: ''
+          value: '',
         }
-        
+
         this.props.onElementChange(updatedData)
-        
+
         if (this.props.data.dirty === undefined || this.props.data.dirty) {
           updatedData.dirty = true
           if (this.props.updateElement) {
@@ -517,24 +517,24 @@ class Signature extends React.Component {
       this.canvas.current.clear()
     }
   }
-  
+
   // Handle signature changes
   handleSignatureChange = () => {
     // Only trigger if canvas is available
-    if (!this.canvas.current) return;
-    
+    if (!this.canvas.current) return
+
     // Get the signature data
-    const signatureData = this.canvas.current.toDataURL().split(',')[1];
-    
+    const signatureData = this.canvas.current.toDataURL().split(',')[1]
+
     // If onElementChange is provided, call it to synchronize changes across columns
     if (this.props.onElementChange) {
       const updatedData = {
         ...this.props.data,
-        value: signatureData
+        value: signatureData,
       }
-      
+
       this.props.onElementChange(updatedData)
-      
+
       // Immediately apply changes to this component's data
       if (this.props.data.dirty === undefined || this.props.data.dirty) {
         updatedData.dirty = true
@@ -543,7 +543,7 @@ class Signature extends React.Component {
         }
       }
     }
-    
+
     this.setState({ defaultValue: signatureData })
   }
 
@@ -800,51 +800,54 @@ class Checkboxes extends React.Component {
                             newActiveVal,
                           ],
                         }
-                        
+
                         // If we're in a dynamic column and this is a UI-only change (selection)
                         // We need to update just this component's internal state without syncing to other rows
-                        const isInDynamicColumn = self.props.data.parentId && 
-                                                 self.props.data.row !== undefined && 
-                                                 self.props.data.col !== undefined;
-                        
+                        const isInDynamicColumn =
+                          self.props.data.parentId &&
+                          self.props.data.row !== undefined &&
+                          self.props.data.col !== undefined
+
                         // Always update the local element state for immediate visual feedback
                         if (self.props.updateElement) {
                           // Apply the checked state to just this element's data
                           const updatedData = {
                             ...self.props.data,
                             dirty: true,
-                            value: newValue.value
-                          };
-                          
+                            value: newValue.value,
+                          }
+
                           // Update the local options to show selection visually
                           // This only affects THIS element, not others in the column
-                          const localOptions = self.props.data.options.map(opt => ({
+                          const localOptions = self.props.data.options.map((opt) => ({
                             ...opt,
-                            checked: opt.key === option.key 
-                              ? !activeVal?.value 
-                              : self.getActiveValue(newValue.value, opt.key)?.value || false
-                          }));
-                          updatedData.options = localOptions;
-                          
+                            checked:
+                              opt.key === option.key
+                                ? !activeVal?.value
+                                : self.getActiveValue(newValue.value, opt.key)?.value ||
+                                  false,
+                          }))
+                          updatedData.options = localOptions
+
                           // Update just this element
-                          self.props.updateElement(updatedData);
+                          self.props.updateElement(updatedData)
                         }
-                        
+
                         // If onElementChange is provided, but we avoid sending selection state
                         if (self.props.onElementChange && isInDynamicColumn) {
                           // For selection changes in dynamic columns, we don't want to sync the selection state
                           // but we still need to notify the system that a change happened for other purposes
                           // Create a copy that doesn't modify the selection state
                           const updatedDataForSync = {
-                            ...self.props.data
+                            ...self.props.data,
                             // Deliberately NOT updating options or selection state
-                          };
-                          
+                          }
+
                           // Mark this as a selection-only change that shouldn't be synced
-                          updatedDataForSync._selectionChangeOnly = true;
-                          
+                          updatedDataForSync._selectionChangeOnly = true
+
                           // Notify the system about the change, but without selection state changes
-                          self.props.onElementChange(updatedDataForSync);
+                          self.props.onElementChange(updatedDataForSync)
                         }
 
                         return newValue
@@ -987,57 +990,60 @@ class RadioButtons extends React.Component {
                             info: '',
                           },
                         ],
-                      };
+                      }
 
                       // If we're in a dynamic column and this is a UI-only change (selection)
                       // We need to update just this component's internal state without syncing to other rows
-                      const isInDynamicColumn = self.props.data.parentId && 
-                                               self.props.data.row !== undefined && 
-                                               self.props.data.col !== undefined;
-                      
+                      const isInDynamicColumn =
+                        self.props.data.parentId &&
+                        self.props.data.row !== undefined &&
+                        self.props.data.col !== undefined
+
                       // Always update the local element state for immediate visual feedback
                       if (self.props.updateElement) {
                         // Apply the checked state to just this element's data
                         const updatedData = {
                           ...self.props.data,
                           dirty: true,
-                          value: [{
-                            key: option.key,
-                            value: true
-                          }]
-                        };
-                        
+                          value: [
+                            {
+                              key: option.key,
+                              value: true,
+                            },
+                          ],
+                        }
+
                         // Update the local options to show selection visually
                         // This only affects THIS element, not others in the column
-                        const localOptions = self.props.data.options.map(opt => ({
+                        const localOptions = self.props.data.options.map((opt) => ({
                           ...opt,
                           checked: opt.key === option.key,
-                          selected: opt.key === option.key
-                        }));
-                        updatedData.options = localOptions;
-                        
+                          selected: opt.key === option.key,
+                        }))
+                        updatedData.options = localOptions
+
                         // Update just this element
-                        self.props.updateElement(updatedData);
+                        self.props.updateElement(updatedData)
                       }
-                      
+
                       // If onElementChange is provided, but we avoid sending selection state
                       if (self.props.onElementChange && isInDynamicColumn) {
                         // For selection changes in dynamic columns, we don't want to sync the selection state
                         // but we still need to notify the system that a change happened for other purposes
                         // Create a copy that doesn't modify the selection state
                         const updatedDataForSync = {
-                          ...self.props.data
+                          ...self.props.data,
                           // Deliberately NOT updating options or selection state
-                        };
-                        
+                        }
+
                         // Mark this as a selection-only change that shouldn't be synced
-                        updatedDataForSync._selectionChangeOnly = true;
-                        
+                        updatedDataForSync._selectionChangeOnly = true
+
                         // Notify the system about the change, but without selection state changes
-                        self.props.onElementChange(updatedDataForSync);
+                        self.props.onElementChange(updatedDataForSync)
                       }
 
-                      return newValue;
+                      return newValue
                     })
                   }}
                   {...props}

@@ -1,0 +1,19 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint", // ESLint
+    "esbenp.prettier-vscode", // Prettier
+    "bradlc.vscode-tailwindcss", // Tailwind CSS IntelliSense
+    "formulahendry.auto-rename-tag", // Auto Rename Tag
+    "streetsidesoftware.code-spell-checker", // Code Spell Checker
+    "naumovs.color-highlight", // Color Highlight
+    "dsznajder.es7-react-js-snippets", // React/Next.js snippets
+    "christian-kohler.path-intellisense", // Path autocompletion
+    "eamodio.gitlens", // Git supercharged
+    "github.copilot", // If you use GitHub Copilot
+    "pkief.material-icon-theme", // Better file icons
+    "wix.vscode-import-cost", // Display import sizes
+    "mikestead.dotenv", // .env syntax highlighting
+    "csstools.postcss", // PostCSS support
+    "ms-vsliveshare.vsliveshare" // Live collaboration
+  ]
+}

@@ -23,33 +23,46 @@ const MultiColumnRow = (props) => {
 
   const { childItems = [], pageBreakBefore } = data
   const baseClasses = `SortableItem rfb-item ${pageBreakBefore ? 'alwaysbreak' : ''}`
-  
+
   // Check if row labels are defined in data
-  const hasRowLabels = data.rows && Array.isArray(data.rowLabels) && data.rowLabels.length > 0
-  
+  const hasRowLabels =
+    data.rows && Array.isArray(data.rowLabels) && data.rowLabels.length > 0
+
   // Function to synchronize changes across a column
   const syncColumnChanges = (rowIndex, columnIndex, elementType, changeData) => {
     // Only sync for supported element types
-    if (!['Checkboxes', 'RadioButtons', 'Dropdown', 'TextInput', 'NumberInput', 'TextArea', 'DatePicker', 'Signature', 'FormulaInput'].includes(elementType)) {
-      return;
+    if (
+      ![
+        'Checkboxes',
+        'RadioButtons',
+        'Dropdown',
+        'TextInput',
+        'NumberInput',
+        'TextArea',
+        'DatePicker',
+        'Signature',
+        'FormulaInput',
+      ].includes(elementType)
+    ) {
+      return
     }
-    
+
     // Go through each row
     childItems.forEach((row, rIdx) => {
       // Skip the row that triggered the change
-      if (rIdx === rowIndex) return;
-      
-      const itemId = row[columnIndex];
-      if (!itemId) return;
-      
-      const itemData = getDataById(itemId);
-      if (!itemData || itemData.element !== elementType) return;
-      
+      if (rIdx === rowIndex) return
+
+      const itemId = row[columnIndex]
+      if (!itemId) return
+
+      const itemData = getDataById(itemId)
+      if (!itemData || itemData.element !== elementType) return
+
       // Create a new updated element to apply changes
-      let updatedItem = {
-        ...itemData
-      };
-      
+      const updatedItem = {
+        ...itemData,
+      }
+
       // Apply changes based on element type and what was changed
       if (elementType === 'Checkboxes' || elementType === 'RadioButtons') {
         // For checkboxes/radio buttons
@@ -59,24 +72,24 @@ const MultiColumnRow = (props) => {
             if (idx < itemData.options.length) {
               return {
                 ...itemData.options[idx],
-                text: newOpt.text,           // Update text
-                value: newOpt.value,         // Update value
-                checked: newOpt.checked,     // Update checked state
-                selected: newOpt.selected    // Update selected state
-              };
+                text: newOpt.text, // Update text
+                value: newOpt.value, // Update value
+                checked: newOpt.checked, // Update checked state
+                selected: newOpt.selected, // Update selected state
+              }
             }
-            return newOpt; // For new options
-          });
+            return newOpt // For new options
+          })
         }
-        
+
         // Handle label changes
         if (changeData.label !== undefined && changeData.label !== itemData.label) {
-          updatedItem.label = changeData.label;
+          updatedItem.label = changeData.label
         }
-        
+
         // Sync formularKey if it exists
         if (changeData.formularKey !== undefined) {
-          updatedItem.formularKey = changeData.formularKey;
+          updatedItem.formularKey = changeData.formularKey
         }
       } else if (elementType === 'Dropdown') {
         // For dropdowns
@@ -86,49 +99,49 @@ const MultiColumnRow = (props) => {
               return {
                 ...itemData.options[idx],
                 text: newOpt.text,
-                value: newOpt.value
-              };
+                value: newOpt.value,
+              }
             }
-            return newOpt;
-          });
+            return newOpt
+          })
         }
-        
+
         if (changeData.value !== undefined) {
-          updatedItem.value = changeData.value;
+          updatedItem.value = changeData.value
         }
-        
+
         // Handle label changes
         if (changeData.label !== undefined && changeData.label !== itemData.label) {
-          updatedItem.label = changeData.label;
+          updatedItem.label = changeData.label
         }
-        
+
         // Sync formularKey if it exists
         if (changeData.formularKey !== undefined) {
-          updatedItem.formularKey = changeData.formularKey;
+          updatedItem.formularKey = changeData.formularKey
         }
       } else {
         // For other input types
         if (changeData.value !== undefined) {
-          updatedItem.value = changeData.value;
+          updatedItem.value = changeData.value
         }
-        
+
         // Handle label changes
         if (changeData.label !== undefined && changeData.label !== itemData.label) {
-          updatedItem.label = changeData.label;
+          updatedItem.label = changeData.label
         }
-        
+
         // Sync formularKey if it exists
         if (changeData.formularKey !== undefined) {
-          updatedItem.formularKey = changeData.formularKey;
+          updatedItem.formularKey = changeData.formularKey
         }
       }
-      
+
       // If we created an updated item, apply the changes
       if (updatedItem && updateElement) {
-        updateElement(updatedItem);
+        updateElement(updatedItem)
       }
-    });
-  };
+    })
+  }
 
   return (
     <div className={baseClasses}>
@@ -140,7 +153,7 @@ const MultiColumnRow = (props) => {
             <thead>
               <tr>
                 {/* Add empty header cell for row labels column if row labels are present */}
-                {hasRowLabels && <th style={{ width: '150px' }}></th>}
+                {hasRowLabels && <th style={{ width: '150px' }} />}
                 {data.columns.map((column, columnIndex) => (
                   <th key={`header_${columnIndex}`} style={{ textAlign: 'center' }}>
                     {column.text}
@@ -154,16 +167,18 @@ const MultiColumnRow = (props) => {
               <tr key={`row_${rowIndex}`}>
                 {/* Add row label cell if row labels are present */}
                 {hasRowLabels && (
-                  <td 
-                    className="row-label" 
-                    style={{ 
-                      fontWeight: 'bold', 
+                  <td
+                    className="row-label"
+                    style={{
+                      fontWeight: 'bold',
                       textAlign: 'right',
                       paddingRight: '10px',
-                      backgroundColor: '#f5f5f5'
+                      backgroundColor: '#f5f5f5',
                     }}
                   >
-                    {data.rowLabels[rowIndex] ? data.rowLabels[rowIndex].text : `Row ${rowIndex + 1}`}
+                    {data.rowLabels[rowIndex]
+                      ? data.rowLabels[rowIndex].text
+                      : `Row ${rowIndex + 1}`}
                   </td>
                 )}
                 {row.map((item, columnIndex) => (
@@ -215,8 +230,9 @@ const MultiColumnRow = (props) => {
  * - Sets `data.isContainer` to `true` if `data.childItems` is initialized.
  * - Applies the provided `class_name` or falls back to `defaultClassName`.
  */
-const createColumnRow = (defaultClassName, numberOfColumns, numberOfRows = 1) => {
-  return ({ data = {}, class_name, ...rest }) => {
+const createColumnRow =
+  (defaultClassName, numberOfColumns, numberOfRows = 1) =>
+  ({ data = {}, class_name, ...rest }) => {
     const className = `${class_name || defaultClassName} mb-2`
     const rows = data.rows || numberOfRows
 
@@ -232,7 +248,6 @@ const createColumnRow = (defaultClassName, numberOfColumns, numberOfRows = 1) =>
 
     return <MultiColumnRow {...rest} className={className} rows={rows} data={data} />
   }
-}
 
 /**
  * Creates a dynamic column row component that supports any number of rows and columns.
@@ -265,10 +280,10 @@ const DynamicColumnRow = ({ data = {}, class_name, ...rest }) => {
   if (!data.rowLabels) {
     data.rowLabels = Array(rows)
       .fill()
-      .map((_, i) => ({ 
-        text: `Row ${i + 1}`, 
-        value: `row_${i + 1}`, 
-        key: `row_${Math.random().toString(36).substring(2, 9)}` 
+      .map((_, i) => ({
+        text: `Row ${i + 1}`,
+        value: `row_${i + 1}`,
+        key: `row_${Math.random().toString(36).substring(2, 9)}`,
       }))
   } else if (data.rowLabels.length !== rows) {
     // Make sure the number of row labels matches the number of rows
@@ -280,7 +295,7 @@ const DynamicColumnRow = ({ data = {}, class_name, ...rest }) => {
         .map((_, i) => ({
           text: `Row ${currentLength + i + 1}`,
           value: `row_${currentLength + i + 1}`,
-          key: `row_${Math.random().toString(36).substring(2, 9)}`
+          key: `row_${Math.random().toString(36).substring(2, 9)}`,
         }))
       data.rowLabels = [...data.rowLabels, ...additionalLabels]
     } else {
