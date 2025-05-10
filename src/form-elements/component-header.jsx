@@ -2,7 +2,8 @@ import React from 'react'
 import HeaderBar from './header-bar'
 
 const ComponentHeader = (props) => {
-  if (props.mutable) {
+  // Only hide header in mutable mode that's not preview mode
+  if (props.mutable && !props.preview) {
     return null
   }
   return (
@@ -18,6 +19,7 @@ const ComponentHeader = (props) => {
         onEdit={props.onEdit}
         static={props.data.static}
         required={props.data.required}
+        preview={props.preview}
       />
     </div>
   )

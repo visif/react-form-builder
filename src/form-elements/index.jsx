@@ -129,13 +129,39 @@ class TextInput extends React.Component {
     super(props)
     this.inputField = React.createRef()
     this.handleChange = this.handleChange.bind(this)
+    this.state = {
+      value: props.defaultValue || ''
+    }
   }
 
   handleChange(e) {
+    const value = e.target.value
+    this.setState({ value })
+    
     const { data, handleChange } = this.props
     const { formularKey } = data
     if (formularKey && handleChange) {
-      handleChange(formularKey, e.target.value)
+      handleChange(formularKey, value)
+    }
+    
+    // If onElementChange is provided, call it to synchronize changes across the column
+    if (this.props.onElementChange) {
+      // Create updated data object with the new value
+      const updatedData = {
+        ...this.props.data,
+        value: value
+      }
+      
+      // Send it for synchronization across columns
+      this.props.onElementChange(updatedData)
+      
+      // Immediately apply changes to this component's data
+      if (this.props.data.dirty === undefined || this.props.data.dirty) {
+        updatedData.dirty = true
+        if (this.props.updateElement) {
+          this.props.updateElement(updatedData)
+        }
+      }
     }
   }
 
@@ -154,6 +180,7 @@ class TextInput extends React.Component {
     props.className = 'form-control'
     props.name = this.props.data.field_name
     props.onChange = this.handleChange
+    props.value = this.state.value
 
     if (this.props.mutable) {
       props.defaultValue = this.props.defaultValue
@@ -186,13 +213,39 @@ class NumberInput extends React.Component {
     super(props)
     this.inputField = React.createRef()
     this.handleChange = this.handleChange.bind(this)
+    this.state = {
+      value: props.defaultValue || ''
+    }
   }
 
   handleChange(e) {
+    const value = e.target.value
+    this.setState({ value })
+    
     const { data, handleChange } = this.props
     const { formularKey } = data
     if (formularKey && handleChange) {
-      handleChange(formularKey, e.target.value)
+      handleChange(formularKey, value)
+    }
+    
+    // If onElementChange is provided, call it to synchronize changes across the column
+    if (this.props.onElementChange) {
+      // Create updated data object with the new value
+      const updatedData = {
+        ...this.props.data,
+        value: value
+      }
+      
+      // Send it for synchronization across columns
+      this.props.onElementChange(updatedData)
+      
+      // Immediately apply changes to this component's data
+      if (this.props.data.dirty === undefined || this.props.data.dirty) {
+        updatedData.dirty = true
+        if (this.props.updateElement) {
+          this.props.updateElement(updatedData)
+        }
+      }
     }
   }
 
@@ -211,6 +264,7 @@ class NumberInput extends React.Component {
     props.className = 'form-control'
     props.name = this.props.data.field_name
     props.onChange = this.handleChange
+    props.value = this.state.value
 
     if (this.props.mutable) {
       props.defaultValue = this.props.defaultValue
@@ -242,7 +296,43 @@ class TextArea extends React.Component {
   constructor(props) {
     super(props)
     this.inputField = React.createRef()
+    this.handleChange = this.handleChange.bind(this)
+    this.state = {
+      value: props.defaultValue || ''
+    }
   }
+  
+  handleChange(e) {
+    const value = e.target.value
+    this.setState({ value })
+    
+    const { data, handleChange } = this.props
+    const { formularKey } = data
+    if (formularKey && handleChange) {
+      handleChange(formularKey, value)
+    }
+    
+    // If onElementChange is provided, call it to synchronize changes across the column
+    if (this.props.onElementChange) {
+      // Create updated data object with the new value
+      const updatedData = {
+        ...this.props.data,
+        value: value
+      }
+      
+      // Send it for synchronization across columns
+      this.props.onElementChange(updatedData)
+      
+      // Immediately apply changes to this component's data
+      if (this.props.data.dirty === undefined || this.props.data.dirty) {
+        updatedData.dirty = true
+        if (this.props.updateElement) {
+          this.props.updateElement(updatedData)
+        }
+      }
+    }
+  }
+  
   render() {
     const userProperties =
       this.props.getActiveUserProperties && this.props.getActiveUserProperties()
@@ -257,6 +347,8 @@ class TextArea extends React.Component {
     props.className = 'form-control'
     props.name = this.props.data.field_name
     props.minRows = 3
+    props.onChange = this.handleChange
+    props.value = this.state.value
 
     if (this.props.read_only || !isSameEditor) {
       props.disabled = 'disabled'
@@ -313,6 +405,27 @@ class Dropdown extends React.Component {
     const { formularKey } = data
     if (formularKey && handleChange) {
       handleChange(formularKey, constValue)
+    }
+    
+    // If onElementChange is provided, call it to synchronize changes across the column
+    if (this.props.onElementChange) {
+      // Create updated data object with the new value
+      const updatedData = {
+        ...this.props.data,
+        value: constValue
+      }
+      
+      // Send it for synchronization across columns
+      this.props.onElementChange(updatedData)
+      
+      // Immediately apply changes to this component's data
+      // This makes changes visible in edit mode instantly
+      if (this.props.data.dirty === undefined || this.props.data.dirty) {
+        updatedData.dirty = true
+        if (this.props.updateElement) {
+          this.props.updateElement(updatedData)
+        }
+      }
     }
   }
 
@@ -383,9 +496,55 @@ class Signature extends React.Component {
   clear = () => {
     if (this.state.defaultValue) {
       this.setState({ defaultValue: '' })
+      
+      // Immediately apply changes to this component's data when clearing signature
+      if (this.props.onElementChange) {
+        const updatedData = {
+          ...this.props.data,
+          value: ''
+        }
+        
+        this.props.onElementChange(updatedData)
+        
+        if (this.props.data.dirty === undefined || this.props.data.dirty) {
+          updatedData.dirty = true
+          if (this.props.updateElement) {
+            this.props.updateElement(updatedData)
+          }
+        }
+      }
     } else if (this.canvas.current) {
       this.canvas.current.clear()
     }
+  }
+  
+  // Handle signature changes
+  handleSignatureChange = () => {
+    // Only trigger if canvas is available
+    if (!this.canvas.current) return;
+    
+    // Get the signature data
+    const signatureData = this.canvas.current.toDataURL().split(',')[1];
+    
+    // If onElementChange is provided, call it to synchronize changes across columns
+    if (this.props.onElementChange) {
+      const updatedData = {
+        ...this.props.data,
+        value: signatureData
+      }
+      
+      this.props.onElementChange(updatedData)
+      
+      // Immediately apply changes to this component's data
+      if (this.props.data.dirty === undefined || this.props.data.dirty) {
+        updatedData.dirty = true
+        if (this.props.updateElement) {
+          this.props.updateElement(updatedData)
+        }
+      }
+    }
+    
+    this.setState({ defaultValue: signatureData })
   }
 
   render() {
@@ -413,6 +572,7 @@ class Signature extends React.Component {
     if (this.props.mutable) {
       pad_props.defaultValue = defaultValue
       pad_props.ref = this.canvas
+      pad_props.onEnd = this.handleSignatureChange
       canClear = !this.props.read_only || isSameEditor
     }
 
@@ -539,13 +699,7 @@ class Checkboxes extends React.Component {
   }
 
   static getDerivedStateFromProps(props, state) {
-    console.log('Checkboxes getDerivedStateFromProps')
     if (JSON.stringify(state.defaultValue) !== JSON.stringify(props.defaultValue)) {
-      console.log(
-        'Checkboxes default prop changed',
-        state.defaultValue,
-        props.defaultValue
-      )
       return {
         defaultValue: props.defaultValue,
         value: props.defaultValue,
@@ -592,10 +746,12 @@ class Checkboxes extends React.Component {
             props.type = 'checkbox'
             props.value = option.value
 
+            // Check if the option is selected either from state or option properties
             const answerItem = self.getActiveValue(self.state.value, option.key)
+            const isCheckedInOptions = option.checked || option.selected
 
             if (self.props.mutable) {
-              props.checked = answerItem?.value ?? false
+              props.checked = answerItem?.value ?? isCheckedInOptions ?? false
             }
 
             if (this.props.read_only || !isSameEditor) {
@@ -635,7 +791,7 @@ class Checkboxes extends React.Component {
                           return current
                         }
 
-                        return {
+                        const newValue = {
                           ...current,
                           value: [
                             ...(current.value || []).filter(
@@ -644,6 +800,54 @@ class Checkboxes extends React.Component {
                             newActiveVal,
                           ],
                         }
+                        
+                        // If we're in a dynamic column and this is a UI-only change (selection)
+                        // We need to update just this component's internal state without syncing to other rows
+                        const isInDynamicColumn = self.props.data.parentId && 
+                                                 self.props.data.row !== undefined && 
+                                                 self.props.data.col !== undefined;
+                        
+                        // Always update the local element state for immediate visual feedback
+                        if (self.props.updateElement) {
+                          // Apply the checked state to just this element's data
+                          const updatedData = {
+                            ...self.props.data,
+                            dirty: true,
+                            value: newValue.value
+                          };
+                          
+                          // Update the local options to show selection visually
+                          // This only affects THIS element, not others in the column
+                          const localOptions = self.props.data.options.map(opt => ({
+                            ...opt,
+                            checked: opt.key === option.key 
+                              ? !activeVal?.value 
+                              : self.getActiveValue(newValue.value, opt.key)?.value || false
+                          }));
+                          updatedData.options = localOptions;
+                          
+                          // Update just this element
+                          self.props.updateElement(updatedData);
+                        }
+                        
+                        // If onElementChange is provided, but we avoid sending selection state
+                        if (self.props.onElementChange && isInDynamicColumn) {
+                          // For selection changes in dynamic columns, we don't want to sync the selection state
+                          // but we still need to notify the system that a change happened for other purposes
+                          // Create a copy that doesn't modify the selection state
+                          const updatedDataForSync = {
+                            ...self.props.data
+                            // Deliberately NOT updating options or selection state
+                          };
+                          
+                          // Mark this as a selection-only change that shouldn't be synced
+                          updatedDataForSync._selectionChangeOnly = true;
+                          
+                          // Notify the system about the change, but without selection state changes
+                          self.props.onElementChange(updatedDataForSync);
+                        }
+
+                        return newValue
                       })
                     }
                   }}
@@ -656,14 +860,14 @@ class Checkboxes extends React.Component {
                   <input
                     id={'fid_' + this_key + '_info'}
                     type="text"
-                    class="form-control"
+                    className="form-control"
                     style={{
                       width: 'auto',
                       marginLeft: 16,
                       height: 'calc(1.5em + .5rem)',
                       marginBottom: 4,
                     }}
-                    defaultValue={answerItem.info ?? ''}
+                    defaultValue={answerItem?.info ?? ''}
                     ref={(c) => {
                       if (c && self.props.mutable) {
                         self.infos[`child_ref_${option.key}_info`] = c
@@ -692,13 +896,7 @@ class RadioButtons extends React.Component {
   }
 
   static getDerivedStateFromProps(props, state) {
-    console.log('RadioButtons getDerivedStateFromProps')
     if (JSON.stringify(state.defaultValue) !== JSON.stringify(props.defaultValue)) {
-      console.log(
-        'RadioButtons default prop changed',
-        state.defaultValue,
-        props.defaultValue
-      )
       return {
         defaultValue: props.defaultValue,
         value: props.defaultValue,
@@ -748,10 +946,12 @@ class RadioButtons extends React.Component {
             props.type = 'radio'
             props.value = option.value
 
+            // Check if the option is selected either from state or option properties
             const answerItem = self.getActiveValue(self.state.value, option.key)
+            const isCheckedInOptions = option.checked || option.selected
 
             if (self.props.mutable) {
-              props.checked = answerItem?.value ?? false
+              props.checked = answerItem?.value ?? isCheckedInOptions ?? false
             }
 
             if (this.props.read_only || !isSameEditor) {
@@ -778,7 +978,7 @@ class RadioButtons extends React.Component {
                         handleChange(formularKey, option.value)
                       }
 
-                      return {
+                      const newValue = {
                         ...current,
                         value: [
                           {
@@ -787,7 +987,57 @@ class RadioButtons extends React.Component {
                             info: '',
                           },
                         ],
+                      };
+
+                      // If we're in a dynamic column and this is a UI-only change (selection)
+                      // We need to update just this component's internal state without syncing to other rows
+                      const isInDynamicColumn = self.props.data.parentId && 
+                                               self.props.data.row !== undefined && 
+                                               self.props.data.col !== undefined;
+                      
+                      // Always update the local element state for immediate visual feedback
+                      if (self.props.updateElement) {
+                        // Apply the checked state to just this element's data
+                        const updatedData = {
+                          ...self.props.data,
+                          dirty: true,
+                          value: [{
+                            key: option.key,
+                            value: true
+                          }]
+                        };
+                        
+                        // Update the local options to show selection visually
+                        // This only affects THIS element, not others in the column
+                        const localOptions = self.props.data.options.map(opt => ({
+                          ...opt,
+                          checked: opt.key === option.key,
+                          selected: opt.key === option.key
+                        }));
+                        updatedData.options = localOptions;
+                        
+                        // Update just this element
+                        self.props.updateElement(updatedData);
                       }
+                      
+                      // If onElementChange is provided, but we avoid sending selection state
+                      if (self.props.onElementChange && isInDynamicColumn) {
+                        // For selection changes in dynamic columns, we don't want to sync the selection state
+                        // but we still need to notify the system that a change happened for other purposes
+                        // Create a copy that doesn't modify the selection state
+                        const updatedDataForSync = {
+                          ...self.props.data
+                          // Deliberately NOT updating options or selection state
+                        };
+                        
+                        // Mark this as a selection-only change that shouldn't be synced
+                        updatedDataForSync._selectionChangeOnly = true;
+                        
+                        // Notify the system about the change, but without selection state changes
+                        self.props.onElementChange(updatedDataForSync);
+                      }
+
+                      return newValue;
                     })
                   }}
                   {...props}
@@ -799,13 +1049,13 @@ class RadioButtons extends React.Component {
                   <input
                     id={'fid_' + this_key + '_info'}
                     type="text"
-                    class="form-control"
+                    className="form-control"
                     style={{
                       width: 'auto',
                       marginLeft: 16,
                       height: 'calc(1.5em + .5rem)',
                     }}
-                    defaultValue={answerItem.info ?? ''}
+                    defaultValue={answerItem?.info ?? ''}
                     ref={(c) => {
                       if (c && self.props.mutable) {
                         self.infos[`child_ref_${option.key}_info`] = c

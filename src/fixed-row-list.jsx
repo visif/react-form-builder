@@ -181,11 +181,9 @@ export default class FixedRowList extends React.Component {
           this.props.updateElement.call(preview, this_element);
         }
       } else {
-        this.props.updateElement.call(preview, this_element);
+        // Just update the element if we can't access data
+        this.props.updateElement.call(this.props.preview, this_element);
       }
-    } else {
-      // Just update the element if we can't access data
-      this.props.updateElement.call(this.props.preview, this_element);
     }
   }
 

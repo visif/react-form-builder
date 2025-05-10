@@ -160,8 +160,11 @@ export default class FormElementsEdit extends React.Component {
     const this_element = this.state.element
     // to prevent ajax calls with no change
     if (this.state.dirty) {
-      this.props.updateElement.call(this.props.preview, this_element)
+      this.props.updateElement(this_element)
       this.setState({ dirty: false })
+      
+      // No need to call syncRowChanges here anymore as it's already called in the preview component
+      // when updateElement is called
     }
   }
 
@@ -235,6 +238,18 @@ export default class FormElementsEdit extends React.Component {
     const this_checked_alternate_form = this.props.element.hasOwnProperty('alternateForm')
       ? this.props.element.alternateForm
       : false
+
+    // Determine if element is inside a DynamicColumnRow or other column container
+    const isInsideColumnContainer = this.props.element.parentId && this.props.preview && 
+                                  typeof this.props.preview.getDataById === 'function'
+                                  ? (() => {
+                                      const parentElement = this.props.preview.getDataById(this.props.element.parentId);
+                                      return parentElement && 
+                                             (parentElement.element === 'DynamicColumnRow' || 
+                                              parentElement.element?.includes('ColumnRow') ||
+                                              (parentElement.isContainer && parentElement.childItems));
+                                    })()
+                                  : false;
 
     const {
       canHaveDisplayHorizontal,
@@ -384,6 +399,7 @@ export default class FormElementsEdit extends React.Component {
           <div className="form-group">
             {this.props.element.element !== 'Signature2' && (
               <>
+                {/* Always show label editing section regardless of container type */}
                 <label>Display Label</label>
                 <Editor
                   toolbar={toolbar}
@@ -409,6 +425,8 @@ export default class FormElementsEdit extends React.Component {
                 Required
               </label>
             </div>
+
+            {/* "Display label in column" option removed as it's no longer needed */}
 
             {this.props.element.hasOwnProperty('defaultToday') && (
               <div className="custom-control custom-checkbox">

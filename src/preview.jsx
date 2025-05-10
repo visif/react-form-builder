@@ -162,8 +162,16 @@ const Preview = (props) => {
     child.parentId = item.id
     child.parentIndex = updatedData.indexOf(item)
     
-    // Hide the display label for elements in multi-column grid cells
-    child.hideLabel = true
+    // Set hideLabel to true ONLY for elements in Dynamic Columns, not other column types
+    if (item.element === 'DynamicColumnRow') {
+      child.hideLabel = true
+    } else if (item.element?.includes('ColumnRow')) {
+      // For other column types like TwoColumnRow, show the label
+      // Make sure we remove any hideLabel setting if it exists
+      if (child.hideLabel === true) {
+        delete child.hideLabel;
+      }
+    }
     
     // Handle old parent reference
     if (oldParent) {
@@ -214,8 +222,8 @@ const Preview = (props) => {
           parentId: item.id,
           parentIndex: updatedData.indexOf(item),
           
-          // UI properties
-          hideLabel: true,
+          // Only hide labels in DynamicColumnRow, not other column types
+          ...(item.element === 'DynamicColumnRow' ? { hideLabel: true } : {}),
           
           // Copy specific type-related properties from the original element
           // but leave data fields empty or with defaults
@@ -225,14 +233,20 @@ const Preview = (props) => {
           dirty: false
         };
         
-        // Copy basic properties that should be preserved
-        if (child.label) {
-          newElement.label = child.label;
-        }
+        // Copy all styling and display properties
+        const propertiesToCopy = [
+          'label', 'required', 'bold', 'italic', 'center',
+          'className', 'inline', 'readOnly', 'canHaveDisplayHorizontal',
+          'content', 'showDescription', 'description', 'text',
+          'showTimeSelect', 'showTimeSelectOnly', 'step', 'min_value', 'max_value',
+          'customCSS', 'defaultValue', 'default_today'
+        ];
         
-        if (child.required !== undefined) {
-          newElement.required = child.required;
-        }
+        propertiesToCopy.forEach(prop => {
+          if (child[prop] !== undefined) {
+            newElement[prop] = child[prop];
+          }
+        });
         
         // Handle specific element types
         switch(elementType) {
@@ -252,6 +266,10 @@ const Preview = (props) => {
               
               // Set default display properties
               newElement.inline = child.inline || false;
+              newElement.canHaveDisplayHorizontal = child.canHaveDisplayHorizontal;
+              newElement.canHaveOptionCorrect = child.canHaveOptionCorrect;
+              newElement.canHaveOptionValue = child.canHaveOptionValue;
+              if (child.canHaveInfo) newElement.canHaveInfo = child.canHaveInfo;
             }
             break;
             
@@ -264,6 +282,25 @@ const Preview = (props) => {
                 key: `${timestamp}_${Math.random().toString(36).substring(2, 9)}`
                 // Explicitly omit the selected property
               }));
+            }
+            break;
+            
+          case 'FormulaInput':
+            // Formula inputs need to copy formula and formularKey properties
+            if (child.formula !== undefined) {
+              newElement.formula = child.formula;
+            }
+            if (child.formularKey !== undefined) {
+              newElement.formularKey = child.formularKey;
+            }
+            break;
+            
+          case 'TextInput':
+          case 'NumberInput':
+          case 'TextArea':
+            // Text inputs need to copy formularKey if it exists
+            if (child.formularKey !== undefined) {
+              newElement.formularKey = child.formularKey;
             }
             break;
             
@@ -281,6 +318,14 @@ const Preview = (props) => {
               }
             }
         }
+        
+        // Always copy formula properties to ensure they're available for all element types that need them
+        const formulaProps = ['formula', 'formularKey'];
+        formulaProps.forEach(prop => {
+          if (child[prop] !== undefined) {
+            newElement[prop] = child[prop];
+          }
+        });
         
         // Add to our tracking array
         rowsToUpdate.push({rowIndex, newElement});
@@ -415,7 +460,8 @@ const Preview = (props) => {
         index={index}
         moveCard={moveCard}
         insertCard={insertCard}
-        mutable={false}
+        mutable={true}  // Set to true to make inputs interactive
+        preview={true}  // Add preview prop to identify preview mode
         parent={props.parent}
         editModeOn={props.editModeOn}
         isDraggable={true}
@@ -426,6 +472,8 @@ const Preview = (props) => {
         removeChild={removeChild}
         _onDestroy={_onDestroy}
         getActiveUserProperties={props.getActiveUserProperties}
+        onElementChange={syncRowChanges} // Add callback for syncing changes in preview
+        updateElement={updateElement} // Pass updateElement for state changes
         getDataSource={(data) => {
           if (data.sourceType === 'name') {
             return [
@@ -467,12 +515,26 @@ const Preview = (props) => {
   }
 
   const showEditForm = () => {
-    const handleUpdateElement = (element) => updateElement(element)
+    const handleUpdateElement = (element) => {
+      updateElement(element)
+      
+      // Directly call syncRowChanges here if the element is part of a multi-column row
+      if (element.parentId && element.row !== undefined && element.col !== undefined) {
+        syncRowChanges(element)
+      }
+    }
+    
     const formElementEditProps = {
       showCorrectColumn: props.showCorrectColumn,
       files: props.files,
       manualEditModeOff: manualEditModeOff,
-      preview: this,
+      // Instead of passing 'this', create an object with the necessary functions
+      preview: {
+        syncRowChanges,
+        updateElement,
+        getDataById,
+        state: { data }
+      },
       element: props.editElement,
       updateElement: handleUpdateElement,
       getFormSource: props.getFormSource,
@@ -490,6 +552,209 @@ const Preview = (props) => {
   const items = data
     .filter((item) => !!item && !item.parentId)
     .map((item, index) => getElement(item, index))
+
+  // Function to synchronize changes across all elements in a column
+  const syncRowChanges = (changedElement) => {
+    // Verify that this is an element in a multi-column row
+    if (!changedElement.parentId || changedElement.row === undefined || changedElement.col === undefined) {
+      return;
+    }
+
+    // Get the parent element (the row)
+    const parentElement = getDataById(changedElement.parentId);
+    if (!parentElement || !parentElement.childItems) {
+      return;
+    }
+
+    // Skip synchronization for non-dynamic columns - only synchronize in DynamicColumnRow elements
+    if (parentElement.element !== 'DynamicColumnRow') {
+      return;
+    }
+
+    // Get the column index where this element resides
+    const col = changedElement.col;
+
+    // Check if this is a user selection change (not structure change)
+    // For RadioButtons and Checkboxes, we don't want to sync the checked/selected states
+    const isSelectionChange = 
+      (changedElement.element === 'RadioButtons' || changedElement.element === 'Checkboxes') && 
+      changedElement.options && 
+      changedElement.options.some(opt => opt.checked || opt.selected);
+    
+    // If this is just a selection change in a form element, don't sync it to other rows
+    if (isSelectionChange) {
+      return;
+    }
+    
+    // Go through each row in this column and update properties
+    parentElement.childItems.forEach((row, rowIndex) => {
+      // Skip the row that triggered the change
+      if (rowIndex === changedElement.row) return;
+      
+      const itemId = row[col];
+      if (!itemId) return;
+      
+      const itemData = getDataById(itemId);
+      if (!itemData || itemData.element !== changedElement.element) return;
+      
+      // Create a new updated element to apply changes
+      let updatedItem = { ...itemData };
+      let changed = false;
+      
+      // Common properties to sync for all element types
+      const commonProps = [
+        'label', 'required', 'readOnly', 'description', 'showDescription',
+        'className', 'customCSS', 'field_name'
+      ];
+      
+      commonProps.forEach(prop => {
+        if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
+          updatedItem[prop] = changedElement[prop];
+          changed = true;
+        }
+      });
+      
+      // Special synchronization rules for different element types
+      switch(changedElement.element) {
+        case 'Checkboxes':
+        case 'RadioButtons':
+          // Synchronize option text and value only, leave info & correct properties intact
+          if (changedElement.options && itemData.options) {
+            // Build new options array by preserving item-specific properties
+            const newOptions = [];
+
+            // Iterate through options and build new array maintaining individual settings
+            changedElement.options.forEach((newOpt, idx) => {
+              if (idx < itemData.options.length) {
+                // Preserve existing option but update text and value
+                // IMPORTANT: Don't synchronize checked or selected state between rows
+                newOptions.push({
+                  ...itemData.options[idx], 
+                  text: newOpt.text,
+                  value: newOpt.value
+                  // Deliberately NOT copying checked or selected state
+                });
+              } else {
+                // For newly added options (that don't exist in current item)
+                // Add them without any info or correct properties
+                const newOption = {
+                  text: newOpt.text,
+                  value: newOpt.value,
+                  key: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+                };
+                
+                // Only copy essential properties, not info/correct
+                if (changedElement.element === 'Checkboxes' || changedElement.element === 'RadioButtons') {
+                  newOption.checked = false;
+                  newOption.selected = false;
+                }
+                
+                newOptions.push(newOption);
+              }
+            });
+
+            // Only update if options changed
+            if (newOptions.length !== itemData.options.length || 
+                newOptions.some((opt, i) => 
+                  opt.text !== itemData.options[i]?.text || 
+                  opt.value !== itemData.options[i]?.value)) {
+              updatedItem.options = newOptions;
+              changed = true;
+            }
+          }
+          
+          // Sync display properties (but not option-specific ones)
+          if (changedElement.inline !== itemData.inline) {
+            updatedItem.inline = changedElement.inline;
+            changed = true;
+          }
+          
+          // Sync capability flags but don't sync individual option selections
+          ['canHaveOptionCorrect', 'canHaveOptionValue', 'canHaveInfo'].forEach(prop => {
+            if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
+              updatedItem[prop] = changedElement[prop];
+              changed = true;
+            }
+          });
+          break;
+          
+        case 'TextInput':
+        case 'NumberInput':
+        case 'TextArea':
+          // For text inputs, copy formularKey
+          if (changedElement.formularKey !== undefined && changedElement.formularKey !== itemData.formularKey) {
+            updatedItem.formularKey = changedElement.formularKey;
+            changed = true;
+          }
+          break;
+          
+        case 'DatePicker':
+          // Sync date-specific properties
+          ['showTimeSelect', 'showTimeSelectOnly', 'defaultToday'].forEach(prop => {
+            if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
+              updatedItem[prop] = changedElement[prop];
+              changed = true;
+            }
+          });
+          break;
+          
+        case 'Range':
+          // Sync range-specific properties
+          ['min_value', 'max_value', 'step', 'default_value', 'min_label', 'max_label'].forEach(prop => {
+            if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
+              updatedItem[prop] = changedElement[prop];
+              changed = true;
+            }
+          });
+          break;
+          
+        case 'Signature':
+        case 'Image':
+          // Sync styling properties
+          ['center', 'width', 'height'].forEach(prop => {
+            if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
+              updatedItem[prop] = changedElement[prop];
+              changed = true;
+            }
+          });
+          break;
+          
+        case 'Paragraph':
+        case 'Header':
+          // Sync text styling properties
+          ['bold', 'italic', 'content'].forEach(prop => {
+            if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
+              updatedItem[prop] = changedElement[prop];
+              changed = true;
+            }
+          });
+          break;
+          
+        case 'FormulaInput':
+          // Sync formula properties
+          ['formula', 'formularKey'].forEach(prop => {
+            if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
+              updatedItem[prop] = changedElement[prop];
+              changed = true;
+            }
+          });
+          break;
+          
+        default:
+          // For other element types, do a generic property sync
+          if (changedElement.options && itemData.options) {
+            updatedItem.options = [...itemData.options]; // Clone options but don't change them
+            changed = true;
+          }
+      }
+      
+      // If any properties were changed, update the element
+      if (changed) {
+        updatedItem.dirty = true;
+        updateElement(updatedItem);
+      }
+    });
+  };
 
   return (
     <div className={classes} style={{ height: '100%', scrollbarWidth: 'none' }}>

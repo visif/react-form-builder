@@ -18,6 +18,7 @@ const MultiColumnRow = (props) => {
     seq,
     className,
     index,
+    updateElement,
   } = props
 
   const { childItems = [], pageBreakBefore } = data
@@ -25,6 +26,109 @@ const MultiColumnRow = (props) => {
   
   // Check if row labels are defined in data
   const hasRowLabels = data.rows && Array.isArray(data.rowLabels) && data.rowLabels.length > 0
+  
+  // Function to synchronize changes across a column
+  const syncColumnChanges = (rowIndex, columnIndex, elementType, changeData) => {
+    // Only sync for supported element types
+    if (!['Checkboxes', 'RadioButtons', 'Dropdown', 'TextInput', 'NumberInput', 'TextArea', 'DatePicker', 'Signature', 'FormulaInput'].includes(elementType)) {
+      return;
+    }
+    
+    // Go through each row
+    childItems.forEach((row, rIdx) => {
+      // Skip the row that triggered the change
+      if (rIdx === rowIndex) return;
+      
+      const itemId = row[columnIndex];
+      if (!itemId) return;
+      
+      const itemData = getDataById(itemId);
+      if (!itemData || itemData.element !== elementType) return;
+      
+      // Create a new updated element to apply changes
+      let updatedItem = {
+        ...itemData
+      };
+      
+      // Apply changes based on element type and what was changed
+      if (elementType === 'Checkboxes' || elementType === 'RadioButtons') {
+        // For checkboxes/radio buttons
+        if (changeData.options) {
+          // Transfer option selection state but preserve option structure
+          updatedItem.options = changeData.options.map((newOpt, idx) => {
+            if (idx < itemData.options.length) {
+              return {
+                ...itemData.options[idx],
+                text: newOpt.text,           // Update text
+                value: newOpt.value,         // Update value
+                checked: newOpt.checked,     // Update checked state
+                selected: newOpt.selected    // Update selected state
+              };
+            }
+            return newOpt; // For new options
+          });
+        }
+        
+        // Handle label changes
+        if (changeData.label !== undefined && changeData.label !== itemData.label) {
+          updatedItem.label = changeData.label;
+        }
+        
+        // Sync formularKey if it exists
+        if (changeData.formularKey !== undefined) {
+          updatedItem.formularKey = changeData.formularKey;
+        }
+      } else if (elementType === 'Dropdown') {
+        // For dropdowns
+        if (changeData.options) {
+          updatedItem.options = changeData.options.map((newOpt, idx) => {
+            if (idx < itemData.options.length) {
+              return {
+                ...itemData.options[idx],
+                text: newOpt.text,
+                value: newOpt.value
+              };
+            }
+            return newOpt;
+          });
+        }
+        
+        if (changeData.value !== undefined) {
+          updatedItem.value = changeData.value;
+        }
+        
+        // Handle label changes
+        if (changeData.label !== undefined && changeData.label !== itemData.label) {
+          updatedItem.label = changeData.label;
+        }
+        
+        // Sync formularKey if it exists
+        if (changeData.formularKey !== undefined) {
+          updatedItem.formularKey = changeData.formularKey;
+        }
+      } else {
+        // For other input types
+        if (changeData.value !== undefined) {
+          updatedItem.value = changeData.value;
+        }
+        
+        // Handle label changes
+        if (changeData.label !== undefined && changeData.label !== itemData.label) {
+          updatedItem.label = changeData.label;
+        }
+        
+        // Sync formularKey if it exists
+        if (changeData.formularKey !== undefined) {
+          updatedItem.formularKey = changeData.formularKey;
+        }
+      }
+      
+      // If we created an updated item, apply the changes
+      if (updatedItem && updateElement) {
+        updateElement(updatedItem);
+      }
+    });
+  };
 
   return (
     <div className={baseClasses}>
@@ -83,6 +187,8 @@ const MultiColumnRow = (props) => {
                         getDataById={getDataById}
                         setAsChild={setAsChild}
                         seq={seq}
+                        syncColumnChanges={syncColumnChanges}
+                        updateElement={updateElement}
                       />
                     )}
                   </td>
