@@ -15,19 +15,33 @@ export default class FixedRowList extends React.Component {
   }
 
   _setValue(text) {
-    return `${text}`.replace(/[^A-Z0-9]+/gi, '_').toLowerCase()
+    return `${text || ''}`.replace(/[^A-Z0-9]+/gi, '_').toLowerCase()
   }
 
   editRow(index, key, e) {
     const this_element = this.state.element
-    const val =
-      this_element.rowLabels[index].value !==
-      this._setValue(this_element.rowLabels[index][key])
-        ? this_element.rowLabels[index].value
-        : this._setValue(e.target.value)
 
-    this_element.rowLabels[index][key] = e.target.value
+    // Ensure rowLabels[index] exists
+    if (!this_element.rowLabels[index]) {
+      this_element.rowLabels[index] = { value: '', text: '', key: ID.uuid() }
+    }
+
+    // Safely check if value property differs from the generated value
+    const currentValue = this_element.rowLabels[index].value || ''
+    const currentKeyValue = this_element.rowLabels[index][key] || ''
+    const targetValue = e.target.value || ''
+
+    // If value is already custom (not auto-generated from text), keep it
+    // Otherwise, set it to the new auto-generated value
+    const val =
+      currentValue !== this._setValue(currentKeyValue)
+        ? currentValue
+        : this._setValue(targetValue)
+
+    // Update the properties
+    this_element.rowLabels[index][key] = targetValue
     this_element.rowLabels[index].value = val
+
     this.setState({
       element: this_element,
       dirty: true,

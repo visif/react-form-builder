@@ -146,43 +146,125 @@ const Preview = (props) => {
     if (swapChildren(item, child, row, col)) {
       return
     }
+    
+    // Keep track of all data modifications
+    let updatedData = [...data];
+    
+    // Handle the original drop first
     const oldParent = getDataById(child.parentId)
     const oldRow = child.row
     const oldCol = child.col
+    
+    // Update the child properties
     item.childItems[row][col] = child.id
 
     child.row = row
     child.col = col
     child.parentId = item.id
     child.parentIndex = data.indexOf(item)
-    child.isShowLabel = item.element !== 'DynamicColumnRow'
-
     if (oldParent) {
       oldParent.childItems[oldRow][oldCol] = null
     }
-    const list = data.filter((x) => x && x.parentId === item.id)
-    // const toRemove = list.filter((x) => item.childItems.indexOf(x.id) === -1)
-    const flatChildItems = item.childItems.flat().filter(Boolean)
-    const toRemove = list.filter((x) => !flatChildItems.includes(x.id))
-    let newData = data
-    if (toRemove.length) {
-      newData = data.filter((x) => toRemove.indexOf(x) === -1)
-    }
+    
+    // If this element isn't in our data array yet (new element), add it
     if (!getDataById(child.id)) {
-      newData.push(child)
+      updatedData.push(child);
     }
-    store.dispatch('updateOrder', newData)
+
+    // Auto-propagate to all rows in the same column if:
+    // - There are multiple rows
+    // - Auto-propagate is enabled (we'll always enable it for now)
+    if (item.childItems.length > 1) {
+      const rowsToUpdate = [];
+      
+      for (let rowIndex = 0; rowIndex < item.childItems.length; rowIndex++) {
+        // Skip the current row as it already has the element
+        if (rowIndex === row) continue;
+        
+        // Remove any existing element in this position
+        const existingElementId = item.childItems[rowIndex][col];
+        if (existingElementId) {
+          const existingElement = getDataById(existingElementId);
+          if (existingElement) {
+            // Filter out the existing element
+            updatedData = updatedData.filter(x => x !== existingElement);
+          }
+        }
+        
+        // Create a clone of the element for this row
+        const elementClone = JSON.parse(JSON.stringify(child));
+        
+        // Ensure unique IDs for each clone
+        elementClone.id = `${elementClone.element || 'item'}_${Date.now()}_${rowIndex}_${Math.floor(Math.random() * 10000)}`;
+        elementClone.row = rowIndex;
+        elementClone.col = col;
+        elementClone.parentId = item.id;
+        elementClone.parentIndex = updatedData.indexOf(item);
+        elementClone.hideLabel = true; // Hide label for all cloned elements too
+        
+        // Add clone to our tracking array
+        rowsToUpdate.push({rowIndex, clone: elementClone});
+      }
+      
+      // Apply all element clones at once
+      rowsToUpdate.forEach(({rowIndex, clone}) => {
+        item.childItems[rowIndex][col] = clone.id;
+        updatedData.push(clone);
+      });
+    }
+    
+    // Clean up any orphaned elements
+    const list = updatedData.filter((x) => x && x.parentId === item.id);
+    const flatChildItems = item.childItems.flat().filter(Boolean);
+    const toRemove = list.filter((x) => !flatChildItems.includes(x.id));
+    
+    if (toRemove.length) {
+      updatedData = updatedData.filter((x) => toRemove.indexOf(x) === -1);
+    }
+    
+    // Update sequence number
+    seq = seq > 100000 ? 0 : seq + 1;
+    
+    // Update the state once with all changes
+    setData(updatedData);
+    
+    // Dispatch the final update to the store
+    store.dispatch('updateOrder', updatedData);
   }
 
   const removeChild = (item, row = 0, col) => {
-    const oldId = item.childItems[row][col]
-    const oldItem = getDataById(oldId)
-    if (oldItem) {
-      const newData = data.filter((x) => x !== oldItem)
-      item.childItems[row][col] = null
-      seq = seq > 100000 ? 0 : seq + 1
-      store.dispatch('updateOrder', newData)
-      setData(newData)
+    // Create a working copy of the data
+    let newData = [...data];
+    // Track any elements that need to be removed
+    const elementsToRemove = [];
+    
+    // Loop through all rows in the grid
+    for (let rowIndex = 0; rowIndex < item.childItems.length; rowIndex++) {
+      // Get the element ID in this column for the current row
+      const elementId = item.childItems[rowIndex][col];
+      
+      if (elementId) {
+        // Find the element to be removed
+        const elementToRemove = getDataById(elementId);
+        if (elementToRemove) {
+          // Add it to our list of elements to remove
+          elementsToRemove.push(elementToRemove);
+          // Set the reference to null in the childItems array
+          item.childItems[rowIndex][col] = null;
+        }
+      }
+    }
+    
+    // Remove all collected elements from the data array
+    if (elementsToRemove.length > 0) {
+      newData = newData.filter(x => !elementsToRemove.includes(x));
+      
+      // Update sequence number
+      seq = seq > 100000 ? 0 : seq + 1;
+      
+      // Update the state and store
+      store.dispatch('updateOrder', newData);
+      setData(newData);
     }
   }
 

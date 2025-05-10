@@ -5,6 +5,11 @@ const ComponentLabel = (props) => {
   if (props.data.isShowLabel !== undefined && props.data.isShowLabel === false) {
     return null
   }
+  // Don't render anything if hideLabel is true
+  
+  /*if (props.data && props.data.hideLabel) {
+    return null;
+  }*/
 
   const hasRequiredLabel =
     props.data.hasOwnProperty('required') &&
