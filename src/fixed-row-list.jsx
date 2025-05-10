@@ -58,21 +58,203 @@ export default class FixedRowList extends React.Component {
 
   addRow(index) {
     const this_element = this.state.element
-    this_element.rowLabels.splice(index + 1, 0, { value: '', text: '', key: ID.uuid() })
-    this.props.updateElement.call(this.props.preview, this_element)
+    const newRowIndex = index + 1
+
+    // Add a new row label
+    this_element.rowLabels.splice(newRowIndex, 0, { 
+      value: '', 
+      text: `Row ${this_element.rowLabels.length + 1}`, 
+      key: ID.uuid() 
+    })
+
+    // Get a reference to the preview component
+    const preview = this.props.preview
+    
+    // Increase the rows count
+    const currentRows = Number(this_element.rows || 1)
+    this_element.rows = currentRows + 1
+    
+    // Initialize a new row in childItems if it doesn't exist
+    if (!this_element.childItems[newRowIndex]) {
+      const columnsCount = this_element.childItems[0] ? this_element.childItems[0].length : 0
+      this_element.childItems[newRowIndex] = Array(columnsCount).fill(null)
+    }
+    
+    // If we can access the preview data
+    if (preview && preview.state && preview.state.data && typeof preview.getDataById === 'function') {
+      const allFormData = [...preview.state.data];
+      const newElements = [];
+      
+      // For each column, create new elements
+      const columnCount = this_element.childItems[0] ? this_element.childItems[0].length : 0
+      
+      for (let col = 0; col < columnCount; col++) {
+        // Find a template element
+        let templateElement = null;
+        
+        // Look for existing elements in this column
+        for (let row = 0; row < this_element.childItems.length; row++) {
+          if (row !== newRowIndex && 
+              this_element.childItems[row] && 
+              this_element.childItems[row][col]) {
+            
+            const elementId = this_element.childItems[row][col];
+            const element = preview.getDataById(elementId);
+            
+            if (element) {
+              templateElement = element;
+              break;
+            }
+          }
+        }
+        
+        // If we found a template element
+        if (templateElement) {
+          const elementType = templateElement.element;
+          const timestamp = Date.now() + col + newRowIndex;
+          
+          // Create a new element
+          const newElement = {
+            element: elementType,
+            id: `${elementType}_${timestamp}_${newRowIndex}_${col}`,
+            row: newRowIndex,
+            col: col,
+            parentId: this_element.id,
+            hideLabel: true,
+            field_name: `${elementType}_${newRowIndex}_${col}_${timestamp}`
+          };
+          
+          // Copy basic properties
+          if (templateElement.label) newElement.label = templateElement.label;
+          if (templateElement.required !== undefined) newElement.required = templateElement.required;
+          
+          // Handle special element types
+          if (elementType === 'Checkboxes' || elementType === 'RadioButtons') {
+            // Create fresh options with unchecked state
+            if (templateElement.options && Array.isArray(templateElement.options)) {
+              newElement.options = templateElement.options.map(option => ({
+                value: option.value,
+                text: option.text,
+                key: `${timestamp}_${Math.random().toString(36).substring(2, 9)}`,
+                checked: false,
+                selected: false
+              }));
+              newElement.inline = templateElement.inline || false;
+            }
+          } 
+          else if (elementType === 'Dropdown') {
+            // Create dropdown options
+            if (templateElement.options && Array.isArray(templateElement.options)) {
+              newElement.options = templateElement.options.map(option => ({
+                value: option.value,
+                text: option.text,
+                key: `${timestamp}_${Math.random().toString(36).substring(2, 9)}`
+              }));
+            }
+          }
+          else if (templateElement.options) {
+            // Handle other elements with options
+            newElement.options = JSON.parse(JSON.stringify(templateElement.options))
+              .map(opt => ({
+                ...opt,
+                key: `${timestamp}_${Math.random().toString(36).substring(2, 9)}`
+              }));
+          }
+          
+          // Add to our collection
+          newElements.push(newElement);
+          this_element.childItems[newRowIndex][col] = newElement.id;
+        }
+      }
+      
+      // If we created new elements, update the form data
+      if (newElements.length > 0) {
+        const updatedData = [...allFormData, ...newElements];
+        
+        // Try to update state
+        try {
+          preview.setState({ data: updatedData }, () => {
+            this.props.updateElement.call(preview, this_element);
+          });
+        } catch (e) {
+          console.error("Error updating state:", e);
+          this.props.updateElement.call(preview, this_element);
+        }
+      } else {
+        this.props.updateElement.call(preview, this_element);
+      }
+    } else {
+      // Just update the element if we can't access data
+      this.props.updateElement.call(this.props.preview, this_element);
+    }
   }
 
   removeRow(index) {
     const this_element = this.state.element
+    
+    // Don't allow removing the last row
+    if (this_element.rowLabels.length <= 1) {
+      console.warn('Cannot remove the last row');
+      return;
+    }
+    
+    // Remove the row label
     this_element.rowLabels.splice(index, 1)
+    
+    // If we have childItems, also remove the row from there
+    if (this_element.childItems && Array.isArray(this_element.childItems)) {
+      // Get a reference to the preview component
+      const preview = this.props.preview
+      let updatedData = preview && preview.state ? [...preview.state.data] : [];
+      
+      // Track elements to remove
+      const elementsToRemove = [];
+      
+      // Remove the row from childItems
+      if (index < this_element.childItems.length) {
+        // Find elements in this row to remove them from data
+        if (preview && typeof preview.getDataById === 'function') {
+          const rowItems = this_element.childItems[index];
+          if (rowItems) {
+            rowItems.forEach(elementId => {
+              if (elementId) {
+                const element = preview.getDataById(elementId);
+                if (element) {
+                  elementsToRemove.push(element);
+                }
+              }
+            });
+          }
+        }
+        
+        // Remove the row from childItems
+        this_element.childItems.splice(index, 1);
+        
+        // Update rows count
+        this_element.rows = this_element.childItems.length;
+        
+        // Remove elements from data if we have access to it
+        if (preview && preview.state && elementsToRemove.length > 0) {
+          updatedData = updatedData.filter(x => !elementsToRemove.includes(x));
+          
+          // Try to update state
+          try {
+            preview.setState({ data: updatedData }, () => {
+              this.props.updateElement.call(preview, this_element);
+            });
+            return;
+          } catch (e) {
+            console.error("Error updating state:", e);
+          }
+        }
+      }
+    }
+    
+    // Update the element
     this.props.updateElement.call(this.props.preview, this_element)
   }
 
   render() {
-    if (this.state.dirty) {
-      this.state.element.dirty = true
-    }
-
     return (
       <div className="dynamic-option-list">
         <ul key="row-labels">

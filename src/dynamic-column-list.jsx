@@ -44,7 +44,11 @@ export default class DynamicColumnList extends React.Component {
     const { element, dirty } = this.state
     const { updateElement, preview } = this.props
     if (dirty) {
-      updateElement.call(preview, element)
+      if (preview) {
+        updateElement.call(preview, element)
+      } else {
+        updateElement(element)
+      }
       this.setState({ dirty: false })
     }
   }
@@ -58,14 +62,22 @@ export default class DynamicColumnList extends React.Component {
       key: ID.uuid(),
       width: 1,
     })
-    updateElement.call(preview, element)
+    if (preview) {
+      updateElement.call(preview, element)
+    } else {
+      updateElement(element)
+    }
   }
 
   removeColumn = (index) => {
     const { element } = this.state
     const { updateElement, preview } = this.props
     element.columns.splice(index, 1)
-    updateElement.call(preview, element)
+    if (preview) {
+      updateElement.call(preview, element)
+    } else {
+      updateElement(element)
+    }
   }
 
   editColumnSettings = (column) => {
@@ -233,6 +245,6 @@ DynamicColumnList.propTypes = {
       })
     ).isRequired,
   }).isRequired,
-  preview: PropTypes.shape({}).isRequired,
+  preview: PropTypes.shape({}),
   updateElement: PropTypes.func.isRequired,
 }

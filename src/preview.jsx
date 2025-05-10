@@ -157,11 +157,15 @@ const Preview = (props) => {
     
     // Update the child properties
     item.childItems[row][col] = child.id
-
     child.row = row
     child.col = col
     child.parentId = item.id
-    child.parentIndex = data.indexOf(item)
+    child.parentIndex = updatedData.indexOf(item)
+    
+    // Hide the display label for elements in multi-column grid cells
+    child.hideLabel = true
+    
+    // Handle old parent reference
     if (oldParent) {
       oldParent.childItems[oldRow][oldCol] = null
     }
@@ -173,7 +177,6 @@ const Preview = (props) => {
 
     // Auto-propagate to all rows in the same column if:
     // - There are multiple rows
-    // - Auto-propagate is enabled (we'll always enable it for now)
     if (item.childItems.length > 1) {
       const rowsToUpdate = [];
       
@@ -191,25 +194,102 @@ const Preview = (props) => {
           }
         }
         
-        // Create a clone of the element for this row
-        const elementClone = JSON.parse(JSON.stringify(child));
+        // Create a new instance of the same element type with minimal shared properties
+        const elementType = child.element;
         
-        // Ensure unique IDs for each clone
-        elementClone.id = `${elementClone.element || 'item'}_${Date.now()}_${rowIndex}_${Math.floor(Math.random() * 10000)}`;
-        elementClone.row = rowIndex;
-        elementClone.col = col;
-        elementClone.parentId = item.id;
-        elementClone.parentIndex = updatedData.indexOf(item);
-        elementClone.hideLabel = true; // Hide label for all cloned elements too
+        // Create a fresh timestamp to ensure uniqueness in IDs
+        const timestamp = Date.now() + rowIndex;
         
-        // Add clone to our tracking array
-        rowsToUpdate.push({rowIndex, clone: elementClone});
+        // Create a fresh element of the same type
+        const newElement = {
+          // Core properties that define the element type
+          element: elementType,
+          
+          // Create a truly unique ID for this instance
+          id: `${elementType}_${timestamp}_${rowIndex}_${Math.floor(Math.random() * 10000)}`,
+          
+          // Position properties
+          row: rowIndex,
+          col: col,
+          parentId: item.id,
+          parentIndex: updatedData.indexOf(item),
+          
+          // UI properties
+          hideLabel: true,
+          
+          // Copy specific type-related properties from the original element
+          // but leave data fields empty or with defaults
+          field_name: `${elementType}_${rowIndex}_${col}_${timestamp}`,
+          
+          // Each element gets its own separate local state for user input
+          dirty: false
+        };
+        
+        // Copy basic properties that should be preserved
+        if (child.label) {
+          newElement.label = child.label;
+        }
+        
+        if (child.required !== undefined) {
+          newElement.required = child.required;
+        }
+        
+        // Handle specific element types
+        switch(elementType) {
+          case 'Checkboxes': 
+          case 'RadioButtons':
+            // For checkboxes and radio buttons, completely recreate the options array
+            // with the same text values but reset all selected states
+            if (child.options && Array.isArray(child.options)) {
+              newElement.options = child.options.map(option => ({
+                value: option.value,
+                text: option.text,
+                key: `${timestamp}_${Math.random().toString(36).substring(2, 9)}`,
+                // Explicitly reset any selected state
+                checked: false,
+                selected: false
+              }));
+              
+              // Set default display properties
+              newElement.inline = child.inline || false;
+            }
+            break;
+            
+          case 'Dropdown':
+            // For dropdowns, create new options without selected state
+            if (child.options && Array.isArray(child.options)) {
+              newElement.options = child.options.map(option => ({
+                value: option.value,
+                text: option.text,
+                key: `${timestamp}_${Math.random().toString(36).substring(2, 9)}`
+                // Explicitly omit the selected property
+              }));
+            }
+            break;
+            
+          default:
+            // For other elements with options, do a generic clone
+            if (child.options) {
+              newElement.options = JSON.parse(JSON.stringify(child.options));
+              
+              // Ensure options have unique keys
+              if (Array.isArray(newElement.options)) {
+                newElement.options = newElement.options.map(opt => ({
+                  ...opt, 
+                  key: `${timestamp}_${Math.random().toString(36).substring(2, 9)}`
+                }));
+              }
+            }
+        }
+        
+        // Add to our tracking array
+        rowsToUpdate.push({rowIndex, newElement});
       }
       
       // Apply all element clones at once
-      rowsToUpdate.forEach(({rowIndex, clone}) => {
-        item.childItems[rowIndex][col] = clone.id;
-        updatedData.push(clone);
+      rowsToUpdate.forEach(({rowIndex, newElement}) => {
+        item.childItems[rowIndex][col] = newElement.id;
+        updatedData.push(newElement);
       });
     }
     
