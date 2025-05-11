@@ -542,17 +542,23 @@ const Preview = (props) => {
       }
     }
 
+    // Create a preview object with all required methods directly accessible
+    const previewObject = {
+      syncRowChanges,
+      updateElement: handleUpdateElement,
+      getDataById,
+      state: { data },
+      // Add direct method references to ensure they're available in the edit form
+      getDataById: getDataById,
+      updateElement: handleUpdateElement,
+    }
+
     const formElementEditProps = {
       showCorrectColumn: props.showCorrectColumn,
       files: props.files,
       manualEditModeOff: manualEditModeOff,
-      // Instead of passing 'this', create an object with the necessary functions
-      preview: {
-        syncRowChanges,
-        updateElement,
-        getDataById,
-        state: { data },
-      },
+      // Pass the enhanced preview object
+      preview: previewObject,
       element: props.editElement,
       updateElement: handleUpdateElement,
       getFormSource: props.getFormSource,
