@@ -80,7 +80,7 @@ export default class FormElementsEdit extends React.Component {
     let activeForm = {}
     let activeFormContent = {}
 
-    if (this.props.element.element === 'DataSource' && this.props.getFormSource) {
+    if ((this.props.element.element === 'DataSource') && this.props.getFormSource) {
       // call api to get form data
       formDataSource = (await this.props.getFormSource()) || []
       if (formDataSource) {
@@ -98,6 +98,15 @@ export default class FormElementsEdit extends React.Component {
         ...current,
         formDataSource,
         activeForm: activeFormContent,
+      }))
+    }
+    
+    // For FormLink, we only need the form list, not the content/fields
+    if (this.props.element.element === 'FormLink' && this.props.getFormSource) {
+      formDataSource = (await this.props.getFormSource()) || []
+      this.setState((current) => ({
+        ...current,
+        formDataSource,
       }))
     }
   }
@@ -876,67 +885,6 @@ export default class FormElementsEdit extends React.Component {
                 </select>
               </div>
             )}
-            {this.props.element.sourceType === 'form' && (
-              <div className="form-group">
-                <label className="control-label" htmlFor="formSource">
-                  Select Fields
-                </label>
-                {this.state.activeForm &&
-                  this.state.activeForm.columns &&
-                  this.state.activeForm.columns.map((item) => {
-                    return (
-                      <div className="custom-control custom-checkbox">
-                        <input
-                          id={item.field_name}
-                          className="custom-control-input"
-                          type="checkbox"
-                          checked={
-                            this.props.element.hasOwnProperty(
-                              `formField${item.field_name}`
-                            )
-                              ? this.props.element[`formField${item.field_name}`]
-                              : false
-                          }
-                          value={item.field_name}
-                          onChange={this.editElementProp.bind(
-                            this,
-                            `formField${item.field_name}`,
-                            'checked'
-                          )}
-                        />
-                        <label className="custom-control-label" htmlFor={item.field_name}>
-                          {item.label || item.text || ''}
-                        </label>
-                      </div>
-                    )
-                  })}
-                {/* <label className="control-label" htmlFor="formField">
-                  Form Field
-                </label>
-                <select
-                  className="form-control"
-                  id="formField"
-                  defaultValue={this.props.element.formField}
-                  value={this.props.element.formField}
-                  onBlur={this.updateElement.bind(this)}
-                  onChange={this.editElementProp.bind(
-                    this,
-                    "formField",
-                    "value"
-                  )}
-                >
-                  {this.state.activeForm &&
-                    this.state.activeForm.columns &&
-                    this.state.activeForm.columns.map((item) => {
-                      return (
-                        <option value={item.id} key={item.id}>
-                          {item.label || item.text || ""}
-                        </option>
-                      );
-                    })}
-                </select> */}
-              </div>
-            )}
           </div>
         )}
         {this.props.element.hasOwnProperty('formula') && (
@@ -968,6 +916,33 @@ export default class FormElementsEdit extends React.Component {
               onBlur={this.updateElement.bind(this)}
               onChange={this.editElementProp.bind(this, 'formularKey', 'value')}
             />
+          </div>
+        )}
+        {this.props.element.element === 'FormLink' && (
+          <div className="form-group">
+            <label className="control-label" htmlFor="formLinkSource">
+              Select Form
+            </label>
+            <select
+              className="form-control"
+              id="formLinkSource"
+              value={this.props.element.formSource || ''}
+              defaultValue={this.props.element.formSource || ''}
+              onBlur={this.updateElement.bind(this)}
+              onChange={this.editElementProp.bind(this, 'formSource', 'value')}
+            >
+              <option value={''} key={-1}>
+                Select a form...
+              </option>
+              {this.state.formDataSource &&
+                this.state.formDataSource.map((form) => {
+                  return (
+                    <option value={form.id} key={form.id}>
+                      {form.name || form.title}
+                    </option>
+                  )
+                })}
+            </select>
           </div>
         )}
       </div>

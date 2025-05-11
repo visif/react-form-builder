@@ -36,6 +36,7 @@ const {
   FileUpload,
   ImageUpload,
   FormulaInput,
+  FormLink, // Add FormLink here
 } = BaseFormElements
 
 const FormElements = {}
@@ -72,5 +73,6 @@ FormElements.DataSource = SortableElement(DataSource)
 FormElements.FileUpload = SortableElement(FileUpload)
 FormElements.ImageUpload = SortableElement(ImageUpload)
 FormElements.FormulaInput = SortableElement(FormulaInput)
+FormElements.FormLink = SortableElement(FormLink) // Add this line to register FormLink
 
 export default FormElements

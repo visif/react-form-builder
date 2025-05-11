@@ -242,6 +242,15 @@ export default class Toolbar extends React.Component {
         label: 'Placeholder Label',
       },
       {
+        key: 'FormLink',
+        name: 'Form Link',
+        icon: 'fas fa-external-link-square-alt',
+        field_name: 'form_link_',
+        formSource: '',
+        canHaveAnswer: true,
+        label: 'Placeholder Label',
+      },
+      {
         key: 'Table',
         name: 'Table',
         icon: 'fas fa-table',
@@ -534,6 +543,10 @@ export default class Toolbar extends React.Component {
       elementOptions.sourceType = item.sourceType
       elementOptions.formSource = item.formSource
       elementOptions.formField = item.formField || {}
+    }
+
+    if (item.key === 'FormLink') {
+      elementOptions.formSource = item.formSource
     }
 
     if (item.formularKey !== undefined) {

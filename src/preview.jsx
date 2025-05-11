@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react'
 import update from 'immutability-helper'
+import FormElements from './form-elements'
 import FormElementsEdit from './form-elements-edit'
 import useUndoRedo, { ACTION } from './functions/useUndoRedo'
 import SortableFormElements from './sortable-form-elements'
+// Import FormElements to access FormLink
 import store from './stores/store'
 
 const { PlaceHolder } = SortableFormElements
@@ -600,7 +602,7 @@ const Preview = (props) => {
       (changedElement.element === 'RadioButtons' ||
         changedElement.element === 'Checkboxes') &&
       changedElement.options &&
-      changedElement.options.some((opt) => opt.checked || opt.selected)
+      changedElement.options.some((opt) => opt.checked || selected)
 
     // If this is just a selection change in a form element, don't sync it to other rows
     if (isSelectionChange) {

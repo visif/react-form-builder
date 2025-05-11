@@ -9,6 +9,7 @@ import ComponentLabel from './component-label'
 import DataSource from './datasource'
 import DatePicker from './date-picker'
 import FileUpload from './fileUpload2'
+import FormLink from './form-link'
 import FormulaInput from './formula-input'
 import HeaderBar from './header-bar'
 import ImageUpload from './imageUpload'
@@ -1415,4 +1416,5 @@ FormElements.DataSource = DataSource
 FormElements.FileUpload = FileUpload
 FormElements.ImageUpload = ImageUpload
 FormElements.FormulaInput = FormulaInput
+FormElements.FormLink = FormLink
 export default FormElements
