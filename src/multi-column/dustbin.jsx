@@ -37,15 +37,15 @@ const renderElement = (item, props) => {
   // Add an onChange handler for column synchronization
   const elementProps = { ...props }
 
-  // Check if this is a syncable element type (Checkboxes, RadioButtons, Dropdown)
-  // AND we're in edit mode (not preview mode)
+  // Check if this is a syncable element type
   if (
-    ['Checkboxes', 'RadioButtons', 'Dropdown'].includes(item.element) &&
+    ['Checkboxes', 'RadioButtons', 'Dropdown', 'DataSource', 'Signature2'].includes(
+      item.element
+    ) &&
     props.syncColumnChanges &&
     props.editModeOn
   ) {
-    // Only synchronize in edit mode
-    // Create an onElementChange handler
+    // Create an onElementChange handler for component-specific synchronization
     elementProps.onElementChange = (changedData) => {
       // Synchronize changes across the column
       props.syncColumnChanges(props.row, props.col, item.element, changedData)

@@ -41,7 +41,9 @@ const MultiColumnRow = (props) => {
         'TextArea',
         'DatePicker',
         'Signature',
+        'Signature2',
         'FormulaInput',
+        'DataSource',
       ].includes(elementType)
     ) {
       return
@@ -119,6 +121,53 @@ const MultiColumnRow = (props) => {
         if (changeData.formularKey !== undefined) {
           updatedItem.formularKey = changeData.formularKey
         }
+      } else if (elementType === 'DataSource') {
+        // For DataSource components
+        if (changeData.sourceType !== undefined) {
+          updatedItem.sourceType = changeData.sourceType
+        }
+
+        if (changeData.formSource !== undefined) {
+          updatedItem.formSource = changeData.formSource
+        }
+
+        // Handle any selected item data
+        if (changeData.selectedItem !== undefined) {
+          updatedItem.selectedItem = changeData.selectedItem
+        }
+
+        // Handle label changes
+        if (changeData.label !== undefined && changeData.label !== itemData.label) {
+          updatedItem.label = changeData.label
+        }
+
+        // Make sure the DataSource is properly initialized
+        updatedItem.initialized = true
+      } else if (elementType === 'Signature2') {
+        // For Signature2 components
+        if (changeData.position !== undefined) {
+          updatedItem.position = changeData.position
+        }
+        if (changeData.specificRole !== undefined) {
+          updatedItem.specificRole = changeData.specificRole
+        }
+        // Handle label changes
+        if (changeData.label !== undefined && changeData.label !== itemData.label) {
+          updatedItem.label = changeData.label
+        }
+
+        // Sync required property if it exists
+        if (changeData.hasOwnProperty('required')) {
+          updatedItem.required = changeData.required
+        }
+
+        // Sync readOnly property if it exists
+        if (changeData.hasOwnProperty('readOnly')) {
+          updatedItem.readOnly = changeData.readOnly
+        }
+
+        // Make sure the Signature2 is properly initialized
+        updatedItem.initialized = true
       } else {
         // For other input types
         if (changeData.value !== undefined) {

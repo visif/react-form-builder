@@ -18,6 +18,23 @@ class Signature2 extends React.Component {
     }
   }
 
+  componentDidMount() {
+    // If this is in a DynamicColumnRow and we have onElementChange,
+    // notify parent that this component is now initialized
+    if (this.props.data.parentId && this.props.onElementChange) {
+      // Send initialization status to parent
+      this.props.onElementChange({
+        ...this.props.data,
+        element: 'Signature2',
+        initialized: true,
+        position: this.props.data.position,
+        specificRole: this.props.data.specificRole,
+        required: this.props.data.required,
+        readOnly: this.props.data.readOnly,
+      })
+    }
+  }
+
   static getDerivedStateFromProps = (props, state) => {
     console.log('Signature getDerivedStateFromProps')
     if (props.defaultValue && props.defaultValue.isSigned !== state.defaultValue) {

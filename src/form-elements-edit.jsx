@@ -160,15 +160,25 @@ export default class FormElementsEdit extends React.Component {
     })
   }
 
-  updateElement() {
+  updateElement = () => {
     const this_element = this.state.element
     // to prevent ajax calls with no change
     if (this.state.dirty) {
-      this.props.updateElement(this_element)
+      this.props.updateElement.call(this.props.preview, this_element)
       this.setState({ dirty: false })
+    }
 
-      // No need to call syncRowChanges here anymore as it's already called in the preview component
-      // when updateElement is called
+    // If this is a Signature2 element in a DynamicColumnRow, we need to sync changes
+    if (
+      this_element.element === 'Signature2' &&
+      this_element.parentId &&
+      this_element.row !== undefined &&
+      this_element.col !== undefined &&
+      this.props.preview &&
+      this.props.preview.syncRowChanges
+    ) {
+      // Call the syncRowChanges function to update other instances in the same column
+      this.props.preview.syncRowChanges(this_element)
     }
   }
 

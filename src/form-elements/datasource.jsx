@@ -26,6 +26,20 @@ class DataSource extends React.Component {
   async componentDidMount() {
     this.mounted = true
     await this.loadDataSource()
+
+    // If this is in a DynamicColumnRow and we have onElementChange,
+    // notify parent that this component is now initialized
+    if (this.props.data.parentId && this.props.onElementChange) {
+      // Send initialization status to parent
+      this.props.onElementChange({
+        ...this.props.data,
+        element: 'DataSource',
+        initialized: true,
+        sourceType: this.props.data.sourceType,
+        formSource: this.props.data.formSource,
+      })
+    }
+
     this.checkForValue()
   }
 
@@ -125,6 +139,25 @@ class DataSource extends React.Component {
     this.debounceOnChange(event.target.value)
   }
 
+  handleSelectItem = (item) => {
+    this.setState({
+      selectedItem: item,
+      searchText: item.name,
+      isShowingList: false,
+    })
+
+    // If this component is in a DynamicColumnRow and we have onElementChange,
+    // notify parent about the selection so it can be synced to other rows
+    if (this.props.data.parentId && this.props.onElementChange) {
+      this.props.onElementChange({
+        ...this.props.data,
+        element: 'DataSource',
+        selectedItem: item,
+        value: item.name,
+      })
+    }
+  }
+
   render() {
     const userProperties =
       this.props.getActiveUserProperties && this.props.getActiveUserProperties()
@@ -196,13 +229,7 @@ class DataSource extends React.Component {
                     backgroundColor: '#fff',
                     border: '1px solid rgba(0, 0, 0, 0.125)',
                   }}
-                  onClick={() => {
-                    this.setState({
-                      selectedItem: item,
-                      searchText: item.name,
-                      isShowingList: false,
-                    })
-                  }}
+                  onClick={() => this.handleSelectItem(item)}
                 >
                   {item.name}
                 </div>
