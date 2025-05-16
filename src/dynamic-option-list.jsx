@@ -2,9 +2,51 @@
  * <DynamicOptionList />
  */
 import React from 'react'
+import PropTypes from 'prop-types'
 import ID from './UUID'
 
 export default class DynamicOptionList extends React.Component {
+  static propTypes = {
+    element: PropTypes.shape({
+      options: PropTypes.arrayOf(
+        PropTypes.shape({
+          text: PropTypes.string,
+          value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+          key: PropTypes.string,
+        })
+      ).isRequired,
+      parentId: PropTypes.string,
+      col: PropTypes.number,
+      row: PropTypes.number,
+      element: PropTypes.string,
+    }).isRequired,
+    data: PropTypes.shape({}),
+    updateElement: PropTypes.func,
+    preview: PropTypes.shape({
+      state: PropTypes.shape({
+        data: PropTypes.arrayOf(
+          PropTypes.shape({
+            id: PropTypes.string.isRequired,
+          })
+        ),
+      }),
+      getDataById: PropTypes.func,
+      updateElement: PropTypes.func,
+    }),
+    canHaveOptionValue: PropTypes.bool,
+    canHaveOptionCorrect: PropTypes.bool,
+    canHaveInfo: PropTypes.bool,
+  }
+
+  static defaultProps = {
+    data: {},
+    updateElement: () => {},
+    preview: null,
+    canHaveOptionValue: false,
+    canHaveOptionCorrect: false,
+    canHaveInfo: false,
+  }
+
   constructor(props) {
     super(props)
     this.state = {
@@ -12,200 +54,229 @@ export default class DynamicOptionList extends React.Component {
       data: this.props.data,
       dirty: false,
     }
+    this.previousTime = 0
+    this.timeoutId = null
   }
 
-  _setValue(text) {
-    return `${text}`.replace(/[^A-Z0-9]+/gi, '_').toLowerCase()
+  // Throttle utility function
+  throttle =
+    (func, wait) =>
+    (...args) => {
+      const now = Date.now()
+      const remaining = wait - (now - this.previousTime)
+
+      if (remaining <= 0 || remaining > wait) {
+        if (this.timeoutId) {
+          clearTimeout(this.timeoutId)
+        }
+        this.previousTime = now
+        func.apply(this, args)
+      } else if (!this.timeoutId) {
+        this.timeoutId = setTimeout(() => {
+          this.previousTime = now
+          this.timeoutId = null
+          func.apply(this, args)
+        }, remaining)
+      }
+    }
+
+  // Clean up any pending timeouts
+  componentWillUnmount() {
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId)
+    }
   }
 
-  editOption(option_index, e) {
-    const this_element = this.state.element
+  setValue = (text) => text.replace(/[^A-Z0-9]+/gi, '_').toLowerCase()
+
+  handleOptionChange = this.throttle((optionIndex, { target: { value } }) => {
+    const { element } = this.state
+    const newElement = { ...element }
     const val =
-      this_element.options[option_index].value !==
-      this._setValue(this_element.options[option_index].text)
-        ? this_element.options[option_index].value
-        : this._setValue(e.target.value)
+      newElement.options[optionIndex].value !==
+      this.setValue(newElement.options[optionIndex].text)
+        ? newElement.options[optionIndex].value
+        : this.setValue(value)
 
-    this_element.options[option_index].text = e.target.value
-    this_element.options[option_index].value = val
-    this.setState({
-      element: this_element,
-      dirty: true,
+    newElement.options[optionIndex].text = value
+    newElement.options[optionIndex].value = val
+
+    this.setState({ element: newElement, dirty: true }, () => {
+      this.syncOptionsWithSameColumnElements(newElement.options)
     })
+  }, 300)
 
-    // Sync the same column immediately if this element is part of a dynamic column
-    this.syncOptionsWithSameColumnElements(this_element.options)
+  handleValueChange = this.throttle((optionIndex, { target: { value } }) => {
+    const { element } = this.state
+    const newElement = { ...element }
+    const val = value === '' ? this.setValue(newElement.options[optionIndex].text) : value
+    newElement.options[optionIndex].value = val
+
+    this.setState({ element: newElement, dirty: true }, () => {
+      this.syncOptionsWithSameColumnElements(newElement.options)
+    })
+  }, 300)
+
+  handleOptionCorrect = (optionIndex) => {
+    this.setState(
+      (prevState) => {
+        const newElement = { ...prevState.element }
+        const option = newElement.options[optionIndex]
+
+        if (Object.prototype.hasOwnProperty.call(option, 'correct')) {
+          delete option.correct
+        } else {
+          option.correct = true
+        }
+
+        return { element: newElement }
+      },
+      () => {
+        const { updateElement, preview } = this.props
+        const { element } = this.state
+        updateElement.call(preview, element)
+        this.syncOptionsWithSameColumnElements(element.options)
+      }
+    )
   }
 
-  editValue(option_index, e) {
-    const this_element = this.state.element
-    const val =
-      e.target.value === ''
-        ? this._setValue(this_element.options[option_index].text)
-        : e.target.value
-    this_element.options[option_index].value = val
-    this.setState({
-      element: this_element,
-      dirty: true,
-    })
+  handleOptionInfo = (optionIndex) => {
+    this.setState(
+      (prevState) => {
+        const newElement = { ...prevState.element }
+        const option = newElement.options[optionIndex]
 
-    // Sync the same column immediately if this element is part of a dynamic column
-    this.syncOptionsWithSameColumnElements(this_element.options)
+        if (Object.prototype.hasOwnProperty.call(option, 'info')) {
+          delete option.info
+        } else {
+          option.info = true
+        }
+
+        return { element: newElement }
+      },
+      () => {
+        const { updateElement, preview } = this.props
+        const { element } = this.state
+        updateElement.call(preview, element)
+        this.syncOptionsWithSameColumnElements(element.options)
+      }
+    )
   }
 
-  // eslint-disable-next-line no-unused-vars
-  editOptionCorrect(option_index, e) {
-    const this_element = this.state.element
-    if (this_element.options[option_index].hasOwnProperty('correct')) {
-      delete this_element.options[option_index].correct
-    } else {
-      this_element.options[option_index].correct = true
+  updateOption = () => {
+    const { updateElement, preview } = this.props
+    const { element, dirty } = this.state
+
+    if (dirty) {
+      updateElement.call(preview, element)
+      this.setState({ dirty: false }, () => {
+        this.syncOptionsWithSameColumnElements(element.options)
+      })
     }
-    this.setState({ element: this_element })
-    this.props.updateElement.call(this.props.preview, this_element)
-
-    // Sync the same column if this element is part of a dynamic column
-    this.syncOptionsWithSameColumnElements(this_element.options)
   }
 
-  editOptionInfo(option_index, e) {
-    const this_element = this.state.element
-    if (this_element.options[option_index].hasOwnProperty('info')) {
-      delete this_element.options[option_index].info
-    } else {
-      this_element.options[option_index].info = true
-    }
-    // update the current element
-    this.setState({ element: this_element })
-    this.props.updateElement.call(this.props.preview, this_element)
+  addOption = (index) => {
+    this.setState(
+      (prevState) => {
+        const newElement = { ...prevState.element }
+        const nextValue =
+          Math.max(
+            ...newElement.options.map(({ value }) =>
+              Number.isNaN(Number(value)) ? 0 : parseInt(value, 10)
+            )
+          ) + 1
 
-    // Sync the same column if this element is part of a dynamic column
-    this.syncOptionsWithSameColumnElements(this_element.options)
+        newElement.options.splice(index + 1, 0, {
+          value: nextValue,
+          text: '',
+          key: ID.uuid(),
+        })
+
+        return { element: newElement, dirty: true }
+      },
+      () => {
+        const { element } = this.state
+        this.syncOptionsWithSameColumnElements(element.options)
+      }
+    )
   }
 
-  updateOption() {
-    const this_element = this.state.element
-    // to prevent ajax calls with no change
-    if (this.state.dirty) {
-      this.props.updateElement.call(this.props.preview, this_element)
-      this.setState({ dirty: false })
-
-      // Sync the same column if this element is part of a dynamic column
-      this.syncOptionsWithSameColumnElements(this_element.options)
-    }
+  removeOption = (index) => {
+    this.setState(
+      (prevState) => {
+        const newElement = { ...prevState.element }
+        newElement.options.splice(index, 1)
+        return { element: newElement, dirty: true }
+      },
+      () => {
+        const { element } = this.state
+        this.syncOptionsWithSameColumnElements(element.options)
+      }
+    )
   }
 
-  addOption(index) {
-    const this_element = this.state.element
-    const nextValue =
-      Math.max(
-        ...this_element.options.map(({ value }) => (isNaN(value) ? 0 : parseInt(value)))
-      ) + 1
+  syncOptionsWithSameColumnElements = (options) => {
+    const {
+      preview,
+      element: propsElement,
+      updateElement: propsUpdateElement,
+    } = this.props
 
-    this_element.options.splice(index + 1, 0, {
-      value: nextValue,
-      text: '',
-      key: ID.uuid(),
-    })
-
-    this.setState({
-      element: this_element,
-      dirty: true,
-    })
-
-    // Sync the same column if this element is part of a dynamic column
-    this.syncOptionsWithSameColumnElements(this_element.options)
-  }
-
-  removeOption(index) {
-    const this_element = this.state.element
-    this_element.options.splice(index, 1)
-    this.setState({
-      element: this_element,
-      dirty: true,
-    })
-
-    // Sync the same column if this element is part of a dynamic column
-    this.syncOptionsWithSameColumnElements(this_element.options)
-  }
-
-  syncOptionsWithSameColumnElements(options) {
-    // Check if we have the necessary context and if the element is in a dynamic column
-    if (!this.props.preview || !this.props.element.parentId) {
+    if (!preview || !propsElement.parentId) {
       return
     }
 
-    // Get the parent element and verify it's available
     let parentElement
     const getDataById =
-      this.props.preview.getDataById ||
-      (this.props.preview.state &&
-        this.props.preview.state.data &&
-        ((id) => this.props.preview.state.data.find((x) => x.id === id)))
+      preview.getDataById ||
+      (preview.state?.data && ((id) => preview.state.data.find((x) => x.id === id)))
 
     if (typeof getDataById === 'function') {
-      parentElement = getDataById(this.props.element.parentId)
+      parentElement = getDataById(propsElement.parentId)
     }
 
-    if (
-      !parentElement ||
-      !parentElement.childItems ||
-      parentElement.element !== 'DynamicColumnRow'
-    ) {
-      // Not a dynamic column or cannot access parent data
+    if (!parentElement?.childItems || parentElement.element !== 'DynamicColumnRow') {
       return
     }
 
-    // Get the current element's column index
-    const columnIndex = this.props.element.col
-    if (columnIndex === undefined) return
+    const { col: columnIndex, row: currentRowIndex } = propsElement
+    if (columnIndex === undefined || currentRowIndex === undefined) {
+      return
+    }
 
-    // Get the current element's row index
-    const currentRowIndex = this.props.element.row
-    if (currentRowIndex === undefined) return
-
-    // Access update function - check both direct references and nested objects
     const updateElement =
-      typeof this.props.preview.updateElement === 'function'
-        ? this.props.preview.updateElement
-        : this.props.updateElement
+      typeof preview.updateElement === 'function'
+        ? preview.updateElement
+        : propsUpdateElement
 
     if (!updateElement) {
       return
     }
 
-    // Loop through all rows in this column and update options
     parentElement.childItems.forEach((row, rowIndex) => {
-      // Skip the current element's row
       if (rowIndex === currentRowIndex) return
 
-      // Get the element ID at this position
       const elementId = row[columnIndex]
       if (!elementId) return
 
-      // Get the element data
       const elementData = getDataById(elementId)
 
-      // Verify it's the same type of element and has options
       if (
         !elementData ||
-        elementData.element !== this.props.element.element ||
+        elementData.element !== propsElement.element ||
         !Array.isArray(elementData.options)
       ) {
         return
       }
 
-      // Create a deep copy of options with all properties preserved
       const newOptions = options.map((option, i) => {
-        // Handle case where target has fewer options than source
         if (i >= elementData.options.length) {
-          // Create a new option with all properties from the source
           return {
             ...option,
             key: ID.uuid(),
           }
         }
-        // For existing options, preserve the key but copy all other properties
+
         const { key } = elementData.options[i]
         return {
           ...option,
@@ -215,39 +286,37 @@ export default class DynamicOptionList extends React.Component {
         }
       })
 
-      // Create a new element with updated options
       const updatedElement = {
         ...elementData,
         options: newOptions,
         dirty: true,
       }
 
-      // Update the element
       updateElement(updatedElement)
     })
   }
 
   render() {
-    if (this.state.dirty) {
-      this.state.element.dirty = true
-    }
+    const { element, dirty } = this.state
+    const {
+      canHaveOptionValue,
+      canHaveInfo,
+      canHaveOptionCorrect,
+      element: propsElement,
+    } = this.props
 
-    // Determine if the element is inside a dynamic column
-    const isInDynamicColumn =
-      this.props.element &&
-      this.props.element.parentId &&
-      this.props.element.col !== undefined &&
-      this.props.element.row !== undefined
+    const isInDynamicColumn = !!(
+      propsElement?.parentId &&
+      propsElement?.col !== undefined &&
+      propsElement?.row !== undefined
+    )
 
-    // For checkboxes in dynamic columns, we always want to show the Info option
     const shouldShowInfo =
-      this.props.canHaveInfo ||
-      (isInDynamicColumn && this.props.element.element === 'Checkboxes')
+      canHaveInfo || (isInDynamicColumn && propsElement?.element === 'Checkboxes')
 
-    // For checkboxes in dynamic columns, we always want to show the Correct option too
     const shouldShowCorrect =
-      this.props.canHaveOptionCorrect ||
-      (isInDynamicColumn && this.props.element.element === 'Checkboxes')
+      canHaveOptionCorrect ||
+      (isInDynamicColumn && propsElement?.element === 'Checkboxes')
 
     return (
       <div className="dynamic-option-list">
@@ -257,7 +326,7 @@ export default class DynamicOptionList extends React.Component {
               <div className="col-sm-5">
                 <b>Options</b>
               </div>
-              {this.props.canHaveOptionValue && (
+              {canHaveOptionValue && (
                 <div className="col-sm-2">
                   <b>Value</b>
                 </div>
@@ -274,11 +343,11 @@ export default class DynamicOptionList extends React.Component {
               )}
             </div>
           </li>
-          {this.state.element.options.map((option, index) => {
-            const this_key = `edit_${option.key}`
-            const val = option.value !== this._setValue(option.text) ? option.value : ''
+          {element.options.map((option, index) => {
+            const itemKey = `edit_${option.key}`
+            const val = option.value !== this.setValue(option.text) ? option.value : ''
             return (
-              <li className="clearfix" key={this_key}>
+              <li className="clearfix" key={itemKey}>
                 <div className="row">
                   <div className="col-sm-5">
                     <input
@@ -286,42 +355,48 @@ export default class DynamicOptionList extends React.Component {
                       className="form-control"
                       style={{ width: '100%' }}
                       value={option.text}
-                      onChange={this.editOption.bind(this, index)}
-                      onBlur={this.updateOption.bind(this)}
+                      onChange={(e) => this.handleOptionChange(index, e)}
+                      onBlur={this.updateOption}
                     />
                   </div>
-                  {this.props.canHaveOptionValue && (
+                  {canHaveOptionValue && (
                     <div className="col-sm-2">
                       <input
                         type="text"
                         className="form-control"
                         style={{ width: '100%' }}
                         value={val}
-                        onChange={this.editValue.bind(this, index)}
-                        onBlur={this.updateOption.bind(this)}
+                        onChange={(e) => this.handleValueChange(index, e)}
+                        onBlur={this.updateOption}
                       />
                     </div>
                   )}
 
-                  {this.props.canHaveOptionValue && this.props.canHaveInfo && (
+                  {canHaveOptionValue && canHaveInfo && (
                     <div className="col-sm-1">
                       <input
                         className="form-control"
                         type="checkbox"
                         value="1"
-                        checked={option.hasOwnProperty('info') && option.info}
-                        onChange={this.editOptionInfo.bind(this, index)}
+                        checked={
+                          Object.prototype.hasOwnProperty.call(option, 'info') &&
+                          option.info
+                        }
+                        onChange={() => this.handleOptionInfo(index)}
                       />
                     </div>
                   )}
-                  {this.props.canHaveOptionValue && this.props.canHaveOptionCorrect && (
+                  {canHaveOptionValue && canHaveOptionCorrect && (
                     <div className="col-sm-1">
                       <input
                         className="form-control"
                         type="checkbox"
                         value="1"
-                        checked={option.hasOwnProperty('correct') && option.correct}
-                        onChange={this.editOptionCorrect.bind(this, index)}
+                        checked={
+                          Object.prototype.hasOwnProperty.call(option, 'correct') &&
+                          option.correct
+                        }
+                        onChange={() => this.handleOptionCorrect(index)}
                       />
                     </div>
                   )}
@@ -329,14 +404,16 @@ export default class DynamicOptionList extends React.Component {
                   <div className="col-sm-3">
                     <div className="dynamic-options-actions-buttons">
                       <button
-                        onClick={this.addOption.bind(this, index)}
+                        onClick={() => this.addOption(index)}
+                        type="button"
                         className="btn btn-success"
                       >
                         <i className="fas fa-plus-circle" />
                       </button>
                       {index > 0 && (
                         <button
-                          onClick={this.removeOption.bind(this, index)}
+                          onClick={() => this.removeOption(index)}
+                          type="button"
                           className="btn btn-danger"
                         >
                           <i className="fas fa-minus-circle" />
@@ -349,6 +426,7 @@ export default class DynamicOptionList extends React.Component {
             )
           })}
         </ul>
+        {dirty && (element.dirty = true)}
       </div>
     )
   }
