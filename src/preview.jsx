@@ -53,9 +53,7 @@ const Preview = (props) => {
     props.manualEditModeOff()
   }
 
-  const _setValue = (text) => {
-    return text.replace(/[^A-Z0-9]+/gi, '_').toLowerCase()
-  }
+  const _setValue = (text) => text.replace(/[^A-Z0-9]+/gi, '_').toLowerCase()
 
   const updateElement = (element) => {
     let found = false
@@ -220,7 +218,7 @@ const Preview = (props) => {
 
           // Position properties
           row: rowIndex,
-          col: col,
+          col,
           parentId: item.id,
           parentIndex: updatedData.indexOf(item),
 
@@ -478,11 +476,11 @@ const Preview = (props) => {
         index={index}
         moveCard={moveCard}
         insertCard={insertCard}
-        mutable={true} // Set to true to make inputs interactive
-        preview={true} // Add preview prop to identify preview mode
+        mutable // Set to true to make inputs interactive
+        preview // Add preview prop to identify preview mode
         parent={props.parent}
         editModeOn={props.editModeOn}
-        isDraggable={true}
+        isDraggable
         sortData={item.id}
         data={item}
         getDataById={getDataById}
@@ -519,15 +517,9 @@ const Preview = (props) => {
           }
           return []
         }}
-        onUploadFile={(file) => {
-          return `${file.name}-${Math.random() * 10000000}`
-        }}
-        onUploadImage={(file) => {
-          return `path/${file.name}-${Math.random() * 10000000}`
-        }}
-        onDownloadFile={(file) => {
-          return `download_${file.name}-${Math.random() * 10000000}`
-        }}
+        onUploadFile={(file) => `${file.name}-${Math.random() * 10000000}`}
+        onUploadImage={(file) => `path/${file.name}-${Math.random() * 10000000}`}
+        onDownloadFile={(file) => `download_${file.name}-${Math.random() * 10000000}`}
       />
     )
   }
@@ -549,14 +541,14 @@ const Preview = (props) => {
       getDataById,
       state: { data },
       // Add direct method references to ensure they're available in the edit form
-      getDataById: getDataById,
+      getDataById,
       updateElement: handleUpdateElement,
     }
 
     const formElementEditProps = {
       showCorrectColumn: props.showCorrectColumn,
       files: props.files,
-      manualEditModeOff: manualEditModeOff,
+      manualEditModeOff,
       // Pass the enhanced preview object
       preview: previewObject,
       element: props.editElement,
@@ -600,7 +592,7 @@ const Preview = (props) => {
     }
 
     // Get the column index where this element resides
-    const col = changedElement.col
+    const { col } = changedElement
 
     // Check if this is a user selection change (not structure change)
     // For RadioButtons and Checkboxes, we don't want to sync the checked/selected states
@@ -608,7 +600,7 @@ const Preview = (props) => {
       (changedElement.element === 'RadioButtons' ||
         changedElement.element === 'Checkboxes') &&
       changedElement.options &&
-      changedElement.options.some((opt) => opt.checked || selected)
+      changedElement.options.some((opt) => opt.checked)
 
     // If this is just a selection change in a form element, don't sync it to other rows
     if (isSelectionChange) {
@@ -627,7 +619,7 @@ const Preview = (props) => {
       if (!itemData || itemData.element !== changedElement.element) return
 
       // Create a new updated element to apply changes
-      let updatedItem = { ...itemData }
+      const updatedItem = { ...itemData }
       let changed = false
 
       // Common properties to sync for all element types
@@ -849,7 +841,7 @@ const Preview = (props) => {
             document.dispatchEvent(event)
           }}
         >
-          <i class="fas fa-history" style={{ marginRight: 8 }} />
+          <i className="fas fa-history" style={{ marginRight: 8 }} />
           Undo
         </span>
         <span

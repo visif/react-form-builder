@@ -35,7 +35,7 @@ export default class FormElementsEdit extends React.Component {
     if (!event || !event.target || !event.target.files || !this.props.onImageUpload) {
       if (!this.props.onImageUpload) {
         const this_element = this.state.element
-        this_element['src'] = 'Please provide upload callback'
+        this_element.src = 'Please provide upload callback'
         this.setState({
           element: this_element,
         })
@@ -49,14 +49,14 @@ export default class FormElementsEdit extends React.Component {
 
       const imageUrl = await this.props.onImageUpload(file, this.props.element.id)
 
-      var reader = new FileReader()
+      const reader = new FileReader()
       reader.onload = function (e) {
-        var img = new Image()
+        const img = new Image()
         img.onload = function () {
           const this_element = this.state.element
-          this_element['width'] = img.width
-          this_element['height'] = img.height
-          this_element['src'] = imageUrl
+          this_element.width = img.width
+          this_element.height = img.height
+          this_element.src = imageUrl
           this.setState({
             element: this_element,
           })
@@ -68,7 +68,7 @@ export default class FormElementsEdit extends React.Component {
     } catch (error) {
       console.log('error upload', error)
       const this_element = this.state.element
-      this_element['src'] = 'cannot upload file'
+      this_element.src = 'cannot upload file'
       this.setState({
         element: this_element,
       })
@@ -298,7 +298,7 @@ export default class FormElementsEdit extends React.Component {
           <i
             className="float-right fas fa-times dismiss-edit"
             onClick={this.props.manualEditModeOff}
-          ></i>
+          />
         </div>
         {this.props.element.hasOwnProperty('content') && (
           <div className="form-group">
@@ -308,7 +308,7 @@ export default class FormElementsEdit extends React.Component {
               defaultEditorState={editorState}
               onBlur={this.updateElement.bind(this)}
               onEditorStateChange={this.onEditorStateChange.bind(this, 0, 'content')}
-              stripPastedStyles={true}
+              stripPastedStyles
             />
           </div>
         )}
@@ -373,7 +373,7 @@ export default class FormElementsEdit extends React.Component {
                   className="custom-control-input"
                   type="checkbox"
                   checked={this_checked_center}
-                  value={true}
+                  value
                   onChange={this.editElementProp.bind(this, 'center', 'checked')}
                 />
                 <label className="custom-control-label" htmlFor="do-center">
@@ -426,7 +426,7 @@ export default class FormElementsEdit extends React.Component {
                   defaultEditorState={editorState}
                   onBlur={this.updateElement.bind(this)}
                   onEditorStateChange={this.onEditorStateChange.bind(this, 0, 'label')}
-                  stripPastedStyles={true}
+                  stripPastedStyles
                 />
                 <br />
               </>
@@ -438,7 +438,7 @@ export default class FormElementsEdit extends React.Component {
                 className="custom-control-input"
                 type="checkbox"
                 checked={this_checked}
-                value={true}
+                value
                 onChange={this.editElementProp.bind(this, 'required', 'checked')}
               />
               <label className="custom-control-label" htmlFor="is-required">
@@ -455,7 +455,7 @@ export default class FormElementsEdit extends React.Component {
                   className="custom-control-input"
                   type="checkbox"
                   checked={this_default_today}
-                  value={true}
+                  value
                   onChange={this.editElementProp.bind(this, 'defaultToday', 'checked')}
                 />
                 <label className="custom-control-label" htmlFor="is-default-to-today">
@@ -471,7 +471,7 @@ export default class FormElementsEdit extends React.Component {
                   className="custom-control-input"
                   type="checkbox"
                   checked={this_show_time_select}
-                  value={true}
+                  value
                   onChange={this.editElementProp.bind(this, 'showTimeSelect', 'checked')}
                 />
                 <label className="custom-control-label" htmlFor="show-time-select">
@@ -488,7 +488,7 @@ export default class FormElementsEdit extends React.Component {
                     className="custom-control-input"
                     type="checkbox"
                     checked={this_show_time_select_only}
-                    value={true}
+                    value
                     onChange={this.editElementProp.bind(
                       this,
                       'showTimeSelectOnly',
@@ -508,7 +508,7 @@ export default class FormElementsEdit extends React.Component {
                   className="custom-control-input"
                   type="checkbox"
                   checked={!!this.props.element.overdueNotification}
-                  value={true}
+                  value
                   onChange={this.editElementProp.bind(
                     this,
                     'overdueNotification',
@@ -530,7 +530,7 @@ export default class FormElementsEdit extends React.Component {
                     className="custom-control-input"
                     type="checkbox"
                     checked={this_checked_inline}
-                    value={true}
+                    value
                     onChange={this.editElementProp.bind(this, 'inline', 'checked')}
                   />
                   <label className="custom-control-label" htmlFor="display-horizontal">
@@ -656,7 +656,7 @@ export default class FormElementsEdit extends React.Component {
                 className="custom-control-input"
                 type="checkbox"
                 checked={this_checked_bold}
-                value={true}
+                value
                 onChange={this.editElementProp.bind(this, 'bold', 'checked')}
               />
               <label className="custom-control-label" htmlFor="do-bold">
@@ -669,7 +669,7 @@ export default class FormElementsEdit extends React.Component {
                 className="custom-control-input"
                 type="checkbox"
                 checked={this_checked_italic}
-                value={true}
+                value
                 onChange={this.editElementProp.bind(this, 'italic', 'checked')}
               />
               <label className="custom-control-label" htmlFor="do-italic">
@@ -761,33 +761,7 @@ export default class FormElementsEdit extends React.Component {
             </select>
           </div>
         )}
-        {/* {this.props.element.canPopulateFromApi &&
-          this.props.element.hasOwnProperty("options") && (
-            <div className="form-group">
-              <label className="control-label" htmlFor="optionsApiUrl">
-                Populate Options from API
-              </label>
-              <div className="row">
-                <div className="col-sm-6">
-                  <input
-                    className="form-control"
-                    style={{ width: "100%" }}
-                    type="text"
-                    id="optionsApiUrl"
-                    placeholder="http://localhost:8080/api/optionsdata"
-                  />
-                </div>
-                <div className="col-sm-6">
-                  <button
-                    onClick={this.addOptions.bind(this)}
-                    className="btn btn-success"
-                  >
-                    Populate
-                  </button>
-                </div>
-              </div>
-            </div>
-          )} */}
+
         {this.props.element.hasOwnProperty('options') && (
           <DynamicOptionList
             showCorrectColumn={this.props.showCorrectColumn}
@@ -801,6 +775,7 @@ export default class FormElementsEdit extends React.Component {
             key={`option-${this.props.element.options.length}`}
           />
         )}
+
         {this.props.element.hasOwnProperty('rows') && (
           <div className="form-group">
             <label className="control-label" htmlFor="rowInput">
@@ -816,24 +791,27 @@ export default class FormElementsEdit extends React.Component {
             />
           </div>
         )}
+
         {this.props.element.hasOwnProperty('rowLabels') && (
           <FixedRowList
             data={this.props.preview?.state?.data}
             updateElement={this.props.updateElement}
             preview={this.props.preview}
             element={this.props.element}
-            key={`table-row-labels`}
+            key="table-row-labels"
           />
         )}
+
         {this.props.element.hasOwnProperty('columns') && (
           <DynamicColumnList
             data={this.props.preview?.state?.data}
             updateElement={this.props.updateElement}
             preview={this.props.preview}
             element={this.props.element}
-            key={`table-columns`}
+            key="table-columns"
           />
         )}
+
         {this.props.element.hasOwnProperty('sourceType') && (
           <div className="form-group">
             <label className="control-label" htmlFor="sourceType">
@@ -861,6 +839,7 @@ export default class FormElementsEdit extends React.Component {
             </select>
           </div>
         )}
+
         {this.props.element.sourceType === 'form' && (
           <div>
             {this.props.element.hasOwnProperty('formSource') && (
@@ -880,16 +859,15 @@ export default class FormElementsEdit extends React.Component {
                     " Please select "
                   </option>
                   {this.state.formDataSource &&
-                    this.state.formDataSource.map((item) => {
-                      return (
-                        <option value={item.id} key={item.id}>
-                          {item.name}
-                        </option>
-                      )
-                    })}
+                    this.state.formDataSource.map((item) => (
+                      <option value={item.id} key={item.id}>
+                        {item.name}
+                      </option>
+                    ))}
                 </select>
               </div>
             )}
+
             {this.props.element.sourceType === 'form' && (
               <div className="form-group">
                 <label className="control-label" htmlFor="formSource">
@@ -897,62 +875,34 @@ export default class FormElementsEdit extends React.Component {
                 </label>
                 {this.state.activeForm &&
                   this.state.activeForm.columns &&
-                  this.state.activeForm.columns.map((item) => {
-                    return (
-                      <div className="custom-control custom-checkbox">
-                        <input
-                          id={item.field_name}
-                          className="custom-control-input"
-                          type="checkbox"
-                          checked={
-                            this.props.element.hasOwnProperty(
-                              `formField${item.field_name}`
-                            )
-                              ? this.props.element[`formField${item.field_name}`]
-                              : false
-                          }
-                          value={item.field_name}
-                          onChange={this.editElementProp.bind(
-                            this,
-                            `formField${item.field_name}`,
-                            'checked'
-                          )}
-                        />
-                        <label className="custom-control-label" htmlFor={item.field_name}>
-                          {item.label || item.text || ''}
-                        </label>
-                      </div>
-                    )
-                  })}
-                {/* <label className="control-label" htmlFor="formField">
-                  Form Field
-                </label>
-                <select
-                  className="form-control"
-                  id="formField"
-                  defaultValue={this.props.element.formField}
-                  value={this.props.element.formField}
-                  onBlur={this.updateElement.bind(this)}
-                  onChange={this.editElementProp.bind(
-                    this,
-                    "formField",
-                    "value"
-                  )}
-                >
-                  {this.state.activeForm &&
-                    this.state.activeForm.columns &&
-                    this.state.activeForm.columns.map((item) => {
-                      return (
-                        <option value={item.id} key={item.id}>
-                          {item.label || item.text || ""}
-                        </option>
-                      );
-                    })}
-                </select> */}
+                  this.state.activeForm.columns.map((item) => (
+                    <div className="custom-control custom-checkbox">
+                      <input
+                        id={item.field_name}
+                        className="custom-control-input"
+                        type="checkbox"
+                        checked={
+                          this.props.element.hasOwnProperty(`formField${item.field_name}`)
+                            ? this.props.element[`formField${item.field_name}`]
+                            : false
+                        }
+                        value={item.field_name}
+                        onChange={this.editElementProp.bind(
+                          this,
+                          `formField${item.field_name}`,
+                          'checked'
+                        )}
+                      />
+                      <label className="custom-control-label" htmlFor={item.field_name}>
+                        {item.label || item.text || ''}
+                      </label>
+                    </div>
+                  ))}
               </div>
             )}
           </div>
         )}
+
         {this.props.element.hasOwnProperty('formula') && (
           <div className="form-group">
             <label className="control-label" htmlFor="rowInput">
@@ -997,17 +947,15 @@ export default class FormElementsEdit extends React.Component {
               onBlur={this.updateElement.bind(this)}
               onChange={this.editElementProp.bind(this, 'formSource', 'value')}
             >
-              <option value={''} key={-1}>
+              <option value="" key={-1}>
                 Select a form...
               </option>
               {this.state.formDataSource &&
-                this.state.formDataSource.map((form) => {
-                  return (
-                    <option value={form.id} key={form.id}>
-                      {form.name || form.title}
-                    </option>
-                  )
-                })}
+                this.state.formDataSource.map((form) => (
+                  <option value={form.id} key={form.id}>
+                    {form.name || form.title}
+                  </option>
+                ))}
             </select>
           </div>
         )}

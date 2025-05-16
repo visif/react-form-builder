@@ -33,10 +33,8 @@ export default class DynamicOptionList extends React.Component {
       dirty: true,
     })
 
-    // Sync with other elements in the same column immediately if this element is part of a dynamic column
-    if (this.props.preview && this.props.element.parentId) {
-      this.syncOptionsWithSameColumnElements(this_element.options)
-    }
+    // Sync the same column immediately if this element is part of a dynamic column
+    this.syncOptionsWithSameColumnElements(this_element.options)
   }
 
   editValue(option_index, e) {
@@ -51,10 +49,8 @@ export default class DynamicOptionList extends React.Component {
       dirty: true,
     })
 
-    // Sync with other elements in the same column immediately if this element is part of a dynamic column
-    if (this.props.preview && this.props.element.parentId) {
-      this.syncOptionsWithSameColumnElements(this_element.options)
-    }
+    // Sync the same column immediately if this element is part of a dynamic column
+    this.syncOptionsWithSameColumnElements(this_element.options)
   }
 
   // eslint-disable-next-line no-unused-vars
@@ -68,10 +64,8 @@ export default class DynamicOptionList extends React.Component {
     this.setState({ element: this_element })
     this.props.updateElement.call(this.props.preview, this_element)
 
-    // Sync with other elements in the same column if this element is part of a dynamic column
-    if (this.props.preview && this.props.element.parentId) {
-      this.syncOptionsWithSameColumnElements(this_element.options)
-    }
+    // Sync the same column if this element is part of a dynamic column
+    this.syncOptionsWithSameColumnElements(this_element.options)
   }
 
   editOptionInfo(option_index, e) {
@@ -81,8 +75,12 @@ export default class DynamicOptionList extends React.Component {
     } else {
       this_element.options[option_index].info = true
     }
+    // update the current element
     this.setState({ element: this_element })
     this.props.updateElement.call(this.props.preview, this_element)
+
+    // Sync the same column if this element is part of a dynamic column
+    this.syncOptionsWithSameColumnElements(this_element.options)
   }
 
   updateOption() {
@@ -92,10 +90,8 @@ export default class DynamicOptionList extends React.Component {
       this.props.updateElement.call(this.props.preview, this_element)
       this.setState({ dirty: false })
 
-      // Sync with other elements in the same column if this element is part of a dynamic column
-      if (this.props.preview && this.props.element.parentId) {
-        this.syncOptionsWithSameColumnElements(this_element.options)
-      }
+      // Sync the same column if this element is part of a dynamic column
+      this.syncOptionsWithSameColumnElements(this_element.options)
     }
   }
 
@@ -117,10 +113,8 @@ export default class DynamicOptionList extends React.Component {
       dirty: true,
     })
 
-    // Sync with other elements in the same column if this element is part of a dynamic column
-    if (this.props.preview && this.props.element.parentId) {
-      this.syncOptionsWithSameColumnElements(this_element.options)
-    }
+    // Sync the same column if this element is part of a dynamic column
+    this.syncOptionsWithSameColumnElements(this_element.options)
   }
 
   removeOption(index) {
@@ -131,10 +125,8 @@ export default class DynamicOptionList extends React.Component {
       dirty: true,
     })
 
-    // Sync with other elements in the same column if this element is part of a dynamic column
-    if (this.props.preview && this.props.element.parentId) {
-      this.syncOptionsWithSameColumnElements(this_element.options)
-    }
+    // Sync the same column if this element is part of a dynamic column
+    this.syncOptionsWithSameColumnElements(this_element.options)
   }
 
   syncOptionsWithSameColumnElements(options) {
@@ -212,16 +204,14 @@ export default class DynamicOptionList extends React.Component {
             ...option,
             key: ID.uuid(),
           }
-        } else {
-          // For existing options, preserve the key but copy all other properties
-          const key = elementData.options[i].key
-          return {
-            ...option,
-            key: key || ID.uuid(),
-            // Explicitly copy these properties to ensure they're synchronized
-            info: option.hasOwnProperty('info') ? option.info : undefined,
-            correct: option.hasOwnProperty('correct') ? option.correct : undefined,
-          }
+        }
+        // For existing options, preserve the key but copy all other properties
+        const { key } = elementData.options[i]
+        return {
+          ...option,
+          key: key || ID.uuid(),
+          info: option.info ?? false,
+          correct: option.correct ?? false,
         }
       })
 
@@ -319,7 +309,7 @@ export default class DynamicOptionList extends React.Component {
                         className="form-control"
                         type="checkbox"
                         value="1"
-                        checked={option.hasOwnProperty('info')}
+                        checked={option.hasOwnProperty('info') && option.info}
                         onChange={this.editOptionInfo.bind(this, index)}
                       />
                     </div>
@@ -330,7 +320,7 @@ export default class DynamicOptionList extends React.Component {
                         className="form-control"
                         type="checkbox"
                         value="1"
-                        checked={option.hasOwnProperty('correct')}
+                        checked={option.hasOwnProperty('correct') && option.correct}
                         onChange={this.editOptionCorrect.bind(this, index)}
                       />
                     </div>
@@ -342,14 +332,14 @@ export default class DynamicOptionList extends React.Component {
                         onClick={this.addOption.bind(this, index)}
                         className="btn btn-success"
                       >
-                        <i className="fas fa-plus-circle"></i>
+                        <i className="fas fa-plus-circle" />
                       </button>
                       {index > 0 && (
                         <button
                           onClick={this.removeOption.bind(this, index)}
                           className="btn btn-danger"
                         >
-                          <i className="fas fa-minus-circle"></i>
+                          <i className="fas fa-minus-circle" />
                         </button>
                       )}
                     </div>
