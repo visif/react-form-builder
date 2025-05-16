@@ -104,7 +104,7 @@ export default class DynamicOptionList extends React.Component {
     this.setState({ element: newElement, dirty: true }, () => {
       this.syncOptionsWithSameColumnElements(newElement.options)
     })
-  }, 300)
+  }, 200)
 
   handleValueChange = this.throttle((optionIndex, { target: { value } }) => {
     const { element } = this.state
@@ -115,7 +115,7 @@ export default class DynamicOptionList extends React.Component {
     this.setState({ element: newElement, dirty: true }, () => {
       this.syncOptionsWithSameColumnElements(newElement.options)
     })
-  }, 300)
+  }, 200)
 
   handleOptionCorrect = (optionIndex) => {
     this.setState(
