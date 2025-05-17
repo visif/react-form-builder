@@ -1,10 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
 import update from 'immutability-helper'
-import FormElements from './form-elements'
 import FormElementsEdit from './form-elements-edit'
 import useUndoRedo, { ACTION } from './functions/useUndoRedo'
 import SortableFormElements from './sortable-form-elements'
-// Import FormElements to access FormLink
 import store from './stores/store'
 
 const { PlaceHolder } = SortableFormElements
@@ -14,7 +12,7 @@ const Preview = (props) => {
   const [answerData, setAnswerData] = useState({})
   const editForm = useRef(null)
 
-  const { index: historyIndex, history, updateState } = useUndoRedo()
+  const { index: historyIndex, updateState } = useUndoRedo()
 
   let seq = 0
 
@@ -52,8 +50,6 @@ const Preview = (props) => {
     }
     props.manualEditModeOff()
   }
-
-  const _setValue = (text) => text.replace(/[^A-Z0-9]+/gi, '_').toLowerCase()
 
   const updateElement = (element) => {
     let found = false
@@ -166,8 +162,6 @@ const Preview = (props) => {
     if (item.element === 'DynamicColumnRow') {
       child.hideLabel = true
     } else if (item.element?.includes('ColumnRow')) {
-      // For other column types like TwoColumnRow, show the label
-      // Make sure we remove any hideLabel setting if it exists
       if (child.hideLabel === true) {
         delete child.hideLabel
       }
@@ -183,168 +177,152 @@ const Preview = (props) => {
       updatedData.push(child)
     }
 
-    // Auto-propagate to all rows in the same column if:
-    // - There are multiple rows
     if (item.childItems.length > 1) {
       const rowsToUpdate = []
 
       for (let rowIndex = 0; rowIndex < item.childItems.length; rowIndex++) {
         // Skip the current row as it already has the element
-        if (rowIndex === row) continue
-
-        // Remove any existing element in this position
-        const existingElementId = item.childItems[rowIndex][col]
-        if (existingElementId) {
-          const existingElement = getDataById(existingElementId)
-          if (existingElement) {
-            // Filter out the existing element
-            updatedData = updatedData.filter((x) => x !== existingElement)
+        if (rowIndex !== row) {
+          const existingElementId = item.childItems[rowIndex][col]
+          if (existingElementId) {
+            const existingElement = getDataById(existingElementId)
+            if (existingElement) {
+              updatedData = updatedData.filter((x) => x !== existingElement)
+            }
           }
-        }
 
-        // Create a new instance of the same element type with minimal shared properties
-        const elementType = child.element
+          // Create a new instance of the same element type with minimal shared properties
+          const elementType = child.element
 
-        // Create a fresh timestamp to ensure uniqueness in IDs
-        const timestamp = Date.now() + rowIndex
+          // Create a fresh timestamp to ensure uniqueness in IDs
+          const timestamp = Date.now() + rowIndex
 
-        // Create a fresh element of the same type
-        const newElement = {
-          // Core properties that define the element type
-          element: elementType,
+          // Create a fresh element of the same type
+          const newElement = {
+            // Core properties that define the element type
+            element: elementType,
 
-          // Create a truly unique ID for this instance
-          id: `${elementType}_${timestamp}_${rowIndex}_${Math.floor(Math.random() * 10000)}`,
+            // Create a truly unique ID for this instance
+            id: `${elementType}_${timestamp}_${rowIndex}_${Math.floor(Math.random() * 10000)}`,
 
-          // Position properties
-          row: rowIndex,
-          col,
-          parentId: item.id,
-          parentIndex: updatedData.indexOf(item),
+            // Position properties
+            row: rowIndex,
+            col,
+            parentId: item.id,
+            parentIndex: updatedData.indexOf(item),
 
-          // Only hide labels in DynamicColumnRow, not other column types
-          ...(item.element === 'DynamicColumnRow' ? { hideLabel: true } : {}),
+            // Only hide labels in DynamicColumnRow, not other column types
+            ...(item.element === 'DynamicColumnRow' ? { hideLabel: true } : {}),
 
-          // Copy specific type-related properties from the original element
-          // but leave data fields empty or with defaults
-          field_name: `${elementType}_${rowIndex}_${col}_${timestamp}`,
+            // Copy specific type-related properties from the original element
+            // but leave data fields empty or with defaults
+            field_name: `${elementType}_${rowIndex}_${col}_${timestamp}`,
 
-          // Each element gets its own separate local state for user input
-          dirty: false,
-        }
-
-        // Copy all styling and display properties
-        const propertiesToCopy = [
-          'label',
-          'required',
-          'bold',
-          'italic',
-          'center',
-          'className',
-          'inline',
-          'readOnly',
-          'canHaveDisplayHorizontal',
-          'content',
-          'showDescription',
-          'description',
-          'text',
-          'showTimeSelect',
-          'showTimeSelectOnly',
-          'step',
-          'min_value',
-          'max_value',
-          'customCSS',
-          'defaultValue',
-          'default_today',
-        ]
-
-        propertiesToCopy.forEach((prop) => {
-          if (child[prop] !== undefined) {
-            newElement[prop] = child[prop]
+            // Each element gets its own separate local state for user input
+            dirty: false,
           }
-        })
 
-        // Handle specific element types
-        switch (elementType) {
-          case 'Checkboxes':
-          case 'RadioButtons':
-            // For checkboxes and radio buttons, completely recreate the options array
-            // with the same text values but reset all selected states
-            if (child.options && Array.isArray(child.options)) {
-              newElement.options = child.options.map((option) => ({
-                value: option.value,
-                text: option.text,
-                key: `${timestamp}_${Math.random().toString(36).substring(2, 9)}`,
-                // Explicitly reset any selected state
-                checked: false,
-                selected: false,
-              }))
+          // Copy all styling and display properties
+          const propertiesToCopy = [
+            'label',
+            'required',
+            'bold',
+            'italic',
+            'center',
+            'className',
+            'inline',
+            'readOnly',
+            'canHaveDisplayHorizontal',
+            'content',
+            'showDescription',
+            'description',
+            'text',
+            'showTimeSelect',
+            'showTimeSelectOnly',
+            'step',
+            'min_value',
+            'max_value',
+            'customCSS',
+            'defaultValue',
+            'default_today',
+          ]
 
-              // Set default display properties
-              newElement.inline = child.inline || false
-              newElement.canHaveDisplayHorizontal = child.canHaveDisplayHorizontal
-              newElement.canHaveOptionCorrect = child.canHaveOptionCorrect
-              newElement.canHaveOptionValue = child.canHaveOptionValue
-              if (child.canHaveInfo) newElement.canHaveInfo = child.canHaveInfo
+          propertiesToCopy.forEach((prop) => {
+            if (child[prop] !== undefined) {
+              newElement[prop] = child[prop]
             }
-            break
+          })
 
-          case 'Dropdown':
-            // For dropdowns, create new options without selected state
-            if (child.options && Array.isArray(child.options)) {
-              newElement.options = child.options.map((option) => ({
-                value: option.value,
-                text: option.text,
-                key: `${timestamp}_${Math.random().toString(36).substring(2, 9)}`,
-                // Explicitly omit the selected property
-              }))
-            }
-            break
-
-          case 'FormulaInput':
-            // Formula inputs need to copy formula and formularKey properties
-            if (child.formula !== undefined) {
-              newElement.formula = child.formula
-            }
-            if (child.formularKey !== undefined) {
-              newElement.formularKey = child.formularKey
-            }
-            break
-
-          case 'TextInput':
-          case 'NumberInput':
-          case 'TextArea':
-            // Text inputs need to copy formularKey if it exists
-            if (child.formularKey !== undefined) {
-              newElement.formularKey = child.formularKey
-            }
-            break
-
-          default:
-            // For other elements with options, do a generic clone
-            if (child.options) {
-              newElement.options = JSON.parse(JSON.stringify(child.options))
-
-              // Ensure options have unique keys
-              if (Array.isArray(newElement.options)) {
-                newElement.options = newElement.options.map((opt) => ({
-                  ...opt,
+          // Handle specific element types
+          switch (elementType) {
+            case 'Checkboxes':
+            case 'RadioButtons':
+            case 'Dropdown':
+              // For checkboxes and radio buttons, completely recreate the options array
+              // with the same text values but reset all selected states
+              if (child.options && Array.isArray(child.options)) {
+                newElement.options = child.options.map((option) => ({
+                  value: option.value,
+                  text: option.text,
                   key: `${timestamp}_${Math.random().toString(36).substring(2, 9)}`,
+                  checked: false,
+                  selected: false,
                 }))
+
+                // Set default display properties
+                newElement.inline = child.inline || false
+                newElement.canHaveDisplayHorizontal = child.canHaveDisplayHorizontal
+                newElement.canHaveOptionCorrect = child.canHaveOptionCorrect
+                newElement.canHaveOptionValue = child.canHaveOptionValue
+                if (child.canHaveInfo) newElement.canHaveInfo = child.canHaveInfo
               }
-            }
-        }
+              break
 
-        // Always copy formula properties to ensure they're available for all element types that need them
-        const formulaProps = ['formula', 'formularKey']
-        formulaProps.forEach((prop) => {
-          if (child[prop] !== undefined) {
-            newElement[prop] = child[prop]
+            case 'FormulaInput':
+              // Formula inputs need to copy formula and formularKey properties
+              if (child.formula !== undefined) {
+                newElement.formula = child.formula
+              }
+              if (child.formularKey !== undefined) {
+                newElement.formularKey = child.formularKey
+              }
+              break
+
+            case 'TextInput':
+            case 'NumberInput':
+            case 'TextArea':
+              // Text inputs need to copy formularKey if it exists
+              if (child.formularKey !== undefined) {
+                newElement.formularKey = child.formularKey
+              }
+              break
+
+            default:
+              // For other elements with options, do a generic clone
+              if (child.options) {
+                newElement.options = JSON.parse(JSON.stringify(child.options))
+
+                // Ensure options have unique keys
+                if (Array.isArray(newElement.options)) {
+                  newElement.options = newElement.options.map((opt) => ({
+                    ...opt,
+                    key: `${timestamp}_${Math.random().toString(36).substring(2, 9)}`,
+                  }))
+                }
+              }
           }
-        })
 
-        // Add to our tracking array
-        rowsToUpdate.push({ rowIndex, newElement })
+          // Always copy formula properties to ensure they're available for all element types that need them
+          const formulaProps = ['formula', 'formularKey']
+          formulaProps.forEach((prop) => {
+            if (child[prop] !== undefined) {
+              newElement[prop] = child[prop]
+            }
+          })
+
+          // Add to our tracking array
+          rowsToUpdate.push({ rowIndex, newElement })
+        }
       }
 
       // Apply all element clones at once
