@@ -68,13 +68,16 @@ export default class FixedRowList extends React.Component {
     })
 
     // Get a reference to the preview component
-    const preview = this.props.preview
+    const { preview } = this.props
 
     // Increase the rows count
     const currentRows = Number(this_element.rows || 1)
     this_element.rows = currentRows + 1
 
     // Initialize a new row in childItems if it doesn't exist
+    if (!this_element.childItems) {
+      this_element.childItems = []
+    }
     if (!this_element.childItems[newRowIndex]) {
       const columnsCount = this_element.childItems[0]
         ? this_element.childItems[0].length
@@ -128,7 +131,7 @@ export default class FixedRowList extends React.Component {
             element: elementType,
             id: `${elementType}_${timestamp}_${newRowIndex}_${col}`,
             row: newRowIndex,
-            col: col,
+            col,
             parentId: this_element.id,
             hideLabel: true,
             field_name: `${elementType}_${newRowIndex}_${col}_${timestamp}`,
@@ -201,10 +204,10 @@ export default class FixedRowList extends React.Component {
     const this_element = this.state.element
 
     // Don't allow removing the last row
-    if (this_element.rowLabels.length <= 1) {
-      console.warn('Cannot remove the last row')
-      return
-    }
+    // if (this_element.rowLabels.length <= 1) {
+    //   console.warn('Cannot remove the last row')
+    //   return
+    // }
 
     // Remove the row label
     this_element.rowLabels.splice(index, 1)
@@ -212,7 +215,7 @@ export default class FixedRowList extends React.Component {
     // If we have childItems, also remove the row from there
     if (this_element.childItems && Array.isArray(this_element.childItems)) {
       // Get a reference to the preview component
-      const preview = this.props.preview
+      const { preview } = this.props
       let updatedData = preview && preview.state ? [...preview.state.data] : []
 
       // Track elements to remove
@@ -273,7 +276,7 @@ export default class FixedRowList extends React.Component {
               </div>
             </div>
           </li>
-          <li className="clearfix" key={`li_label_x`}>
+          <li className="clearfix" key="li_label_x">
             <div className="row">
               <div className="col-sm-9">Row Label</div>
               <div className="col-sm-3">
@@ -282,7 +285,7 @@ export default class FixedRowList extends React.Component {
                     onClick={this.addRow.bind(this, -1)}
                     className="btn btn-success"
                   >
-                    <i className="fas fa-plus-circle"></i>
+                    <i className="fas fa-plus-circle" />
                   </button>
                 </div>
               </div>
@@ -316,16 +319,14 @@ export default class FixedRowList extends React.Component {
                           onClick={this.addRow.bind(this, index)}
                           className="btn btn-success"
                         >
-                          <i className="fas fa-plus-circle"></i>
+                          <i className="fas fa-plus-circle" />
                         </button>
-                        {
-                          <button
-                            onClick={this.removeRow.bind(this, index)}
-                            className="btn btn-danger"
-                          >
-                            <i className="fas fa-minus-circle"></i>
-                          </button>
-                        }
+                        <button
+                          onClick={this.removeRow.bind(this, index)}
+                          className="btn btn-danger"
+                        >
+                          <i className="fas fa-minus-circle" />
+                        </button>
                       </div>
                     </div>
                   </div>
