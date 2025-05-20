@@ -16,7 +16,6 @@ const MultiColumnRow = (props) => {
     setAsChild,
     removeChild,
     seq,
-    className,
     index,
     updateElement,
   } = props
@@ -25,8 +24,7 @@ const MultiColumnRow = (props) => {
   const baseClasses = `SortableItem rfb-item ${pageBreakBefore ? 'alwaysbreak' : ''}`
 
   // Check if row labels are defined in data
-  const hasRowLabels =
-    data.rows && Array.isArray(data.rowLabels) && data.rowLabels.length > 0
+  const hasRowLabels = Array.isArray(data.rowLabels) && data.rowLabels.length > 0
 
   // Function to synchronize changes across a column
   const syncColumnChanges = (rowIndex, columnIndex, elementType, changeData) => {
@@ -334,8 +332,7 @@ const DynamicColumnRow = ({ data = {}, class_name, ...rest }) => {
         value: `row_${i + 1}`,
         key: `row_${Math.random().toString(36).substring(2, 9)}`,
       }))
-  } else if (data.rowLabels.length !== rows) {
-    // Make sure the number of row labels matches the number of rows
+  } else if (data.rowLabels?.length > 0 && data.rowLabels.length !== rows) {
     const currentLength = data.rowLabels.length
     if (currentLength < rows) {
       // Add additional row labels if needed
