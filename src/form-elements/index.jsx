@@ -861,16 +861,18 @@ class Checkboxes extends React.Component {
                   {option.text}
                 </label>
                 {props.checked && option.info && (
-                  <input
+                  <textarea
                     id={'fid_' + this_key + '_info'}
                     type="text"
                     className="form-control"
                     style={{
                       width: 'auto',
                       marginLeft: 16,
-                      height: 'calc(1.5em + .5rem)',
+                      minHeight: '60px',
+                      //height: 'calc(1.5em + .5rem)',
                       marginBottom: 4,
                     }}
+                    rows={2}
                     defaultValue={answerItem?.info ?? ''}
                     ref={(c) => {
                       if (c && self.props.mutable) {
@@ -1053,15 +1055,17 @@ class RadioButtons extends React.Component {
                   {option.text}
                 </label>
                 {props.checked && option.info && (
-                  <input
+                  <textarea
                     id={'fid_' + this_key + '_info'}
                     type="text"
                     className="form-control"
                     style={{
                       width: 'auto',
                       marginLeft: 16,
-                      height: 'calc(1.5em + .5rem)',
+                      minHeight: '60px',
+                      //height: 'calc(1.5em + .5rem)',
                     }}
+                    rows={2}
                     defaultValue={answerItem?.info ?? ''}
                     ref={(c) => {
                       if (c && self.props.mutable) {
