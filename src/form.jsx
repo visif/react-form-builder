@@ -25,6 +25,7 @@ const {
   Download,
   Camera,
   DataSource,
+  FormLink,
 } = FormElements
 
 const convert = (answers) => {
@@ -753,6 +754,22 @@ export default class ReactForm extends React.Component {
                 data={item}
                 defaultValue={this._getDefaultValue(item)}
                 onUploadFile={this.props.onUploadFile}
+                onDownloadFile={this.props.onDownloadFile}
+                editor={this._getEditor(item)}
+                getActiveUserProperties={this.props.getActiveUserProperties}
+              />
+            )
+          case 'FormLink':
+            return (
+              <FormLink
+                ref={(c) => (this.inputs[item.field_name] = c)}
+                read_only={this.props.read_only || item.readOnly}
+                mutable={true}
+                key={`form_${item.id}`}
+                data={item}
+                defaultValue={this._getDefaultValue(item)}
+                onUploadFile={this.props.onUploadFile}
+                onSelectChildForm={this.props.onSelectChildForm}
                 onDownloadFile={this.props.onDownloadFile}
                 editor={this._getEditor(item)}
                 getActiveUserProperties={this.props.getActiveUserProperties}

@@ -14,7 +14,7 @@ class FormLink extends React.Component {
       formList: [],
       matchedList: [],
       searchText: defaultValue.value || '',
-      selectedForm: defaultValue.selectedForm,
+      selectedFormId: defaultValue.selectedFormId,
       defaultSelectedForm: defaultValue.selectedForm,
       isShowingList: false,
       getFormSource: props.getFormSource,
@@ -36,16 +36,16 @@ class FormLink extends React.Component {
     const { defaultValue } = this.props
     const maxRetries = 3
 
-    if (!this.state.selectedForm && defaultValue?.selectedForm) {
+    if (!this.state.selectedFormId && defaultValue?.selectedFormId) {
       setTimeout(() => {
-        if (this.mounted && !this.state.selectedForm) {
+        if (this.mounted && !this.state.selectedFormId) {
           this.setState({
             searchText: defaultValue.value || '',
-            selectedForm: defaultValue.selectedForm,
-            defaultSelectedForm: defaultValue.selectedForm,
+            selectedFormId: defaultValue.selectedFormId,
+            defaultSelectedFormId: defaultValue.selectedFormId,
             loading: false,
           })
-          if (!this.state.selectedForm && attempt < maxRetries) {
+          if (!this.state.selectedFormId && attempt < maxRetries) {
             this.checkForValue(attempt + 1)
           }
         }
@@ -62,13 +62,15 @@ class FormLink extends React.Component {
         if (this.mounted) {
           // If we have a formSource set from the editor, find the matching form
           if (this.props.data.formSource) {
-            const selectedForm = forms.find(form => form.id == this.props.data.formSource);
-            if (selectedForm) {
+            const selectedFormId = forms.find(
+              (form) => form.id == this.props.data.formSource
+            )
+            if (selectedFormId) {
               this.setState({
                 formList: forms,
                 matchedList: forms,
-                selectedForm: selectedForm,
-                searchText: selectedForm.title || ''
+                selectedFormId: selectedFormId,
+                searchText: ''
               });
               return;
             }
@@ -94,14 +96,14 @@ class FormLink extends React.Component {
   static getDerivedStateFromProps(props, state) {
     if (
       props.defaultValue &&
-      JSON.stringify(props.defaultValue.selectedForm) !==
-        JSON.stringify(state.defaultSelectedForm)
+      JSON.stringify(props.defaultValue.selectedFormId) !==
+        JSON.stringify(state.defaultSelectedFormId)
     ) {
       const defaultValue = props.defaultValue || {}
       return {
         searchText: defaultValue.value || '',
-        selectedForm: defaultValue.selectedForm,
-        defaultSelectedForm: defaultValue.selectedForm,
+        selectedFormId: defaultValue.selectedFormId,
+        defaultSelectedForm: defaultValue.selectedFormId,
       }
     }
     return null
@@ -158,7 +160,7 @@ class FormLink extends React.Component {
 
   handleFormSelect = (form) => {
     this.setState({
-      selectedForm: form,
+      selectedFormId: form,
       searchText: form.title,
       isShowingList: false,
     })
@@ -168,7 +170,7 @@ class FormLink extends React.Component {
       const updatedData = {
         ...this.props.data,
         value: form.title,
-        selectedForm: form,
+        selectedFormId: form,
         formSource: form.id // Save the form ID as formSource
       }
       
@@ -185,9 +187,10 @@ class FormLink extends React.Component {
   }
 
   openLinkedForm = () => {
-    const { selectedForm } = this.state
-    if (selectedForm && this.props.openLinkedForm) {
-      this.props.openLinkedForm(selectedForm)
+    console.info('Select form: ' + this.state.selectedFormId)
+    const { selectedFormId } = this.state.selectedFormId
+    if (selectedFormId && this.props.openLinkedForm) {
+      this.props.openLinkedForm(selectedFormId)
     }
   }
 
@@ -206,8 +209,10 @@ class FormLink extends React.Component {
       baseClasses += ' alwaysbreak'
     }
 
-    const formTitle = this.state.selectedForm ? this.state.selectedForm.title : 'Select a form';
-    const isFormSelected = !!this.state.selectedForm;
+    const formTitle = this.state.selectedFormId
+      ? this.state.selectedFormId.title
+      : 'Select a form'
+    const isFormSelected = !!this.state.selectedFormId
 
     return (
       <div className={baseClasses}>
@@ -237,7 +242,7 @@ class FormLink extends React.Component {
                     fontWeight: '500'
                   }}
                 >
-                  {formTitle}
+                  {formId + ' - ' + formTitle}
                 </a>
               </div>
             )}
@@ -245,7 +250,10 @@ class FormLink extends React.Component {
             {/* Display form selection in edit mode */}
             {this.props.mutable && (
               <>
-                <div className="form-link-container" style={{ display: 'flex', alignItems: 'center' }}>
+                <div
+                  className="form-link-container"
+                  style={{ display: 'flex', alignItems: 'center' }}
+                >
                   <div
                     onClick={() => this.setState({ isShowingList: true })}
                     style={{ 
@@ -261,9 +269,23 @@ class FormLink extends React.Component {
                     }}
                   >
                     {isFormSelected ? (
-                      <span>{formTitle}</span>
+                      <span>{formId + ' - ' + formTitle}</span>
                     ) : (
-                      <span style={{ color: '#6c757d' }}>Select a form...</span>
+                      <div>
+                        <div className="form-link-preview" style={{ padding: '6px 0' }}>
+                          <a
+                            href="#"
+                            style={{ marginTop: 6 }}
+                            className="btn btn-secondary"
+                            onClick={(e) => {
+                              e.preventDefault()
+                              this.onSelectChildForm(this.state.selectedFormId)
+                            }}
+                          >
+                            {formTitle}
+                          </a>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
