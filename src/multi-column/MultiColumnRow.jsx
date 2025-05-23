@@ -16,7 +16,6 @@ const MultiColumnRow = (props) => {
     setAsChild,
     removeChild,
     seq,
-    className,
     index,
     updateElement,
   } = props
@@ -25,8 +24,7 @@ const MultiColumnRow = (props) => {
   const baseClasses = `SortableItem rfb-item ${pageBreakBefore ? 'alwaysbreak' : ''}`
 
   // Check if row labels are defined in data
-  const hasRowLabels =
-    data.rows && Array.isArray(data.rowLabels) && data.rowLabels.length > 0
+  const hasRowLabels = Array.isArray(data.rowLabels) && data.rowLabels.length > 0
 
   // Function to synchronize changes across a column
   const syncColumnChanges = (rowIndex, columnIndex, elementType, changeData) => {
@@ -225,9 +223,7 @@ const MultiColumnRow = (props) => {
                       backgroundColor: '#f5f5f5',
                     }}
                   >
-                    {data.rowLabels[rowIndex]
-                      ? data.rowLabels[rowIndex].text
-                      : `Row ${rowIndex + 1}`}
+                    {data.rowLabels[rowIndex] ? data.rowLabels[rowIndex].text : ''}
                   </td>
                 )}
                 {row.map((item, columnIndex) => (
@@ -326,32 +322,32 @@ const DynamicColumnRow = ({ data = {}, class_name, ...rest }) => {
   }
 
   // Initialize rowLabels array if it doesn't exist
-  if (!data.rowLabels) {
-    data.rowLabels = Array(rows)
-      .fill()
-      .map((_, i) => ({
-        text: `Row ${i + 1}`,
-        value: `row_${i + 1}`,
-        key: `row_${Math.random().toString(36).substring(2, 9)}`,
-      }))
-  } else if (data.rowLabels.length !== rows) {
-    // Make sure the number of row labels matches the number of rows
-    const currentLength = data.rowLabels.length
-    if (currentLength < rows) {
-      // Add additional row labels if needed
-      const additionalLabels = Array(rows - currentLength)
-        .fill()
-        .map((_, i) => ({
-          text: `Row ${currentLength + i + 1}`,
-          value: `row_${currentLength + i + 1}`,
-          key: `row_${Math.random().toString(36).substring(2, 9)}`,
-        }))
-      data.rowLabels = [...data.rowLabels, ...additionalLabels]
-    } else {
-      // Remove excess row labels
-      data.rowLabels = data.rowLabels.slice(0, rows)
-    }
-  }
+  // if (!data.rowLabels) {
+  //   data.rowLabels = Array(rows)
+  //     .fill()
+  //     .map((_, i) => ({
+  //       text: `Row ${i + 1}`,
+  //       value: `row_${i + 1}`,
+  //       key: `row_${Math.random().toString(36).substring(2, 9)}`,
+  //     }))
+  //   debugger
+  // } else if (data.rowLabels?.length > 0 && data.rowLabels.length !== rows) {
+  //   const currentLength = data.rowLabels.length
+  //   if (currentLength < rows) {
+  //     // Add additional row labels if needed
+  //     const additionalLabels = Array(rows - currentLength)
+  //       .fill()
+  //       .map((_, i) => ({
+  //         text: `Row ${currentLength + i + 1}`,
+  //         value: `row_${currentLength + i + 1}`,
+  //         key: `row_${Math.random().toString(36).substring(2, 9)}`,
+  //       }))
+  //     data.rowLabels = [...data.rowLabels, ...additionalLabels]
+  //   } else {
+  //     // Remove excess row labels
+  //     data.rowLabels = data.rowLabels.slice(0, rows)
+  //   }
+  // }
 
   // Ensure childItems array matches the desired dimensions
   if (data.childItems.length !== rows || data.childItems[0].length !== columns) {
