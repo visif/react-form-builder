@@ -229,13 +229,13 @@ class FormLink extends React.Component {
             {/* Display hyperlink in preview mode */}
             {!this.props.mutable && (
               <div className="form-link-preview" style={{ padding: '6px 0' }}>
-                <a 
-                  href="#" 
-                  onClick={(e) => { 
-                    e.preventDefault(); 
-                    this.openLinkedForm(); 
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    this.openLinkedForm()
                   }}
-                  style={{ 
+                  style={{
                     color: '#007bff',
                     textDecoration: 'underline',
                     cursor: 'pointer',
@@ -256,8 +256,8 @@ class FormLink extends React.Component {
                 >
                   <div
                     onClick={() => this.setState({ isShowingList: true })}
-                    style={{ 
-                      flex: 1, 
+                    style={{
+                      flex: 1,
                       border: '1px solid #ced4da',
                       borderRadius: '.25rem',
                       padding: '6px 12px',
@@ -279,7 +279,7 @@ class FormLink extends React.Component {
                             className="btn btn-secondary"
                             onClick={(e) => {
                               e.preventDefault()
-                              this.onSelectChildForm(this.state.selectedFormId)
+                              this.props.onSelectChildForm(this.state.selectedFormId)
                             }}
                           >
                             {formTitle}
