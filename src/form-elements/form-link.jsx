@@ -79,7 +79,7 @@ class FormLink extends React.Component {
           this.setState({
             formList: forms,
             matchedList: forms,
-          });
+          })
         }
       } catch (error) {
         console.warn('Error loading form source:', error)
@@ -279,7 +279,7 @@ class FormLink extends React.Component {
                             className="btn btn-secondary"
                             onClick={(e) => {
                               e.preventDefault()
-                              this.props.onSelectChildForm(this.state.selectedFormId)
+                              this.props.onSelectChildForm(this.props.data.formSource)
                             }}
                           >
                             {formTitle}
