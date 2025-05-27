@@ -217,7 +217,7 @@ class FormLink extends React.Component {
 
     const formTitle = this.state.selectedFormId
       ? this.state.selectedFormId.title
-      : 'Select a form'
+      : this.props.mutable ? 'Select a form' : 'No form selected'
     const isFormSelected = !!this.state.selectedFormId
 
     return (
@@ -257,7 +257,9 @@ class FormLink extends React.Component {
                     cursor: this.state.selectedFormId ? 'pointer' : 'not-allowed',
                   }}
                 >
-                  {this.state.selectedFormId?.id ? `${this.state.selectedFormId.id} - ${formTitle}` : formTitle}
+                  {this.state.selectedFormId?.id
+                    ? `${this.state.selectedFormId.id} - ${this.state.selectedFormId.title}`
+                    : this.props.data.label || 'View Form'}
                 </button>
               </div>
             )}
