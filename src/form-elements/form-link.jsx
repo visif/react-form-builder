@@ -238,9 +238,9 @@ class FormLink extends React.Component {
                 <button
                   onClick={(e) => {
                     e.preventDefault()
-                    // Make sure we show form ID in console
+                    console.log("FormLink button clicked")
                     if (this.state.selectedFormId?.id) {
-                      console.info(`Select form: ${this.state.selectedFormId.id} - ${this.state.selectedFormId?.title || ''}`)
+                      console.log(`Form link clicked with ID: ${this.state.selectedFormId.id}`)
 
                       if (this.props.openLinkedForm) {
                         this.props.openLinkedForm(this.state.selectedFormId.id)

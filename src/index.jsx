@@ -33,7 +33,7 @@ class ReactFormBuilder extends React.Component {
   }
 
   handleOpenLinkedForm(formId) {
-    console.info(`ReactFormBuilder: Opening linked form with ID ${formId}`)
+    console.log(`ReactFormBuilder: Opening linked form with ID ${formId}`)
     if (this.props.onOpenLinkedForm) {
       this.props.onOpenLinkedForm(formId)
     }
