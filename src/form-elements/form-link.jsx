@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import ComponentHeader from './component-header'
 import ComponentLabel from './component-label'
 
@@ -131,16 +132,16 @@ class FormLink extends React.Component {
       searchText: value,
       matchedList: matchData,
     })
-    
+
     // If onElementChange is provided, call it to synchronize changes across the column
     if (this.props.onElementChange) {
       const updatedData = {
         ...this.props.data,
         value: value
       }
-      
+
       this.props.onElementChange(updatedData)
-      
+
       // Immediately apply changes to this component's data
       if (this.props.data.dirty === undefined || this.props.data.dirty) {
         updatedData.dirty = true
@@ -164,7 +165,7 @@ class FormLink extends React.Component {
       searchText: form.title,
       isShowingList: false,
     })
-    
+
     // If onElementChange is provided, call it to synchronize changes across the column
     if (this.props.onElementChange) {
       const updatedData = {
@@ -173,9 +174,9 @@ class FormLink extends React.Component {
         selectedFormId: form,
         formSource: form.id // Save the form ID as formSource
       }
-      
+
       this.props.onElementChange(updatedData)
-      
+
       // Immediately apply changes to this component's data
       if (this.props.data.dirty === undefined || this.props.data.dirty) {
         updatedData.dirty = true
@@ -187,10 +188,9 @@ class FormLink extends React.Component {
   }
 
   openLinkedForm = () => {
-    console.info('Select form: ' + this.state.selectedFormId)
-    const { selectedFormId } = this.state.selectedFormId
-    if (selectedFormId && this.props.openLinkedForm) {
-      this.props.openLinkedForm(selectedFormId)
+    console.info('Select form: ' + this.state.selectedFormId?.title)
+    if (this.state.selectedFormId && this.props.openLinkedForm) {
+      this.props.openLinkedForm(this.state.selectedFormId.id)
     }
   }
 
@@ -226,27 +226,25 @@ class FormLink extends React.Component {
               width: '100%',
             }}
           >
-            {/* Display hyperlink in preview mode */}
+            {/* Display button in preview mode */}
             {!this.props.mutable && (
               <div className="form-link-preview" style={{ padding: '6px 0' }}>
-                <a
-                  href="#"
+                <button
                   onClick={(e) => {
                     e.preventDefault()
                     this.openLinkedForm()
                   }}
+                  className="btn btn-primary"
+                  disabled={!this.state.selectedFormId}
                   style={{
-                    color: '#007bff',
-                    textDecoration: 'underline',
-                    cursor: 'pointer',
-                    fontWeight: '500'
+                    cursor: this.state.selectedFormId ? 'pointer' : 'not-allowed',
                   }}
                 >
-                  {formId + ' - ' + formTitle}
-                </a>
+                  {this.state.selectedFormId?.id ? `${this.state.selectedFormId.id} - ${formTitle}` : formTitle}
+                </button>
               </div>
             )}
-            
+
             {/* Display form selection in edit mode */}
             {this.props.mutable && (
               <>
@@ -269,7 +267,7 @@ class FormLink extends React.Component {
                     }}
                   >
                     {isFormSelected ? (
-                      <span>{formId + ' - ' + formTitle}</span>
+                      <span>{this.state.selectedFormId?.id ? `${this.state.selectedFormId.id} - ${formTitle}` : formTitle}</span>
                     ) : (
                       <div>
                         <div className="form-link-preview" style={{ padding: '6px 0' }}>
@@ -279,7 +277,19 @@ class FormLink extends React.Component {
                             className="btn btn-secondary"
                             onClick={(e) => {
                               e.preventDefault()
-                              this.props.onSelectChildForm(this.props.data.formSource)
+                              try {
+                                if (typeof this.props.onSelectChildForm === 'function' && this.props.data.formSource) {
+                                  this.props.onSelectChildForm(this.props.data.formSource)
+                                } else {
+                                  // Just show the dropdown instead of trying to open the linked form
+                                  this.setState({ isShowingList: true })
+                                  console.warn('Cannot select child form: Missing onSelectChildForm or formSource')
+                                }
+                              } catch (error) {
+                                console.error('Error in FormLink click handler:', error)
+                                // Fall back to showing dropdown
+                                this.setState({ isShowingList: true })
+                              }
                             }}
                           >
                             {formTitle}
@@ -339,4 +349,22 @@ class FormLink extends React.Component {
   }
 }
 
+FormLink.propTypes = {
+  data: PropTypes.object.isRequired,
+  defaultValue: PropTypes.object,
+  mutable: PropTypes.bool,
+  updateElement: PropTypes.func,
+  getFormSource: PropTypes.func,
+  openLinkedForm: PropTypes.func,
+  onElementChange: PropTypes.func,
+  onSelectChildForm: PropTypes.func,
+}
+
+FormLink.defaultProps = {
+  mutable: false,
+  data: {},
+  defaultValue: {},
+}
+
 export default FormLink
+
