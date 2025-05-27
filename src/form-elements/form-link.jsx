@@ -71,9 +71,9 @@ class FormLink extends React.Component {
                 formList: forms,
                 matchedList: forms,
                 selectedFormId: selectedFormId,
-                searchText: ''
-              });
-              return;
+                searchText: '',
+              })
+              return
             }
           }
 
@@ -93,8 +93,14 @@ class FormLink extends React.Component {
       }
     }
 
-    if (typeof this.props.getFormInfo === 'function') {
+    if (typeof this.props.getFormInfo === 'function' && this.props.formSource) {
       try {
+        const formInfo = await this.props.getFormInfo(this.props.formSource)
+        if (this.mounted) {
+          this.setState({
+            formInfo: formInfo || null,
+          })
+        }
       } catch (error) {
         console.warn('Error loading form info:', error)
         if (this.mounted) {
@@ -144,16 +150,16 @@ class FormLink extends React.Component {
       searchText: value,
       matchedList: matchData,
     })
-    
+
     // If onElementChange is provided, call it to synchronize changes across the column
     if (this.props.onElementChange) {
       const updatedData = {
         ...this.props.data,
-        value: value
+        value: value,
       }
-      
+
       this.props.onElementChange(updatedData)
-      
+
       // Immediately apply changes to this component's data
       if (this.props.data.dirty === undefined || this.props.data.dirty) {
         updatedData.dirty = true
@@ -177,18 +183,18 @@ class FormLink extends React.Component {
       searchText: form.title,
       isShowingList: false,
     })
-    
+
     // If onElementChange is provided, call it to synchronize changes across the column
     if (this.props.onElementChange) {
       const updatedData = {
         ...this.props.data,
         value: form.title,
         selectedFormId: form,
-        formSource: form.id // Save the form ID as formSource
+        formSource: form.id, // Save the form ID as formSource
       }
-      
+
       this.props.onElementChange(updatedData)
-      
+
       // Immediately apply changes to this component's data
       if (this.props.data.dirty === undefined || this.props.data.dirty) {
         updatedData.dirty = true
@@ -261,7 +267,7 @@ class FormLink extends React.Component {
                 </a>
               </div>
             )}
-            
+
             {/* Display form selection in edit mode */}
             {this.props.mutable && (
               <>
@@ -280,7 +286,7 @@ class FormLink extends React.Component {
                       backgroundColor: isFormSelected ? '#fff' : '#f8f9fa',
                       minHeight: '38px',
                       display: 'flex',
-                      alignItems: 'center'
+                      alignItems: 'center',
                     }}
                   >
                     {isFormSelected ? (
