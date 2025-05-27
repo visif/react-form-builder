@@ -188,9 +188,15 @@ class FormLink extends React.Component {
   }
 
   openLinkedForm = () => {
-    console.info('Select form: ' + this.state.selectedFormId?.title)
-    if (this.state.selectedFormId && this.props.openLinkedForm) {
-      this.props.openLinkedForm(this.state.selectedFormId.id)
+    if (this.state.selectedFormId) {
+      // Log both form ID and title to console
+      console.info(`Select form: ${this.state.selectedFormId.id} - ${this.state.selectedFormId?.title || ''}`)
+
+      if (this.props.openLinkedForm) {
+        this.props.openLinkedForm(this.state.selectedFormId.id)
+      }
+    } else {
+      console.warn('No form selected')
     }
   }
 
@@ -232,7 +238,18 @@ class FormLink extends React.Component {
                 <button
                   onClick={(e) => {
                     e.preventDefault()
-                    this.openLinkedForm()
+                    // Make sure we show form ID in console
+                    if (this.state.selectedFormId?.id) {
+                      console.info(`Select form: ${this.state.selectedFormId.id} - ${this.state.selectedFormId?.title || ''}`)
+
+                      if (this.props.openLinkedForm) {
+                        this.props.openLinkedForm(this.state.selectedFormId.id)
+                      } else {
+                        console.info('No openLinkedForm handler available')
+                      }
+                    } else {
+                      console.warn('No form selected')
+                    }
                   }}
                   className="btn btn-primary"
                   disabled={!this.state.selectedFormId}
@@ -278,16 +295,22 @@ class FormLink extends React.Component {
                             onClick={(e) => {
                               e.preventDefault()
                               try {
-                                if (typeof this.props.onSelectChildForm === 'function' && this.props.data.formSource) {
-                                  this.props.onSelectChildForm(this.props.data.formSource)
+                                if (this.props.data.formSource) {
+                                  // Log form source ID consistently
+                                  console.info(`Select form: ${this.props.data.formSource} - ${formTitle}`)
+
+                                  if (typeof this.props.onSelectChildForm === 'function') {
+                                    this.props.onSelectChildForm(this.props.data.formSource)
+                                  } else {
+                                    this.setState({ isShowingList: true })
+                                    console.warn('Cannot select child form: Missing onSelectChildForm')
+                                  }
                                 } else {
-                                  // Just show the dropdown instead of trying to open the linked form
+                                  console.warn('No form source defined')
                                   this.setState({ isShowingList: true })
-                                  console.warn('Cannot select child form: Missing onSelectChildForm or formSource')
                                 }
                               } catch (error) {
                                 console.error('Error in FormLink click handler:', error)
-                                // Fall back to showing dropdown
                                 this.setState({ isShowingList: true })
                               }
                             }}
