@@ -13,6 +13,7 @@ class FormLink extends React.Component {
     this.state = {
       formList: [],
       matchedList: [],
+      formInfo: null,
       searchText: defaultValue.value || '',
       selectedFormId: defaultValue.selectedFormId,
       defaultSelectedForm: defaultValue.selectedForm,
@@ -87,6 +88,18 @@ class FormLink extends React.Component {
           this.setState({
             formList: [],
             matchedList: [],
+          })
+        }
+      }
+    }
+
+    if (typeof this.props.getFormInfo === 'function') {
+      try {
+      } catch (error) {
+        console.warn('Error loading form info:', error)
+        if (this.mounted) {
+          this.setState({
+            formInfo: null,
           })
         }
       }
@@ -239,10 +252,12 @@ class FormLink extends React.Component {
                     color: '#007bff',
                     textDecoration: 'underline',
                     cursor: 'pointer',
-                    fontWeight: '500'
+                    fontWeight: '500',
                   }}
                 >
-                  {formId + ' - ' + formTitle}
+                  {this.state.formInfo
+                    ? this.state.formInfo.Name
+                    : 'Please select a form'}
                 </a>
               </div>
             )}
@@ -269,7 +284,11 @@ class FormLink extends React.Component {
                     }}
                   >
                     {isFormSelected ? (
-                      <span>{formId + ' - ' + formTitle}</span>
+                      <span>
+                        {this.state.formInfo
+                          ? this.state.formInfo.Name
+                          : 'Please select a form'}
+                      </span>
                     ) : (
                       <div>
                         <div className="form-link-preview" style={{ padding: '6px 0' }}>
@@ -282,53 +301,14 @@ class FormLink extends React.Component {
                               this.props.onSelectChildForm(this.props.data.formSource)
                             }}
                           >
-                            {formTitle}
+                            {this.state.formInfo
+                              ? this.state.formInfo.Name
+                              : 'Please select a form'}
                           </a>
                         </div>
                       </div>
                     )}
                   </div>
-                </div>
-                <div
-                  style={{
-                    position: 'absolute',
-                    zIndex: 99,
-                    top: '100%',
-                    left: 0,
-                    right: 0,
-                    maxHeight: 250,
-                    overflowY: 'auto',
-                    display: this.state.isShowingList ? 'block' : 'none',
-                    backgroundColor: '#fff',
-                    border: '1px solid rgba(0, 0, 0, 0.125)',
-                    borderRadius: '0.25rem',
-                    boxShadow: '0 0.5rem 1rem rgba(0, 0, 0, 0.15)',
-                  }}
-                >
-                  {this.state.matchedList.length === 0 && (
-                    <div
-                      style={{
-                        padding: '0.75rem 1.25rem',
-                        color: '#6c757d',
-                        fontStyle: 'italic',
-                      }}
-                    >
-                      No forms found
-                    </div>
-                  )}
-                  {this.state.matchedList.map((form) => (
-                    <div
-                      key={form.id}
-                      style={{
-                        padding: '0.75rem 1.25rem',
-                        borderBottom: '1px solid rgba(0, 0, 0, 0.125)',
-                        cursor: 'pointer',
-                      }}
-                      onClick={() => this.handleFormSelect(form)}
-                    >
-                      {form.title}
-                    </div>
-                  ))}
                 </div>
               </>
             )}
