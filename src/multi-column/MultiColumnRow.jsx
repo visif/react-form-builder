@@ -200,9 +200,27 @@ const MultiColumnRow = (props) => {
             <thead>
               <tr>
                 {/* Add empty header cell for row labels column if row labels are present */}
-                {hasRowLabels && <th style={{ width: '150px' }} />}
+                {hasRowLabels && (
+                  <th
+                    style={{
+                      width: '150px',
+                      fontWeight: 'bold',
+                      backgroundColor: '#e9ecef', // Slightly darker background
+                      borderBottom: '2px solid #dee2e6', // Thicker bottom border
+                    }}
+                  />
+                )}
                 {data.columns.map((column, columnIndex) => (
-                  <th key={`header_${columnIndex}`} style={{ textAlign: 'center' }}>
+                  <th
+                    key={`header_${columnIndex}`}
+                    style={{
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                      backgroundColor: '#e9ecef', // Slightly darker background
+                      borderBottom: '2px solid #dee2e6', // Thicker bottom border
+                      padding: '10px 8px', // More padding
+                    }}
+                  >
                     {column.text}
                   </th>
                 ))}
@@ -217,7 +235,7 @@ const MultiColumnRow = (props) => {
                   <td
                     className="row-label"
                     style={{
-                      fontWeight: 'bold',
+                      fontWeight: 'bold', // This is already bold, but ensuring it's here
                       textAlign: 'right',
                       paddingRight: '10px',
                       backgroundColor: '#f5f5f5',
