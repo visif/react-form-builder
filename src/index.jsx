@@ -19,7 +19,6 @@ class ReactFormBuilder extends React.Component {
       editElement: null,
     }
     this.editModeOn = this.editModeOn.bind(this)
-    this.handleOpenLinkedForm = this.handleOpenLinkedForm.bind(this)
   }
 
   editModeOn(data, e) {
@@ -29,13 +28,6 @@ class ReactFormBuilder extends React.Component {
       this.setState({ editMode: !this.state.editMode, editElement: null })
     } else {
       this.setState({ editMode: !this.state.editMode, editElement: data })
-    }
-  }
-
-  handleOpenLinkedForm(formId) {
-    console.log(`ReactFormBuilder: Opening linked form with ID ${formId}`)
-    if (this.props.onOpenLinkedForm) {
-      this.props.onOpenLinkedForm(formId)
     }
   }
 
@@ -96,7 +88,6 @@ class ReactFormBuilder extends React.Component {
                 getDataSource={this.props.getDataSource}
                 getFormSource={this.props.getFormSource}
                 getFormContent={this.props.getFormContent}
-                openLinkedForm={this.handleOpenLinkedForm}
                 getActiveUserProperties={() => {
                   return {
                     name: 'test',
@@ -146,3 +137,4 @@ FormBuilders.Registry = Registry
 export default FormBuilders
 
 export { ReactFormBuilder, ReactFormGenerator, store as ElementStore, Registry }
+
