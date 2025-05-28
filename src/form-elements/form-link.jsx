@@ -305,7 +305,7 @@ class FormLink extends React.Component {
                             onClick={(e) => {
                               e.preventDefault()
                               this.props.onSelectChildForm(
-                                this.props.id,
+                                this.props.data.id,
                                 this.props.data.formSource
                               )
                             }}
