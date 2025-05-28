@@ -304,7 +304,10 @@ class FormLink extends React.Component {
                             className="btn btn-secondary"
                             onClick={(e) => {
                               e.preventDefault()
-                              this.props.onSelectChildForm(this.props.data.formSource)
+                              this.props.onSelectChildForm(
+                                this.props.id,
+                                this.props.data.formSource
+                              )
                             }}
                           >
                             {this.state.formInfo
