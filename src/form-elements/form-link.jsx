@@ -27,6 +27,24 @@ class FormLink extends React.Component {
     this.mounted = true
     await this.loadFormSource()
     this.checkForValue()
+
+    if (typeof this.props.getFormInfo === 'function' && this.props.data.formSource) {
+      try {
+        const formInfo = await this.props.getFormInfo(this.props.formSource)
+        if (this.mounted) {
+          this.setState({
+            formInfo: formInfo || null,
+          })
+        }
+      } catch (error) {
+        console.warn('Error loading form info:', error)
+        if (this.mounted) {
+          this.setState({
+            formInfo: null,
+          })
+        }
+      }
+    }
   }
 
   componentWillUnmount() {
@@ -88,24 +106,6 @@ class FormLink extends React.Component {
           this.setState({
             formList: [],
             matchedList: [],
-          })
-        }
-      }
-    }
-
-    if (typeof this.props.getFormInfo === 'function' && this.props.formSource) {
-      try {
-        const formInfo = await this.props.getFormInfo(this.props.formSource)
-        if (this.mounted) {
-          this.setState({
-            formInfo: formInfo || null,
-          })
-        }
-      } catch (error) {
-        console.warn('Error loading form info:', error)
-        if (this.mounted) {
-          this.setState({
-            formInfo: null,
           })
         }
       }
