@@ -30,7 +30,7 @@ class FormLink extends React.Component {
 
     if (typeof this.props.getFormInfo === 'function' && this.props.data.formSource) {
       try {
-        const formInfo = await this.props.getFormInfo(this.props.formSource)
+        const formInfo = await this.props.getFormInfo(this.props.data.formSource)
         if (this.mounted) {
           this.setState({
             formInfo: formInfo || null,
