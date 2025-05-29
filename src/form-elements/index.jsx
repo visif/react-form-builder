@@ -136,7 +136,7 @@ class TextInput extends React.Component {
   }
 
   handleChange(e) {
-    const value = e.target.value
+    const { value } = e.target
     this.setState({ value })
 
     const { data, handleChange } = this.props
@@ -150,7 +150,7 @@ class TextInput extends React.Component {
       // Create updated data object with the new value
       const updatedData = {
         ...this.props.data,
-        value: value,
+        value,
       }
 
       // Send it for synchronization across columns
@@ -220,7 +220,7 @@ class NumberInput extends React.Component {
   }
 
   handleChange(e) {
-    const value = e.target.value
+    const { value } = e.target
     this.setState({ value })
 
     const { data, handleChange } = this.props
@@ -234,7 +234,7 @@ class NumberInput extends React.Component {
       // Create updated data object with the new value
       const updatedData = {
         ...this.props.data,
-        value: value,
+        value,
       }
 
       // Send it for synchronization across columns
@@ -304,7 +304,7 @@ class TextArea extends React.Component {
   }
 
   handleChange(e) {
-    const value = e.target.value
+    const { value } = e.target
     this.setState({ value })
 
     const { data, handleChange } = this.props
@@ -318,7 +318,7 @@ class TextArea extends React.Component {
       // Create updated data object with the new value
       const updatedData = {
         ...this.props.data,
-        value: value,
+        value,
       }
 
       // Send it for synchronization across columns
@@ -606,7 +606,7 @@ class Signature extends React.Component {
               className="fas fa-times clear-signature"
               onClick={this.clear}
               title="Clear Signature"
-            ></i>
+            />
           )}
           <input {...props} />
         </div>
@@ -665,8 +665,8 @@ class Tags extends React.Component {
     }
 
     if (this.props.mutable) {
-      //props.isDisabled = this.props.read_only;
-      props.isDisabled = this.props.read_only || !isSameEditor ? true : false
+      // props.isDisabled = this.props.read_only;
+      props.isDisabled = !!(this.props.read_only || !isSameEditor)
       props.value = this.state.value
       props.ref = this.inputField
     }
@@ -709,9 +709,7 @@ class Checkboxes extends React.Component {
     return state
   }
 
-  getActiveValue = (values, key) => {
-    return values?.find((item) => item.key === key)
-  }
+  getActiveValue = (values, key) => values?.find((item) => item.key === key)
 
   render() {
     const userProperties =
@@ -766,7 +764,7 @@ class Checkboxes extends React.Component {
                 style={{ display: 'flex', alignItems: 'center' }}
               >
                 <input
-                  id={'fid_' + this_key}
+                  id={`fid_${this_key}`}
                   className="custom-control-input"
                   ref={(c) => {
                     if (c && self.props.mutable) {
@@ -857,19 +855,19 @@ class Checkboxes extends React.Component {
                   }}
                   {...props}
                 />
-                <label className="custom-control-label" htmlFor={'fid_' + this_key}>
+                <label className="custom-control-label" htmlFor={`fid_${this_key}`}>
                   {option.text}
                 </label>
                 {props.checked && option.info && (
                   <textarea
-                    id={'fid_' + this_key + '_info'}
+                    id={`fid_${this_key}_info`}
                     type="text"
                     className="form-control"
                     style={{
                       width: 'auto',
                       marginLeft: 16,
                       minHeight: '60px',
-                      //height: 'calc(1.5em + .5rem)',
+                      // height: 'calc(1.5em + .5rem)',
                       marginBottom: 4,
                     }}
                     rows={2}
@@ -911,9 +909,7 @@ class RadioButtons extends React.Component {
     return state
   }
 
-  getActiveValue = (values, key) => {
-    return values?.find((item) => item.key === key)
-  }
+  getActiveValue = (values, key) => values?.find((item) => item.key === key)
 
   render() {
     const userProperties =
@@ -939,6 +935,16 @@ class RadioButtons extends React.Component {
     const { data, handleChange } = this.props
     const { formularKey } = data
 
+    // Create unique name for RadioButtons in multi-column layout
+    const isInDynamicColumn =
+      this.props.data.parentId &&
+      this.props.data.row !== undefined &&
+      this.props.data.col !== undefined
+
+    const uniqueName = isInDynamicColumn
+      ? `${this.props.data.parentId}_row${this.props.data.row}_col${this.props.data.col}_${this.props.data.field_name}`
+      : this.props.data.field_name
+
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
@@ -947,7 +953,7 @@ class RadioButtons extends React.Component {
           {this.props.data.options.map((option) => {
             const this_key = `preview_${option.key}`
             const props = {}
-            props.name = self.props.data.field_name
+            props.name = uniqueName // Use unique name instead of field_name
 
             props.type = 'radio'
             props.value = option.value
@@ -971,7 +977,7 @@ class RadioButtons extends React.Component {
                 style={{ display: 'flex', alignItems: 'center' }}
               >
                 <input
-                  id={'fid_' + this_key}
+                  id={`fid_${this_key}`}
                   className="custom-control-input"
                   ref={(c) => {
                     if (c && self.props.mutable) {
@@ -994,13 +1000,6 @@ class RadioButtons extends React.Component {
                           },
                         ],
                       }
-
-                      // If we're in a dynamic column and this is a UI-only change (selection)
-                      // We need to update just this component's internal state without syncing to other rows
-                      const isInDynamicColumn =
-                        self.props.data.parentId &&
-                        self.props.data.row !== undefined &&
-                        self.props.data.col !== undefined
 
                       // Always update the local element state for immediate visual feedback
                       if (self.props.updateElement) {
@@ -1029,11 +1028,10 @@ class RadioButtons extends React.Component {
                         self.props.updateElement(updatedData)
                       }
 
-                      // If onElementChange is provided, but we avoid sending selection state
+                      // If onElementChange is provided and we're in a dynamic column
                       if (self.props.onElementChange && isInDynamicColumn) {
                         // For selection changes in dynamic columns, we don't want to sync the selection state
                         // but we still need to notify the system that a change happened for other purposes
-                        // Create a copy that doesn't modify the selection state
                         const updatedDataForSync = {
                           ...self.props.data,
                           // Deliberately NOT updating options or selection state
@@ -1051,19 +1049,19 @@ class RadioButtons extends React.Component {
                   }}
                   {...props}
                 />
-                <label className="custom-control-label" htmlFor={'fid_' + this_key}>
+                <label className="custom-control-label" htmlFor={`fid_${this_key}`}>
                   {option.text}
                 </label>
                 {props.checked && option.info && (
                   <textarea
-                    id={'fid_' + this_key + '_info'}
+                    id={`fid_${this_key}_info`}
                     type="text"
                     className="form-control"
                     style={{
                       width: 'auto',
                       marginLeft: 16,
                       minHeight: '60px',
-                      //height: 'calc(1.5em + .5rem)',
+                      // height: 'calc(1.5em + .5rem)',
                     }}
                     rows={2}
                     defaultValue={answerItem?.info ?? ''}
@@ -1133,8 +1131,8 @@ class Rating extends React.Component {
           ? parseFloat(this.props.defaultValue, 10)
           : 0
       props.editing = true
-      //props.disabled = this.props.read_only ||;
-      props.disabled = this.props.read_only || !isSameEditor ? true : false
+      // props.disabled = this.props.read_only ||;
+      props.disabled = !!(this.props.read_only || !isSameEditor)
       props.ref = this.inputField
     }
 
@@ -1166,7 +1164,7 @@ class HyperLink extends React.Component {
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
         <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
-          <a target="_blank" href={this.props.data.href}>
+          <a target="_blank" href={this.props.data.href} rel="noreferrer">
             {this.props.data.content}
           </a>
         </div>
@@ -1203,7 +1201,7 @@ class Camera extends React.Component {
 
   displayImage = (e) => {
     const self = this
-    const target = e.target
+    const { target } = e
     let file
     let reader
 
@@ -1275,7 +1273,7 @@ class Camera extends React.Component {
                 />
                 <div className="image-upload-control">
                   <div className="btn btn-default">
-                    <i className="fas fa-camera"></i> Upload Photo
+                    <i className="fas fa-camera" /> Upload Photo
                   </div>
                   <p>Select an image from your computer or device.</p>
                 </div>
@@ -1290,7 +1288,7 @@ class Camera extends React.Component {
                   />
                   <br />
                   <div className="btn btn-image-clear" onClick={this.clearImage}>
-                    <i className="fas fa-times"></i> Clear Photo
+                    <i className="fas fa-times" /> Clear Photo
                   </div>
                 </div>
               )}

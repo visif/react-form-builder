@@ -248,7 +248,7 @@ export default class ReactForm extends React.Component {
 
       item.options.forEach((option) => {
         const $option = ReactDOM.findDOMNode(ref.options[`child_ref_${option.key}`])
-        if ($option.checked) {
+        if ($option?.checked) {
           let info = ''
 
           if (option.info) {
@@ -325,6 +325,8 @@ export default class ReactForm extends React.Component {
         formData.push(item_data)
       }
     })
+
+    console.log('Collected Form Data:', formData)
     return formData
   }
 
