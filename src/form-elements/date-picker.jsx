@@ -5,9 +5,12 @@ import buddhistEra from 'dayjs/plugin/buddhistEra'
 import utc from 'dayjs/plugin/utc'
 import ComponentHeader from './component-header'
 import ComponentLabel from './component-label'
+import th from "antd/es/date-picker/locale/th_TH";
+import dayTh from "dayjs/locale/th";
 
 dayjs.extend(utc)
 dayjs.extend(buddhistEra)
+dayjs.locale(dayTh);
 
 const keyDateFormat = 'setting_date_format'
 const keyCalendarType = 'setting_calendar_type'
@@ -31,6 +34,16 @@ export const getCalendarType = () => {
   var key = localStorage.getItem(keyCalendarType)
   return key || 'EN'
 }
+
+export const BuddhistLocale = {
+  ...th,
+  lang: {
+    ...th.lang,
+    dateFormat: getDateFormat().replace('YYYY', 'BBBB'),
+    dateTimeFormat: (getDateFormat() + " HH:mm:ss").replace('YYYY', 'BBBB'),
+    yearFormat: "YYYY", //This needs to be kept unchanged
+  },
+};
 
 class DatePicker extends React.Component {
   constructor(props) {
@@ -190,19 +203,21 @@ class DatePicker extends React.Component {
                 }
                 disabled={!isSameEditor}
                 className="form-control"
+                style={{ display: 'inline-block', width: showTimeSelect ? '200px' : 'auto' }}
               />
             ) : (
               <AntDatePicker
+                locale={getCalendarType() === 'TH' ? BuddhistLocale : undefined}
                 name={props.name}
                 ref={props.ref}
                 onChange={this.handleChange}
                 value={this.state.value ? dayjs(this.state.value).utc(true) : null}
                 className="form-control bold-date-picker"
                 format={(value) => this.formatDate(value, this.state.formatMask)}
-                showTime={showTimeSelect}
+                showTime={showTimeSelect ? { format: 'HH:mm', use12Hours: false } : false}
                 disabled={!isSameEditor || this.state.loading}
                 placeholder={this.state.placeholder}
-                style={{ display: 'inline-block', width: 'auto' }}
+                 style={{ display: 'inline-block', width: showTimeSelect ? '200px' : 'auto' }}
               />
             )}
           </div>
