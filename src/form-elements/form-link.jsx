@@ -234,7 +234,7 @@ class FormLink extends React.Component {
     const isFormSelected = !!this.state.selectedFormId
 
     return (
-      <div className={baseClasses}>
+      <section className={baseClasses}>
         <ComponentHeader {...this.props} />
         <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} style={{ display: 'block' }} />
@@ -248,8 +248,8 @@ class FormLink extends React.Component {
             {/* Display hyperlink in preview mode */}
             {!this.props.mutable && (
               <div className="form-link-preview" style={{ padding: '6px 0' }}>
-                <a
-                  href="#"
+                <button
+                  type="button"
                   onClick={(e) => {
                     e.preventDefault()
                     this.openLinkedForm()
@@ -259,71 +259,72 @@ class FormLink extends React.Component {
                     textDecoration: 'underline',
                     cursor: 'pointer',
                     fontWeight: '500',
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
                   }}
                 >
                   {this.state.formInfo
                     ? this.state.formInfo.Name
                     : 'Please select a form'}
-                </a>
+                </button>
               </div>
             )}
 
             {/* Display form selection in edit mode */}
             {this.props.mutable && (
-              <>
+              <div
+                className="form-link-container"
+                style={{ display: 'flex', alignItems: 'center' }}
+              >
                 <div
-                  className="form-link-container"
-                  style={{ display: 'flex', alignItems: 'center' }}
+                  onClick={() => this.setState({ isShowingList: true })}
+                  style={{
+                    flex: 1,
+                    border: '1px solid #ced4da',
+                    borderRadius: '.25rem',
+                    padding: '6px 12px',
+                    cursor: 'pointer',
+                    backgroundColor: isFormSelected ? '#fff' : '#f8f9fa',
+                    minHeight: '38px',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
                 >
-                  <div
-                    onClick={() => this.setState({ isShowingList: true })}
-                    style={{
-                      flex: 1,
-                      border: '1px solid #ced4da',
-                      borderRadius: '.25rem',
-                      padding: '6px 12px',
-                      cursor: 'pointer',
-                      backgroundColor: isFormSelected ? '#fff' : '#f8f9fa',
-                      minHeight: '38px',
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    {isFormSelected ? (
-                      <span>
-                        {this.state.formInfo
-                          ? this.state.formInfo.Name
-                          : 'Please select a form'}
-                      </span>
-                    ) : (
-                      <div>
-                        <div className="form-link-preview" style={{ padding: '6px 0' }}>
-                          <a
-                            href="#"
-                            style={{ marginTop: 6 }}
-                            className="btn btn-secondary"
-                            onClick={(e) => {
-                              e.preventDefault()
-                              this.props.onSelectChildForm(
-                                this.props.data.id,
-                                this.props.data.formSource
-                              )
-                            }}
-                          >
-                            {this.state.formInfo
-                              ? this.state.formInfo.Name
-                              : 'Please select a form'}
-                          </a>
-                        </div>
+                  {isFormSelected ? (
+                    <span>
+                      {this.state.formInfo
+                        ? this.state.formInfo.Name
+                        : 'Please select a form'}
+                    </span>
+                  ) : (
+                    <div>
+                      <div className="form-link-preview" style={{ padding: '6px 0' }}>
+                        <a
+                          href="#"
+                          style={{ marginTop: 6 }}
+                          className="btn btn-secondary"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            this.props.onSelectChildForm(
+                              this.props.data.id,
+                              this.props.data.formSource
+                            )
+                          }}
+                        >
+                          {this.state.formInfo
+                            ? this.state.formInfo.Name
+                            : 'Please select a form'}
+                        </a>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
-              </>
+              </div>
             )}
           </div>
         </div>
-      </div>
+      </section>
     )
   }
 }
