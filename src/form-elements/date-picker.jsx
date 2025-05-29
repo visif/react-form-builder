@@ -40,7 +40,7 @@ export const BuddhistLocale = {
   lang: {
     ...th.lang,
     dateFormat: getDateFormat().replace('YYYY', 'BBBB'),
-    dateTimeFormat: (getDateFormat() + " HH:mm:ss").replace('YYYY', 'BBBB'),
+    dateTimeFormat: (getDateFormat() + " HH:mm").replace('YYYY', 'BBBB'), // Changed from HH:mm:ss to HH:mm
     yearFormat: "YYYY", //This needs to be kept unchanged
   },
 };
@@ -146,11 +146,19 @@ class DatePicker extends React.Component {
   formatDate = (date, formatMask) => {
     if (!date) return ''
 
+    // Add time format if showTimeSelect is enabled
+    const { showTimeSelect } = this.props.data;
+    let updatedFormat = formatMask;
+
+    if (showTimeSelect && !formatMask.includes('HH:mm')) {
+      updatedFormat = `${formatMask} HH:mm`;
+    }
+
     if (getCalendarType() === 'EN') {
-      return dayjs(date).utc(true).format(formatMask)
+      return dayjs(date).utc(true).format(updatedFormat);
     } else {
       // Convert to Buddhist calendar (add 543 years)
-      return dayjs(date).utc(true).format(formatMask.replace('YYYY', 'BBBB'))
+      return dayjs(date).utc(true).format(updatedFormat.replace('YYYY', 'BBBB'));
     }
   }
 
@@ -203,7 +211,7 @@ class DatePicker extends React.Component {
                 }
                 disabled={!isSameEditor}
                 className="form-control"
-                style={{ display: 'inline-block', width: showTimeSelect ? '200px' : 'auto' }}
+                style={{ display: 'inline-block', width: showTimeSelect ? '230px' : 'auto' }}
               />
             ) : (
               <AntDatePicker
@@ -217,7 +225,7 @@ class DatePicker extends React.Component {
                 showTime={showTimeSelect ? { format: 'HH:mm', use12Hours: false } : false}
                 disabled={!isSameEditor || this.state.loading}
                 placeholder={this.state.placeholder}
-                 style={{ display: 'inline-block', width: showTimeSelect ? '200px' : 'auto' }}
+                 style={{ display: 'inline-block', width: showTimeSelect ? '230px' : 'auto' }}
               />
             )}
           </div>
