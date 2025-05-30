@@ -1,138 +1,143 @@
-import React from 'react'
-import { DatePicker as AntDatePicker } from 'antd'
-import dayjs from 'dayjs'
-import buddhistEra from 'dayjs/plugin/buddhistEra'
-import utc from 'dayjs/plugin/utc'
-import ComponentHeader from './component-header'
-import ComponentLabel from './component-label'
-import th from "antd/es/date-picker/locale/th_TH";
-import dayTh from "dayjs/locale/th";
+import React from "react";
+import { DatePicker as AntDatePicker, TimePicker as AntTimePicker } from "antd";
+import dayjs from "dayjs";
+import ComponentHeader from "./component-header";
+import ComponentLabel from "./component-label";
+import utc from 'dayjs/plugin/utc';
+import buddhistEra from 'dayjs/plugin/buddhistEra';
 
-dayjs.extend(utc)
-dayjs.extend(buddhistEra)
-dayjs.locale(dayTh);
+dayjs.extend(utc);
+dayjs.extend(buddhistEra);
 
-const keyDateFormat = 'setting_date_format'
-const keyCalendarType = 'setting_calendar_type'
+const keyDateFormat = "setting_date_format";
+const keyCalendarType = "setting_calendar_type";
 
 const dateFormatList = {
-  'dd MMMM yyyy': 'DD MMMM YYYY',
-  'dd-MMM-yyyy': 'DD-MMM-YYYY',
-  'dd-MMM-yy': 'DD-MMM-YY',
-  'yyyy-MM-dd': 'YYYY-MM-DD',
-  'MM/dd/yyyy': 'MM/DD/YYYY',
-  'dd/MM/yyyy': 'DD/MM/YYYY',
-  'MMM dd, yyyy': 'MMM DD, YYYY',
-}
+  "dd MMMM yyyy": "DD MMMM YYYY",
+  "dd-MMM-yyyy": "DD-MMM-YYYY",
+  "dd-MMM-yy": "DD-MMM-YY",
+  "yyyy-MM-dd": "YYYY-MM-DD",
+  "MM/dd/yyyy": "MM/DD/YYYY",
+  "dd/MM/yyyy": "DD/MM/YYYY",
+  "MMM dd, yyyy": "MMM DD, YYYY",
+};
 
-export const getDateFormat = () => {
-  const key = dateFormatList[localStorage.getItem(keyDateFormat)]
-  return key || 'DD MMMM YYYY'
-}
+const dateTimeFormatList = {
+  "dd MMMM yyyy": "DD MMMM YYYY HH:MM",
+  "dd-MMM-yyyy": "DD-MMM-YYYY HH:MM",
+  "dd-MMM-yy": "DD-MMM-YY HH:MM",
+  "yyyy-MM-dd": "YYYY-MM-DD HH:MM",
+  "MM/dd/yyyy": "MM/DD/YYYY HH:MM",
+  "dd/MM/yyyy": "DD/MM/YYYY HH:MM",
+  "MMM dd, yyyy": "MMM DD, YYYY HH:MM",
+};
+
+export const getDateFormat = (showTimeSelect) => {
+  const key = showTimeSelect
+    ? dateTimeFormatList[localStorage.getItem(keyDateFormat)]
+    : dateFormatList[localStorage.getItem(keyDateFormat)];
+  return key || (showTimeSelect ? "DD MMMM YYYY HH:MM" : "DD MMMM YYYY");
+};
 
 export const getCalendarType = () => {
-  var key = localStorage.getItem(keyCalendarType)
-  return key || 'TH'
-}
-
-export const BuddhistLocale = {
-  ...th,
-  lang: {
-    ...th.lang,
-    dateFormat: getDateFormat().replace('YYYY', 'BBBB'),
-    dateTimeFormat: (getDateFormat() + " HH:mm").replace('YYYY', 'BBBB'),
-    yearFormat: "BBBB",
-    monthFormat: "MMMM",
-    quarterFormat: "Q",
-  },
+  var key = localStorage.getItem(keyCalendarType);
+  return key || "EN";
 };
 
 class DatePicker extends React.Component {
   constructor(props) {
-    super(props)
-    this.inputField = React.createRef()
-    this.mounted = false
+    super(props);
+    this.inputField = React.createRef();
+    this.mounted = false;
 
-    const { formatMask } = DatePicker.updateFormat(props, null)
+    const { formatMask } = DatePicker.updateFormat(props, null);
     this.state = {
       ...DatePicker.updateDateTime(props, formatMask),
-      loading: true,
-    }
+      loading: true
+    };
   }
 
   componentDidMount() {
-    this.mounted = true
-    this.checkForValue()
+    this.mounted = true;
+    this.checkForValue();
   }
 
   componentWillUnmount() {
-    this.mounted = false
+    this.mounted = false;
   }
 
   checkForValue = (attempt = 0) => {
-    const { defaultValue } = this.props
-    const maxRetries = 3
+    const { defaultValue } = this.props;
+    const maxRetries = 3;
 
     if (!this.state.value && defaultValue) {
       // If value hasn't loaded yet, check again in a moment
       setTimeout(() => {
         if (this.mounted && !this.state.value) {
-          const { formatMask } = this.state
+          const { formatMask } = this.state;
           this.setState({
             ...DatePicker.updateDateTime(this.props, formatMask),
-            loading: false,
-          })
+            loading: false
+          });
           // Keep checking if still no value and attempts are less than maxRetries
           if (!this.state.value && attempt < maxRetries) {
-            this.checkForValue(attempt + 1)
+            this.checkForValue(attempt + 1);
           }
         }
-      }, 500)
+      }, 500);
     } else {
-      this.setState({ loading: false })
+      this.setState({ loading: false });
     }
   }
 
   handleChange = (date) => {
-    const { formatMask } = this.state
-    const isoDate = date ? date.toISOString() : null
+    const { formatMask } = this.state;
+    const isoDate = date ? date.toISOString() : null;
     this.setState({
       value: isoDate,
       placeholder: formatMask.toLowerCase(),
-    })
-  }
+    });
+  };
+
+  handleTimeChange = (time) => {
+    const isoTime = time ? time.toISOString() : null;
+    this.setState({
+      value: isoTime,
+      placeholder: "HH:MM",
+    });
+  };
 
   static getDerivedStateFromProps(props, state) {
     if (props.defaultValue && props.defaultValue !== state.defaultValue) {
-      const { formatMask } = DatePicker.updateFormat(props, null)
-      return DatePicker.updateDateTime(props, formatMask)
+      const { formatMask } = DatePicker.updateFormat(props, null);
+      return DatePicker.updateDateTime(props, formatMask);
     }
-    return null
+    return null;
   }
 
   static updateFormat(props, oldFormatMask) {
-    const formatMask = getDateFormat()
-    const updated = formatMask !== oldFormatMask
-    return { updated, formatMask }
+    const formatMask = getDateFormat(props.data.showTimeSelect);
+    const updated = formatMask !== oldFormatMask;
+    return { updated, formatMask };
   }
 
   static updateDateTime(props, formatMask) {
-    let value
-    const { defaultToday } = props.data
+    let value;
+    const { defaultToday } = props.data;
 
     if (defaultToday && !props.defaultValue) {
-      value = dayjs().toISOString()
+      value = dayjs().toISOString();
     } else if (props.defaultValue) {
       try {
-        const isMMDDYYYY = /^\d{2}\/\d{2}\/\d{4}$/.test(props.defaultValue)
+        const isMMDDYYYY = /^\d{2}\/\d{2}\/\d{4}$/.test(props.defaultValue);
         if (isMMDDYYYY) {
-          value = dayjs(props.defaultValue, 'MM/DD/YYYY').toISOString()
+          value = dayjs(props.defaultValue, "MM/DD/YYYY").toISOString();
         } else {
-          value = dayjs(props.defaultValue).utc(true).toISOString()
+          value = dayjs(props.defaultValue).utc(true).toISOString();
         }
       } catch (error) {
-        console.warn('Invalid date value:', props.defaultValue)
-        value = null
+        console.warn('Invalid date value:', props.defaultValue);
+        value = null;
       }
     }
 
@@ -142,56 +147,46 @@ class DatePicker extends React.Component {
       defaultToday,
       formatMask,
       defaultValue: props.defaultValue,
-    }
+    };
   }
 
   formatDate = (date, formatMask) => {
-    if (!date) return ''
+    if (!date) return "";;
 
-    // Add time format if showTimeSelect is enabled
-    const { showTimeSelect } = this.props.data;
-    let updatedFormat = formatMask;
-
-    if (showTimeSelect && !formatMask.includes('HH:mm')) {
-      updatedFormat = `${formatMask} HH:mm`;
-    }
-
-    if (getCalendarType() === 'EN') {
-      return dayjs(date).utc(true).format(updatedFormat);
+    if (getCalendarType() === "EN") {
+      return dayjs(date).utc(true).format(formatMask);
     } else {
-      // For Buddhist calendar, use BBBB format and ensure dayjs has buddhistEra plugin
-      const buddhistFormat = updatedFormat.replace('YYYY', 'BBBB');
-      return dayjs(date).utc(true).format(buddhistFormat);
+      // Convert to Buddhist calendar (add 543 years)
+      return dayjs(date).utc(true).format(formatMask.replace('YYYY', 'BBBB'));
     }
   }
 
   render() {
-    const { showTimeSelect } = this.props.data
-    const userProperties =
-      this.props.getActiveUserProperties && this.props.getActiveUserProperties()
+    const { showTimeSelect, showTimeSelectOnly } = this.props.data;
+    const userProperties = this.props.getActiveUserProperties && this.props.getActiveUserProperties();
 
-    const savedEditor = this.props.editor
-    let isSameEditor = true
+    const savedEditor = this.props.editor;
+    let isSameEditor = true;
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId
+      isSameEditor = userProperties.userId === savedEditor.userId;
     }
 
     const props = {
-      type: 'date',
-      className: 'form-control',
+      type: "date",
+      className: "form-control",
       name: this.props.data.field_name,
-    }
+    };
 
-    const readOnly = this.props.data.readOnly || this.props.read_only || !isSameEditor
+    const readOnly = this.props.data.readOnly || this.props.read_only || !isSameEditor;
 
     if (this.props.mutable) {
-      props.defaultValue = this.props.defaultValue
-      props.ref = this.inputField
+      props.defaultValue = this.props.defaultValue;
+      props.ref = this.inputField;
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = "SortableItem rfb-item";
     if (this.props.data.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
+      baseClasses += " alwaysbreak";
     }
 
     return (
@@ -207,41 +202,43 @@ class DatePicker extends React.Component {
                 ref={props.ref}
                 readOnly={readOnly}
                 placeholder={this.state.placeholder}
-                value={
-                  this.state.value
-                    ? this.formatDate(this.state.value, this.state.formatMask)
-                    : ''
-                }
+                value={this.state.value ? this.formatDate(this.state.value, this.state.formatMask) : ""}
                 disabled={!isSameEditor}
                 className="form-control"
-                style={{ display: 'inline-block', width: showTimeSelect ? '210px' : 'auto' }}
               />
-            ) : (
+            ) : !showTimeSelectOnly ? (
               <AntDatePicker
-                locale={getCalendarType() !== 'EN' ? BuddhistLocale : undefined}
                 name={props.name}
                 ref={props.ref}
                 onChange={this.handleChange}
                 value={this.state.value ? dayjs(this.state.value).utc(true) : null}
                 className="form-control bold-date-picker"
-                format={(() => {
-                  let format = this.state.formatMask;
-                  if (showTimeSelect && !format.includes('HH:mm')) {
-                    format = `${format} HH:mm`;
-                  }
-                  return getCalendarType() !== 'EN' ? format.replace('YYYY', 'BBBB') : format;
-                })()}
-                showTime={showTimeSelect ? { format: 'HH:mm', use12Hours: false } : false}
+                format={(value) => this.formatDate(value, this.state.formatMask)}
+                showTime={showTimeSelect? { format: "HH:mm", showSecond: false } : null}
                 disabled={!isSameEditor || this.state.loading}
                 placeholder={this.state.placeholder}
-                style={{ display: 'inline-block', width: showTimeSelect ? '210px' : 'auto' }}
+                style={{ display: "inline-block", width: "auto" }}
+              />
+            ) : (
+              <AntTimePicker
+                name={props.name}
+                ref={props.ref}
+                onChange={this.handleTimeChange}
+                value={this.state.value ? dayjs(this.state.value).utc(true) : null}
+                className="form-control bold-time-picker"
+                disabled={!isSameEditor || this.state.loading}
+                placeholder={this.state.placeholder}
+                style={{ display: "inline-block", width: "auto" }}
+                format="HH:mm"
+                minuteStep={1}
               />
             )}
           </div>
         </div>
       </div>
-    )
+    );
   }
 }
 
-export default DatePicker
+export default DatePicker;
+
