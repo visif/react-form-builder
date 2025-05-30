@@ -32,7 +32,7 @@ export const getDateFormat = () => {
 
 export const getCalendarType = () => {
   var key = localStorage.getItem(keyCalendarType)
-  return key || 'EN'
+  return key || 'TH'
 }
 
 export const BuddhistLocale = {
@@ -40,8 +40,10 @@ export const BuddhistLocale = {
   lang: {
     ...th.lang,
     dateFormat: getDateFormat().replace('YYYY', 'BBBB'),
-    dateTimeFormat: (getDateFormat() + " HH:mm").replace('YYYY', 'BBBB'), // Changed from HH:mm:ss to HH:mm
-    yearFormat: "YYYY", //This needs to be kept unchanged
+    dateTimeFormat: (getDateFormat() + " HH:mm").replace('YYYY', 'BBBB'),
+    yearFormat: "BBBB",
+    monthFormat: "MMMM",
+    quarterFormat: "Q",
   },
 };
 
@@ -157,8 +159,9 @@ class DatePicker extends React.Component {
     if (getCalendarType() === 'EN') {
       return dayjs(date).utc(true).format(updatedFormat);
     } else {
-      // Convert to Buddhist calendar (add 543 years)
-      return dayjs(date).utc(true).format(updatedFormat.replace('YYYY', 'BBBB'));
+      // For Buddhist calendar, use BBBB format and ensure dayjs has buddhistEra plugin
+      const buddhistFormat = updatedFormat.replace('YYYY', 'BBBB');
+      return dayjs(date).utc(true).format(buddhistFormat);
     }
   }
 
@@ -211,21 +214,27 @@ class DatePicker extends React.Component {
                 }
                 disabled={!isSameEditor}
                 className="form-control"
-                style={{ display: 'inline-block', width: showTimeSelect ? '230px' : 'auto' }}
+                style={{ display: 'inline-block', width: showTimeSelect ? '210px' : 'auto' }}
               />
             ) : (
               <AntDatePicker
-                locale={getCalendarType() === 'TH' ? BuddhistLocale : undefined}
+                locale={getCalendarType() !== 'EN' ? BuddhistLocale : undefined}
                 name={props.name}
                 ref={props.ref}
                 onChange={this.handleChange}
                 value={this.state.value ? dayjs(this.state.value).utc(true) : null}
                 className="form-control bold-date-picker"
-                format={(value) => this.formatDate(value, this.state.formatMask)}
+                format={(() => {
+                  let format = this.state.formatMask;
+                  if (showTimeSelect && !format.includes('HH:mm')) {
+                    format = `${format} HH:mm`;
+                  }
+                  return getCalendarType() !== 'EN' ? format.replace('YYYY', 'BBBB') : format;
+                })()}
                 showTime={showTimeSelect ? { format: 'HH:mm', use12Hours: false } : false}
                 disabled={!isSameEditor || this.state.loading}
                 placeholder={this.state.placeholder}
-                 style={{ display: 'inline-block', width: showTimeSelect ? '230px' : 'auto' }}
+                style={{ display: 'inline-block', width: showTimeSelect ? '210px' : 'auto' }}
               />
             )}
           </div>
