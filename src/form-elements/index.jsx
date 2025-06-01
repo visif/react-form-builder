@@ -984,21 +984,38 @@ class RadioButtons extends React.Component {
                       self.options[`child_ref_${option.key}`] = c
                     }
                   }}
-                  onChange={() => {
+                  onClick={() => {
                     self.setState((current) => {
                       if (formularKey && handleChange) {
                         handleChange(formularKey, option.value)
                       }
 
-                      const newValue = {
-                        ...current,
-                        value: [
-                          {
-                            key: option.key,
-                            value: true,
-                            info: '',
-                          },
-                        ],
+                      // Check if this option is already selected
+                      const currentActiveValue = self.getActiveValue(
+                        current?.value,
+                        option.key
+                      )
+                      const isCurrentlySelected = currentActiveValue?.value === true
+
+                      let newValue
+                      if (isCurrentlySelected) {
+                        // If already selected, deselect it (empty array)
+                        newValue = {
+                          ...current,
+                          value: [], // Clear selection
+                        }
+                      } else {
+                        // If not selected, select this option
+                        newValue = {
+                          ...current,
+                          value: [
+                            {
+                              key: option.key,
+                              value: true,
+                              info: '',
+                            },
+                          ],
+                        }
                       }
 
                       // Always update the local element state for immediate visual feedback
@@ -1007,20 +1024,15 @@ class RadioButtons extends React.Component {
                         const updatedData = {
                           ...self.props.data,
                           dirty: true,
-                          value: [
-                            {
-                              key: option.key,
-                              value: true,
-                            },
-                          ],
+                          value: newValue.value,
                         }
 
                         // Update the local options to show selection visually
                         // This only affects THIS element, not others in the column
                         const localOptions = self.props.data.options.map((opt) => ({
                           ...opt,
-                          checked: opt.key === option.key,
-                          selected: opt.key === option.key,
+                          checked: isCurrentlySelected ? false : opt.key === option.key,
+                          selected: isCurrentlySelected ? false : opt.key === option.key,
                         }))
                         updatedData.options = localOptions
 
