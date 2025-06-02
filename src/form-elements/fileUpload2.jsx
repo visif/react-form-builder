@@ -31,17 +31,6 @@ class FileUpload extends React.Component {
     return state
   }
 
-  onRemoveFile = (file) => {
-    this.setState((current) => {
-      const remainList = current.fileList.filter(
-        (item) => item.fileName !== file.fileName
-      )
-      return {
-        fileList: [...remainList],
-      }
-    })
-  }
-
   uploadAttachFile = async (file) => {
     if (typeof this.props.onUploadFile !== 'function') {
       console.log('FileUpload >>>>> not upload function found', this.props.onUploadFile)
@@ -92,10 +81,33 @@ class FileUpload extends React.Component {
     console.log('Downloading File file.....')
     await this.props.onDownloadFile(file)
     console.log('download filtPath: ', file)
+  }
 
-    if (!isSameEditor) {
-      props.disabled = 'disabled'
+  onRemoveFile = (file) => {
+    // Check if user is the same editor before allowing deletion
+    const userProperties =
+      this.props.getActiveUserProperties && this.props.getActiveUserProperties()
+
+    const savedEditor = this.props.editor
+    let isSameEditor = true
+    if (savedEditor && savedEditor.userId && !!userProperties) {
+      isSameEditor = userProperties.userId === savedEditor.userId
     }
+
+    // Only allow deletion if user is the same editor
+    if (!isSameEditor) {
+      console.log('User not authorized to delete file')
+      return
+    }
+
+    this.setState((current) => {
+      const remainList = current.fileList.filter(
+        (item) => item.fileName !== file.fileName
+      )
+      return {
+        fileList: [...remainList],
+      }
+    })
   }
 
   render() {
@@ -167,18 +179,21 @@ class FileUpload extends React.Component {
                         <span style={{ marginRight: 4 }}>{index + 1}.</span>{' '}
                         {file.originalName}
                       </span>
-                      <span
-                        style={{
-                          float: 'right',
-                          cursor: 'pointer',
-                          marginTop: 4,
-                        }}
-                        onClick={() => {
-                          this.onRemoveFile(file)
-                        }}
-                      >
-                        <i className="fas fa-trash"></i>
-                      </span>
+                      {/* Only show delete button if user is the same editor */}
+                      {isSameEditor && (
+                        <span
+                          style={{
+                            float: 'right',
+                            cursor: 'pointer',
+                            marginTop: 4,
+                          }}
+                          onClick={() => {
+                            this.onRemoveFile(file)
+                          }}
+                        >
+                          <i className="fas fa-trash"></i>
+                        </span>
+                      )}
                     </li>
                   )
                 })}
