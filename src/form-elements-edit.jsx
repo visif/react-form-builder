@@ -177,13 +177,12 @@ export default class FormElementsEdit extends React.Component {
       this.props.preview &&
       this.props.preview.syncRowChanges
     ) {
-      // Call the syncRowChanges function to update other instances in the same column
       this.props.preview.syncRowChanges(this_element)
     }
   }
 
   convertFromHTML(content) {
-    const newContent = convertFromHTML(content)
+    const newContent = convertFromHTML(content || '')
     if (!newContent.contentBlocks || !newContent.contentBlocks.length) {
       // to prevent crash when no contents in editor
       return EditorState.createEmpty()

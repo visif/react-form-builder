@@ -697,7 +697,6 @@ const Preview = (props) => {
             }
           )
           break
-
         case 'TextInput':
         case 'NumberInput':
         case 'TextArea':
@@ -710,7 +709,6 @@ const Preview = (props) => {
             changed = true
           }
           break
-
         case 'DatePicker':
           // Sync date-specific properties
           ;['showTimeSelect', 'showTimeSelectOnly', 'defaultToday'].forEach((prop) => {
@@ -745,8 +743,13 @@ const Preview = (props) => {
           break
 
         case 'Signature':
+        case 'Signature2':
+          updatedItem.position = changedElement.position
+          updatedItem.specificRole = changedElement.specificRole
+          updatedItem.label = changedElement.label
+          changed = true
+          break
         case 'Image':
-          // Sync styling properties
           ;['center', 'width', 'height'].forEach((prop) => {
             if (
               changedElement[prop] !== undefined &&
