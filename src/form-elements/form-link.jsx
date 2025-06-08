@@ -208,7 +208,7 @@ class FormLink extends React.Component {
   openLinkedForm = () => {
     console.info('Select form: ' + this.state.selectedFormId)
     const { selectedFormId } = this.state.selectedFormId
-    if (selectedFormId && this.props.openLinkedForm) {
+    if (selectedFormId && typeof this.props.openLinkedForm === 'function') {
       this.props.openLinkedForm(selectedFormId)
     }
   }
@@ -306,10 +306,12 @@ class FormLink extends React.Component {
                           className="btn btn-secondary"
                           onClick={(e) => {
                             e.preventDefault()
-                            this.props.onSelectChildForm(
-                              this.props.data.id,
-                              this.props.data.formSource
-                            )
+                            if (typeof this.props.onSelectChildForm === 'function') {
+                              this.props.onSelectChildForm(
+                                this.props.data.id,
+                                this.props.data.formSource
+                              )
+                            }
                           }}
                         >
                           {this.state.formInfo
