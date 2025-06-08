@@ -1,4 +1,4 @@
-import React, { Fragment, useImperativeHandle } from 'react'
+import React, { useImperativeHandle } from 'react'
 import { DropTarget } from 'react-dnd'
 import FormElements from '../form-elements'
 import CustomElement from '../form-elements/custom-element'
@@ -53,9 +53,9 @@ const renderElement = (item, props) => {
   }
 
   return (
-    <Fragment>
+    <>
       <Element {...elementProps} key={`form_${item.id}`} data={item} />
-    </Fragment>
+    </>
   )
 }
 

@@ -585,7 +585,6 @@ const Preview = (props) => {
       return
     }
 
-    // Go through each row in this column and update properties
     parentElement.childItems.forEach((row, rowIndex) => {
       // Skip the row that triggered the change
       if (rowIndex === changedElement.row) return
@@ -596,11 +595,9 @@ const Preview = (props) => {
       const itemData = getDataById(itemId)
       if (!itemData || itemData.element !== changedElement.element) return
 
-      // Create a new updated element to apply changes
       const updatedItem = { ...itemData }
       let changed = false
 
-      // Common properties to sync for all element types
       const commonProps = [
         'label',
         'required',
@@ -609,7 +606,6 @@ const Preview = (props) => {
         'showDescription',
         'className',
         'customCSS',
-        'field_name',
       ]
 
       commonProps.forEach((prop) => {
@@ -626,32 +622,23 @@ const Preview = (props) => {
       switch (changedElement.element) {
         case 'Checkboxes':
         case 'RadioButtons':
-          // Synchronize option text and value only, leave info & correct properties intact
           if (changedElement.options && itemData.options) {
-            // Build new options array by preserving item-specific properties
             const newOptions = []
 
-            // Iterate through options and build new array maintaining individual settings
             changedElement.options.forEach((newOpt, idx) => {
               if (idx < itemData.options.length) {
-                // Preserve existing option but update text and value
-                // IMPORTANT: Don't synchronize checked or selected state between rows
                 newOptions.push({
                   ...itemData.options[idx],
                   text: newOpt.text,
                   value: newOpt.value,
-                  // Deliberately NOT copying checked or selected state
                 })
               } else {
-                // For newly added options (that don't exist in current item)
-                // Add them without any info or correct properties
                 const newOption = {
                   text: newOpt.text,
                   value: newOpt.value,
                   key: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                 }
 
-                // Only copy essential properties, not info/correct
                 if (
                   changedElement.element === 'Checkboxes' ||
                   changedElement.element === 'RadioButtons'
