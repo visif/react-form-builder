@@ -169,8 +169,8 @@ const MultiColumnRow = (props) => {
         updatedItem.initialized = true
       } else if (elementType === 'FormLink') {
         // For FormLink components
-        if (changeData.formId !== undefined) {
-          updatedItem.formId = changeData.formId
+        if (changeData.selectedFormId !== undefined) {
+          updatedItem.selectedFormId = changeData.selectedFormId
         }
 
         if (changeData.formName !== undefined) {
@@ -197,6 +197,63 @@ const MultiColumnRow = (props) => {
 
         if (changeData.className !== undefined) {
           updatedItem.className = changeData.className
+        }
+
+        // Add missing FormLink props from the component
+        if (changeData.formSource !== undefined) {
+          updatedItem.formSource = changeData.formSource
+        }
+
+        if (changeData.value !== undefined) {
+          updatedItem.value = changeData.value
+        }
+
+        if (changeData.isShowLabel !== undefined) {
+          updatedItem.isShowLabel = changeData.isShowLabel
+        }
+
+        if (changeData.pageBreakBefore !== undefined) {
+          updatedItem.pageBreakBefore = changeData.pageBreakBefore
+        }
+
+        // Sync dirty state
+        if (changeData.hasOwnProperty('dirty')) {
+          updatedItem.dirty = changeData.dirty
+        }
+
+        // Sync required property if it exists
+        if (changeData.hasOwnProperty('required')) {
+          updatedItem.required = changeData.required
+        }
+
+        // Sync readOnly property if it exists
+        if (changeData.hasOwnProperty('readOnly')) {
+          updatedItem.readOnly = changeData.readOnly
+        }
+
+        // Sync disabled property if it exists
+        if (changeData.hasOwnProperty('disabled')) {
+          updatedItem.disabled = changeData.disabled
+        }
+
+        // Sync style property if it exists
+        if (changeData.style !== undefined) {
+          updatedItem.style = changeData.style
+        }
+
+        // Sync editor information
+        if (changeData.editor !== undefined) {
+          updatedItem.editor = changeData.editor
+        }
+
+        // Sync form information properties
+        if (changeData.formInfo !== undefined) {
+          updatedItem.formInfo = changeData.formInfo
+        }
+
+        // Sync default value properties
+        if (changeData.defaultValue !== undefined) {
+          updatedItem.defaultValue = changeData.defaultValue
         }
       } else {
         // For other input types
