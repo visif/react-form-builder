@@ -42,6 +42,7 @@ const MultiColumnRow = (props) => {
         'Signature2',
         'FormulaInput',
         'DataSource',
+        'FormLink',
       ].includes(elementType)
     ) {
       return
@@ -166,6 +167,37 @@ const MultiColumnRow = (props) => {
 
         // Make sure the Signature2 is properly initialized
         updatedItem.initialized = true
+      } else if (elementType === 'FormLink') {
+        // For FormLink components
+        if (changeData.formId !== undefined) {
+          updatedItem.formId = changeData.formId
+        }
+
+        if (changeData.formName !== undefined) {
+          updatedItem.formName = changeData.formName
+        }
+
+        if (changeData.linkText !== undefined) {
+          updatedItem.linkText = changeData.linkText
+        }
+
+        if (changeData.openInNewWindow !== undefined) {
+          updatedItem.openInNewWindow = changeData.openInNewWindow
+        }
+
+        // Handle label changes
+        if (changeData.label !== undefined && changeData.label !== itemData.label) {
+          updatedItem.label = changeData.label
+        }
+
+        // Sync any additional FormLink-specific properties
+        if (changeData.buttonStyle !== undefined) {
+          updatedItem.buttonStyle = changeData.buttonStyle
+        }
+
+        if (changeData.className !== undefined) {
+          updatedItem.className = changeData.className
+        }
       } else {
         // For other input types
         if (changeData.value !== undefined) {
