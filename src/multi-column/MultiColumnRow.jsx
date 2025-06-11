@@ -412,52 +412,28 @@ const createColumnRow =
  * @param {string} props.class_name - Optional custom class name
  * @returns {JSX.Element} A MultiColumnRow component with dynamic rows and columns
  */
-const DynamicColumnRow = ({ data = {}, class_name, ...rest }) => {
-  const rows = Number(data.rows) || 1
-  const columns = data.columns?.length || 2
+const DynamicColumnRow = ({ data, class_name, ...rest }) => {
+  // Don't use default parameter, handle undefined data explicitly
+  const workingData = data || {}
+
+  const rows = Number(workingData.rows) || 1
+  const columns = workingData.columns?.length || 2
   const defaultClassName = `col-md-${Math.floor(12 / columns)}`
   const className = `${class_name || defaultClassName} mb-2`
 
-  if (!data.childItems) {
+  // Only initialize if we have a valid data object reference
+  if (data && !data.childItems) {
     data.childItems = Array(rows)
       .fill()
       .map(() => Array(columns).fill(null))
     data.isContainer = true
-  } else if (!Array.isArray(data.childItems[0])) {
+  } else if (data && !Array.isArray(data.childItems[0])) {
     // Convert existing 1D array to 2D for backward compatibility
     data.childItems = [data.childItems]
   }
 
-  // Initialize rowLabels array if it doesn't exist
-  // if (!data.rowLabels) {
-  //   data.rowLabels = Array(rows)
-  //     .fill()
-  //     .map((_, i) => ({
-  //       text: `Row ${i + 1}`,
-  //       value: `row_${i + 1}`,
-  //       key: `row_${Math.random().toString(36).substring(2, 9)}`,
-  //     }))
-  //   debugger
-  // } else if (data.rowLabels?.length > 0 && data.rowLabels.length !== rows) {
-  //   const currentLength = data.rowLabels.length
-  //   if (currentLength < rows) {
-  //     // Add additional row labels if needed
-  //     const additionalLabels = Array(rows - currentLength)
-  //       .fill()
-  //       .map((_, i) => ({
-  //         text: `Row ${currentLength + i + 1}`,
-  //         value: `row_${currentLength + i + 1}`,
-  //         key: `row_${Math.random().toString(36).substring(2, 9)}`,
-  //       }))
-  //     data.rowLabels = [...data.rowLabels, ...additionalLabels]
-  //   } else {
-  //     // Remove excess row labels
-  //     data.rowLabels = data.rowLabels.slice(0, rows)
-  //   }
-  // }
-
   // Ensure childItems array matches the desired dimensions
-  if (data.childItems.length !== rows || data.childItems[0].length !== columns) {
+  if (data && data.childItems && (data.childItems.length !== rows || data.childItems[0].length !== columns)) {
     const newChildItems = Array(rows)
       .fill()
       .map(() => Array(columns).fill(null))
@@ -476,7 +452,7 @@ const DynamicColumnRow = ({ data = {}, class_name, ...rest }) => {
     data.childItems = newChildItems
   }
 
-  return <MultiColumnRow {...rest} className={className} rows={rows} data={data} />
+  return <MultiColumnRow {...rest} className={className} rows={rows} data={data || workingData} />
 }
 
 const TwoColumnRow = createColumnRow('col-md-6', 2)
