@@ -403,46 +403,36 @@ const createColumnRow =
 
 /**
  * Creates a dynamic column row component that supports any number of rows and columns.
- * The number of rows and columns is determined by the data.rows and data.columns properties.
- *
- * @param {Object} props - Component props
- * @param {Object} props.data - Data object containing configuration
- * @param {number} props.data.rows - Number of rows (default: 1)
- * @param {number} props.data.columns - Number of columns (default: 2)
- * @param {string} props.class_name - Optional custom class name
- * @returns {JSX.Element} A MultiColumnRow component with dynamic rows and columns
+ * Each element in each row maintains its own unique identity and data.
  */
-const DynamicColumnRow = ({ data, class_name, ...rest }) => {
-  // Don't use default parameter, handle undefined data explicitly
-  const workingData = data || {}
-
-  const rows = Number(workingData.rows) || 1
-  const columns = workingData.columns?.length || 2
+const DynamicColumnRow = ({ data = {}, class_name, ...rest }) => {
+  const rows = Number(data.rows) || 1
+  const columns = data.columns?.length || 2
   const defaultClassName = `col-md-${Math.floor(12 / columns)}`
   const className = `${class_name || defaultClassName} mb-2`
 
-  // Only initialize if we have a valid data object reference
-  if (data && !data.childItems) {
+  // Initialize the structure for multiple rows with proper dimensions
+  if (!data.childItems) {
     data.childItems = Array(rows)
       .fill()
       .map(() => Array(columns).fill(null))
     data.isContainer = true
-  } else if (data && !Array.isArray(data.childItems[0])) {
+  } else if (data.childItems.length > 0 && !Array.isArray(data.childItems[0])) {
     // Convert existing 1D array to 2D for backward compatibility
     data.childItems = [data.childItems]
   }
 
-  // Ensure childItems array matches the desired dimensions
-  if (data && data.childItems && (data.childItems.length !== rows || data.childItems[0].length !== columns)) {
+  // Ensure dimensions match current configuration and preserve existing data
+  if (data.childItems && (data.childItems.length !== rows || (data.childItems[0] && data.childItems[0].length !== columns))) {
     const newChildItems = Array(rows)
       .fill()
       .map(() => Array(columns).fill(null))
 
-    // Copy over existing items where possible
+    // Copy existing items where they fit, preserving their unique identities
     data.childItems.forEach((row, rowIndex) => {
-      if (rowIndex < rows) {
+      if (rowIndex < rows && Array.isArray(row)) {
         row.forEach((item, colIndex) => {
-          if (colIndex < columns) {
+          if (colIndex < columns && item !== null && item !== undefined) {
             newChildItems[rowIndex][colIndex] = item
           }
         })
@@ -452,7 +442,32 @@ const DynamicColumnRow = ({ data, class_name, ...rest }) => {
     data.childItems = newChildItems
   }
 
-  return <MultiColumnRow {...rest} className={className} rows={rows} data={data || workingData} />
+  // Ensure all rows exist and have the correct number of columns
+  while (data.childItems.length < rows) {
+    data.childItems.push(Array(columns).fill(null))
+  }
+
+  // Ensure each existing row has the correct number of columns
+  data.childItems.forEach((row, rowIndex) => {
+    if (!Array.isArray(row)) {
+      data.childItems[rowIndex] = Array(columns).fill(null)
+    } else {
+      // Extend or trim the row to match the required number of columns
+      while (row.length < columns) {
+        row.push(null)
+      }
+      if (row.length > columns) {
+        data.childItems[rowIndex] = row.slice(0, columns)
+      }
+    }
+  })
+
+  // Trim extra rows if we have too many
+  if (data.childItems.length > rows) {
+    data.childItems = data.childItems.slice(0, rows)
+  }
+
+  return <MultiColumnRow {...rest} className={className} rows={rows} data={data} />
 }
 
 const TwoColumnRow = createColumnRow('col-md-6', 2)
