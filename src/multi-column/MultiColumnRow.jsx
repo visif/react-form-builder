@@ -403,7 +403,7 @@ const createColumnRow =
 
 /**
  * Creates a dynamic column row component that supports any number of rows and columns.
- * Each element in each row maintains its own unique identity and data.
+ * Simplified to match the exact pattern of createColumnRow for data persistence.
  */
 const DynamicColumnRow = ({ data = {}, class_name, ...rest }) => {
   const rows = Number(data.rows) || 1
@@ -411,7 +411,7 @@ const DynamicColumnRow = ({ data = {}, class_name, ...rest }) => {
   const defaultClassName = `col-md-${Math.floor(12 / columns)}`
   const className = `${class_name || defaultClassName} mb-2`
 
-  // Initialize the structure for multiple rows with proper dimensions
+  // Use the exact same pattern as createColumnRow
   if (!data.childItems) {
     data.childItems = Array(rows)
       .fill()
@@ -420,51 +420,6 @@ const DynamicColumnRow = ({ data = {}, class_name, ...rest }) => {
   } else if (data.childItems.length > 0 && !Array.isArray(data.childItems[0])) {
     // Convert existing 1D array to 2D for backward compatibility
     data.childItems = [data.childItems]
-  }
-
-  // Ensure dimensions match current configuration and preserve existing data
-  if (data.childItems && (data.childItems.length !== rows || (data.childItems[0] && data.childItems[0].length !== columns))) {
-    const newChildItems = Array(rows)
-      .fill()
-      .map(() => Array(columns).fill(null))
-
-    // Copy existing items where they fit, preserving their unique identities
-    data.childItems.forEach((row, rowIndex) => {
-      if (rowIndex < rows && Array.isArray(row)) {
-        row.forEach((item, colIndex) => {
-          if (colIndex < columns && item !== null && item !== undefined) {
-            newChildItems[rowIndex][colIndex] = item
-          }
-        })
-      }
-    })
-
-    data.childItems = newChildItems
-  }
-
-  // Ensure all rows exist and have the correct number of columns
-  while (data.childItems.length < rows) {
-    data.childItems.push(Array(columns).fill(null))
-  }
-
-  // Ensure each existing row has the correct number of columns
-  data.childItems.forEach((row, rowIndex) => {
-    if (!Array.isArray(row)) {
-      data.childItems[rowIndex] = Array(columns).fill(null)
-    } else {
-      // Extend or trim the row to match the required number of columns
-      while (row.length < columns) {
-        row.push(null)
-      }
-      if (row.length > columns) {
-        data.childItems[rowIndex] = row.slice(0, columns)
-      }
-    }
-  })
-
-  // Trim extra rows if we have too many
-  if (data.childItems.length > rows) {
-    data.childItems = data.childItems.slice(0, rows)
   }
 
   return <MultiColumnRow {...rest} className={className} rows={rows} data={data} />
