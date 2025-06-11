@@ -403,9 +403,9 @@ const createColumnRow =
 
 /**
  * Creates a dynamic column row component that supports any number of rows and columns.
- * Simplified to match the exact pattern of createColumnRow for data persistence.
+ * Uses the same pattern as createColumnRow for consistency.
  */
-const DynamicColumnRow = ({ data = {}, class_name, ...rest }) => {
+const createDynamicColumnRow = () => ({ data = {}, class_name, ...rest }) => {
   const rows = Number(data.rows) || 1
   const columns = data.columns?.length || 2
   const defaultClassName = `col-md-${Math.floor(12 / columns)}`
@@ -424,6 +424,9 @@ const DynamicColumnRow = ({ data = {}, class_name, ...rest }) => {
 
   return <MultiColumnRow {...rest} className={className} rows={rows} data={data} />
 }
+
+// Create the component using the same pattern
+const DynamicColumnRow = createDynamicColumnRow()
 
 const TwoColumnRow = createColumnRow('col-md-6', 2)
 const ThreeColumnRow = createColumnRow('col-md-4', 3)
