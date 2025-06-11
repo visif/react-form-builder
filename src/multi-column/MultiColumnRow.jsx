@@ -405,25 +405,45 @@ const createColumnRow =
  * Creates a dynamic column row component that supports any number of rows and columns.
  * Uses the same pattern as createColumnRow for consistency.
  */
-const createDynamicColumnRow = () => ({ data = {}, class_name, ...rest }) => {
-  const rows = Number(data.rows) || 1
-  const columns = data.columns?.length || 2
-  const defaultClassName = `col-md-${Math.floor(12 / columns)}`
-  const className = `${class_name || defaultClassName} mb-2`
+const createDynamicColumnRow =
+  () =>
+  ({ data = {}, class_name, ...rest }) => {
+    const rows = Number(data.rows) || 1
+    const columns = data.columns?.length || 2
+    const defaultClassName = `col-md-${Math.floor(12 / columns)}`
+    const className = `${class_name || defaultClassName} mb-2`
 
-  // Use the exact same pattern as createColumnRow
-  if (!data.childItems) {
-    data.childItems = Array(rows)
-      .fill()
-      .map(() => Array(columns).fill(null))
-    data.isContainer = true
-  } else if (data.childItems.length > 0 && !Array.isArray(data.childItems[0])) {
-    // Convert existing 1D array to 2D for backward compatibility
-    data.childItems = [data.childItems]
+    // Initialize or update childItems to match current rows and columns
+    if (!data.childItems) {
+      data.childItems = Array(rows)
+        .fill()
+        .map(() => Array(columns).fill(null))
+      data.isContainer = true
+    } else if (data.childItems.length > 0 && !Array.isArray(data.childItems[0])) {
+      // Convert existing 1D array to 2D for backward compatibility
+      data.childItems = [data.childItems]
+    } else {
+      // Update existing childItems to match current structure
+      const updatedChildItems = []
+
+      // Ensure we have the right number of rows
+      for (let rowIndex = 0; rowIndex < rows; rowIndex++) {
+        const existingRow = data.childItems[rowIndex] || []
+        const newRow = []
+
+        // Ensure each row has the right number of columns
+        for (let colIndex = 0; colIndex < columns; colIndex++) {
+          newRow[colIndex] = existingRow[colIndex] || null
+        }
+
+        updatedChildItems.push(newRow)
+      }
+
+      data.childItems = updatedChildItems
+    }
+
+    return <MultiColumnRow {...rest} className={className} rows={rows} data={data} />
   }
-
-  return <MultiColumnRow {...rest} className={className} rows={rows} data={data} />
-}
 
 // Create the component using the same pattern
 const DynamicColumnRow = createDynamicColumnRow()
