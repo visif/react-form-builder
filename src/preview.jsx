@@ -606,6 +606,7 @@ const Preview = (props) => {
         'showDescription',
         'className',
         'customCSS',
+        'formSource',
       ]
 
       commonProps.forEach((prop) => {

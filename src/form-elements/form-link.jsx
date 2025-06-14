@@ -88,7 +88,7 @@ class FormLink extends React.Component {
               this.setState({
                 formList: forms,
                 matchedList: forms,
-                selectedFormId: selectedFormId,
+                selectedFormId,
                 searchText: '',
               })
               return
@@ -143,9 +143,9 @@ class FormLink extends React.Component {
   }
 
   debounceOnChange = (value) => {
-    const matchData = this.state.formList.filter((form) => {
-      return `${form.title}`.toLocaleLowerCase().includes(`${value}`.toLocaleLowerCase())
-    })
+    const matchData = this.state.formList.filter((form) =>
+      `${form.title}`.toLocaleLowerCase().includes(`${value}`.toLocaleLowerCase())
+    )
     this.setState({
       searchText: value,
       matchedList: matchData,
@@ -155,7 +155,7 @@ class FormLink extends React.Component {
     if (this.props.onElementChange) {
       const updatedData = {
         ...this.props.data,
-        value: value,
+        value,
       }
 
       this.props.onElementChange(updatedData)
@@ -206,7 +206,7 @@ class FormLink extends React.Component {
   }
 
   openLinkedForm = () => {
-    console.info('Select form: ' + this.state.selectedFormId)
+    console.info(`Select form: ${this.state.selectedFormId}`)
     const { selectedFormId } = this.state.selectedFormId
     if (selectedFormId && typeof this.props.openLinkedForm === 'function') {
       this.props.openLinkedForm(selectedFormId)
@@ -246,7 +246,7 @@ class FormLink extends React.Component {
             }}
           >
             {/* Display hyperlink in preview mode */}
-            {!this.props.mutable && (
+            {/* {!this.props.mutable && (
               <div className="form-link-preview" style={{ padding: '6px 0' }}>
                 <button
                   type="button"
@@ -269,61 +269,61 @@ class FormLink extends React.Component {
                     : 'Please select a form'}
                 </button>
               </div>
-            )}
+            )} */}
 
             {/* Display form selection in edit mode */}
-            {this.props.mutable && (
+            {/* {this.props.mutable && ( */}
+            <div
+              className="form-link-container"
+              style={{ display: 'flex', alignItems: 'center' }}
+            >
               <div
-                className="form-link-container"
-                style={{ display: 'flex', alignItems: 'center' }}
+                onClick={() => this.setState({ isShowingList: true })}
+                style={{
+                  flex: 1,
+                  border: '1px solid #ced4da',
+                  borderRadius: '.25rem',
+                  padding: '6px 12px',
+                  cursor: 'pointer',
+                  backgroundColor: isFormSelected ? '#fff' : '#f8f9fa',
+                  minHeight: '38px',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
               >
-                <div
-                  onClick={() => this.setState({ isShowingList: true })}
-                  style={{
-                    flex: 1,
-                    border: '1px solid #ced4da',
-                    borderRadius: '.25rem',
-                    padding: '6px 12px',
-                    cursor: 'pointer',
-                    backgroundColor: isFormSelected ? '#fff' : '#f8f9fa',
-                    minHeight: '38px',
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
-                >
-                  {isFormSelected ? (
-                    <span>
-                      {this.state.formInfo
-                        ? this.state.formInfo.Name
-                        : 'Please select a form'}
-                    </span>
-                  ) : (
-                    <div>
-                      <div className="form-link-preview" style={{ padding: '6px 0' }}>
-                        <a
-                          href="#"
-                          style={{ marginTop: 6 }}
-                          className="btn btn-secondary"
-                          onClick={(e) => {
-                            e.preventDefault()
-                            if (typeof this.props.onSelectChildForm === 'function') {
-                              this.props.onSelectChildForm(
-                                this.props.data.id,
-                                this.props.data.formSource
-                              )
-                            }
-                          }}
-                        >
-                          {this.state.formInfo
-                            ? this.state.formInfo.Name
-                            : 'Please select a form'}
-                        </a>
-                      </div>
+                {isFormSelected ? (
+                  <span>
+                    {this.state.formInfo
+                      ? this.state.formInfo.Name
+                      : 'Please select a form'}
+                  </span>
+                ) : (
+                  <div>
+                    <div className="form-link-preview" style={{ padding: '6px 0' }}>
+                      <a
+                        href="#"
+                        style={{ marginTop: 6 }}
+                        className="btn btn-secondary"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          if (typeof this.props.onSelectChildForm === 'function') {
+                            this.props.onSelectChildForm(
+                              this.props.data.id,
+                              this.props.data.formSource
+                            )
+                          }
+                        }}
+                      >
+                        {this.state.formInfo
+                          ? this.state.formInfo.Name
+                          : 'Please select a form'}
+                      </a>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+            {/* )} */}
           </div>
         </div>
       </section>
