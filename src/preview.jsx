@@ -495,6 +495,8 @@ const Preview = (props) => {
           }
           return []
         }}
+        getFormSource={props.getFormSource}
+        getFormContent={props.getFormContent}
         onUploadFile={(file) => `${file.name}-${Math.random() * 10000000}`}
         onUploadImage={(file) => `path/${file.name}-${Math.random() * 10000000}`}
         onDownloadFile={(file) => `download_${file.name}-${Math.random() * 10000000}`}

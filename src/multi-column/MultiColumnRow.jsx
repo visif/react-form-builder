@@ -356,6 +356,7 @@ const MultiColumnRow = (props) => {
                         seq={seq}
                         syncColumnChanges={syncColumnChanges}
                         updateElement={updateElement}
+                        {...props}
                       />
                     )}
                   </td>

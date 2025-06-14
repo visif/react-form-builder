@@ -39,9 +39,14 @@ const renderElement = (item, props) => {
 
   // Check if this is a syncable element type
   if (
-    ['Checkboxes', 'RadioButtons', 'Dropdown', 'DataSource', 'Signature2'].includes(
-      item.element
-    ) &&
+    [
+      'Checkboxes',
+      'RadioButtons',
+      'Dropdown',
+      'DataSource',
+      'Signature2',
+      'FormLink',
+    ].includes(item.element) &&
     props.syncColumnChanges &&
     props.editModeOn
   ) {
