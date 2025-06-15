@@ -9,6 +9,20 @@ require('./scss/application.scss')
 const url = '/api/formdata'
 const saveUrl = '/api/formdata'
 
+const commonProps = {
+  getFormSource: () => [
+    {
+      id: 1,
+      name: 'User Registration Form',
+      title: 'User Registration Form',
+    },
+    { id: 2, name: 'Contact Us Form', title: 'Contact Us Form' },
+    { id: 3, name: 'Feedback Form', title: 'Feedback Form' },
+    { id: 4, name: 'Survey Form', title: 'Survey Form' },
+    { id: 5, name: 'Application Form', title: 'Application Form' },
+  ],
+}
+
 ReactDOM.render(
   <FormBuilder.ReactFormBuilder
     url={url}
@@ -19,8 +33,9 @@ ReactDOM.render(
     onChange={(data) => {
       console.log('form builder elements changed', data)
     }}
+    {...commonProps}
   />,
   document.getElementById('form-builder')
 )
 
-ReactDOM.render(<DemoBar />, document.getElementById('demo-bar'))
+ReactDOM.render(<DemoBar {...commonProps} />, document.getElementById('demo-bar'))

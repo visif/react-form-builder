@@ -167,6 +167,7 @@ export default class Demobar extends React.Component {
                   onUploadImage={(file) =>
                     `path/${file.name}-${Math.random() * 10000000}`
                   }
+                  getFormSource={this.props.getFormSource}
                 />
 
                 <div className="modal-footer">
@@ -243,6 +244,7 @@ export default class Demobar extends React.Component {
                   onUploadImage={(file) =>
                     `path/${file.name}-${Math.random() * 10000000}`
                   }
+                  getFormSource={this.props.getFormSource}
                 />
                 <div className="modal-footer">
                   <button
@@ -315,6 +317,7 @@ export default class Demobar extends React.Component {
                   onUploadImage={(file) =>
                     `path/${file.name}-${Math.random() * 10000000}`
                   }
+                  getFormSource={this.props.getFormSource}
                 />
 
                 <div className="modal-footer">
