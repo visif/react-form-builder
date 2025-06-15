@@ -48,10 +48,15 @@ const renderElement = (item, props) => {
       'FormLink',
     ].includes(item.element) &&
     props.syncColumnChanges &&
-    props.editModeOn
+    (props.editModeOn || item.element === 'FormLink') // FormLink-specific condition here
   ) {
     // Create an onElementChange handler for component-specific synchronization
     elementProps.onElementChange = (changedData) => {
+      // This should remain generic - all elements might need this
+      if (props.onElementChange) {
+        props.onElementChange(changedData)
+      }
+
       // Synchronize changes across the column
       props.syncColumnChanges(props.row, props.col, item.element, changedData)
     }
