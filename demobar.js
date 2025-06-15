@@ -1,8 +1,8 @@
-import React from "react";
-import store from "./src/stores/store";
-import ReactFormGenerator from "./src/form";
+import React from 'react'
+import ReactFormGenerator from './src/form'
+import store from './src/stores/store'
 
-const answers = {};
+const answers = {}
 // const answers = {
 //   'dropdown_38716F53-51AA-4A53-9A9B-367603D82548': 'd2',
 //   'checkboxes_8D6BDC45-76A3-4157-9D62-94B6B24BB833': [
@@ -17,36 +17,36 @@ const answers = {};
 
 export default class Demobar extends React.Component {
   constructor(props) {
-    super(props);
+    super(props)
     this.state = {
       data: [],
       previewVisible: false,
       shortPreviewVisible: false,
       roPreviewVisible: false,
-    };
+    }
 
-    const update = this._onChange.bind(this);
-    this._onSubmit = this._onSubmit.bind(this);
+    const update = this._onChange.bind(this)
+    this._onSubmit = this._onSubmit.bind(this)
 
-    store.subscribe((state) => update(state.payload));
+    store.subscribe((state) => update(state.payload))
   }
 
   showPreview() {
     this.setState({
       previewVisible: true,
-    });
+    })
   }
 
   showShortPreview() {
     this.setState({
       shortPreviewVisible: true,
-    });
+    })
   }
 
   showRoPreview() {
     this.setState({
       roPreviewVisible: true,
-    });
+    })
   }
 
   closePreview() {
@@ -54,14 +54,14 @@ export default class Demobar extends React.Component {
       previewVisible: false,
       shortPreviewVisible: false,
       roPreviewVisible: false,
-    });
+    })
   }
 
   _onChange(payload) {
-    const { data } = payload;
+    const { data } = payload
     this.setState({
       data,
-    });
+    })
   }
 
   // eslint-disable-next-line no-unused-vars
@@ -71,41 +71,41 @@ export default class Demobar extends React.Component {
   }
 
   render() {
-    let modalClass = "modal";
+    let modalClass = 'modal'
     if (this.state.previewVisible) {
-      modalClass += " show d-block";
+      modalClass += ' show d-block'
     }
 
-    let shortModalClass = "modal short-modal";
+    let shortModalClass = 'modal short-modal'
     if (this.state.shortPreviewVisible) {
-      shortModalClass += " show d-block";
+      shortModalClass += ' show d-block'
     }
 
-    let roModalClass = "modal ro-modal";
+    let roModalClass = 'modal ro-modal'
     if (this.state.roPreviewVisible) {
-      roModalClass += " show d-block";
+      roModalClass += ' show d-block'
     }
 
     return (
-      <div className="clearfix" style={{ margin: "10px", width: "70%" }}>
+      <div className="clearfix" style={{ margin: '10px', width: '70%' }}>
         <h4 className="float-left">Preview</h4>
         <button
           className="btn btn-primary float-right"
-          style={{ marginRight: "10px" }}
+          style={{ marginRight: '10px' }}
           onClick={() => this.showPreview()}
         >
           Preview Form
         </button>
         <button
           className="btn btn-default float-right"
-          style={{ marginRight: "10px" }}
+          style={{ marginRight: '10px' }}
           onClick={() => this.showShortPreview()}
         >
           Alternate/Short Form
         </button>
         <button
           className="btn btn-default float-right"
-          style={{ marginRight: "10px" }}
+          style={{ marginRight: '10px' }}
           onClick={() => this.showRoPreview()}
         >
           Read Only Form
@@ -123,57 +123,50 @@ export default class Demobar extends React.Component {
                   action_name="Save"
                   form_action="/api/form"
                   form_method="POST"
-                  // skip_validations={true}
-                  // onSubmit={this._onSubmit}
-                  variables={this.props.variables}
                   data={this.state.data}
                   onSubmit={() => {}}
-                  getActiveUserProperties={() => {
-                    return {
-                      name: "test",
-                      userId: "id001",
-                    };
-                  }}
+                  getActiveUserProperties={() => ({
+                    name: 'test',
+                    userId: 'id001',
+                  })}
                   getDataSource={(data) => {
-                    if (data.sourceType === "name") {
+                    if (data.sourceType === 'name') {
                       return [
-                        { id: 1, name: "NameA lastNameA" },
-                        { id: 2, name: "NameB lastNameB" },
-                      ];
+                        { id: 1, name: 'NameA lastNameA' },
+                        { id: 2, name: 'NameB lastNameB' },
+                      ]
                     }
 
-                    if (data.sourceType === "department") {
+                    if (data.sourceType === 'department') {
                       return [
-                        { id: 1, name: "departmentA" },
-                        { id: 2, name: "departmentB" },
-                      ];
+                        { id: 1, name: 'departmentA' },
+                        { id: 2, name: 'departmentB' },
+                      ]
                     }
 
-                    if (data.sourceType === "role") {
+                    if (data.sourceType === 'role') {
                       return [
-                        { id: 1, name: "roleA" },
-                        { id: 2, name: "roleB" },
-                      ];
+                        { id: 1, name: 'roleA' },
+                        { id: 2, name: 'roleB' },
+                      ]
                     }
 
-                    if (data.sourceType === "form") {
+                    if (data.sourceType === 'form') {
                       return [
-                        { id: 1, name: "formA" },
-                        { id: 2, name: "formB" },
-                      ];
+                        { id: 1, name: 'formA' },
+                        { id: 2, name: 'formB' },
+                      ]
                     }
 
-                    return [];
+                    return []
                   }}
-                  onUploadFile={(file) => {
-                    return `${file.name}-${Math.random() * 10000000}`;
-                  }}
-                  onDownloadFile={(file) => {
-                    return `download_${file.name}-${Math.random() * 10000000}`;
-                  }}
-                  onUploadImage={(file) => {
-                    return `path/${file.name}-${Math.random() * 10000000}`;
-                  }}
+                  onUploadFile={(file) => `${file.name}-${Math.random() * 10000000}`}
+                  onDownloadFile={(file) =>
+                    `download_${file.name}-${Math.random() * 10000000}`
+                  }
+                  onUploadImage={(file) =>
+                    `path/${file.name}-${Math.random() * 10000000}`
+                  }
                 />
 
                 <div className="modal-footer">
@@ -203,57 +196,53 @@ export default class Demobar extends React.Component {
                   action_name="Save"
                   form_action="/"
                   form_method="POST"
-                  read_only={true}
+                  read_only
                   variables={this.props.variables}
-                  hide_actions={true}
+                  hide_actions
                   data={this.state.data}
                   onSubmit={() => {}}
-                  getActiveUserProperties={() => {
-                    return {
-                      name: "test",
-                      userId: "id001",
-                    };
-                  }}
+                  getActiveUserProperties={() => ({
+                    name: 'test',
+                    userId: 'id001',
+                  })}
                   getDataSource={(data) => {
-                    if (data.sourceType === "name") {
+                    if (data.sourceType === 'name') {
                       return [
-                        { id: 1, name: "NameA lastNameA" },
-                        { id: 2, name: "NameB lastNameB" },
-                      ];
+                        { id: 1, name: 'NameA lastNameA' },
+                        { id: 2, name: 'NameB lastNameB' },
+                      ]
                     }
 
-                    if (data.sourceType === "department") {
+                    if (data.sourceType === 'department') {
                       return [
-                        { id: 1, name: "departmentA" },
-                        { id: 2, name: "departmentB" },
-                      ];
+                        { id: 1, name: 'departmentA' },
+                        { id: 2, name: 'departmentB' },
+                      ]
                     }
 
-                    if (data.sourceType === "role") {
+                    if (data.sourceType === 'role') {
                       return [
-                        { id: 1, name: "roleA" },
-                        { id: 2, name: "roleB" },
-                      ];
+                        { id: 1, name: 'roleA' },
+                        { id: 2, name: 'roleB' },
+                      ]
                     }
 
-                    if (data.sourceType === "form") {
+                    if (data.sourceType === 'form') {
                       return [
-                        { id: 1, name: "formA" },
-                        { id: 2, name: "formB" },
-                      ];
+                        { id: 1, name: 'formA' },
+                        { id: 2, name: 'formB' },
+                      ]
                     }
 
-                    return [];
+                    return []
                   }}
-                  onUploadFile={(file) => {
-                    return `${file.name}-${Math.random() * 10000000}`;
-                  }}
-                  onDownloadFile={(file) => {
-                    return `download_${file.name}-${Math.random() * 10000000}`;
-                  }}
-                  onUploadImage={(file) => {
-                    return `path/${file.name}-${Math.random() * 10000000}`;
-                  }}
+                  onUploadFile={(file) => `${file.name}-${Math.random() * 10000000}`}
+                  onDownloadFile={(file) =>
+                    `download_${file.name}-${Math.random() * 10000000}`
+                  }
+                  onUploadImage={(file) =>
+                    `path/${file.name}-${Math.random() * 10000000}`
+                  }
                 />
                 <div className="modal-footer">
                   <button
@@ -280,56 +269,52 @@ export default class Demobar extends React.Component {
                   form_action="/"
                   form_method="POST"
                   data={this.state.data}
-                  display_short={true}
+                  display_short
                   variables={this.props.variables}
                   hide_actions={false}
                   onSubmit={() => {}}
-                  getActiveUserProperties={() => {
-                    return {
-                      name: "test",
-                      userId: "id001",
-                    };
-                  }}
+                  getActiveUserProperties={() => ({
+                    name: 'test',
+                    userId: 'id001',
+                  })}
                   getDataSource={(data) => {
-                    if (data.sourceType === "name") {
+                    if (data.sourceType === 'name') {
                       return [
-                        { id: 1, name: "NameA lastNameA" },
-                        { id: 2, name: "NameB lastNameB" },
-                      ];
+                        { id: 1, name: 'NameA lastNameA' },
+                        { id: 2, name: 'NameB lastNameB' },
+                      ]
                     }
 
-                    if (data.sourceType === "department") {
+                    if (data.sourceType === 'department') {
                       return [
-                        { id: 1, name: "departmentA" },
-                        { id: 2, name: "departmentB" },
-                      ];
+                        { id: 1, name: 'departmentA' },
+                        { id: 2, name: 'departmentB' },
+                      ]
                     }
 
-                    if (data.sourceType === "role") {
+                    if (data.sourceType === 'role') {
                       return [
-                        { id: 1, name: "roleA" },
-                        { id: 2, name: "roleB" },
-                      ];
+                        { id: 1, name: 'roleA' },
+                        { id: 2, name: 'roleB' },
+                      ]
                     }
 
-                    if (data.sourceType === "form") {
+                    if (data.sourceType === 'form') {
                       return [
-                        { id: 1, name: "formA" },
-                        { id: 2, name: "formB" },
-                      ];
+                        { id: 1, name: 'formA' },
+                        { id: 2, name: 'formB' },
+                      ]
                     }
 
-                    return [];
+                    return []
                   }}
-                  onUploadFile={(file) => {
-                    return `${file.name}-${Math.random() * 10000000}`;
-                  }}
-                  onDownloadFile={(file) => {
-                    return `download_${file.name}-${Math.random() * 10000000}`;
-                  }}
-                  onUploadImage={(file) => {
-                    return `path/${file.name}-${Math.random() * 10000000}`;
-                  }}
+                  onUploadFile={(file) => `${file.name}-${Math.random() * 10000000}`}
+                  onDownloadFile={(file) =>
+                    `download_${file.name}-${Math.random() * 10000000}`
+                  }
+                  onUploadImage={(file) =>
+                    `path/${file.name}-${Math.random() * 10000000}`
+                  }
                 />
 
                 <div className="modal-footer">
@@ -347,6 +332,6 @@ export default class Demobar extends React.Component {
           </div>
         )}
       </div>
-    );
+    )
   }
 }
