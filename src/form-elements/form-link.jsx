@@ -28,16 +28,9 @@ class FormLink extends React.Component {
     await this.loadFormSource()
     this.checkForValue()
 
-    // Load form info if formSource exists
-    await this.loadFormInfo()
-  }
-
-  loadFormInfo = async () => {
-    const formSource = this.props.data.formSource || this.state.selectedFormId?.id
-
-    if (typeof this.props.getFormInfo === 'function' && formSource) {
+    if (typeof this.props.getFormInfo === 'function' && this.props.data.formSource) {
       try {
-        const formInfo = await this.props.getFormInfo(formSource)
+        const formInfo = await this.props.getFormInfo(this.props.data.formSource)
         if (this.mounted) {
           this.setState({
             formInfo: formInfo || null,
@@ -88,18 +81,16 @@ class FormLink extends React.Component {
         if (this.mounted) {
           // If we have a formSource set from the editor, find the matching form
           if (this.props.data.formSource) {
-            const selectedForm = forms.find(
+            const selectedFormId = forms.find(
               (form) => form.id == this.props.data.formSource
             )
-            if (selectedForm) {
+            if (selectedFormId) {
               this.setState({
                 formList: forms,
                 matchedList: forms,
-                selectedFormId: selectedForm, // Store the full form object
-                searchText: selectedForm.title || '',
+                selectedFormId,
+                searchText: '',
               })
-              // Load form info for the selected form
-              await this.loadFormInfo()
               return
             }
           }
@@ -222,18 +213,6 @@ class FormLink extends React.Component {
     }
   }
 
-  async componentDidUpdate(prevProps) {
-    // Reload form info when formSource changes
-    if (prevProps.data.formSource !== this.props.data.formSource) {
-      await this.loadFormInfo()
-    }
-
-    // Reload form list when data changes
-    if (prevProps.data !== this.props.data) {
-      await this.loadFormSource()
-    }
-  }
-
   render() {
     const userProperties =
       this.props.getActiveUserProperties && this.props.getActiveUserProperties()
@@ -314,7 +293,9 @@ class FormLink extends React.Component {
               >
                 {isFormSelected ? (
                   <span>
-                    {this.state.formInfo?.Name || this.state.selectedFormId?.title || 'Loading...'}
+                    {this.state.formInfo
+                      ? this.state.formInfo.Name
+                      : 'Please select a form'}
                   </span>
                 ) : (
                   <div>
@@ -333,7 +314,9 @@ class FormLink extends React.Component {
                           }
                         }}
                       >
-                        {this.state.formInfo?.Name || 'Please select a form'}
+                        {this.state.formInfo
+                          ? this.state.formInfo.Name
+                          : 'Please select a form'}
                       </a>
                     </div>
                   </div>
@@ -349,3 +332,4 @@ class FormLink extends React.Component {
 }
 
 export default FormLink
+
