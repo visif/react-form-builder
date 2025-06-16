@@ -291,20 +291,24 @@ const MultiColumnRow = (props) => {
                 {/* Add empty header cell for row labels column if row labels are present */}
                 {hasRowLabels && (
                   <th
+                    className="rfb-table-row-header-cell"
                     style={{
                       width: '150px',
-                      fontWeight: 'bold',
-                      backgroundColor: '#e9ecef', // Slightly darker background
-                      borderBottom: '2px solid #dee2e6', // Thicker bottom border
+                      fontWeight: 'var(--rfb-table-header-font-weight, bold)',
+                      fontFamily: 'var(--rfb-table-header-font-family, inherit)',
+                      backgroundColor: '#e9ecef',
+                      borderBottom: '2px solid #dee2e6',
                     }}
                   />
                 )}
                 {data.columns.map((column, columnIndex) => (
                   <th
                     key={`header_${columnIndex}`}
-                    className="rfb-table-column-header" // Add CSS class
+                    className="rfb-table-column-header"
                     style={{
                       textAlign: 'center',
+                      fontWeight: 'var(--rfb-table-header-font-weight, bold)',
+                      fontFamily: 'var(--rfb-table-header-font-family, inherit)',
                       backgroundColor: '#e9ecef',
                       borderBottom: '2px solid #dee2e6',
                       padding: '10px 8px',
@@ -322,11 +326,13 @@ const MultiColumnRow = (props) => {
                 {/* Add row label cell if row labels are present */}
                 {hasRowLabels && (
                   <td
-                    className="row-label rfb-table-row-label" // Add CSS class
+                    className="row-label rfb-table-row-label"
                     style={{
                       textAlign: 'right',
                       paddingRight: '10px',
                       backgroundColor: '#f5f5f5',
+                      fontWeight: 'var(--rfb-table-row-font-weight, bold)',
+                      fontFamily: 'var(--rfb-table-row-font-family, inherit)',
                     }}
                   >
                     {data.rowLabels[rowIndex] ? data.rowLabels[rowIndex].text : ''}
