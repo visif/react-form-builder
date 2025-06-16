@@ -302,12 +302,12 @@ const MultiColumnRow = (props) => {
                 {data.columns.map((column, columnIndex) => (
                   <th
                     key={`header_${columnIndex}`}
+                    className="rfb-table-column-header" // Add CSS class
                     style={{
                       textAlign: 'center',
-                      fontWeight: 'bold',
-                      backgroundColor: '#e9ecef', // Slightly darker background
-                      borderBottom: '2px solid #dee2e6', // Thicker bottom border
-                      padding: '10px 8px', // More padding
+                      backgroundColor: '#e9ecef',
+                      borderBottom: '2px solid #dee2e6',
+                      padding: '10px 8px',
                     }}
                   >
                     {column.text}
@@ -322,9 +322,8 @@ const MultiColumnRow = (props) => {
                 {/* Add row label cell if row labels are present */}
                 {hasRowLabels && (
                   <td
-                    className="row-label"
+                    className="row-label rfb-table-row-label" // Add CSS class
                     style={{
-                      fontWeight: 'bold', // This is already bold, but ensuring it's here
                       textAlign: 'right',
                       paddingRight: '10px',
                       backgroundColor: '#f5f5f5',
