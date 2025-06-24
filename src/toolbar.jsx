@@ -121,9 +121,9 @@ export default class Toolbar extends React.Component {
 
   static _defaultItemColumns() {
     return [
-      { text: 'Column1', key: `table_column_${ID.uuid()}`, width: 1 },
-      { text: 'Column2', key: `table_column_${ID.uuid()}`, width: 1 },
-      { text: 'Column3', key: `table_column_${ID.uuid()}`, width: 1 },
+      { text: 'Column1', key: `table_column_${ID.uuid()}`, width: 1, isSync: true },
+      { text: 'Column2', key: `table_column_${ID.uuid()}`, width: 1, isSync: true },
+      { text: 'Column3', key: `table_column_${ID.uuid()}`, width: 1, isSync: true },
     ]
   }
 
