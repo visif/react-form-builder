@@ -562,7 +562,11 @@ const Preview = (props) => {
 
     // Get the parent element (the row)
     const parentElement = getDataById(changedElement.parentId)
-    if (!parentElement || !parentElement.childItems) {
+    if (
+      !parentElement ||
+      !parentElement.childItems ||
+      parentElement.columns?.[changedElement.col].isSync === false
+    ) {
       return
     }
 
