@@ -177,7 +177,7 @@ const Preview = (props) => {
       updatedData.push(child)
     }
 
-    if (item.childItems.length > 1 && item.columns[col].isSync) {
+    if (item.childItems.length > 1 && item.columns[col].isSync !== false) {
       const rowsToUpdate = []
 
       for (let rowIndex = 0; rowIndex < item.childItems.length; rowIndex++) {
