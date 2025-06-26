@@ -231,16 +231,21 @@ export default class DynamicOptionList extends React.Component {
       preview.getDataById ||
       (preview.state?.data && ((id) => preview.state.data.find((x) => x.id === id)))
 
+    const { col: columnIndex, row: currentRowIndex } = propsElement
+    if (columnIndex === undefined || currentRowIndex === undefined) {
+      return
+    }
+
     if (typeof getDataById === 'function') {
       parentElement = getDataById(propsElement.parentId)
     }
 
-    if (!parentElement?.childItems || parentElement.element !== 'DynamicColumnRow') {
-      return
-    }
-
-    const { col: columnIndex, row: currentRowIndex } = propsElement
-    if (columnIndex === undefined || currentRowIndex === undefined) {
+    if (
+      !parentElement ||
+      !parentElement.childItems ||
+      parentElement.element !== 'DynamicColumnRow' ||
+      parentElement.columns?.[columnIndex].isSync === false
+    ) {
       return
     }
 
