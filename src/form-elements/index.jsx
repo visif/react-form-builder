@@ -772,86 +772,85 @@ class Checkboxes extends React.Component {
                     }
                   }}
                   onChange={() => {
-                    if (isSameEditor) {
-                      self.setState((current) => {
-                        const activeVal = self.getActiveValue(
-                          current && current.value,
-                          option.key
-                        )
-                        const newActiveVal = activeVal
-                          ? { ...activeVal, value: !activeVal.value }
-                          : {
-                              key: option.key,
-                              value: true,
-                              info: '',
-                            }
-
-                        if (!current) {
-                          return current
-                        }
-
-                        const newValue = {
-                          ...current,
-                          value: [
-                            ...(current.value || []).filter(
-                              (item) => item.key !== option.key
-                            ),
-                            newActiveVal,
-                          ],
-                        }
-
-                        // If we're in a dynamic column and this is a UI-only change (selection)
-                        // We need to update just this component's internal state without syncing to other rows
-                        const isInDynamicColumn =
-                          self.props.data.parentId &&
-                          self.props.data.row !== undefined &&
-                          self.props.data.col !== undefined
-
-                        // Always update the local element state for immediate visual feedback
-                        if (self.props.updateElement) {
-                          // Apply the checked state to just this element's data
-                          const updatedData = {
-                            ...self.props.data,
-                            dirty: true,
-                            value: newValue.value,
+                    // Remove the isSameEditor check here since it's already handled by the disabled prop
+                    self.setState((current) => {
+                      const activeVal = self.getActiveValue(
+                        current && current.value,
+                        option.key
+                      )
+                      const newActiveVal = activeVal
+                        ? { ...activeVal, value: !activeVal.value }
+                        : {
+                            key: option.key,
+                            value: true,
+                            info: '',
                           }
 
-                          // Update the local options to show selection visually
-                          // This only affects THIS element, not others in the column
-                          const localOptions = self.props.data.options.map((opt) => ({
-                            ...opt,
-                            checked:
-                              opt.key === option.key
-                                ? !activeVal?.value
-                                : self.getActiveValue(newValue.value, opt.key)?.value ||
-                                  false,
-                          }))
-                          updatedData.options = localOptions
+                      if (!current) {
+                        return current
+                      }
 
-                          // Update just this element
-                          self.props.updateElement(updatedData)
+                      const newValue = {
+                        ...current,
+                        value: [
+                          ...(current.value || []).filter(
+                            (item) => item.key !== option.key
+                          ),
+                          newActiveVal,
+                        ],
+                      }
+
+                      // If we're in a dynamic column and this is a UI-only change (selection)
+                      // We need to update just this component's internal state without syncing to other rows
+                      const isInDynamicColumn =
+                        self.props.data.parentId &&
+                        self.props.data.row !== undefined &&
+                        self.props.data.col !== undefined
+
+                      // Always update the local element state for immediate visual feedback
+                      if (self.props.updateElement) {
+                        // Apply the checked state to just this element's data
+                        const updatedData = {
+                          ...self.props.data,
+                          dirty: true,
+                          value: newValue.value,
                         }
 
-                        // If onElementChange is provided, but we avoid sending selection state
-                        if (self.props.onElementChange && isInDynamicColumn) {
-                          // For selection changes in dynamic columns, we don't want to sync the selection state
-                          // but we still need to notify the system that a change happened for other purposes
-                          // Create a copy that doesn't modify the selection state
-                          const updatedDataForSync = {
-                            ...self.props.data,
-                            // Deliberately NOT updating options or selection state
-                          }
+                        // Update the local options to show selection visually
+                        // This only affects THIS element, not others in the column
+                        const localOptions = self.props.data.options.map((opt) => ({
+                          ...opt,
+                          checked:
+                            opt.key === option.key
+                              ? !activeVal?.value
+                              : self.getActiveValue(newValue.value, opt.key)?.value ||
+                                false,
+                        }))
+                        updatedData.options = localOptions
 
-                          // Mark this as a selection-only change that shouldn't be synced
-                          updatedDataForSync._selectionChangeOnly = true
+                        // Update just this element
+                        self.props.updateElement(updatedData)
+                      }
 
-                          // Notify the system about the change, but without selection state changes
-                          self.props.onElementChange(updatedDataForSync)
+                      // If onElementChange is provided, but we avoid sending selection state
+                      if (self.props.onElementChange && isInDynamicColumn) {
+                        // For selection changes in dynamic columns, we don't want to sync the selection state
+                        // but we still need to notify the system that a change happened for other purposes
+                        // Create a copy that doesn't modify the selection state
+                        const updatedDataForSync = {
+                          ...self.props.data,
+                          // Deliberately NOT updating options or selection state
                         }
 
-                        return newValue
-                      })
-                    }
+                        // Mark this as a selection-only change that shouldn't be synced
+                        updatedDataForSync._selectionChangeOnly = true
+
+                        // Notify the system about the change, but without selection state changes
+                        self.props.onElementChange(updatedDataForSync)
+                      }
+
+                      return newValue
+                    })
                   }}
                   {...props}
                 />
@@ -985,6 +984,7 @@ class RadioButtons extends React.Component {
                     }
                   }}
                   onClick={() => {
+                    // Remove the isSameEditor check here since it's already handled by the disabled prop
                     self.setState((current) => {
                       if (formularKey && handleChange) {
                         handleChange(formularKey, option.value)

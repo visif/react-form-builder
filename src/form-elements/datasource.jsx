@@ -200,7 +200,7 @@ class DataSource extends React.Component {
             <div>
               <input
                 {...props}
-                disabled={!isSameEditor || this.state.loading}
+                disabled={this.props.read_only || !isSameEditor || this.state.loading}
                 onFocus={this.handleInputFocus}
                 onBlur={this.handleInputBlur}
                 onChange={this.handleOnChange}
