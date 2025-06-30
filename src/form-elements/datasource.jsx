@@ -168,6 +168,17 @@ class DataSource extends React.Component {
       isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
     }
 
+    // Add debugging
+    console.log('DataSource Debug:', {
+      userProperties,
+      savedEditor,
+      isSameEditor,
+      hasDCCRole: userProperties?.hasDCCRole,
+      readOnly: this.props.read_only,
+      loading: this.state.loading,
+      finalDisabled: this.props.read_only || !isSameEditor || this.state.loading
+    });
+
     const props = {
       type: 'text',
       className: 'form-control',

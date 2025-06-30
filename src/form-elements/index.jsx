@@ -721,6 +721,16 @@ class Checkboxes extends React.Component {
       isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
     }
 
+    // Add debugging
+    console.log('Checkboxes Debug:', {
+      userProperties,
+      savedEditor,
+      isSameEditor,
+      hasDCCRole: userProperties?.hasDCCRole,
+      readOnly: this.props.read_only,
+      finalDisabled: this.props.read_only || !isSameEditor
+    });
+
     const self = this
     let classNames = 'custom-control custom-checkbox'
     if (this.props.data.inline) {
@@ -919,6 +929,16 @@ class RadioButtons extends React.Component {
     if (savedEditor && savedEditor.userId && !!userProperties) {
       isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
     }
+
+    // Add debugging for RadioButtons
+    console.log('RadioButtons Debug:', {
+      userProperties,
+      savedEditor,
+      isSameEditor,
+      hasDCCRole: userProperties?.hasDCCRole,
+      readOnly: this.props.read_only,
+      finalDisabled: this.props.read_only || !isSameEditor
+    });
 
     const self = this
     let classNames = 'custom-control custom-radio'
