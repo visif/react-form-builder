@@ -123,9 +123,9 @@ class DataSource extends React.Component {
   }
 
   debounceOnChange = (value) => {
-    const matchData = this.state.sourceList.filter((item) => {
-      return `${item.name}`.toLocaleLowerCase().includes(`${value}`.toLocaleLowerCase())
-    })
+    const matchData = this.state.sourceList.filter((item) =>
+      `${item.name}`.toLocaleLowerCase().includes(`${value}`.toLocaleLowerCase())
+    )
     this.setState({
       searchText: value,
       matchedList: matchData,
@@ -165,7 +165,8 @@ class DataSource extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
+      isSameEditor =
+        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
     // Add debugging

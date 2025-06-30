@@ -102,7 +102,8 @@ class Signature2 extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId
+      isSameEditor =
+        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
     const hasRequiredLabel =
