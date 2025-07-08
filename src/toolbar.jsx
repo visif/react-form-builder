@@ -121,9 +121,9 @@ export default class Toolbar extends React.Component {
 
   static _defaultItemColumns() {
     return [
-      { text: 'Column1', key: `table_column_${ID.uuid()}`, width: 1 },
-      { text: 'Column2', key: `table_column_${ID.uuid()}`, width: 1 },
-      { text: 'Column3', key: `table_column_${ID.uuid()}`, width: 1 },
+      { text: 'Column1', key: `table_column_${ID.uuid()}`, width: 1, isSync: true },
+      { text: 'Column2', key: `table_column_${ID.uuid()}`, width: 1, isSync: true },
+      { text: 'Column3', key: `table_column_${ID.uuid()}`, width: 1, isSync: true },
     ]
   }
 
@@ -242,6 +242,15 @@ export default class Toolbar extends React.Component {
         label: 'Placeholder Label',
       },
       {
+        key: 'FormLink',
+        name: 'Form Link',
+        icon: 'fas fa-external-link-square-alt',
+        field_name: 'form_link_',
+        formSource: '',
+        canHaveAnswer: true,
+        label: 'Placeholder Label',
+      },
+      {
         key: 'Table',
         name: 'Table',
         icon: 'fas fa-table',
@@ -273,6 +282,15 @@ export default class Toolbar extends React.Component {
         label: '',
         icon: 'fas fa-columns',
         field_name: 'four_col_row_',
+      },
+      {
+        key: 'DynamicColumnRow',
+        name: 'Dynamic Columns',
+        icon: 'fas fa-columns',
+        element: 'DynamicColumnRow',
+        field_name: 'dynamic_col_row_',
+        rows: 1,
+        columns: [],
       },
       {
         key: 'Image',
@@ -497,7 +515,7 @@ export default class Toolbar extends React.Component {
       }
     }
 
-    if (item.key === 'Table') {
+    if (item.key === 'Table' || item.key === 'DynamicColumnRow') {
       if (item.columns.length > 0) {
         elementOptions.columns = item.columns
       } else {
@@ -525,6 +543,10 @@ export default class Toolbar extends React.Component {
       elementOptions.sourceType = item.sourceType
       elementOptions.formSource = item.formSource
       elementOptions.formField = item.formField || {}
+    }
+
+    if (item.key === 'FormLink') {
+      elementOptions.formSource = item.formSource
     }
 
     if (item.formularKey !== undefined) {

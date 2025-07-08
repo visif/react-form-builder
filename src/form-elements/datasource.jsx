@@ -26,6 +26,20 @@ class DataSource extends React.Component {
   async componentDidMount() {
     this.mounted = true
     await this.loadDataSource()
+
+    // If this is in a DynamicColumnRow and we have onElementChange,
+    // notify parent that this component is now initialized
+    if (this.props.data.parentId && this.props.onElementChange) {
+      // Send initialization status to parent
+      this.props.onElementChange({
+        ...this.props.data,
+        element: 'DataSource',
+        initialized: true,
+        sourceType: this.props.data.sourceType,
+        formSource: this.props.data.formSource,
+      })
+    }
+
     this.checkForValue()
   }
 
@@ -109,9 +123,9 @@ class DataSource extends React.Component {
   }
 
   debounceOnChange = (value) => {
-    const matchData = this.state.sourceList.filter((item) => {
-      return `${item.name}`.toLocaleLowerCase().includes(`${value}`.toLocaleLowerCase())
-    })
+    const matchData = this.state.sourceList.filter((item) =>
+      `${item.name}`.toLocaleLowerCase().includes(`${value}`.toLocaleLowerCase())
+    )
     this.setState({
       searchText: value,
       matchedList: matchData,
@@ -125,6 +139,25 @@ class DataSource extends React.Component {
     this.debounceOnChange(event.target.value)
   }
 
+  handleSelectItem = (item) => {
+    this.setState({
+      selectedItem: item,
+      searchText: item.name,
+      isShowingList: false,
+    })
+
+    // If this component is in a DynamicColumnRow and we have onElementChange,
+    // notify parent about the selection so it can be synced to other rows
+    if (this.props.data.parentId && this.props.onElementChange) {
+      this.props.onElementChange({
+        ...this.props.data,
+        element: 'DataSource',
+        selectedItem: item,
+        value: item.name,
+      })
+    }
+  }
+
   render() {
     const userProperties =
       this.props.getActiveUserProperties && this.props.getActiveUserProperties()
@@ -132,8 +165,20 @@ class DataSource extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId
+      isSameEditor =
+        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
+
+    // Add debugging
+    console.log('DataSource Debug:', {
+      userProperties,
+      savedEditor,
+      isSameEditor,
+      hasDCCRole: userProperties?.hasDCCRole,
+      readOnly: this.props.read_only,
+      loading: this.state.loading,
+      finalDisabled: this.props.read_only || !isSameEditor || this.state.loading
+    });
 
     const props = {
       type: 'text',
@@ -147,7 +192,7 @@ class DataSource extends React.Component {
       props.ref = this.inputField
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -155,7 +200,7 @@ class DataSource extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} style={{ display: 'block' }} />
           <div
             style={{
@@ -167,7 +212,7 @@ class DataSource extends React.Component {
             <div>
               <input
                 {...props}
-                disabled={!isSameEditor || this.state.loading}
+                disabled={this.props.read_only || !isSameEditor || this.state.loading}
                 onFocus={this.handleInputFocus}
                 onBlur={this.handleInputBlur}
                 onChange={this.handleOnChange}
@@ -196,13 +241,7 @@ class DataSource extends React.Component {
                     backgroundColor: '#fff',
                     border: '1px solid rgba(0, 0, 0, 0.125)',
                   }}
-                  onClick={() => {
-                    this.setState({
-                      selectedItem: item,
-                      searchText: item.name,
-                      isShowingList: false,
-                    })
-                  }}
+                  onClick={() => this.handleSelectItem(item)}
                 >
                   {item.name}
                 </div>

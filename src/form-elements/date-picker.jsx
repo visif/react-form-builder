@@ -33,8 +33,8 @@ const dateTimeFormatList = {
 };
 
 export const getDateFormat = (showTimeSelect) => {
-  const key = showTimeSelect 
-    ? dateTimeFormatList[localStorage.getItem(keyDateFormat)] 
+  const key = showTimeSelect
+    ? dateTimeFormatList[localStorage.getItem(keyDateFormat)]
     : dateFormatList[localStorage.getItem(keyDateFormat)];
   return key || (showTimeSelect ? "DD MMMM YYYY HH:MM" : "DD MMMM YYYY");
 };
@@ -124,7 +124,7 @@ class DatePicker extends React.Component {
   static updateDateTime(props, formatMask) {
     let value;
     const { defaultToday } = props.data;
-    
+
     if (defaultToday && !props.defaultValue) {
       value = dayjs().toISOString();
     } else if (props.defaultValue) {
@@ -152,7 +152,7 @@ class DatePicker extends React.Component {
 
   formatDate = (date, formatMask) => {
     if (!date) return "";;
-    
+
     if (getCalendarType() === "EN") {
       return dayjs(date).utc(true).format(formatMask);
     } else {
@@ -164,11 +164,11 @@ class DatePicker extends React.Component {
   render() {
     const { showTimeSelect, showTimeSelectOnly } = this.props.data;
     const userProperties = this.props.getActiveUserProperties && this.props.getActiveUserProperties();
-    
+
     const savedEditor = this.props.editor;
     let isSameEditor = true;
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId;
+      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
     }
 
     const props = {
@@ -241,3 +241,4 @@ class DatePicker extends React.Component {
 }
 
 export default DatePicker;
+

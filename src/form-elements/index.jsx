@@ -9,6 +9,7 @@ import ComponentLabel from './component-label'
 import DataSource from './datasource'
 import DatePicker from './date-picker'
 import FileUpload from './fileUpload2'
+import FormLink from './form-link'
 import FormulaInput from './formula-input'
 import HeaderBar from './header-bar'
 import ImageUpload from './imageUpload'
@@ -31,7 +32,7 @@ class Header extends React.Component {
       classNames += ' italic'
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -60,7 +61,7 @@ class Paragraph extends React.Component {
       classNames += ' italic'
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -89,7 +90,7 @@ class Label extends React.Component {
       classNames += ' italic'
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -110,7 +111,7 @@ class Label extends React.Component {
 
 class LineBreak extends React.Component {
   render() {
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -129,15 +130,39 @@ class TextInput extends React.Component {
     super(props)
     this.inputField = React.createRef()
     this.handleChange = this.handleChange.bind(this)
+    this.state = {
+      value: props.defaultValue || '',
+    }
   }
 
   handleChange(e) {
+    const { value } = e.target
+    this.setState({ value })
+
     const { data, handleChange } = this.props
     const { formularKey } = data
     if (formularKey && handleChange) {
-      console.log('formularKey', formularKey)
-      console.log('e.target.value', e.target.value)
-      handleChange(formularKey, e.target.value)
+      handleChange(formularKey, value)
+    }
+
+    // If onElementChange is provided, call it to synchronize changes across the column
+    if (this.props.onElementChange) {
+      // Create updated data object with the new value
+      const updatedData = {
+        ...this.props.data,
+        value,
+      }
+
+      // Send it for synchronization across columns
+      this.props.onElementChange(updatedData)
+
+      // Immediately apply changes to this component's data
+      if (this.props.data.dirty === undefined || this.props.data.dirty) {
+        updatedData.dirty = true
+        if (this.props.updateElement) {
+          this.props.updateElement(updatedData)
+        }
+      }
     }
   }
 
@@ -148,7 +173,7 @@ class TextInput extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId
+      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
     }
 
     const props = {}
@@ -156,13 +181,14 @@ class TextInput extends React.Component {
     props.className = 'form-control'
     props.name = this.props.data.field_name
     props.onChange = this.handleChange
+    props.value = this.state.value
 
     if (this.props.mutable) {
       props.defaultValue = this.props.defaultValue
       props.ref = this.inputField
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -174,7 +200,7 @@ class TextInput extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} />
           <input {...props} />
         </div>
@@ -188,13 +214,39 @@ class NumberInput extends React.Component {
     super(props)
     this.inputField = React.createRef()
     this.handleChange = this.handleChange.bind(this)
+    this.state = {
+      value: props.defaultValue || '',
+    }
   }
 
   handleChange(e) {
+    const { value } = e.target
+    this.setState({ value })
+
     const { data, handleChange } = this.props
     const { formularKey } = data
     if (formularKey && handleChange) {
-      handleChange(formularKey, e.target.value)
+      handleChange(formularKey, value)
+    }
+
+    // If onElementChange is provided, call it to synchronize changes across the column
+    if (this.props.onElementChange) {
+      // Create updated data object with the new value
+      const updatedData = {
+        ...this.props.data,
+        value,
+      }
+
+      // Send it for synchronization across columns
+      this.props.onElementChange(updatedData)
+
+      // Immediately apply changes to this component's data
+      if (this.props.data.dirty === undefined || this.props.data.dirty) {
+        updatedData.dirty = true
+        if (this.props.updateElement) {
+          this.props.updateElement(updatedData)
+        }
+      }
     }
   }
 
@@ -205,7 +257,7 @@ class NumberInput extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId
+      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
     }
 
     const props = {}
@@ -213,6 +265,7 @@ class NumberInput extends React.Component {
     props.className = 'form-control'
     props.name = this.props.data.field_name
     props.onChange = this.handleChange
+    props.value = this.state.value
 
     if (this.props.mutable) {
       props.defaultValue = this.props.defaultValue
@@ -223,7 +276,7 @@ class NumberInput extends React.Component {
       props.disabled = 'disabled'
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -231,7 +284,7 @@ class NumberInput extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} />
           <input {...props} />
         </div>
@@ -244,7 +297,43 @@ class TextArea extends React.Component {
   constructor(props) {
     super(props)
     this.inputField = React.createRef()
+    this.handleChange = this.handleChange.bind(this)
+    this.state = {
+      value: props.defaultValue || '',
+    }
   }
+
+  handleChange(e) {
+    const { value } = e.target
+    this.setState({ value })
+
+    const { data, handleChange } = this.props
+    const { formularKey } = data
+    if (formularKey && handleChange) {
+      handleChange(formularKey, value)
+    }
+
+    // If onElementChange is provided, call it to synchronize changes across the column
+    if (this.props.onElementChange) {
+      // Create updated data object with the new value
+      const updatedData = {
+        ...this.props.data,
+        value,
+      }
+
+      // Send it for synchronization across columns
+      this.props.onElementChange(updatedData)
+
+      // Immediately apply changes to this component's data
+      if (this.props.data.dirty === undefined || this.props.data.dirty) {
+        updatedData.dirty = true
+        if (this.props.updateElement) {
+          this.props.updateElement(updatedData)
+        }
+      }
+    }
+  }
+
   render() {
     const userProperties =
       this.props.getActiveUserProperties && this.props.getActiveUserProperties()
@@ -252,13 +341,15 @@ class TextArea extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId
+      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
     }
 
     const props = {}
     props.className = 'form-control'
     props.name = this.props.data.field_name
     props.minRows = 3
+    props.onChange = this.handleChange
+    props.value = this.state.value
 
     if (this.props.read_only || !isSameEditor) {
       props.disabled = 'disabled'
@@ -269,7 +360,7 @@ class TextArea extends React.Component {
       props.ref = this.inputField
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -277,7 +368,7 @@ class TextArea extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} />
           <TextAreaAutosize {...props} />
         </div>
@@ -316,6 +407,27 @@ class Dropdown extends React.Component {
     if (formularKey && handleChange) {
       handleChange(formularKey, constValue)
     }
+
+    // If onElementChange is provided, call it to synchronize changes across the column
+    if (this.props.onElementChange) {
+      // Create updated data object with the new value
+      const updatedData = {
+        ...this.props.data,
+        value: constValue,
+      }
+
+      // Send it for synchronization across columns
+      this.props.onElementChange(updatedData)
+
+      // Immediately apply changes to this component's data
+      // This makes changes visible in edit mode instantly
+      if (this.props.data.dirty === undefined || this.props.data.dirty) {
+        updatedData.dirty = true
+        if (this.props.updateElement) {
+          this.props.updateElement(updatedData)
+        }
+      }
+    }
   }
 
   render() {
@@ -325,7 +437,7 @@ class Dropdown extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId
+      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
     }
 
     const props = {}
@@ -343,7 +455,7 @@ class Dropdown extends React.Component {
       props.disabled = 'disabled'
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -351,7 +463,7 @@ class Dropdown extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} />
           <select {...props}>
             <option value="" key="default-0">
@@ -385,9 +497,55 @@ class Signature extends React.Component {
   clear = () => {
     if (this.state.defaultValue) {
       this.setState({ defaultValue: '' })
+
+      // Immediately apply changes to this component's data when clearing signature
+      if (this.props.onElementChange) {
+        const updatedData = {
+          ...this.props.data,
+          value: '',
+        }
+
+        this.props.onElementChange(updatedData)
+
+        if (this.props.data.dirty === undefined || this.props.data.dirty) {
+          updatedData.dirty = true
+          if (this.props.updateElement) {
+            this.props.updateElement(updatedData)
+          }
+        }
+      }
     } else if (this.canvas.current) {
       this.canvas.current.clear()
     }
+  }
+
+  // Handle signature changes
+  handleSignatureChange = () => {
+    // Only trigger if canvas is available
+    if (!this.canvas.current) return
+
+    // Get the signature data
+    const signatureData = this.canvas.current.toDataURL().split(',')[1]
+
+    // If onElementChange is provided, call it to synchronize changes across columns
+    if (this.props.onElementChange) {
+      const updatedData = {
+        ...this.props.data,
+        value: signatureData,
+      }
+
+      this.props.onElementChange(updatedData)
+
+      // Immediately apply changes to this component's data
+      if (this.props.data.dirty === undefined || this.props.data.dirty) {
+        updatedData.dirty = true
+        if (this.props.updateElement) {
+          this.props.updateElement(updatedData)
+        }
+      }
+    }
+
+    this.setState({ defaultValue: signatureData })
   }
 
   render() {
@@ -397,7 +555,7 @@ class Signature extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId
+      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
     }
 
     const { defaultValue } = this.state
@@ -415,6 +573,7 @@ class Signature extends React.Component {
     if (this.props.mutable) {
       pad_props.defaultValue = defaultValue
       pad_props.ref = this.canvas
+      pad_props.onEnd = this.handleSignatureChange
       canClear = !this.props.read_only || isSameEditor
     }
 
@@ -422,7 +581,7 @@ class Signature extends React.Component {
       props.disabled = 'disabled'
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -435,7 +594,7 @@ class Signature extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} />
           {this.props.read_only === true || !isSameEditor || !!sourceDataURL ? (
             <img src={sourceDataURL} />
@@ -447,7 +606,7 @@ class Signature extends React.Component {
               className="fas fa-times clear-signature"
               onClick={this.clear}
               title="Clear Signature"
-            ></i>
+            />
           )}
           <input {...props} />
         </div>
@@ -502,17 +661,17 @@ class Tags extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId
+      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
     }
 
     if (this.props.mutable) {
-      //props.isDisabled = this.props.read_only;
-      props.isDisabled = this.props.read_only || !isSameEditor ? true : false
+      // props.isDisabled = this.props.read_only;
+      props.isDisabled = !!(this.props.read_only || !isSameEditor)
       props.value = this.state.value
       props.ref = this.inputField
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -520,7 +679,7 @@ class Tags extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} />
           <Select {...props} />
         </div>
@@ -541,13 +700,7 @@ class Checkboxes extends React.Component {
   }
 
   static getDerivedStateFromProps(props, state) {
-    console.log('Checkboxes getDerivedStateFromProps')
     if (JSON.stringify(state.defaultValue) !== JSON.stringify(props.defaultValue)) {
-      console.log(
-        'Checkboxes default prop changed',
-        state.defaultValue,
-        props.defaultValue
-      )
       return {
         defaultValue: props.defaultValue,
         value: props.defaultValue,
@@ -556,9 +709,7 @@ class Checkboxes extends React.Component {
     return state
   }
 
-  getActiveValue = (values, key) => {
-    return values?.find((item) => item.key === key)
-  }
+  getActiveValue = (values, key) => values?.find((item) => item.key === key)
 
   render() {
     const userProperties =
@@ -567,8 +718,18 @@ class Checkboxes extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId
+      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
     }
+
+    // Add debugging
+    console.log('Checkboxes Debug:', {
+      userProperties,
+      savedEditor,
+      isSameEditor,
+      hasDCCRole: userProperties?.hasDCCRole,
+      readOnly: this.props.read_only,
+      finalDisabled: this.props.read_only || !isSameEditor
+    });
 
     const self = this
     let classNames = 'custom-control custom-checkbox'
@@ -576,7 +737,7 @@ class Checkboxes extends React.Component {
       classNames += ' option-inline'
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -584,7 +745,7 @@ class Checkboxes extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel className="form-label" {...this.props} />
           {this.props.data.options.map((option) => {
             const this_key = `preview_${option.key}`
@@ -594,10 +755,12 @@ class Checkboxes extends React.Component {
             props.type = 'checkbox'
             props.value = option.value
 
+            // Check if the option is selected either from state or option properties
             const answerItem = self.getActiveValue(self.state.value, option.key)
+            const isCheckedInOptions = option.checked || option.selected
 
             if (self.props.mutable) {
-              props.checked = answerItem?.value ?? false
+              props.checked = answerItem?.value ?? isCheckedInOptions ?? false
             }
 
             if (this.props.read_only || !isSameEditor) {
@@ -611,7 +774,7 @@ class Checkboxes extends React.Component {
                 style={{ display: 'flex', alignItems: 'center' }}
               >
                 <input
-                  id={'fid_' + this_key}
+                  id={`fid_${this_key}`}
                   className="custom-control-input"
                   ref={(c) => {
                     if (c && self.props.mutable) {
@@ -619,53 +782,105 @@ class Checkboxes extends React.Component {
                     }
                   }}
                   onChange={() => {
-                    if (isSameEditor) {
-                      self.setState((current) => {
-                        const activeVal = self.getActiveValue(
-                          current && current.value,
-                          option.key
-                        )
-                        const newActiveVal = activeVal
-                          ? { ...activeVal, value: !activeVal.value }
-                          : {
-                              key: option.key,
-                              value: true,
-                              info: '',
-                            }
+                    // Remove the isSameEditor check here since it's already handled by the disabled prop
+                    self.setState((current) => {
+                      const activeVal = self.getActiveValue(
+                        current && current.value,
+                        option.key
+                      )
+                      const newActiveVal = activeVal
+                        ? { ...activeVal, value: !activeVal.value }
+                        : {
+                            key: option.key,
+                            value: true,
+                            info: '',
+                          }
 
-                        if (!current) {
-                          return current
+                      if (!current) {
+                        return current
+                      }
+
+                      const newValue = {
+                        ...current,
+                        value: [
+                          ...(current.value || []).filter(
+                            (item) => item.key !== option.key
+                          ),
+                          newActiveVal,
+                        ],
+                      }
+
+                      // If we're in a dynamic column and this is a UI-only change (selection)
+                      // We need to update just this component's internal state without syncing to other rows
+                      const isInDynamicColumn =
+                        self.props.data.parentId &&
+                        self.props.data.row !== undefined &&
+                        self.props.data.col !== undefined
+
+                      // Always update the local element state for immediate visual feedback
+                      if (self.props.updateElement) {
+                        // Apply the checked state to just this element's data
+                        const updatedData = {
+                          ...self.props.data,
+                          dirty: true,
+                          value: newValue.value,
                         }
 
-                        return {
-                          ...current,
-                          value: [
-                            ...(current.value || []).filter(
-                              (item) => item.key !== option.key
-                            ),
-                            newActiveVal,
-                          ],
+                        // Update the local options to show selection visually
+                        // This only affects THIS element, not others in the column
+                        const localOptions = self.props.data.options.map((opt) => ({
+                          ...opt,
+                          checked:
+                            opt.key === option.key
+                              ? !activeVal?.value
+                              : self.getActiveValue(newValue.value, opt.key)?.value ||
+                                false,
+                        }))
+                        updatedData.options = localOptions
+
+                        // Update just this element
+                        self.props.updateElement(updatedData)
+                      }
+
+                      // If onElementChange is provided, but we avoid sending selection state
+                      if (self.props.onElementChange && isInDynamicColumn) {
+                        // For selection changes in dynamic columns, we don't want to sync the selection state
+                        // but we still need to notify the system that a change happened for other purposes
+                        // Create a copy that doesn't modify the selection state
+                        const updatedDataForSync = {
+                          ...self.props.data,
+                          // Deliberately NOT updating options or selection state
                         }
-                      })
-                    }
+
+                        // Mark this as a selection-only change that shouldn't be synced
+                        updatedDataForSync._selectionChangeOnly = true
+
+                        // Notify the system about the change, but without selection state changes
+                        self.props.onElementChange(updatedDataForSync)
+                      }
+
+                      return newValue
+                    })
                   }}
                   {...props}
                 />
-                <label className="custom-control-label" htmlFor={'fid_' + this_key}>
+                <label className="custom-control-label" htmlFor={`fid_${this_key}`}>
                   {option.text}
                 </label>
                 {props.checked && option.info && (
-                  <input
-                    id={'fid_' + this_key + '_info'}
+                  <textarea
+                    id={`fid_${this_key}_info`}
                     type="text"
-                    class="form-control"
+                    className="form-control"
                     style={{
                       width: 'auto',
                       marginLeft: 16,
-                      height: 'calc(1.5em + .5rem)',
+                      minHeight: '60px',
+                      // height: 'calc(1.5em + .5rem)',
                       marginBottom: 4,
                     }}
-                    defaultValue={answerItem.info ?? ''}
+                    rows={2}
+                    defaultValue={answerItem?.info ?? ''}
                     ref={(c) => {
                       if (c && self.props.mutable) {
                         self.infos[`child_ref_${option.key}_info`] = c
@@ -694,13 +909,7 @@ class RadioButtons extends React.Component {
   }
 
   static getDerivedStateFromProps(props, state) {
-    console.log('RadioButtons getDerivedStateFromProps')
     if (JSON.stringify(state.defaultValue) !== JSON.stringify(props.defaultValue)) {
-      console.log(
-        'RadioButtons default prop changed',
-        state.defaultValue,
-        props.defaultValue
-      )
       return {
         defaultValue: props.defaultValue,
         value: props.defaultValue,
@@ -709,9 +918,7 @@ class RadioButtons extends React.Component {
     return state
   }
 
-  getActiveValue = (values, key) => {
-    return values?.find((item) => item.key === key)
-  }
+  getActiveValue = (values, key) => values?.find((item) => item.key === key)
 
   render() {
     const userProperties =
@@ -720,8 +927,18 @@ class RadioButtons extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId
+      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
     }
+
+    // Add debugging for RadioButtons
+    console.log('RadioButtons Debug:', {
+      userProperties,
+      savedEditor,
+      isSameEditor,
+      hasDCCRole: userProperties?.hasDCCRole,
+      readOnly: this.props.read_only,
+      finalDisabled: this.props.read_only || !isSameEditor
+    });
 
     const self = this
     let classNames = 'custom-control custom-radio'
@@ -729,7 +946,7 @@ class RadioButtons extends React.Component {
       classNames += ' option-inline'
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -737,23 +954,35 @@ class RadioButtons extends React.Component {
     const { data, handleChange } = this.props
     const { formularKey } = data
 
+    // Create unique name for RadioButtons in multi-column layout
+    const isInDynamicColumn =
+      this.props.data.parentId &&
+      this.props.data.row !== undefined &&
+      this.props.data.col !== undefined
+
+    const uniqueName = isInDynamicColumn
+      ? `${this.props.data.parentId}_row${this.props.data.row}_col${this.props.data.col}_${this.props.data.field_name}`
+      : this.props.data.field_name
+
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel className="form-label" {...this.props} />
           {this.props.data.options.map((option) => {
             const this_key = `preview_${option.key}`
             const props = {}
-            props.name = self.props.data.field_name
+            props.name = uniqueName // Use unique name instead of field_name
 
             props.type = 'radio'
             props.value = option.value
 
+            // Check if the option is selected either from state or option properties
             const answerItem = self.getActiveValue(self.state.value, option.key)
+            const isCheckedInOptions = option.checked || option.selected
 
             if (self.props.mutable) {
-              props.checked = answerItem?.value ?? false
+              props.checked = answerItem?.value ?? isCheckedInOptions ?? false
             }
 
             if (this.props.read_only || !isSameEditor) {
@@ -767,49 +996,107 @@ class RadioButtons extends React.Component {
                 style={{ display: 'flex', alignItems: 'center' }}
               >
                 <input
-                  id={'fid_' + this_key}
+                  id={`fid_${this_key}`}
                   className="custom-control-input"
                   ref={(c) => {
                     if (c && self.props.mutable) {
                       self.options[`child_ref_${option.key}`] = c
                     }
                   }}
-                  onChange={() => {
+                  onClick={() => {
+                    // Remove the isSameEditor check here since it's already handled by the disabled prop
                     self.setState((current) => {
                       if (formularKey && handleChange) {
-                        console.log('formularKey', formularKey)
-                        console.log('option.value', option.value)
                         handleChange(formularKey, option.value)
                       }
 
-                      return {
-                        ...current,
-                        value: [
-                          {
-                            key: option.key,
-                            value: true,
-                            info: '',
-                          },
-                        ],
+                      // Check if this option is already selected
+                      const currentActiveValue = self.getActiveValue(
+                        current?.value,
+                        option.key
+                      )
+                      const isCurrentlySelected = currentActiveValue?.value === true
+
+                      let newValue
+                      if (isCurrentlySelected) {
+                        // If already selected, deselect it (empty array)
+                        newValue = {
+                          ...current,
+                          value: [], // Clear selection
+                        }
+                      } else {
+                        // If not selected, select this option
+                        newValue = {
+                          ...current,
+                          value: [
+                            {
+                              key: option.key,
+                              value: true,
+                              info: '',
+                            },
+                          ],
+                        }
                       }
+
+                      // Always update the local element state for immediate visual feedback
+                      if (self.props.updateElement) {
+                        // Apply the checked state to just this element's data
+                        const updatedData = {
+                          ...self.props.data,
+                          dirty: true,
+                          value: newValue.value,
+                        }
+
+                        // Update the local options to show selection visually
+                        // This only affects THIS element, not others in the column
+                        const localOptions = self.props.data.options.map((opt) => ({
+                          ...opt,
+                          checked: isCurrentlySelected ? false : opt.key === option.key,
+                          selected: isCurrentlySelected ? false : opt.key === option.key,
+                        }))
+                        updatedData.options = localOptions
+
+                        // Update just this element
+                        self.props.updateElement(updatedData)
+                      }
+
+                      // If onElementChange is provided and we're in a dynamic column
+                      if (self.props.onElementChange && isInDynamicColumn) {
+                        // For selection changes in dynamic columns, we don't want to sync the selection state
+                        // but we still need to notify the system that a change happened for other purposes
+                        const updatedDataForSync = {
+                          ...self.props.data,
+                          // Deliberately NOT updating options or selection state
+                        }
+
+                        // Mark this as a selection-only change that shouldn't be synced
+                        updatedDataForSync._selectionChangeOnly = true
+
+                        // Notify the system about the change, but without selection state changes
+                        self.props.onElementChange(updatedDataForSync)
+                      }
+
+                      return newValue
                     })
                   }}
                   {...props}
                 />
-                <label className="custom-control-label" htmlFor={'fid_' + this_key}>
+                <label className="custom-control-label" htmlFor={`fid_${this_key}`}>
                   {option.text}
                 </label>
                 {props.checked && option.info && (
-                  <input
-                    id={'fid_' + this_key + '_info'}
+                  <textarea
+                    id={`fid_${this_key}_info`}
                     type="text"
-                    class="form-control"
+                    className="form-control"
                     style={{
                       width: 'auto',
                       marginLeft: 16,
-                      height: 'calc(1.5em + .5rem)',
+                      minHeight: '60px',
+                      // height: 'calc(1.5em + .5rem)',
                     }}
-                    defaultValue={answerItem.info ?? ''}
+                    rows={2}
+                    defaultValue={answerItem?.info ?? ''}
                     ref={(c) => {
                       if (c && self.props.mutable) {
                         self.infos[`child_ref_${option.key}_info`] = c
@@ -829,7 +1116,7 @@ class RadioButtons extends React.Component {
 const Image = (props) => {
   const style = props.data.center ? { textAlign: 'center' } : null
 
-  let baseClasses = 'SortableItem rfb-item'
+  let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
   if (props.data.pageBreakBefore) {
     baseClasses += ' alwaysbreak'
   }
@@ -863,7 +1150,7 @@ class Rating extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId
+      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
     }
 
     const props = {}
@@ -876,12 +1163,12 @@ class Rating extends React.Component {
           ? parseFloat(this.props.defaultValue, 10)
           : 0
       props.editing = true
-      //props.disabled = this.props.read_only ||;
-      props.disabled = this.props.read_only || !isSameEditor ? true : false
+      // props.disabled = this.props.read_only ||;
+      props.disabled = !!(this.props.read_only || !isSameEditor)
       props.ref = this.inputField
     }
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -889,7 +1176,7 @@ class Rating extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} />
           <StarRating {...props} />
         </div>
@@ -900,7 +1187,7 @@ class Rating extends React.Component {
 
 class HyperLink extends React.Component {
   render() {
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -908,8 +1195,8 @@ class HyperLink extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
-          <a target="_blank" href={this.props.data.href}>
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
+          <a target="_blank" href={this.props.data.href} rel="noreferrer">
             {this.props.data.content}
           </a>
         </div>
@@ -920,7 +1207,7 @@ class HyperLink extends React.Component {
 
 class Download extends React.Component {
   render() {
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -928,7 +1215,7 @@ class Download extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <a href={`${this.props.download_path}?id=${this.props.data.file_path}`}>
             {this.props.data.content}
           </a>
@@ -946,7 +1233,7 @@ class Camera extends React.Component {
 
   displayImage = (e) => {
     const self = this
-    const target = e.target
+    const { target } = e
     let file
     let reader
 
@@ -971,7 +1258,11 @@ class Camera extends React.Component {
   }
 
   render() {
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
+    if (this.props.data.pageBreakBefore) {
+      baseClasses += ' alwaysbreak'
+    }
+
     const name = this.props.data.field_name
     const fileInputStyle = this.state.img ? { display: 'none' } : null
     if (this.props.data.pageBreakBefore) {
@@ -993,7 +1284,7 @@ class Camera extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} />
           {this.props.read_only === true &&
           this.props.defaultValue &&
@@ -1014,7 +1305,7 @@ class Camera extends React.Component {
                 />
                 <div className="image-upload-control">
                   <div className="btn btn-default">
-                    <i className="fas fa-camera"></i> Upload Photo
+                    <i className="fas fa-camera" /> Upload Photo
                   </div>
                   <p>Select an image from your computer or device.</p>
                 </div>
@@ -1029,7 +1320,7 @@ class Camera extends React.Component {
                   />
                   <br />
                   <div className="btn btn-image-clear" onClick={this.clearImage}>
-                    <i className="fas fa-times"></i> Clear Photo
+                    <i className="fas fa-times" /> Clear Photo
                   </div>
                 </div>
               )}
@@ -1106,7 +1397,7 @@ class Range extends React.Component {
       return <label {...option_props}>{d}</label>
     })
 
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
@@ -1114,7 +1405,7 @@ class Range extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} />
           <div className="range">
             <div className="clearfix">
@@ -1159,4 +1450,5 @@ FormElements.DataSource = DataSource
 FormElements.FileUpload = FileUpload
 FormElements.ImageUpload = ImageUpload
 FormElements.FormulaInput = FormulaInput
+FormElements.FormLink = FormLink
 export default FormElements

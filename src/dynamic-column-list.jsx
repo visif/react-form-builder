@@ -2,94 +2,131 @@
  * <DynamicColumnList />
  */
 import React from 'react'
+import PropTypes from 'prop-types'
+// eslint-disable-next-line import/no-cycle
+import FormElementsEdit from './form-elements-edit'
 import ID from './UUID'
 
 export default class DynamicColumnList extends React.Component {
   constructor(props) {
     super(props)
+    const { element } = props
     this.state = {
-      element: this.props.element,
-      data: this.props.data,
+      element,
+      showEditModal: false,
+      editingColumn: null,
       dirty: false,
     }
   }
 
-  _setValue(text) {
-    return `${text}`.replace(/[^A-Z0-9]+/gi, '_').toLowerCase()
-  }
-
-  editColumn(index, key, e) {
-    const this_element = this.state.element
-    const val =
-      this_element.columns[index].value !==
-      this._setValue(this_element.columns[index][key])
-        ? this_element.columns[index].value
-        : this._setValue(e.target.value)
-
-    this_element.columns[index][key] = e.target.value
-    this_element.columns[index].value = val
+  handleEditModalClose = () => {
     this.setState({
-      element: this_element,
-      dirty: true,
+      showEditModal: false,
+      editingColumn: null,
     })
   }
 
-  updateColumn() {
-    const this_element = this.state.element
-    // to prevent ajax calls with no change
-    if (this.state.dirty) {
-      this.props.updateElement.call(this.props.preview, this_element)
+  _setValue = (text) => `${text}`.replace(/[^A-Z0-9]+/gi, '_').toLowerCase()
+
+  editColumn = (index, key, e) => {
+    const { element } = this.state
+
+    if (key === 'isSync') {
+      element.columns[index][key] = e.target.checked
+    } else {
+      const val =
+        element.columns[index].value !== this._setValue(element.columns[index][key])
+          ? element.columns[index].value
+          : this._setValue(e.target.value)
+
+      element.columns[index][key] = e.target.value
+      element.columns[index].value = val
+    }
+
+    this.setState({ element, dirty: true })
+  }
+
+  updateColumn = () => {
+    const { element, dirty } = this.state
+    const { updateElement, preview } = this.props
+    if (dirty) {
+      if (preview) {
+        updateElement.call(preview, element)
+      } else {
+        updateElement(element)
+      }
       this.setState({ dirty: false })
     }
   }
 
-  addColumn(index) {
-    const this_element = this.state.element
-    this_element.columns.splice(index + 1, 0, {
+  addColumn = (index) => {
+    const { element } = this.state
+    const { updateElement, preview } = this.props
+    element.columns.splice(index + 1, 0, {
       value: '',
       text: '',
       key: ID.uuid(),
       width: 1,
+      isSync: true,
     })
-    this.props.updateElement.call(this.props.preview, this_element)
+    if (preview) {
+      updateElement.call(preview, element)
+    } else {
+      updateElement(element)
+    }
   }
 
-  removeColumn(index) {
-    const this_element = this.state.element
-    this_element.columns.splice(index, 1)
-    this.props.updateElement.call(this.props.preview, this_element)
+  removeColumn = (index) => {
+    const { element } = this.state
+    const { updateElement, preview } = this.props
+    element.columns.splice(index, 1)
+    if (preview) {
+      updateElement.call(preview, element)
+    } else {
+      updateElement(element)
+    }
+  }
+
+  editColumnSettings = (column) => {
+    this.setState({
+      showEditModal: true,
+      editingColumn: column,
+    })
   }
 
   render() {
-    if (this.state.dirty) {
-      this.state.element.dirty = true
+    const { element, dirty, showEditModal, editingColumn } = this.state
+    const { preview } = this.props
+
+    if (dirty) {
+      element.dirty = true
     }
 
     return (
-      <div className="dynamic-option-list">
-        <ul>
-          <li>
-            <div className="row">
-              <div className="col-sm-12">
-                <b>Columns</b>
+      <>
+        <div className="dynamic-option-list">
+          <ul>
+            <li>
+              <div className="row">
+                <div className="col-sm-12">
+                  <b>Columns</b>
+                </div>
               </div>
-            </div>
-          </li>
-          <li className="clearfix">
-            <div className="row">
-              <div className="col-sm-7">Header Text</div>
-              <div className="col-sm-2">Width</div>
-              <div className="col-sm-3"></div>
-            </div>
-          </li>
-          {this.props.element.columns.map((option, index) => {
-            const this_key = `edit_${option.key}`
-            const val = option.value !== this._setValue(option.text) ? option.value : ''
-            return (
-              <>
-                <li className="clearfix" key={this_key}>
+            </li>
+            <li className="clearfix">
+              <div className="row">
+                <div className="col-sm-6">Header Text</div>
+                <div className="col-sm-2">Width</div>
+                <div className="col-sm-1 text-center">Sync</div>
+                <div className="col-sm-3" />
+              </div>
+            </li>
+            {element.columns.map((option, index) => {
+              const editKey = `edit_${option.key}`
+              return (
+                <li className="clearfix" key={editKey}>
                   <div className="row">
-                    <div className="col-sm-7">
+                    <div className="col-sm-6">
                       <input
                         tabIndex={index + 1}
                         className="form-control"
@@ -98,8 +135,8 @@ export default class DynamicColumnList extends React.Component {
                         name={`text_${index}`}
                         placeholder="Option text"
                         value={option.text}
-                        onBlur={this.updateColumn.bind(this)}
-                        onChange={this.editColumn.bind(this, index, 'text')}
+                        onBlur={this.updateColumn}
+                        onChange={(e) => this.editColumn(index, 'text', e)}
                       />
                     </div>
                     <div className="col-sm-2">
@@ -108,38 +145,111 @@ export default class DynamicColumnList extends React.Component {
                         className="form-control"
                         style={{ width: '100%' }}
                         type="text"
-                        name={`text_${index}`}
+                        name={`width_${index}`}
                         placeholder="Width"
                         value={option.width}
-                        onBlur={this.updateColumn.bind(this)}
-                        onChange={this.editColumn.bind(this, index, 'width')}
+                        onBlur={this.updateColumn}
+                        onChange={(e) => this.editColumn(index, 'width', e)}
                       />
+                    </div>
+                    <div className="col-sm-1">
+                      <div
+                        className="d-flex justify-content-center align-items-center"
+                        style={{ height: '38px', minWidth: '56px' }}
+                      >
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          id={`sync_${index}`}
+                          checked={option.isSync || false}
+                          onChange={(e) => this.editColumn(index, 'isSync', e)}
+                          onBlur={this.updateColumn}
+                        />
+                      </div>
                     </div>
                     <div className="col-sm-3">
                       <div className="dynamic-options-actions-buttons">
                         <button
-                          onClick={this.addColumn.bind(this, index)}
+                          type="button"
+                          onClick={() => this.addColumn(index)}
                           className="btn btn-success"
                         >
-                          <i className="fas fa-plus-circle"></i>
+                          <i className="fas fa-plus-circle" />
                         </button>
                         {index > 0 && (
                           <button
-                            onClick={this.removeColumn.bind(this, index)}
+                            type="button"
+                            onClick={() => this.removeColumn(index)}
                             className="btn btn-danger"
                           >
-                            <i className="fas fa-minus-circle"></i>
+                            <i className="fas fa-minus-circle" />
                           </button>
                         )}
                       </div>
                     </div>
                   </div>
                 </li>
-              </>
-            )
-          })}
-        </ul>
-      </div>
+              )
+            })}
+          </ul>
+        </div>
+
+        {showEditModal && editingColumn && (
+          <div className="modal show d-block">
+            <div className="modal-dialog modal-lg">
+              <div className="modal-content">
+                <FormElementsEdit
+                  element={editingColumn}
+                  updateElement={(updatedElement) => {
+                    const { element: currentElement } = this.state
+                    const columns = [...currentElement.columns]
+                    const index = columns.findIndex(
+                      (col) => col.key === updatedElement.key
+                    )
+                    if (index !== -1) {
+                      columns[index] = updatedElement
+                      this.setState(
+                        (prevState) => {
+                          const newElement = { ...prevState.element }
+                          newElement.columns = columns
+                          return { element: newElement, dirty: true }
+                        },
+                        () => {
+                          this.updateColumn()
+                          this.handleEditModalClose()
+                        }
+                      )
+                    }
+                  }}
+                  manualEditModeOff={this.handleEditModalClose}
+                  preview={preview}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </>
     )
   }
+}
+
+DynamicColumnList.propTypes = {
+  element: PropTypes.shape({
+    columns: PropTypes.arrayOf(
+      PropTypes.shape({
+        key: PropTypes.string,
+        text: PropTypes.string,
+        value: PropTypes.string,
+        width: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        type: PropTypes.string,
+        isSync: PropTypes.bool,
+      })
+    ).isRequired,
+  }).isRequired,
+  preview: PropTypes.shape({}),
+  updateElement: PropTypes.func.isRequired,
+}
+
+DynamicColumnList.defaultProps = {
+  preview: null,
 }

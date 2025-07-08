@@ -1,7 +1,12 @@
 import BaseFormElements from './form-elements'
 import CustomElement from './form-elements/custom-element'
 import PlaceHolder from './form-place-holder'
-import { FourColumnRow, ThreeColumnRow, TwoColumnRow } from './multi-column'
+import {
+  DynamicColumnRow,
+  FourColumnRow,
+  ThreeColumnRow,
+  TwoColumnRow,
+} from './multi-column'
 import SortableElement from './sortable-element'
 
 const {
@@ -31,6 +36,7 @@ const {
   FileUpload,
   ImageUpload,
   FormulaInput,
+  FormLink, // Add FormLink here
 } = BaseFormElements
 
 const FormElements = {}
@@ -58,6 +64,7 @@ FormElements.PlaceHolder = SortableElement(PlaceHolder)
 FormElements.TwoColumnRow = SortableElement(TwoColumnRow)
 FormElements.ThreeColumnRow = SortableElement(ThreeColumnRow)
 FormElements.FourColumnRow = SortableElement(FourColumnRow)
+FormElements.DynamicColumnRow = SortableElement(DynamicColumnRow)
 FormElements.CustomElement = SortableElement(CustomElement)
 FormElements.Table = SortableElement(Table)
 FormElements.Section = SortableElement(Section)
@@ -66,5 +73,6 @@ FormElements.DataSource = SortableElement(DataSource)
 FormElements.FileUpload = SortableElement(FileUpload)
 FormElements.ImageUpload = SortableElement(ImageUpload)
 FormElements.FormulaInput = SortableElement(FormulaInput)
+FormElements.FormLink = SortableElement(FormLink) // Add this line to register FormLink
 
 export default FormElements

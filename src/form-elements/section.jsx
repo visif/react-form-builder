@@ -3,7 +3,7 @@ import ComponentHeader from './component-header'
 
 export default class Section extends React.Component {
   render() {
-    let baseClasses = 'SortableItem rfb-item'
+    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }

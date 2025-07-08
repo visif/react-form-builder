@@ -96,7 +96,7 @@ class ImageUpload extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId
+      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
     }
 
     return (
@@ -107,7 +107,7 @@ class ImageUpload extends React.Component {
         }`}
       >
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <div style={{ position: 'relative' }}>
             <div
               className="btn is-isolated"

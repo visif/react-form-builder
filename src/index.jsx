@@ -107,7 +107,7 @@ class ReactFormBuilder extends React.Component {
             </div>
             <div
               style={{
-                width: '300px',
+                width: '250px',
                 position: 'fixed',
                 top: 0,
                 right: 0,
@@ -137,3 +137,4 @@ FormBuilders.Registry = Registry
 export default FormBuilders
 
 export { ReactFormBuilder, ReactFormGenerator, store as ElementStore, Registry }
+
