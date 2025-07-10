@@ -1,71 +1,105 @@
-import React from 'react'
+import React, { Component } from 'react'
+import { Parser } from 'hot-formula-parser'
 import ComponentHeader from './component-header'
 import ComponentLabel from './component-label'
 
-class FormulaInput extends React.Component {
+class FormulaInput extends Component {
   constructor(props) {
     super(props)
-    this.inputField = React.createRef()
+
+    let newValue = ''
+    if (props.data?.formula && props.variables) {
+      const parser = new Parser()
+      Object.entries(props.variables).forEach(([key, value]) => {
+        const parsedValue = parseFloat(value)
+        if (!Number.isNaN(parsedValue)) {
+          parser.setVariable(key, parsedValue)
+        }
+      })
+      newValue = parser.parse(props.data.formula)?.result || ''
+    }
+
     this.state = {
-      value: this._getValue(props),
+      error: '',
+      formula: props.data?.formula || '',
+      variables: props.variables || {},
+      value: newValue,
     }
+
+    this.handleVariableChange = this.handleVariableChange.bind(this)
   }
 
-  _getValue = (props) => {
-    let computedValue = ''
-    if (props.data && props.data.formula && props.handleFormulaChange) {
-      computedValue = props.handleFormulaChange(props.data.formula) || ''
-    } else {
-      computedValue = props.defaultValue || ''
-    }
-    return computedValue
+  componentDidMount() {
+    this.subscription = this.props.emitter?.addListener(
+      'variableChange',
+      this.handleVariableChange,
+    )
   }
 
-  handleChange = (e) => {
-    const value = e.target.value
-    this.setState({ value })
+  componentWillUnmount() {
+    this.subscription?.remove()
+  }
 
-    // If onElementChange is provided, call it to synchronize changes across the column
-    if (this.props.onElementChange) {
-      // Create updated data object with the new value
-      const updatedData = {
-        ...this.props.data,
-        value: value,
-      }
-
-      // Send it for synchronization across columns
-      this.props.onElementChange(updatedData)
-
-      // Immediately apply changes to this component's data
-      if (this.props.data.dirty === undefined || this.props.data.dirty) {
-        updatedData.dirty = true
-        if (this.props.updateElement) {
-          this.props.updateElement(updatedData)
+  static getDerivedStateFromProps(props, state) {
+    if (
+      props.data.formula !== state.formula ||
+      JSON.stringify(props.variables) !== JSON.stringify(state.variables)
+    ) {
+      if (props.variables) {
+        const parser = new Parser()
+        const newVariables = { ...state.variables, ...props.variables }
+        Object.entries(newVariables).forEach(([key, value]) => {
+          const parsedValue = parseFloat(value)
+          if (!Number.isNaN(parsedValue)) {
+            parser.setVariable(key, parsedValue)
+          }
+        })
+        return {
+          ...state,
+          variables: newVariables,
+          value: parser.parse(props.data.formula)?.result || '',
         }
       }
     }
+
+    return state
+  }
+
+  handleVariableChange(params) {
+    const { formula } = this.state
+    if (!formula) {
+      errors.push(`${this.props.data.label} is invalid!`)
+      return
+    }
+
+    const parser = new Parser()
+    const parsedValue = parseFloat(params.value)
+    let newVariables = { ...this.state.variables }
+    if (!Number.isNaN(parsedValue)) {
+      newVariables = { ...this.state.variables, [params.propKey]: parsedValue }
+      Object.entries(newVariables).forEach(([key, value]) => {
+        if (!Number.isNaN(value)) {
+          parser.setVariable(key, value)
+        }
+      })
+    }
+    const newValue = parser.parse(formula)?.result || ''
+
+    this.setState((prevState) => ({
+      ...prevState,
+      variables: newVariables,
+      value: newValue,
+    }))
   }
 
   render() {
-    const userProperties =
-      this.props.getActiveUserProperties && this.props.getActiveUserProperties()
-
-    const savedEditor = this.props.editor
-    let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
-    }
-
-    const props = {}
-    props.type = 'text'
-    props.className = 'form-control'
-    props.name = this.props.data.field_name
-    props.onChange = this.handleChange
-    props.value = this.state.value
-
-    if (this.props.mutable) {
-      props.defaultValue = this.props.defaultValue
-      props.ref = this.inputField
+    const { error, value } = this.state
+    const inputProps = {
+      type: 'text',
+      className: `form-control ${error ? 'is-invalid' : ''}`,
+      name: this.props.data?.field_name,
+      value,
+      disabled: true,
     }
 
     let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
@@ -73,16 +107,13 @@ class FormulaInput extends React.Component {
       baseClasses += ' alwaysbreak'
     }
 
-    if (this.props.read_only || !isSameEditor) {
-      props.disabled = 'disabled'
-    }
-
     return (
-      <div className={baseClasses}>
+      <div style={{ ...this.props.style }} className={baseClasses}>
         <ComponentHeader {...this.props} />
         <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} />
-          <input {...props} />
+          <input {...inputProps} />
+          {error && <div className="invalid-feedback">{error}</div>}
         </div>
       </div>
     )
