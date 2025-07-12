@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import { Component } from 'react'
 import { Parser } from 'hot-formula-parser'
 import ComponentHeader from './component-header'
 import ComponentLabel from './component-label'
@@ -16,7 +16,8 @@ class FormulaInput extends Component {
           parser.setVariable(key, parsedValue)
         }
       })
-      newValue = parser.parse(props.data.formula)?.result || ''
+      const parseResult = parser.parse(props.data.formula)
+      newValue = parseResult?.result || ''
     }
 
     this.state = {
@@ -54,10 +55,11 @@ class FormulaInput extends Component {
             parser.setVariable(key, parsedValue)
           }
         })
+        const parseResult = parser.parse(props.data.formula)
         return {
           ...state,
           variables: newVariables,
-          value: parser.parse(props.data.formula)?.result || '',
+          value: parseResult?.result || '',
         }
       }
     }
@@ -73,17 +75,47 @@ class FormulaInput extends Component {
     }
 
     const parser = new Parser()
-    const parsedValue = parseFloat(params.value)
     let newVariables = { ...this.state.variables }
-    if (!Number.isNaN(parsedValue)) {
-      newVariables = { ...this.state.variables, [params.propKey]: parsedValue }
-      Object.entries(newVariables).forEach(([key, value]) => {
-        if (!Number.isNaN(value)) {
-          parser.setVariable(key, value)
+
+    // Handle empty/cleared values
+    if (params.value === '' || params.value === null || params.value === undefined) {
+      // Remove the variable or set it to 0
+      newVariables = { ...this.state.variables, [params.propKey]: 0 }
+    } else {
+      let processedValue = params.value
+
+      // Check if the value ends with % and convert to decimal
+      if (typeof processedValue === 'string' && processedValue.trim().endsWith('%')) {
+        const numericPart = processedValue.trim().slice(0, -1) // Remove the % symbol
+        const parsedValue = parseFloat(numericPart)
+        if (!Number.isNaN(parsedValue)) {
+          newVariables = { ...this.state.variables, [params.propKey]: parsedValue / 100 }
+        } else {
+          newVariables = { ...this.state.variables, [params.propKey]: 0 }
         }
-      })
+      } else {
+        const parsedValue = parseFloat(processedValue)
+        if (!Number.isNaN(parsedValue)) {
+          newVariables = { ...this.state.variables, [params.propKey]: parsedValue }
+        } else {
+          // If it's not a valid number, set to 0
+          newVariables = { ...this.state.variables, [params.propKey]: 0 }
+        }
+      }
     }
-    const newValue = parser.parse(formula)?.result || ''
+
+    // Set all variables in the parser
+    Object.entries(newVariables).forEach(([key, value]) => {
+      const numValue = parseFloat(value)
+      if (!Number.isNaN(numValue)) {
+        parser.setVariable(key, numValue)
+      } else {
+        parser.setVariable(key, 0)
+      }
+    })
+
+    const parseResult = parser.parse(formula)
+    const newValue = parseResult?.result || 0
 
     this.setState((prevState) => ({
       ...prevState,
