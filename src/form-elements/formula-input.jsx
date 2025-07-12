@@ -1,4 +1,4 @@
-import { Component } from 'react'
+import React, { Component } from 'react'
 import { Parser } from 'hot-formula-parser'
 import ComponentHeader from './component-header'
 import ComponentLabel from './component-label'
