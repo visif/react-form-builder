@@ -88,27 +88,15 @@ class ReactFormBuilder extends React.Component {
                 getDataSource={this.props.getDataSource}
                 getFormSource={this.props.getFormSource}
                 getFormContent={this.props.getFormContent}
-                getActiveUserProperties={() => {
-                  return {
-                    name: 'test',
-                    userId: 'id001',
-                  }
-                }}
-                onUploadFile={(file) => {
-                  return `${file.name}-${Math.random() * 10000000}`
-                }}
-                onUploadImage={(file) => {
-                  return `path/${file.name}-${Math.random() * 10000000}`
-                }}
-                onDownloadFile={(file) => {
-                  return `download_${file.name}-${Math.random() * 10000000}`
-                }}
+                getActiveUserProperties={this.props.getActiveUserProperties}
+                onUploadFile={this.props.onUploadFile}
+                onUploadImage={this.props.onUploadImage}
+                onDownloadFile={this.props.onDownloadFile}
               />
             </div>
             <div
               style={{
                 width: '250px',
-                position: 'fixed',
                 top: 0,
                 right: 0,
                 bottom: 0,
@@ -137,4 +125,3 @@ FormBuilders.Registry = Registry
 export default FormBuilders
 
 export { ReactFormBuilder, ReactFormGenerator, store as ElementStore, Registry }
-

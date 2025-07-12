@@ -212,6 +212,7 @@ export default class Toolbar extends React.Component {
         icon: 'fas fa-calculator',
         field_name: 'formula_input_',
         formula: '',
+        formularKey: '',
       },
       {
         key: 'NumberInput',

@@ -82,7 +82,7 @@ class FormulaInput extends Component {
       // Remove the variable or set it to 0
       newVariables = { ...this.state.variables, [params.propKey]: 0 }
     } else {
-      let processedValue = params.value
+      const processedValue = params.value
 
       // Check if the value ends with % and convert to decimal
       if (typeof processedValue === 'string' && processedValue.trim().endsWith('%')) {
@@ -116,35 +116,43 @@ class FormulaInput extends Component {
 
     const parseResult = parser.parse(formula)
     const newValue = parseResult?.result || 0
+    const previousValue = this.state.value
 
     this.setState((prevState) => ({
       ...prevState,
       variables: newVariables,
       value: newValue,
-    }))
+    }), () => {
+      // Dispatch variableChange event after state is updated, only if value changed
+      const { data, handleChange } = this.props
+      const { formularKey } = data
+      if (formularKey && handleChange && previousValue !== newValue) {
+        handleChange(formularKey, newValue)
+      }
+    })
+  }
+
+  // Format the value for display
+  formatNumber = (num) => {
+    if (num === '' || num === null || num === undefined || Number.isNaN(num)) {
+      return '0.00'
+    }
+
+    const numValue = parseFloat(num)
+    return numValue.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
   }
 
   render() {
     const { error, value } = this.state
 
-    // Format the value for display
-    const formatNumber = (num) => {
-      if (num === '' || num === null || num === undefined || Number.isNaN(num)) {
-        return '0.00'
-      }
-
-      const numValue = parseFloat(num)
-      return numValue.toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      })
-    }
-
     const inputProps = {
       type: 'text',
       className: `form-control ${error ? 'is-invalid' : ''}`,
       name: this.props.data?.field_name,
-      value: formatNumber(value),
+      value: this.formatNumber(value),
       disabled: true,
     }
 
