@@ -214,8 +214,19 @@ class NumberInput extends React.Component {
     super(props)
     this.inputField = React.createRef()
     this.handleChange = this.handleChange.bind(this)
+    this.handleKeyPress = this.handleKeyPress.bind(this)
     this.state = {
       value: props.defaultValue || '',
+    }
+  }
+
+  handleKeyPress(e) {
+    // Allow: numbers, decimal point, minus sign, plus sign, basic math operators, and percentage
+    const allowedChars = /[0-9.\-+*/()=% ]/
+    const char = String.fromCharCode(e.which)
+
+    if (!allowedChars.test(char) && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault()
     }
   }
 
@@ -265,6 +276,7 @@ class NumberInput extends React.Component {
     props.className = 'form-control'
     props.name = this.props.data.field_name
     props.onChange = this.handleChange
+    props.onKeyPress = this.handleKeyPress
     props.value = this.state.value
 
     if (this.props.mutable) {
