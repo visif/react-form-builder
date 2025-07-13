@@ -70,7 +70,8 @@ class FormulaInput extends Component {
   handleVariableChange(params) {
     const { formula } = this.state
     if (!formula) {
-      errors.push(`${this.props.data.label} is invalid!`)
+      // Fix: Remove the undefined 'errors' variable
+      console.error(`${this.props.data.label} is invalid!`)
       return
     }
 
@@ -123,10 +124,10 @@ class FormulaInput extends Component {
       variables: newVariables,
       value: newValue,
     }), () => {
-      // Dispatch variableChange event after state is updated, only if value changed
+      // Fix: Only dispatch if this component's value changed AND it's not from its own formularKey
       const { data, handleChange } = this.props
       const { formularKey } = data
-      if (formularKey && handleChange && previousValue !== newValue) {
+      if (formularKey && handleChange && previousValue !== newValue && params.propKey !== formularKey) {
         handleChange(formularKey, newValue)
       }
     })
