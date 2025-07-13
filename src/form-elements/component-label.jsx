@@ -36,7 +36,7 @@ const ComponentLabel = (props) => {
     !props.read_only
 
   let labelText = myxss.process(props.data.label)
-  if (props.data.formularKey) {
+  if (props.data.formularKey && props.preview) {
     labelText = `${labelText} (${props.data.formularKey})`
   }
 
