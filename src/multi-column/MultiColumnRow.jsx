@@ -26,6 +26,20 @@ const MultiColumnRow = (props) => {
   // Check if row labels are defined in data
   const hasRowLabels = Array.isArray(data.rowLabels) && data.rowLabels.length > 0
 
+  // Calculate column widths once for the entire component
+  const columnWidths = data.columns ? (() => {
+    const totalWidth = data.columns.reduce((sum, col) => {
+      const width = Number(col.width) || 1
+      return sum + width
+    }, 0)
+    const widths = data.columns.map(column => {
+      const width = Number(column.width) || 1
+      return (width / totalWidth) * 100
+    })
+
+    return widths
+  })() : []
+
   // Function to synchronize changes across a column
   const syncColumnChanges = (rowIndex, columnIndex, elementType, changeData) => {
     // Only sync for supported element types
@@ -284,7 +298,7 @@ const MultiColumnRow = (props) => {
       <ComponentHeader {...props} />
       <div>
         <ComponentLabel {...props} />
-        <table className="table table-bordered" style={{ borderCollapse: 'collapse' }}>
+        <table className="table table-bordered" style={{ borderCollapse: 'collapse', tableLayout: 'fixed', width: '100%' }}>
           {data.columns && (
             <thead>
               <tr>
@@ -312,6 +326,11 @@ const MultiColumnRow = (props) => {
                       backgroundColor: '#e9ecef',
                       borderBottom: '2px solid #dee2e6',
                       padding: '10px 8px',
+                      width: `${columnWidths[columnIndex]}%`,
+                      maxWidth: `${columnWidths[columnIndex]}%`,
+                      minWidth: `${columnWidths[columnIndex]}%`,
+                      boxSizing: 'border-box',
+                      overflow: 'hidden',
                     }}
                   >
                     {column.text}
@@ -338,34 +357,54 @@ const MultiColumnRow = (props) => {
                     {data.rowLabels[rowIndex] ? data.rowLabels[rowIndex].text : ''}
                   </td>
                 )}
-                {row.map((item, columnIndex) => (
-                  <td
-                    key={`${rowIndex}_${columnIndex}_${item || '_'}`}
-                    style={{ paddingLeft: '8px', paddingRight: '8px' }}
-                  >
-                    {controls ? (
-                      controls[rowIndex]?.[columnIndex]
-                    ) : (
-                      <Dustbin
-                        style={{ width: '100%' }}
-                        data={data}
-                        accepts={accepts}
-                        items={childItems[rowIndex]}
-                        row={rowIndex}
-                        col={columnIndex}
-                        parentIndex={index}
-                        editModeOn={editModeOn}
-                        _onDestroy={() => removeChild(data, rowIndex, columnIndex)}
-                        getDataById={getDataById}
-                        setAsChild={setAsChild}
-                        seq={seq}
-                        syncColumnChanges={syncColumnChanges}
-                        updateElement={updateElement}
-                        {...props}
-                      />
-                    )}
-                  </td>
-                ))}
+                {row.map((item, columnIndex) => {
+                  // Get column width with proper fallback handling
+                  let columnWidth = 100 / row.length // Default: equal distribution
+
+                  if (data.columns && columnWidths.length > 0 && columnIndex < columnWidths.length) {
+                    const calculatedWidth = columnWidths[columnIndex]
+                    if (!Number.isNaN(calculatedWidth) && calculatedWidth > 0) {
+                      columnWidth = calculatedWidth
+                    }
+                  }
+
+                  return (
+                    <td
+                      key={`${rowIndex}_${columnIndex}_${item || '_'}`}
+                      style={{
+                        paddingLeft: '8px',
+                        paddingRight: '8px',
+                        width: `${columnWidth}%`,
+                        maxWidth: `${columnWidth}%`,
+                        minWidth: `${columnWidth}%`,
+                        boxSizing: 'border-box',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {controls ? (
+                        controls[rowIndex]?.[columnIndex]
+                      ) : (
+                        <Dustbin
+                          style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}
+                          data={data}
+                          accepts={accepts}
+                          items={childItems[rowIndex]}
+                          row={rowIndex}
+                          col={columnIndex}
+                          parentIndex={index}
+                          editModeOn={editModeOn}
+                          _onDestroy={() => removeChild(data, rowIndex, columnIndex)}
+                          getDataById={getDataById}
+                          setAsChild={setAsChild}
+                          seq={seq}
+                          syncColumnChanges={syncColumnChanges}
+                          updateElement={updateElement}
+                          {...props}
+                        />
+                      )}
+                    </td>
+                  )
+                })}
               </tr>
             ))}
           </tbody>
@@ -389,8 +428,7 @@ const MultiColumnRow = (props) => {
  * - Applies the provided `class_name` or falls back to `defaultClassName`.
  */
 const createColumnRow =
-  (defaultClassName, numberOfColumns, numberOfRows = 1) =>
-  ({ data = {}, class_name, ...rest }) => {
+  (defaultClassName, numberOfColumns, numberOfRows = 1) => ({ data = {}, class_name, ...rest }) => {
     const className = `${class_name || defaultClassName} mb-2`
     const rows = data.rows || numberOfRows
 
@@ -412,8 +450,7 @@ const createColumnRow =
  * Uses the same pattern as createColumnRow for consistency.
  */
 const createDynamicColumnRow =
-  () =>
-  ({ data = {}, class_name, ...rest }) => {
+  () => ({ data = {}, class_name, ...rest }) => {
     const rows = Number(data.rows) || 1
     const columns = data.columns?.length || 2
     const defaultClassName = `col-md-${Math.floor(12 / columns)}`
