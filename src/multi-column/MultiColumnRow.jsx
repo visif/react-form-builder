@@ -293,7 +293,7 @@ const MultiColumnRow = (props) => {
                   <th
                     className="rfb-table-row-header-cell"
                     style={{
-                      width: '150px',
+                      width: 'var(--rfb-table-row-header-width, 150px)',
                       fontWeight: 'var(--rfb-table-header-font-weight, bold)',
                       fontFamily: 'var(--rfb-table-header-font-family, inherit)',
                       backgroundColor: '#e9ecef',
