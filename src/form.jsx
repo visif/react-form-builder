@@ -154,6 +154,8 @@ export default class ReactForm extends React.Component {
     } else if (item.element === 'FormulaInput') {
       $item.value = {
         formula: ref.state.formula,
+        value: ref.state.value,
+        variables: ref.state.variables,
       }
     } else if (ref && ref.inputField && ref.inputField.current) {
       $item = ReactDOM.findDOMNode(ref.inputField.current)
