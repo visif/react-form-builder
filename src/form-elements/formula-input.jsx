@@ -42,6 +42,19 @@ class FormulaInput extends Component {
   }
 
   static getDerivedStateFromProps(props, state) {
+    // Check if defaultValue exists and is different from current state
+    if (props.defaultValue && props.defaultValue.value !== state.value) {
+      // If defaultValue has a specific value, use it instead of recalculating
+      if (props.defaultValue.value !== '' && props.defaultValue.value !== null && props.defaultValue.value !== undefined) {
+        return {
+          ...state,
+          formula: props.defaultValue.formula || state.formula,
+          variables: props.defaultValue.variables || state.variables,
+          value: props.defaultValue.value,
+        }
+      }
+    }
+
     if (
       props.data.formula !== state.formula ||
       JSON.stringify(props.variables) !== JSON.stringify(state.variables)

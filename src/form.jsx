@@ -76,8 +76,12 @@ export default class ReactForm extends React.Component {
     const formularItems = items.filter((item) => !!item.formularKey)
     const variables = {}
     formularItems.forEach((item) => {
-      const value = ansData[item.field_name]
+      let value = ansData[item.field_name]
       if (value !== undefined) {
+        // Check if the value is an object and has a value property
+        if (typeof value === 'object' && value !== null && value.hasOwnProperty('value')) {
+          value = value.value
+        }
         variables[item.formularKey] = value
       }
     })
@@ -366,15 +370,6 @@ export default class ReactForm extends React.Component {
   handleSubmit(e) {
     e.preventDefault()
 
-    // let errors = [];
-    // if (!this.props.skip_validations) {
-    //   errors = this.validateForm();
-    //   // Publish errors, if any.
-    //   this.emitter.emit('formValidation', errors);
-    // }
-
-    // // Only submit if there are no errors.
-    // if (errors.length < 1) {
     const { onSubmit } = this.props
 
     // submit with no form
