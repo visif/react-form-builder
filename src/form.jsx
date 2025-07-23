@@ -777,7 +777,7 @@ export default class ReactForm extends React.Component {
                 onDownloadFile={this.props.onDownloadFile}
                 editor={this._getEditor(item)}
                 getActiveUserProperties={this.props.getActiveUserProperties}
-                parentElementId={item.props.parentElementId}
+                parentElementId={this.props.parentElementId}
               />
             )
           case 'ImageUpload':
