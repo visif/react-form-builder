@@ -79,7 +79,11 @@ export default class ReactForm extends React.Component {
       let value = ansData[item.field_name]
       if (value !== undefined) {
         // Check if the value is an object and has a value property
-        if (typeof value === 'object' && value !== null && value.hasOwnProperty('value')) {
+        if (
+          typeof value === 'object' &&
+          value !== null &&
+          value.hasOwnProperty('value')
+        ) {
           value = value.value
         }
         variables[item.formularKey] = value
@@ -384,7 +388,7 @@ export default class ReactForm extends React.Component {
       // Only submit if there are no errors.
       if (errors.length < 1) {
         const data = this._collectFormData(this.props.data)
-        onSubmit(data)
+        onSubmit(data, this.props.data.id)
       }
     } else {
       // incase no submit function provided => go to form submit
