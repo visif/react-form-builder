@@ -388,7 +388,7 @@ export default class ReactForm extends React.Component {
       // Only submit if there are no errors.
       if (errors.length < 1) {
         const data = this._collectFormData(this.props.data)
-        onSubmit(data, this.props.data.id)
+        onSubmit(data, this.props.parentElementId)
       }
     } else {
       // incase no submit function provided => go to form submit
@@ -777,6 +777,7 @@ export default class ReactForm extends React.Component {
                 onDownloadFile={this.props.onDownloadFile}
                 editor={this._getEditor(item)}
                 getActiveUserProperties={this.props.getActiveUserProperties}
+                parentElementId={item.props.parentElementId}
               />
             )
           case 'ImageUpload':

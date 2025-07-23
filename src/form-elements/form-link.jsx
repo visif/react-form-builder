@@ -20,6 +20,7 @@ class FormLink extends React.Component {
       isShowingList: false,
       getFormSource: props.getFormSource,
       loading: true,
+      parentElementId: 0,
     }
   }
 
@@ -220,7 +221,8 @@ class FormLink extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
+      isSameEditor =
+        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
     let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
@@ -332,4 +334,3 @@ class FormLink extends React.Component {
 }
 
 export default FormLink
-
