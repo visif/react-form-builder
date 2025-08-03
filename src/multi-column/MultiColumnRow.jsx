@@ -127,9 +127,9 @@ const MultiColumnRow = (props) => {
                         paddingRight: '8px',
                         width: `${columnWidth}%`,
                         maxWidth: `${columnWidth}%`,
-                        minWidth: `${columnWidth}%`,
+                        // minWidth: `${columnWidth}%`,
                         boxSizing: 'border-box',
-                        overflow: 'hidden',
+                        // overflow: 'hidden',
                       }}
                     >
                       {controls ? (
