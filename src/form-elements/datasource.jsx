@@ -7,6 +7,8 @@ class DataSource extends React.Component {
     super(props)
     this.inputField = React.createRef()
     this.mounted = false
+    this.syncInProgress = false // Flag to prevent infinite sync loops
+    this.lastSyncTimestamp = 0 // Timestamp to prevent rapid sync cycles
 
     const defaultValue = props.defaultValue || {}
 
@@ -26,20 +28,6 @@ class DataSource extends React.Component {
   async componentDidMount() {
     this.mounted = true
     await this.loadDataSource()
-
-    // If this is in a DynamicColumnRow and we have onElementChange,
-    // notify parent that this component is now initialized
-    if (this.props.data.parentId && this.props.onElementChange) {
-      // Send initialization status to parent
-      this.props.onElementChange({
-        ...this.props.data,
-        element: 'DataSource',
-        initialized: true,
-        sourceType: this.props.data.sourceType,
-        formSource: this.props.data.formSource,
-      })
-    }
-
     this.checkForValue()
   }
 
@@ -59,6 +47,9 @@ class DataSource extends React.Component {
             selectedItem: defaultValue.selectedItem,
             defaultSelectedItem: defaultValue.selectedItem,
             loading: false,
+          }, () => {
+            // Only notify parent after data is fully loaded and state is set
+            this.notifyParentOfInitialization()
           })
           if (!this.state.selectedItem && attempt < maxRetries) {
             this.checkForValue(attempt + 1)
@@ -66,7 +57,26 @@ class DataSource extends React.Component {
         }
       }, 500)
     } else {
-      this.setState({ loading: false })
+      this.setState({ loading: false }, () => {
+        // Only notify parent after data is fully loaded and state is set
+        this.notifyParentOfInitialization()
+      })
+    }
+  }
+
+  notifyParentOfInitialization = () => {
+    // Only notify parent once the component is fully initialized and not during sync operations
+    if (this.props.data.parentId && this.props.onElementChange && !this.state.loading && !this.syncInProgress) {
+      this.props.onElementChange({
+        ...this.props.data,
+        element: 'DataSource',
+        initialized: true,
+        sourceType: this.props.data.sourceType,
+        formSource: this.props.data.formSource,
+        selectedItem: this.state.selectedItem,
+        value: this.state.searchText,
+        isInitialSync: true, // Flag to indicate this is initial synchronization
+      })
     }
   }
 
@@ -93,6 +103,16 @@ class DataSource extends React.Component {
   }
 
   static getDerivedStateFromProps(props, state) {
+    // Handle sync updates from other DataSource components in the same column
+    if (props.data.isSyncUpdate && props.data.selectedItem &&
+        JSON.stringify(props.data.selectedItem) !== JSON.stringify(state.selectedItem)) {
+      return {
+        searchText: props.data.value || props.data.selectedItem.name || '',
+        selectedItem: props.data.selectedItem,
+        defaultSelectedItem: props.data.selectedItem,
+      }
+    }
+
     if (
       props.defaultValue &&
       JSON.stringify(props.defaultValue.selectedItem) !==
@@ -106,6 +126,18 @@ class DataSource extends React.Component {
       }
     }
     return null
+  }
+
+  componentDidUpdate(prevProps) {
+    // Clear the sync flag after processing
+    if (this.props.data.isSyncUpdate && prevProps.data.isSyncUpdate !== this.props.data.isSyncUpdate) {
+      // Clear the flag to prevent further processing
+      const updatedData = { ...this.props.data }
+      delete updatedData.isSyncUpdate
+      if (this.props.updateElement) {
+        this.props.updateElement(updatedData)
+      }
+    }
   }
 
   handleInputFocus = () => {
@@ -123,9 +155,7 @@ class DataSource extends React.Component {
   }
 
   debounceOnChange = (value) => {
-    const matchData = this.state.sourceList.filter((item) =>
-      `${item.name}`.toLocaleLowerCase().includes(`${value}`.toLocaleLowerCase())
-    )
+    const matchData = this.state.sourceList.filter((item) => `${item.name}`.toLocaleLowerCase().includes(`${value}`.toLocaleLowerCase()))
     this.setState({
       searchText: value,
       matchedList: matchData,
@@ -140,21 +170,55 @@ class DataSource extends React.Component {
   }
 
   handleSelectItem = (item) => {
+    const currentTime = Date.now()
+
+    // Prevent sync loops during programmatic updates or rapid successive calls
+    if (this.syncInProgress || currentTime - this.lastSyncTimestamp < 200) {
+      this.setState({
+        selectedItem: item,
+        searchText: item.name,
+        isShowingList: false,
+      })
+      return
+    }
+
     this.setState({
       selectedItem: item,
       searchText: item.name,
       isShowingList: false,
     })
 
-    // If this component is in a DynamicColumnRow and we have onElementChange,
-    // notify parent about the selection so it can be synced to other rows
-    if (this.props.data.parentId && this.props.onElementChange) {
+    // Only notify parent about user-initiated selections, not sync updates
+    if (this.props.data.parentId && this.props.onElementChange && !this.state.loading) {
+      this.lastSyncTimestamp = currentTime
       this.props.onElementChange({
         ...this.props.data,
         element: 'DataSource',
         selectedItem: item,
         value: item.name,
+        isUserSelection: true, // Flag to indicate this is a user selection
+        timestamp: currentTime, // Add timestamp to track changes
       })
+    }
+  }
+
+  // Method to handle sync updates from parent without triggering more sync events
+  updateFromSync = (syncData) => {
+    this.syncInProgress = true
+
+    if (syncData.selectedItem && syncData.selectedItem !== this.state.selectedItem) {
+      this.setState({
+        selectedItem: syncData.selectedItem,
+        searchText: syncData.selectedItem.name || syncData.value || '',
+        isShowingList: false,
+      }, () => {
+        // Reset sync flag after state update
+        setTimeout(() => {
+          this.syncInProgress = false
+        }, 100)
+      })
+    } else {
+      this.syncInProgress = false
     }
   }
 
@@ -170,15 +234,6 @@ class DataSource extends React.Component {
     }
 
     // Add debugging
-    console.log('DataSource Debug:', {
-      userProperties,
-      savedEditor,
-      isSameEditor,
-      hasDCCRole: userProperties?.hasDCCRole,
-      readOnly: this.props.read_only,
-      loading: this.state.loading,
-      finalDisabled: this.props.read_only || !isSameEditor || this.state.loading
-    });
 
     const props = {
       type: 'text',
@@ -221,7 +276,7 @@ class DataSource extends React.Component {
             <div
               style={{
                 position: 'absolute',
-                zIndex: 99,
+                zIndex: 199,
                 top: '100%',
                 left: 0,
                 right: 0,

@@ -560,6 +560,17 @@ const Preview = (props) => {
       return
     }
 
+    // Skip if this is an initial sync to prevent loops
+    if (changedElement.isInitialSync) {
+      return
+    }
+
+    // Skip if this change happened very recently (prevent rapid sync cycles)
+    const currentTime = Date.now()
+    if (changedElement.timestamp && currentTime - changedElement.timestamp < 100) {
+      return
+    }
+
     // Get the parent element (the row)
     const parentElement = getDataById(changedElement.parentId)
     if (
@@ -586,8 +597,14 @@ const Preview = (props) => {
       changedElement.options &&
       changedElement.options.some((opt) => opt.checked)
 
+    // For DataSource, only sync user selections, not initialization
+    const isDataSourceUserSelection =
+      changedElement.element === 'DataSource' &&
+      changedElement.isUserSelection === true
+
     // If this is just a selection change in a form element, don't sync it to other rows
-    if (isSelectionChange) {
+    // Exception: DataSource user selections should be synced
+    if (isSelectionChange && !isDataSourceUserSelection) {
       return
     }
 
@@ -662,9 +679,8 @@ const Preview = (props) => {
             if (
               newOptions.length !== itemData.options.length ||
               newOptions.some(
-                (opt, i) =>
-                  opt.text !== itemData.options[i]?.text ||
-                  opt.value !== itemData.options[i]?.value
+                (opt, i) => opt.text !== itemData.options[i]?.text ||
+                  opt.value !== itemData.options[i]?.value,
               )
             ) {
               updatedItem.options = newOptions
@@ -679,7 +695,7 @@ const Preview = (props) => {
           }
 
           // Sync capability flags but don't sync individual option selections
-          ;['canHaveOptionCorrect', 'canHaveOptionValue', 'canHaveInfo'].forEach(
+          ['canHaveOptionCorrect', 'canHaveOptionValue', 'canHaveInfo'].forEach(
             (prop) => {
               if (
                 changedElement[prop] !== undefined &&
@@ -688,7 +704,7 @@ const Preview = (props) => {
                 updatedItem[prop] = changedElement[prop]
                 changed = true
               }
-            }
+            },
           )
           break
         case 'TextInput':
@@ -705,7 +721,7 @@ const Preview = (props) => {
           break
         case 'DatePicker':
           // Sync date-specific properties
-          ;['showTimeSelect', 'showTimeSelectOnly', 'defaultToday'].forEach((prop) => {
+          ['showTimeSelect', 'showTimeSelectOnly', 'defaultToday'].forEach((prop) => {
             if (
               changedElement[prop] !== undefined &&
               changedElement[prop] !== itemData[prop]
@@ -718,7 +734,7 @@ const Preview = (props) => {
 
         case 'Range':
           // Sync range-specific properties
-          ;[
+          [
             'min_value',
             'max_value',
             'step',
@@ -744,7 +760,7 @@ const Preview = (props) => {
           changed = true
           break
         case 'Image':
-          ;['center', 'width', 'height'].forEach((prop) => {
+          ['center', 'width', 'height'].forEach((prop) => {
             if (
               changedElement[prop] !== undefined &&
               changedElement[prop] !== itemData[prop]
@@ -758,7 +774,7 @@ const Preview = (props) => {
         case 'Paragraph':
         case 'Header':
           // Sync text styling properties
-          ;['bold', 'italic', 'content'].forEach((prop) => {
+          ['bold', 'italic', 'content'].forEach((prop) => {
             if (
               changedElement[prop] !== undefined &&
               changedElement[prop] !== itemData[prop]
@@ -771,7 +787,7 @@ const Preview = (props) => {
 
         case 'FormulaInput':
           // Sync formula properties
-          ;['formula', 'formularKey'].forEach((prop) => {
+          ['formula', 'formularKey'].forEach((prop) => {
             if (
               changedElement[prop] !== undefined &&
               changedElement[prop] !== itemData[prop]
@@ -780,6 +796,30 @@ const Preview = (props) => {
               changed = true
             }
           })
+          break
+
+        case 'DataSource':
+          // For DataSource, only sync structural properties and user selections
+          // but handle them carefully to prevent infinite loops
+          if (changedElement.isUserSelection) {
+            // If this is a user selection, update the target element's state directly
+            // but mark it as a sync operation to prevent cascading updates
+            updatedItem.selectedItem = changedElement.selectedItem
+            updatedItem.value = changedElement.value
+            updatedItem.isSyncUpdate = true // Flag to prevent infinite loops
+            changed = true
+          } else {
+            // Sync structural properties like sourceType, formSource, etc.
+            ['sourceType', 'formSource'].forEach((prop) => {
+              if (
+                changedElement[prop] !== undefined &&
+                changedElement[prop] !== itemData[prop]
+              ) {
+                updatedItem[prop] = changedElement[prop]
+                changed = true
+              }
+            })
+          }
           break
 
         default:

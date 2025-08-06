@@ -9,7 +9,6 @@ import Registry from '../stores/registry'
 const dustbinStyles = (backgroundColor) => ({
   border: '1px solid rgba(0,0,0,0.2)',
   minHeight: '2rem',
-  minWidth: '12rem',
   width: '100%',
   backgroundColor,
   padding: 0,
@@ -91,7 +90,7 @@ const Dustbin = React.forwardRef(
       updateElement,
       ...rest
     },
-    ref
+    ref,
   ) => {
     const item = getDataById(items[col])
 
@@ -107,7 +106,7 @@ const Dustbin = React.forwardRef(
           }
         },
       }),
-      [setAsChild, col, rest.data]
+      [setAsChild, col, rest.data],
     )
 
     // Determine background color based on drag state
@@ -123,7 +122,7 @@ const Dustbin = React.forwardRef(
     })
 
     return connectDropTarget(<div style={dustbinStyles(backgroundColor)}>{element}</div>)
-  }
+  },
 )
 
 // Drop Target Configuration
@@ -146,4 +145,3 @@ const collect = (connect, monitor) => ({
 })
 
 export default DropTarget((props) => props.accepts, dropTargetSpec, collect)(Dustbin)
-
