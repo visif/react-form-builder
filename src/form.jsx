@@ -79,7 +79,28 @@ export default class ReactForm extends React.Component {
       let value = ansData[item.field_name]
       if (value !== undefined) {
         // Check if the value is an object and has a value property
-        if (
+        if (Array.isArray(value) && value.length > 0) {
+          // If value is an array, get the first item and check if it has a value property
+          const firstItem = value[0]
+          if (typeof firstItem === 'object' && firstItem !== null && firstItem.hasOwnProperty('value')) {
+            // Find the item in the items array that matches the field_name
+            const matchedItem = items.find(item => item.field_name === item.field_name)
+            if (matchedItem && matchedItem.options) {
+              // Find the option where the key matches the firstItem value
+              const matchedOption = matchedItem.options.find(option => option.key === firstItem.key)
+              if (matchedOption) {
+                value = matchedOption.value || matchedOption.text || firstItem.value
+              } else {
+                value = firstItem.value
+              }
+            } else {
+              value = firstItem.value
+            }
+          }
+          if (typeof firstItem === 'object' && firstItem !== null && firstItem.hasOwnProperty('value')) {
+            value = firstItem.value
+          }
+        } else if (
           typeof value === 'object' &&
           value !== null &&
           value.hasOwnProperty('value')
