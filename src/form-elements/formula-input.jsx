@@ -25,9 +25,11 @@ class FormulaInput extends Component {
       formula: props.data?.formula || '',
       variables: props.variables || {},
       value: newValue,
+      isUpdating: false,
     }
 
     this.handleVariableChange = this.handleVariableChange.bind(this)
+    this.updateTimeout = null
   }
 
   componentDidMount() {
@@ -39,6 +41,9 @@ class FormulaInput extends Component {
 
   componentWillUnmount() {
     this.subscription?.remove()
+    if (this.updateTimeout) {
+      clearTimeout(this.updateTimeout)
+    }
   }
 
   static getDerivedStateFromProps(props, state) {
@@ -83,67 +88,80 @@ class FormulaInput extends Component {
   handleVariableChange(params) {
     const { formula } = this.state
     if (!formula) {
-      // Fix: Remove the undefined 'errors' variable
       console.error(`${this.props.data.label} is invalid!`)
       return
     }
 
-    const parser = new Parser()
-    let newVariables = { ...this.state.variables }
-
-    // Handle empty/cleared values
-    if (params.value === '' || params.value === null || params.value === undefined) {
-      // Remove the variable or set it to 0
-      newVariables = { ...this.state.variables, [params.propKey]: 0 }
-    } else {
-      const processedValue = params.value
-
-      // Check if the value ends with % and convert to decimal
-      if (typeof processedValue === 'string' && processedValue.trim().endsWith('%')) {
-        const numericPart = processedValue.trim().slice(0, -1) // Remove the % symbol
-        const parsedValue = parseFloat(numericPart)
-        if (!Number.isNaN(parsedValue)) {
-          newVariables = { ...this.state.variables, [params.propKey]: parsedValue / 100 }
-        } else {
-          newVariables = { ...this.state.variables, [params.propKey]: 0 }
-        }
-      } else {
-        const parsedValue = parseFloat(processedValue)
-        if (!Number.isNaN(parsedValue)) {
-          newVariables = { ...this.state.variables, [params.propKey]: parsedValue }
-        } else {
-          // If it's not a valid number, set to 0
-          newVariables = { ...this.state.variables, [params.propKey]: 0 }
-        }
-      }
+    if (this.state.isUpdating) {
+      return
     }
 
-    // Set all variables in the parser
-    Object.entries(newVariables).forEach(([key, value]) => {
-      const numValue = parseFloat(value)
-      if (!Number.isNaN(numValue)) {
-        parser.setVariable(key, numValue)
-      } else {
-        parser.setVariable(key, 0)
-      }
-    })
+    if (this.updateTimeout) {
+      clearTimeout(this.updateTimeout)
+    }
 
-    const parseResult = parser.parse(formula)
-    const newValue = parseResult?.result || 0
-    const previousValue = this.state.value
+    this.updateTimeout = setTimeout(() => {
+      this.setState({ isUpdating: true }, () => {
+        const parser = new Parser()
+        let newVariables = { ...this.state.variables }
 
-    this.setState((prevState) => ({
-      ...prevState,
-      variables: newVariables,
-      value: newValue,
-    }), () => {
-      // Fix: Only dispatch if this component's value changed AND it's not from its own formularKey
-      const { data, handleChange } = this.props
-      const { formularKey } = data
-      if (formularKey && handleChange && previousValue !== newValue && params.propKey !== formularKey) {
-        handleChange(formularKey, newValue)
-      }
-    })
+        // Handle empty/cleared values
+        if (params.value === '' || params.value === null || params.value === undefined) {
+          newVariables = { ...this.state.variables, [params.propKey]: 0 }
+        } else {
+          const processedValue = params.value
+
+          // Check if the value ends with % and convert to decimal
+          if (typeof processedValue === 'string' && processedValue.trim().endsWith('%')) {
+            const numericPart = processedValue.trim().slice(0, -1)
+            const parsedValue = parseFloat(numericPart)
+            if (!Number.isNaN(parsedValue)) {
+              newVariables = { ...this.state.variables, [params.propKey]: parsedValue / 100 }
+            } else {
+              newVariables = { ...this.state.variables, [params.propKey]: 0 }
+            }
+          } else {
+            const parsedValue = parseFloat(processedValue)
+            if (!Number.isNaN(parsedValue)) {
+              newVariables = { ...this.state.variables, [params.propKey]: parsedValue }
+            } else {
+              newVariables = { ...this.state.variables, [params.propKey]: 0 }
+            }
+          }
+        }
+
+        // Set all variables in the parser
+        Object.entries(newVariables).forEach(([key, value]) => {
+          const numValue = parseFloat(value)
+          if (!Number.isNaN(numValue)) {
+            parser.setVariable(key, numValue)
+          } else {
+            parser.setVariable(key, 0)
+          }
+        })
+
+        const parseResult = parser.parse(formula)
+        const newValue = parseResult?.result || 0
+        const previousValue = this.state.value
+
+        this.setState((prevState) => ({
+          ...prevState,
+          variables: newVariables,
+          value: newValue,
+          isUpdating: false,
+        }), () => {
+          const { data, handleChange } = this.props
+          const { formularKey } = data
+          const valueChanged = Math.abs(previousValue - newValue) > 0.0001
+
+          if (formularKey && handleChange && valueChanged && params.propKey !== formularKey) {
+            setTimeout(() => {
+              handleChange(formularKey, newValue)
+            }, 50)
+          }
+        })
+      })
+    }, 100) // 100ms debounce
   }
 
   // Format the value for display
