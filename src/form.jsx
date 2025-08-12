@@ -84,7 +84,7 @@ export default class ReactForm extends React.Component {
           const firstItem = value[0]
           if (typeof firstItem === 'object' && firstItem !== null && firstItem.hasOwnProperty('value')) {
             // Find the item in the items array that matches the field_name
-            const matchedItem = items.find(item => item.field_name === item.field_name)
+            const matchedItem = items.find(target => target.field_name === item.field_name)
             if (matchedItem && matchedItem.options) {
               // Find the option where the key matches the firstItem value
               const matchedOption = matchedItem.options.find(option => option.key === firstItem.key)
