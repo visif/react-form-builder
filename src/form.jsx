@@ -289,7 +289,7 @@ export default class ReactForm extends React.Component {
 
           checked_options.push({
             key: option.key,
-            value: true,
+            value: option.value,
             info: info,
           })
         }
