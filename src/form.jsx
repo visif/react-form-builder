@@ -280,7 +280,7 @@ export default class ReactForm extends React.Component {
     const activeUser = this.props.getActiveUserProperties()
     const oldEditor = this._getEditor(item)
 
-    if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
+    if ((item.element === 'Checkboxes' || item.element === 'RadioButtons') && !!ref) {
       const checked_options = []
 
       item.options.forEach((option) => {
