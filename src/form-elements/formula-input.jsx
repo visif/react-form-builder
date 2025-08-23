@@ -71,7 +71,18 @@ class FormulaInput extends Component {
     const prevVars = state.variables || {}
     let variablesChanged = Object.keys(incomingVars).length !== Object.keys(prevVars).length
     if (!variablesChanged) {
-      variablesChanged = Object.keys(incomingVars).some(k => incomingVars[k] !== prevVars[k])
+      variablesChanged = Object.keys(incomingVars).some(k => {
+        const incomingValue = parseFloat(incomingVars[k])
+        const prevValue = parseFloat(prevVars[k])
+        // Handle NaN comparison properly
+        if (Number.isNaN(incomingValue) && Number.isNaN(prevValue)) {
+          return false
+        }
+        if (Number.isNaN(incomingValue) || Number.isNaN(prevValue)) {
+          return true
+        }
+        return Math.abs(incomingValue - prevValue) > 0.0001
+      })
     }
 
     const formulaChanged = props.data.formula !== state.formula

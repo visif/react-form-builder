@@ -52,10 +52,24 @@ export default class ReactForm extends React.Component {
     super(props)
     this.emitter = new EventEmitter()
     this.getDataById = this.getDataById.bind(this)
+    this.handleVariableChange = this.handleVariableChange.bind(this)
     const ansData = convert(props.answer_data)
     this.state = {
       answerData: ansData,
       variables: this._getVariableValue(ansData, props.data),
+    }
+  }
+
+  componentDidMount() {
+    // Listen to variable changes to update the form's variables state
+    if (this.emitter && typeof this.emitter.addListener === 'function') {
+      this.variableSubscription = this.emitter.addListener('variableChange', this.handleVariableChange)
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.variableSubscription && typeof this.variableSubscription.remove === 'function') {
+      this.variableSubscription.remove()
     }
   }
 
@@ -538,6 +552,16 @@ export default class ReactForm extends React.Component {
 
   handleChange = (propKey, value) => {
     this.emitter.emit('variableChange', { propKey, value })
+  }
+
+  handleVariableChange = (params) => {
+    // Update the form's variables state when any variable changes
+    this.setState(prevState => ({
+      variables: {
+        ...prevState.variables,
+        [params.propKey]: params.value
+      }
+    }))
   }
 
   getInputElement(item) {
