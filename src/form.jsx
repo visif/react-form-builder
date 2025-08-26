@@ -4,7 +4,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { EventEmitter } from 'fbemitter'
-import { Parser } from 'hot-formula-parser'
 import FormElements from './form-elements'
 import CustomElement from './form-elements/custom-element'
 import FormValidator from './form-validator'
@@ -557,82 +556,12 @@ export default class ReactForm extends React.Component {
 
   handleVariableChange = (params) => {
     // Update the form's variables state when any variable changes
-    this.setState(prevState => {
-      const newVariables = {
+    this.setState(prevState => ({
+      variables: {
         ...prevState.variables,
         [params.propKey]: params.value
       }
-      const newAnswerData = { ...prevState.answerData }
-
-      // Get all formula fields for cascading updates
-      const allFormulaFields = this.props.data.filter(item =>
-        item.element === 'FormulaInput' && item.formula
-      )
-
-      // Keep track of which variables have been updated to detect cascading changes
-      const updatedVariables = new Set([params.propKey])
-      let hasChanges = true
-
-      // Continue recalculating until no more changes occur (cascading updates)
-      while (hasChanges) {
-        hasChanges = false
-
-        // Find formula fields that depend on any recently updated variables
-        const affectedFields = allFormulaFields.filter(formulaField => {
-          return Array.from(updatedVariables).some(varKey =>
-            formulaField.formula.includes(varKey)
-          )
-        })
-
-        // Clear the updated variables set for this iteration
-        updatedVariables.clear()
-
-        affectedFields.forEach(formulaField => {
-          try {
-            // Use same formula parsing logic as FormulaInput component
-            const parser = new Parser()
-
-            // Set all current variables in parser
-            Object.entries(newVariables).forEach(([key, value]) => {
-              const parsedValue = parseFloat(value)
-              if (!Number.isNaN(parsedValue)) {
-                parser.setVariable(key, parsedValue)
-              }
-            })
-
-            // Calculate new formula result
-            const parseResult = parser.parse(formulaField.formula)
-            const newValue = parseResult?.result || 0
-
-            // Update the answer data for this formula field
-            newAnswerData[formulaField.field_name] = {
-              formula: formulaField.formula,
-              value: newValue,
-              variables: newVariables
-            }
-
-            // If this formula field has a formularKey, update variables with its new value
-            if (formulaField.formularKey) {
-              const oldValue = newVariables[formulaField.formularKey]
-              const valueChanged = Math.abs((oldValue || 0) - newValue) > 0.0001
-
-              if (valueChanged) {
-                newVariables[formulaField.formularKey] = newValue
-                updatedVariables.add(formulaField.formularKey)
-                hasChanges = true
-              }
-            }
-          } catch (error) {
-            console.warn(`Error calculating formula for ${formulaField.field_name}:`, error)
-          }
-        })
-      }
-
-      return {
-        variables: newVariables,
-        answerData: newAnswerData
-      }
-    })
+    }))
   }
 
   getInputElement(item) {
