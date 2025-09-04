@@ -19,6 +19,7 @@ const dateFormatList = {
   "yyyy-MM-dd": "YYYY-MM-DD",
   "MM/dd/yyyy": "MM/DD/YYYY",
   "dd/MM/yyyy": "DD/MM/YYYY",
+  "dd/MM/yy": "DD/MM/YY",
   "MMM dd, yyyy": "MMM DD, YYYY",
 };
 
@@ -29,6 +30,7 @@ const dateTimeFormatList = {
   "yyyy-MM-dd": "YYYY-MM-DD HH:MM",
   "MM/dd/yyyy": "MM/DD/YYYY HH:MM",
   "dd/MM/yyyy": "DD/MM/YYYY HH:MM",
+  "dd/MM/yy": "DD/MM/YY HH:MM",
   "MMM dd, yyyy": "MMM DD, YYYY HH:MM",
 };
 
