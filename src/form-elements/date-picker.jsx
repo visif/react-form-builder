@@ -131,12 +131,10 @@ class DatePicker extends React.Component {
       value = dayjs().toISOString();
     } else if (props.defaultValue) {
       try {
-        const isMMDDYYYY = /^\d{2}\/\d{2}\/\d{4}$/.test(props.defaultValue);
-        if (isMMDDYYYY) {
-          value = dayjs(props.defaultValue, "MM/DD/YYYY").toISOString();
-        } else {
-          value = dayjs(props.defaultValue).utc(true).toISOString();
-        }
+        // Use formatMask for parsing if available
+        value = dayjs(props.defaultValue, formatMask).isValid()
+          ? dayjs(props.defaultValue, formatMask).toISOString()
+          : dayjs(props.defaultValue).utc(true).toISOString();
       } catch (error) {
         console.warn('Invalid date value:', props.defaultValue);
         value = null;
