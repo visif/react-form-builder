@@ -14,6 +14,7 @@ import {
   TwoColumnRow,
 } from './multi-column'
 import Registry from './stores/registry'
+import { FormProvider, useFormInput } from './providers/FormProvider'
 
 const {
   Image,
@@ -43,7 +44,7 @@ const convert = (answers) => {
   return answers || {}
 }
 
-export default class ReactForm extends React.Component {
+class ReactForm extends React.Component {
   form
 
   inputs = {}
@@ -58,6 +59,9 @@ export default class ReactForm extends React.Component {
       answerData: ansData,
       variables: this._getVariableValue(ansData, props.data),
     }
+
+    // Get the form context passed as prop
+    this.formContext = props.formContext
   }
 
   componentDidMount() {
@@ -73,16 +77,20 @@ export default class ReactForm extends React.Component {
     }
   }
 
-  static getDerivedStateFromProps(props) {
+  static getDerivedStateFromProps(props, state) {
     const ansData = convert(props.answer_data)
+
+    // Only compute initial variables if state doesn't exist yet (first render)
+    // Otherwise preserve the current variables state to avoid resetting dynamic updates
+    const variables = state?.variables ? state.variables : ReactForm.prototype._getVariableValue.call(
+      { props },
+      ansData,
+      props.data
+    )
 
     return {
       answerData: ansData,
-      variables: ReactForm.prototype._getVariableValue.call(
-        { props },
-        ansData,
-        props.data
-      ),
+      variables: variables,
     }
   }
 
@@ -201,10 +209,27 @@ export default class ReactForm extends React.Component {
         blobUrl: ref.state.blobUrl,
       }
     } else if (item.element === 'FormulaInput') {
-      $item.value = {
-        formula: ref.state.formula,
-        value: ref.state.value,
-        variables: ref.state.variables,
+      // Get formula value from FormProvider instead of component state
+      const elementId = item.field_name || item.formularKey || `formula_${item.id}`
+      if (this.formContext) {
+        const contextValue = this.formContext.getInputValue(elementId)
+        const contextMetadata = this.formContext.getInputMetadata(elementId)
+        $item.value = {
+          formula: contextMetadata?.formula || item.formula,
+          value: contextValue || '',
+          variables: this.formContext.getAllInputValues(),
+        }
+      } else {
+        // Fallback to ref state if context is not available
+        $item.value = ref?.state ? {
+          formula: ref.state.formula,
+          value: ref.state.value,
+          variables: ref.state.variables,
+        } : {
+          formula: item.formula || '',
+          value: '',
+          variables: {},
+        }
       }
     } else if (ref && ref.inputField && ref.inputField.current) {
       $item = ReactDOM.findDOMNode(ref.inputField.current)
@@ -294,6 +319,38 @@ export default class ReactForm extends React.Component {
     const activeUser = this.props.getActiveUserProperties()
     const oldEditor = this._getEditor(item)
 
+    // Special handling for FormulaInput which may not have a ref but gets value from FormProvider
+    if (item.element === 'FormulaInput') {
+      const elementId = item.field_name || item.formularKey || `formula_${item.id}`
+
+      if (this.formContext) {
+        const contextValue = this.formContext.getFieldValue(elementId)
+        const contextMetadata = this.formContext.getFieldMetadata(elementId)
+
+        // Return the calculated value directly, not as a structured object
+        itemData.value = contextValue || ''
+        itemData.editor = oldEditor
+          ? oldEditor
+          : contextValue
+            ? activeUser
+            : null
+      } else {
+        // Fallback to ref state if FormProvider is not available
+        if (ref?.state) {
+          itemData.value = ref.state.value || ''
+          itemData.editor = oldEditor
+            ? oldEditor
+            : ref.state.value
+              ? activeUser
+              : null
+        } else {
+          itemData.value = ''
+          itemData.editor = null
+        }
+      }
+      return itemData
+    }
+
     if ((item.element === 'Checkboxes' || item.element === 'RadioButtons') && !!ref) {
       const checked_options = []
 
@@ -360,6 +417,12 @@ export default class ReactForm extends React.Component {
           : valueItem.value.find((itemRow) => {
                 return itemRow.find((val) => !!val)
               })
+            ? activeUser
+            : null
+      } else if (item.element === 'FormulaInput') {
+        itemData.editor = oldEditor
+          ? oldEditor
+          : (valueItem.value && valueItem.value.value)
             ? activeUser
             : null
       }
@@ -551,17 +614,24 @@ export default class ReactForm extends React.Component {
   }
 
   handleChange = (propKey, value) => {
+    // Emit the variableChange event for backward compatibility
     this.emitter.emit('variableChange', { propKey, value })
+
+    // Update the FormProvider if available
+    if (this.formContext && this.formContext.setFieldValue) {
+      this.formContext.setFieldValue(propKey, value)
+    }
   }
 
   handleVariableChange = (params) => {
     // Update the form's variables state when any variable changes
-    this.setState(prevState => ({
-      variables: {
+    this.setState(prevState => {
+      const newVariables = {
         ...prevState.variables,
         [params.propKey]: params.value
       }
-    }))
+      return { variables: newVariables }
+    })
   }
 
   getInputElement(item) {
@@ -590,6 +660,7 @@ export default class ReactForm extends React.Component {
         broadcastChange={this.broadcastChange}
         emitter={this.emitter}
         variables={this.state.variables}
+        formContext={this.formContext}
       />
     )
   }
@@ -898,3 +969,23 @@ export default class ReactForm extends React.Component {
 }
 
 ReactForm.defaultProps = { validateForCorrectness: false }
+
+// Internal wrapper that provides form context as prop
+function ReactFormWithContext(props) {
+  const formContext = useFormInput()
+  return <ReactForm {...props} formContext={formContext} />
+}
+
+// Wrapper component that provides the context
+function ReactFormWithProvider(props) {
+  return (
+    <FormProvider
+      initialValues={props.initialValues || {}}
+      initialMetadata={props.initialMetadata || {}}
+    >
+      <ReactFormWithContext {...props} />
+    </FormProvider>
+  )
+}
+
+export default ReactFormWithProvider

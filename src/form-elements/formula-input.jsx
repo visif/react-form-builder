@@ -1,132 +1,103 @@
-import React, { Component } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { Parser } from 'hot-formula-parser'
 import ComponentHeader from './component-header'
 import ComponentLabel from './component-label'
-import debounce from '../functions/debounce'
+import { useFormInput } from '../providers/FormProvider'
 
-class FormulaInput extends Component {
-  constructor(props) {
-    super(props)
+const FormulaInput = ({ data, emitter, formContext, variables, handleChange, ...props }) => {
+  // Use FormProvider context passed as prop for storing the final result only
+  const hookContext = useFormInput()
+  const context = formContext || hookContext
+  const { setFieldValue, getFieldValue } = context
 
-    let newValue = ''
-    if (props.data?.formula && props.variables) {
+  // Local state for current value and error
+  const [currentValue, setCurrentValue] = useState(0) // Track current value locally
+  const [error, setError] = useState('')
+
+  const elementId = data?.field_name || `formula_${data?.id}`
+
+  // Calculate formula value using variables from props
+  const calculateFormula = useCallback((currentVariables) => {
+    if (!data?.formula) return '0.00'
+
+    try {
       const parser = new Parser()
-      Object.entries(props.variables).forEach(([key, value]) => {
-        const parsedValue = parseFloat(value)
-        if (!Number.isNaN(parsedValue)) {
-          parser.setVariable(key, parsedValue)
+      // Set variables from props (passed from form's variables state)
+      Object.keys(currentVariables || {}).forEach(varKey => {
+        const varValue = currentVariables[varKey]
+        if (varValue !== undefined && varValue !== null && varValue !== '') {
+          const numValue = parseFloat(varValue)
+          if (!Number.isNaN(numValue)) {
+            parser.setVariable(varKey, numValue)
+          }
         }
       })
-      const parseResult = parser.parse(props.data.formula)
-      newValue = parseResult?.result || ''
+
+      const result = parser.parse(data.formula)
+      if (result.error) {
+        setError(`Formula Error: ${result.error}`)
+        return '0.00'
+      }
+
+      setError('')
+      return result.result || 0
+    } catch (err) {
+      setError(`Error: ${err.message}`)
+      return '0.00'
     }
+  }, [data?.formula])
 
-    this.state = {
-      error: '',
-      formula: props.data?.formula || '',
-      variables: props.variables || {},
-      value: newValue,
-      isUpdating: false,
+  // Initialize current value from FormProvider on mount
+  useEffect(() => {
+    const storedValue = getFieldValue(elementId)
+    if (storedValue !== undefined && storedValue !== null) {
+      setCurrentValue(storedValue)
     }
+  }, [getFieldValue, elementId])
 
-    this.handleVariableChange = this.handleVariableChange.bind(this)
-  this.debouncedUpdate = debounce(this.processVariableChange.bind(this), 100)
-  }
+  // Recalculate when variables prop changes OR when formula changes
+  useEffect(() => {
+    if (data?.formula) {
+      const result = calculateFormula(variables || {})
 
-  componentDidMount() {
-    const { emitter } = this.props
-    if (emitter && typeof emitter.addListener === 'function') {
-      this.subscription = emitter.addListener('variableChange', this.handleVariableChange)
-    }
-  }
-
-  componentWillUnmount() {
-    if (this.subscription && typeof this.subscription.remove === 'function') {
-      this.subscription.remove()
-    }
-  if (this.debouncedUpdate && this.debouncedUpdate.cancel) this.debouncedUpdate.cancel()
-  }
-
-  static getDerivedStateFromProps(props, state) {
-    // Check if defaultValue exists and is different from current state
-    if (props.defaultValue && props.defaultValue.value !== state.value) {
-      // If defaultValue has a specific value, use it instead of recalculating
-      if (props.defaultValue.value !== '' && props.defaultValue.value !== null && props.defaultValue.value !== undefined) {
-        return {
-          formula: props.defaultValue.formula || state.formula,
-          variables: props.defaultValue.variables || state.variables,
-          value: props.defaultValue.value,
-        }
+      // Store the result in FormProvider and update local state
+      const storedValue = getFieldValue(elementId)
+      if (result !== storedValue) {
+        setFieldValue(elementId, result)
+        setCurrentValue(result)
       }
     }
+  }, [data?.formula, calculateFormula, setFieldValue, elementId, getFieldValue]) // Removed variables from dependency
 
-    // Guard: no formula provided
-    if (!props?.data?.formula) {
-      return null
-    }
+  // Separate effect for variables changes to avoid infinite loops
+  useEffect(() => {
+    if (data?.formula && variables && Object.keys(variables).length > 0) {
+      const result = calculateFormula(variables)
 
-    // Shallow compare variables to avoid expensive stringify + false positives
-    const incomingVars = props.variables || {}
-    const prevVars = state.variables || {}
-    let variablesChanged = Object.keys(incomingVars).length !== Object.keys(prevVars).length
-    if (!variablesChanged) {
-      variablesChanged = Object.keys(incomingVars).some(k => {
-        const incomingValue = parseFloat(incomingVars[k])
-        const prevValue = parseFloat(prevVars[k])
-        // Handle NaN comparison properly
-        if (Number.isNaN(incomingValue) && Number.isNaN(prevValue)) {
-          return false
+      // Use a ref to track the last calculated value to prevent loops
+      const lastResult = currentValue
+      if (Math.abs(result - lastResult) > 0.0001) { // Use small epsilon for float comparison
+        setFieldValue(elementId, result)
+        setCurrentValue(result)
+
+        // If this FormulaInput has a formularKey, emit its value as a variable for other formulas
+        if (data?.formularKey && handleChange) {
+          setTimeout(() => {
+            handleChange(data.formularKey, result)
+          }, 50)
         }
-        if (Number.isNaN(incomingValue) || Number.isNaN(prevValue)) {
-          return true
-        }
-        return Math.abs(incomingValue - prevValue) > 0.0001
-      })
-    }
-
-    const formulaChanged = props.data.formula !== state.formula
-
-    if (formulaChanged || variablesChanged) {
-      const parser = new Parser()
-      const newVariables = { ...prevVars, ...incomingVars }
-      Object.entries(newVariables).forEach(([key, value]) => {
-        const parsedValue = parseFloat(value)
-        if (!Number.isNaN(parsedValue)) {
-          parser.setVariable(key, parsedValue)
-        }
-      })
-      const parseResult = parser.parse(props.data.formula)
-      return {
-        formula: props.data.formula,
-        variables: newVariables,
-        value: parseResult?.result || '',
       }
+    } else {
+      console.log('FormulaInput Debug - Skipping calculation - no formula or empty variables')
     }
+  }, [variables, data?.formula, data?.formularKey, calculateFormula, elementId, setFieldValue, handleChange, currentValue])
 
-    // No state update
-    return null
-  }
-
-  handleVariableChange(params) {
-  const { formula, isUpdating } = this.state
-    if (!formula) {
-  // Invalid / missing formula: nothing to compute
-      return
-    }
-
-  if (isUpdating) {
-      return
-    }
-  this.debouncedUpdate(params)
-  }
-
-  // Format the value for display
-  formatNumber = (num) => {
+  // Format number for display
+  const formatNumber = (num) => {
     if (num === '' || num === null || num === undefined || Number.isNaN(num)) {
       return '0.00'
     }
-
     const numValue = parseFloat(num)
     return numValue.toLocaleString('en-US', {
       minimumFractionDigits: 2,
@@ -134,108 +105,71 @@ class FormulaInput extends Component {
     })
   }
 
-  processVariableChange(params) { // Reordered below formatNumber to satisfy style rule
-    const { formula, variables: currentVars, value: currentValue } = this.state
-    const { data, handleChange } = this.props
-    if (!formula) return
-
-    this.setState({ isUpdating: true }, () => {
-      const parser = new Parser()
-      let newVariables = { ...currentVars }
-
-      if (params.value === '' || params.value === null || params.value === undefined) {
-        newVariables = { ...currentVars, [params.propKey]: 0 }
-      } else {
-        const processedValue = params.value
-        if (typeof processedValue === 'string' && processedValue.trim().endsWith('%')) {
-          const numericPart = processedValue.trim().slice(0, -1)
-            .replace(/,/g, '')
-          const parsedValue = parseFloat(numericPart)
-          newVariables = { ...currentVars, [params.propKey]: !Number.isNaN(parsedValue) ? parsedValue / 100 : 0 }
-        } else {
-          const parsedValue = parseFloat(String(processedValue).replace(/,/g, ''))
-          newVariables = { ...currentVars, [params.propKey]: !Number.isNaN(parsedValue) ? parsedValue : 0 }
-        }
-      }
-
-      Object.entries(newVariables).forEach(([key, value]) => {
-        const numValue = parseFloat(value)
-        parser.setVariable(key, !Number.isNaN(numValue) ? numValue : 0)
-      })
-
-      const parseResult = parser.parse(formula)
-      const newValue = parseResult?.result || 0
-      const previousValue = currentValue
-
-      this.setState({ variables: newVariables, value: newValue, isUpdating: false }, () => {
-        const { formularKey } = data
-        const valueChanged = Math.abs(previousValue - newValue) > 0.0001
-        if (formularKey && handleChange && valueChanged && params.propKey !== formularKey) {
-          setTimeout(() => handleChange(formularKey, newValue), 50)
-        }
-      })
-    })
-  }
-
-  render() {
-    const { error, value } = this.state
-  const { data, style } = this.props
-
-    const inputProps = {
-      type: 'text',
-      className: `form-control ${error ? 'is-invalid' : ''}`,
-      name: data?.field_name,
-      value: this.formatNumber(value),
-      disabled: true,
-    }
-
+  // Remove the duplicate currentValue declaration
   let baseClasses = `${data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
   if (data.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
-    }
-
-    return (
-      <div style={{ ...style }} className={baseClasses}>
-        {/* eslint-disable react/jsx-props-no-spreading */}
-        <ComponentHeader data={data} style={style} {...this.props} />
-        <div className={data.isShowLabel !== false ? 'form-group' : ''}>
-          <ComponentLabel data={data} style={style} {...this.props} />
-          <input type={inputProps.type} className={inputProps.className} name={inputProps.name} value={inputProps.value} disabled={inputProps.disabled} />
-          {/* eslint-enable react/jsx-props-no-spreading */}
-          {error && <div className="invalid-feedback">{error}</div>}
-        </div>
-      </div>
-    )
+    baseClasses += ' alwaysbreak'
   }
+
+  return (
+    <div className={baseClasses}>
+      {/* eslint-disable react/jsx-props-no-spreading */}
+      <ComponentHeader data={data} {...props} />
+      <div className={data.isShowLabel !== false ? 'form-group' : ''}>
+        <ComponentLabel data={data} {...props} />
+        <input
+          type="text"
+          className={`form-control ${error ? 'is-invalid' : ''}`}
+          name={data?.field_name}
+          value={formatNumber(currentValue)}
+          disabled
+          readOnly
+        />
+        {error && <div className="invalid-feedback">{error}</div>}
+        {data?.formula && (
+          <small className="form-text text-muted">
+            {`Formula: ${data.formula}`}
+          </small>
+        )}
+      </div>
+    </div>
+  )
 }
 
 FormulaInput.propTypes = {
   data: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     label: PropTypes.string,
-    formula: PropTypes.string,
-    field_name: PropTypes.string,
+    formula: PropTypes.string.isRequired,
     formularKey: PropTypes.string,
+    field_name: PropTypes.string,
     pageBreakBefore: PropTypes.bool,
     isShowLabel: PropTypes.bool,
   }).isRequired,
-  variables: PropTypes.objectOf(PropTypes.oneOfType([PropTypes.number, PropTypes.string])),
   emitter: PropTypes.shape({
     addListener: PropTypes.func,
   }),
-  defaultValue: PropTypes.shape({
-    formula: PropTypes.string,
-    variables: PropTypes.objectOf(PropTypes.oneOfType([PropTypes.number, PropTypes.string])),
-    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  formContext: PropTypes.shape({
+    setFieldValue: PropTypes.func,
+    getFieldValue: PropTypes.func,
+    values: PropTypes.objectOf(PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.number,
+      PropTypes.bool,
+      PropTypes.array,
+    ])),
   }),
-  style: PropTypes.shape({}),
+  variables: PropTypes.objectOf(PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+  ])),
   handleChange: PropTypes.func,
 }
 
 FormulaInput.defaultProps = {
-  variables: {},
   emitter: null,
-  defaultValue: null,
-  style: {},
+  formContext: null,
+  variables: {},
   handleChange: null,
 }
 

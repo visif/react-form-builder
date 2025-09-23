@@ -173,7 +173,7 @@ class TextInput extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
+      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
     const props = {}
@@ -268,7 +268,7 @@ class NumberInput extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
+      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
     const props = {}
@@ -353,7 +353,7 @@ class TextArea extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
+      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
     const props = {}
@@ -449,7 +449,7 @@ class Dropdown extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
+      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
     const props = {}
@@ -567,7 +567,7 @@ class Signature extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
+      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
     const { defaultValue } = this.state
@@ -673,7 +673,7 @@ class Tags extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
+      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
     if (this.props.mutable) {
@@ -730,7 +730,7 @@ class Checkboxes extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
+      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
     // Add debugging
@@ -740,8 +740,8 @@ class Checkboxes extends React.Component {
       isSameEditor,
       hasDCCRole: userProperties?.hasDCCRole,
       readOnly: this.props.read_only,
-      finalDisabled: this.props.read_only || !isSameEditor
-    });
+      finalDisabled: this.props.read_only || !isSameEditor,
+    })
 
     const self = this
     let classNames = 'custom-control custom-checkbox'
@@ -798,7 +798,7 @@ class Checkboxes extends React.Component {
                     self.setState((current) => {
                       const activeVal = self.getActiveValue(
                         current && current.value,
-                        option.key
+                        option.key,
                       )
                       const newActiveVal = activeVal
                         ? { ...activeVal, value: !activeVal.value }
@@ -816,7 +816,7 @@ class Checkboxes extends React.Component {
                         ...current,
                         value: [
                           ...(current.value || []).filter(
-                            (item) => item.key !== option.key
+                            (item) => item.key !== option.key,
                           ),
                           newActiveVal,
                         ],
@@ -939,7 +939,7 @@ class RadioButtons extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
+      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
     // Add debugging for RadioButtons
@@ -949,8 +949,8 @@ class RadioButtons extends React.Component {
       isSameEditor,
       hasDCCRole: userProperties?.hasDCCRole,
       readOnly: this.props.read_only,
-      finalDisabled: this.props.read_only || !isSameEditor
-    });
+      finalDisabled: this.props.read_only || !isSameEditor,
+    })
 
     const self = this
     let classNames = 'custom-control custom-radio'
@@ -1025,7 +1025,7 @@ class RadioButtons extends React.Component {
                       // Check if this option is already selected
                       const currentActiveValue = self.getActiveValue(
                         current?.value,
-                        option.key
+                        option.key,
                       )
                       const isCurrentlySelected = currentActiveValue?.value === true
 
@@ -1162,7 +1162,7 @@ class Rating extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
+      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
     const props = {}
@@ -1317,7 +1317,9 @@ class Camera extends React.Component {
                 />
                 <div className="image-upload-control">
                   <div className="btn btn-default">
-                    <i className="fas fa-camera" /> Upload Photo
+                    <i className="fas fa-camera" />
+                    {' '}
+                    Upload Photo
                   </div>
                   <p>Select an image from your computer or device.</p>
                 </div>
@@ -1332,7 +1334,9 @@ class Camera extends React.Component {
                   />
                   <br />
                   <div className="btn btn-image-clear" onClick={this.clearImage}>
-                    <i className="fas fa-times" /> Clear Photo
+                    <i className="fas fa-times" />
+                    {' '}
+                    Clear Photo
                   </div>
                 </div>
               )}
