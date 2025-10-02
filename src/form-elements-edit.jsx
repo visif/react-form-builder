@@ -447,7 +447,7 @@ export default class FormElementsEdit extends React.Component {
 
             {/* "Display label in column" option removed as it's no longer needed */}
 
-            {this.props.element.hasOwnProperty('defaultToday') && (
+            {/*this.props.element.hasOwnProperty('defaultToday') && (
               <div className="custom-control custom-checkbox">
                 <input
                   id="is-default-to-today"
@@ -461,7 +461,7 @@ export default class FormElementsEdit extends React.Component {
                   Default to Today?
                 </label>
               </div>
-            )}
+            )*/}
 
             {this.props.element.hasOwnProperty('showTimeSelect') && (
               <div className="custom-control custom-checkbox">
