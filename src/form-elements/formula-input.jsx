@@ -6,10 +6,17 @@ import ComponentLabel from './component-label'
 import { useFormInput } from '../providers/FormProvider'
 
 const FormulaInput = ({ data, emitter, formContext, variables, handleChange, ...props }) => {
-  // Use FormProvider context passed as prop for storing the final result only
   const hookContext = useFormInput()
   const context = formContext || hookContext
-  const { setFieldValue, getFieldValue } = context
+
+  // Only require context in form generation mode (when variables are provided)
+  if (!context && variables) {
+    console.error('FormulaInput: FormProvider context is required for form generation')
+    return null
+  }
+
+  const { setFieldValue, getFieldValue } = context || {}
+  console.log('FormulaInput context mode:', formContext ? 'generator' : 'builder', 'has context:', !!context)
 
   // Local state for current value and error
   const [currentValue, setCurrentValue] = useState(0) // Track current value locally
@@ -48,11 +55,13 @@ const FormulaInput = ({ data, emitter, formContext, variables, handleChange, ...
     }
   }, [data?.formula])
 
-  // Initialize current value from FormProvider on mount
+  // Initialize current value from FormProvider on mount (only in generator mode)
   useEffect(() => {
-    const storedValue = getFieldValue(elementId)
-    if (storedValue !== undefined && storedValue !== null) {
-      setCurrentValue(storedValue)
+    if (getFieldValue) {
+      const storedValue = getFieldValue(elementId)
+      if (storedValue !== undefined && storedValue !== null) {
+        setCurrentValue(storedValue)
+      }
     }
   }, [getFieldValue, elementId])
 

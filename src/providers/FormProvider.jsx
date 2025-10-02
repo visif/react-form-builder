@@ -35,14 +35,17 @@ const ensureArray = (value) => {
 // Reducer to handle form state updates
 const formReducer = (state, action) => {
   switch (action.type) {
-    case SET_FIELD_VALUE:
-      return {
+    case SET_FIELD_VALUE: {
+      const newState = {
         ...state,
         values: {
           ...state.values,
           [action.field]: action.value,
         },
       }
+      console.log('FormProvider reducer SET_FIELD_VALUE - new state:', newState.values)
+      return newState
+    }
 
     case SET_MULTIPLE_VALUES: {
       // Handle both array and single values for each field
@@ -163,6 +166,7 @@ export const FormProvider = ({ children, initialValues = {}, initialMetadata = {
   })
 
   const setFieldValue = useCallback((field, value) => {
+    console.log('FormProvider setFieldValue called - field:', field, 'value:', value)
     dispatch({ type: SET_FIELD_VALUE, field, value })
   }, [])
 

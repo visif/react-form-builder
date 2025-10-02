@@ -58,10 +58,12 @@ class ReactForm extends React.Component {
     this.state = {
       answerData: ansData,
       variables: this._getVariableValue(ansData, props.data),
+      formProviderValues: props.formProviderValues || {}, // Track FormProvider values from props
     }
 
     // Get the form context passed as prop
     this.formContext = props.formContext
+    console.log('ReactForm constructor - formContext instance:', this.formContext)
   }
 
   componentDidMount() {
@@ -88,10 +90,21 @@ class ReactForm extends React.Component {
       props.data
     )
 
-    return {
+    // Sync formProviderValues from props to state
+    // This ensures component re-renders when FormProvider context changes
+    const newState = {
       answerData: ansData,
       variables: variables,
     }
+
+    // Update formProviderValues if changed
+    if (props.formProviderValues &&
+        JSON.stringify(props.formProviderValues) !== JSON.stringify(state.formProviderValues)) {
+      console.log('getDerivedStateFromProps - FormProvider values changed:', props.formProviderValues)
+      newState.formProviderValues = props.formProviderValues
+    }
+
+    return newState
   }
 
   _getVariableValue(ansData, items) {
@@ -212,6 +225,7 @@ class ReactForm extends React.Component {
       // Get formula value from FormProvider instead of component state
       const elementId = item.field_name || item.formularKey || `formula_${item.id}`
       if (this.formContext) {
+        console.log('FormulaInput form context is not null:', this.formContext)
         const contextValue = this.formContext.getInputValue(elementId)
         const contextMetadata = this.formContext.getInputMetadata(elementId)
         $item.value = {
@@ -220,6 +234,7 @@ class ReactForm extends React.Component {
           variables: this.formContext.getAllInputValues(),
         }
       } else {
+        console.log('FormulaInput form context is null:')
         // Fallback to ref state if context is not available
         $item.value = ref?.state ? {
           formula: ref.state.formula,
@@ -321,33 +336,21 @@ class ReactForm extends React.Component {
 
     // Special handling for FormulaInput which may not have a ref but gets value from FormProvider
     if (item.element === 'FormulaInput') {
-      const elementId = item.field_name || item.formularKey || `formula_${item.id}`
+      const elementId = item.field_name || `formula_${item.id}`
+      console.log('FormulaInput _collect - elementId:', elementId, 'item:', item)
 
-      if (this.formContext) {
-        const contextValue = this.formContext.getFieldValue(elementId)
-        const contextMetadata = this.formContext.getFieldMetadata(elementId)
+      // Use formProviderValues from state (synced from props via getDerivedStateFromProps)
+      // This ensures class component has current values that trigger re-renders
+      const contextValue = this.state.formProviderValues?.[elementId]
 
-        // Return the calculated value directly, not as a structured object
-        itemData.value = contextValue || ''
-        itemData.editor = oldEditor
-          ? oldEditor
-          : contextValue
-            ? activeUser
-            : null
-      } else {
-        // Fallback to ref state if FormProvider is not available
-        if (ref?.state) {
-          itemData.value = ref.state.value || ''
-          itemData.editor = oldEditor
-            ? oldEditor
-            : ref.state.value
-              ? activeUser
-              : null
-        } else {
-          itemData.value = ''
-          itemData.editor = null
-        }
-      }
+      // Return the calculated value directly, not as a structured object
+      itemData.value = contextValue || ''
+      itemData.editor = oldEditor
+        ? oldEditor
+        : contextValue
+          ? activeUser
+          : null
+
       return itemData
     }
 
@@ -970,14 +973,29 @@ class ReactForm extends React.Component {
 
 ReactForm.defaultProps = { validateForCorrectness: false }
 
-// Internal wrapper that provides form context as prop
+// Internal wrapper that subscribes to FormProvider context and passes values as props
+// This ensures the class component re-renders when context values change
 function ReactFormWithContext(props) {
   const formContext = useFormInput()
-  return <ReactForm {...props} formContext={formContext} />
+
+  // Subscribe to context values - component will re-render when they change
+  const formProviderValues = formContext.values || {}
+  const formProviderMetadata = formContext.metadata || {}
+
+  console.log('ReactFormWithContext - formProviderValues updated:', formProviderValues)
+
+  return (
+    <ReactForm
+      {...props}
+      formContext={formContext}
+      formProviderValues={formProviderValues}
+      formProviderMetadata={formProviderMetadata}
+    />
+  )
 }
 
 // Wrapper component that provides the context
-function ReactFormWithProvider(props) {
+const ReactFormWithProvider = (props) => {
   return (
     <FormProvider
       initialValues={props.initialValues || {}}
