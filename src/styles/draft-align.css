@@ -1,0 +1,6 @@
+.draft-align-center { text-align: center; }
+.draft-align-right { text-align: right; }
+.draft-align-left { text-align: left; }
+.draft-align-justify { text-align: justify; }
+.draft-align-center ul,
+.draft-align-center ol { text-align: center; }
