@@ -90,6 +90,17 @@ class Label extends React.Component {
       classNames += ' italic'
     }
 
+    // Add alignment support
+    const style = { display: 'block' } // Always make label a block element
+
+    if (this.props.data.center) {
+      style.textAlign = 'center'
+    } else if (this.props.data.right) {
+      style.textAlign = 'right'
+    } else if (this.props.data.left) {
+      style.textAlign = 'left'
+    }
+
     let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
@@ -100,6 +111,7 @@ class Label extends React.Component {
         <ComponentHeader {...this.props} />
         <label
           className={classNames}
+          style={style}
           dangerouslySetInnerHTML={{
             __html: myxss.process(this.props.data.content),
           }}

@@ -742,7 +742,7 @@ export default class FormElementsEdit extends React.Component {
             </div>
           </div>
         )}
-        {this.props.element.hasOwnProperty('static') && this.props.element.static && (
+        {/*this.props.element.hasOwnProperty('static') && this.props.element.static && (
           <div className="form-group">
             <label className="control-label">Text Style</label>
             <div className="custom-control custom-checkbox">
@@ -772,7 +772,7 @@ export default class FormElementsEdit extends React.Component {
               </label>
             </div>
           </div>
-        )}
+        )*/}
         {this.props.element.showDescription && (
           <div className="form-group">
             <label className="control-label" htmlFor="questionDescription">
