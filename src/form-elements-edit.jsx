@@ -10,6 +10,7 @@ import FixedRowList from './fixed-row-list'
 import { get } from './stores/requests'
 import ID from './UUID'
 import './styles/draft-align.css'
+import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css'
 
 const toolbar = {
   options: ['inline', 'list', 'textAlign', 'fontSize', 'link', 'colorPicker', 'history'],
