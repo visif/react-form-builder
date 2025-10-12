@@ -35,3 +35,15 @@
 .rainbow-color-picker button svg {
   display: none !important;
 }
+
+.color-picker-popup-left {
+  left: auto !important;
+  right: 100% !important;
+  transform: none !important;
+}
+
+.link-popup-left {
+  left: auto !important;
+  right: 100% !important;
+  transform: none !important;
+}
