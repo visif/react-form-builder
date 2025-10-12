@@ -4,3 +4,34 @@
 .draft-align-justify { text-align: justify; }
 .draft-align-center ul,
 .draft-align-center ol { text-align: center; }
+
+.rainbow-color-picker .rdw-colorpicker-wrapper button {
+  background: linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3) !important;
+  border: none; /* Optional: Remove default border for cleaner look */
+  color: white; /* Optional: Ensure any text is visible, though unlikely */
+  width: 32px; /* Optional: Set a fixed size for consistency */
+  height: 32px; /* Optional: Set a fixed size for consistency */
+  border-radius: 4px; /* Optional: Round corners for better appearance */
+}
+
+/* Hide the default icon (SVG) inside the button */
+.rainbow-color-picker .rdw-colorpicker-wrapper button svg {
+  display: none !important;
+}
+
+/* Force the color picker button to show rainbow background and hide the icon */
+.rainbow-color-picker button {
+  background: linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3) !important;
+  border: none !important;
+  padding: 0 !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 4px !important;
+  outline: none !important; /* Remove any focus outline */
+  box-shadow: none !important; /* Remove any default shadows */
+}
+
+/* Ensure the SVG icon is completely hidden */
+.rainbow-color-picker button svg {
+  display: none !important;
+}
