@@ -1,7 +1,7 @@
 import React from 'react'
 import { Editor } from 'react-draft-wysiwyg'
 import TextAreaAutosize from 'react-textarea-autosize'
-import { ContentState, convertFromHTML, convertToRaw, EditorState } from 'draft-js'
+import { ContentState, convertFromHTML, convertToRaw, EditorState, convertFromRaw } from 'draft-js'
 import draftToHtml from 'draftjs-to-html'
 // eslint-disable-next-line import/no-cycle
 import DynamicColumnList from './dynamic-column-list'
@@ -9,25 +9,53 @@ import DynamicOptionList from './dynamic-option-list'
 import FixedRowList from './fixed-row-list'
 import { get } from './stores/requests'
 import ID from './UUID'
+import './styles/draft-align.css'
+import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css'
 
 const toolbar = {
-  options: ['inline', 'list', 'textAlign', 'fontSize', 'link', 'history'],
+  options: ['inline', 'list', 'textAlign', 'fontSize', 'link', 'colorPicker', 'history'],
   inline: {
     inDropdown: false,
     className: undefined,
     options: ['bold', 'italic', 'underline', 'superscript', 'subscript'],
+  },
+  link: {
+    popupClassName: 'link-popup-left',  // Add this to position the link popup to the left
+  },
+  colorPicker: {
+    className: 'rainbow-color-picker',  // Add this custom class
+    component: undefined,
+    popupClassName: 'color-picker-popup-left',  // Add this to position the popup to the left
+    colors: ['rgb(97,189,109)', 'rgb(26,188,156)', 'rgb(84,172,210)', 'rgb(44,130,201)',
+             'rgb(147,101,184)', 'rgb(71,85,119)', 'rgb(204,204,204)', 'rgb(65,168,95)',
+             'rgb(0,168,133)', 'rgb(61,142,185)', 'rgb(41,105,176)', 'rgb(85,57,130)',
+             'rgb(40,50,78)', 'rgb(0,0,0)', 'rgb(247,218,100)', 'rgb(251,160,38)',
+             'rgb(235,107,86)', 'rgb(226,80,65)', 'rgb(163,143,132)', 'rgb(239,239,239)',
+             'rgb(255,255,255)', 'rgb(250,197,28)', 'rgb(243,121,52)', 'rgb(209,72,65)',
+             'rgb(184,49,47)', 'rgb(124,112,107)', 'rgb(209,213,216)'],
   },
 }
 
 export default class FormElementsEdit extends React.Component {
   constructor(props) {
     super(props)
+    this.debouncedPush = this.debounce(() => this.updateElement(), 400)
     this.state = {
       element: this.props.element,
       data: this.props.data,
       dirty: false,
       formDataSource: [],
       activeForm: null,
+      // keep ephemeral editor states if you want fully controlled editors
+      editorStates: {}
+    }
+  }
+
+  debounce(fn, ms) {
+    let t
+    return (...a) => {
+      clearTimeout(t)
+      t = setTimeout(() => fn(...a), ms)
     }
   }
 
@@ -144,20 +172,106 @@ export default class FormElementsEdit extends React.Component {
     )
   }
 
-  onEditorStateChange(index, property, editorContent) {
-    // const html = draftToHtml(convertToRaw(editorContent.getCurrentContent())).replace(/<p>/g, '<div>').replace(/<\/p>/g, '</div>');
-    const html = draftToHtml(convertToRaw(editorContent.getCurrentContent()))
-      .replace(/<p>/g, '')
-      .replace(/<\/p>/g, '')
-      .replace(/&nbsp;/g, ' ')
-      .replace(/(?:\r\n|\r|\n)/g, ' ')
-    const this_element = this.state.element
-    this_element[property] = html
+  getEditorStateFrom(element, key) {
+    try {
+      const rawStr = element[`${key}Raw`]
+      if (rawStr) {
+        const raw = typeof rawStr === 'string' ? JSON.parse(rawStr) : rawStr
+        return EditorState.createWithContent(convertFromRaw(raw))
+      }
+    } catch (e) {
+      // ignore
+    }
+    if (element[key]) return this.convertFromHTML(element[key])
+    return EditorState.createEmpty()
+  }
 
-    this.setState({
-      element: this_element,
-      dirty: true,
-    })
+  onEditorStateChange(property, editorState) {
+    const contentState = editorState.getCurrentContent()
+    const raw = convertToRaw(contentState)
+
+    // Build HTML (original)
+    let html = draftToHtml(raw)
+
+    // Patch in alignment styles for blocks (p, li, headers) when present in raw
+    html = this.applyBlockAlignmentStyles(raw, html)
+
+    const element = { ...this.state.element }
+    element[property] = html
+    element[`${property}Raw`] = JSON.stringify(raw)
+
+    this.setState(
+      {
+        element,
+        dirty: true,
+        editorStates: { ...this.state.editorStates, [property]: editorState },
+      },
+      this.debouncedPush
+    )
+  }
+
+  // Inject text-align styles based on block.data alignment fields
+  applyBlockAlignmentStyles(raw, html) {
+    if (!raw || !raw.blocks || !html) return html
+    if (typeof window === 'undefined' || !window.DOMParser) return html
+
+    try {
+      const parser = new DOMParser()
+      const doc = parser.parseFromString(html, 'text/html')
+
+      // Collect block-level elements (draftjs-to-html keeps order)
+      const blockEls = []
+      const collect = (node) => {
+        if (node.nodeType !== 1) return
+        const tag = node.tagName.toLowerCase()
+        if (['p','h1','h2','h3','h4','h5','h6','blockquote','pre','li','figure','div'].includes(tag)) {
+          // figure/div can appear for atomic/custom blocks
+          blockEls.push(node)
+        }
+        Array.from(node.children).forEach(collect)
+      }
+      Array.from(doc.body.children).forEach(collect)
+
+      let idx = 0
+      raw.blocks.forEach((block) => {
+        const el = blockEls[idx]
+        idx += 1
+        if (!el) return
+        const data = block.data || {}
+        const align =
+          data['text-align'] ||
+          data.textAlign ||
+          data.textAlignment ||
+          data.alignment
+        if (!align) return
+
+        // Normalize alignment value
+        const a = ['left','right','center','justify'].includes(align) ? align : 'left'
+
+        // Apply inline style (if not stripped later)
+        const prev = el.getAttribute('style') || ''
+        if (!prev.includes('text-align')) {
+          el.setAttribute('style', `text-align:${a};${prev}`)
+        }
+
+        // Add class for resilience
+        el.classList.add(`draft-align-${a}`)
+
+        // If list item, also align parent list container
+        if (el.tagName.toLowerCase() === 'li' && el.parentElement) {
+            const listParent = el.parentElement
+            const parentPrev = listParent.getAttribute('style') || ''
+            if (!parentPrev.includes('text-align')) {
+              listParent.setAttribute('style', `text-align:${a};${parentPrev}`)
+            }
+            listParent.classList.add(`draft-align-${a}`)
+        }
+      })
+
+      return doc.body.innerHTML
+    } catch (e) {
+      return html
+    }
   }
 
   updateElement = () => {
@@ -282,13 +396,9 @@ export default class FormElementsEdit extends React.Component {
       this_files.unshift({ id: '', file_name: '' })
     }
 
-    let editorState
-    if (this.props.element.hasOwnProperty('content')) {
-      editorState = this.convertFromHTML(this.props.element.content)
-    }
-    if (this.props.element.hasOwnProperty('label')) {
-      editorState = this.convertFromHTML(this.props.element.label)
-    }
+    // Build editor states (prefer stored raw)
+    const contentEditorState = this.getEditorStateFrom(this.state.element, 'content')
+    const labelEditorState = this.getEditorStateFrom(this.state.element, 'label')
 
     return (
       <div>
@@ -304,10 +414,11 @@ export default class FormElementsEdit extends React.Component {
             <label className="control-label">Text to display:</label>
             <Editor
               toolbar={toolbar}
-              defaultEditorState={editorState}
+              defaultEditorState={contentEditorState}
+              editorState={this.state.editorStates.content || contentEditorState}
               onBlur={this.updateElement.bind(this)}
-              onEditorStateChange={this.onEditorStateChange.bind(this, 0, 'content')}
-              stripPastedStyles
+              onEditorStateChange={(es) => this.onEditorStateChange('content', es)}
+              stripPastedStyles={false}
             />
           </div>
         )}
@@ -422,10 +533,11 @@ export default class FormElementsEdit extends React.Component {
                 <label>Display Label</label>
                 <Editor
                   toolbar={toolbar}
-                  defaultEditorState={editorState}
+                  defaultEditorState={labelEditorState}
+                  editorState={this.state.editorStates.label || labelEditorState}
                   onBlur={this.updateElement.bind(this)}
-                  onEditorStateChange={this.onEditorStateChange.bind(this, 0, 'label')}
-                  stripPastedStyles
+                  onEditorStateChange={(es) => this.onEditorStateChange('label', es)}
+                  stripPastedStyles={false}
                 />
                 <br />
               </>
@@ -646,7 +758,7 @@ export default class FormElementsEdit extends React.Component {
             </div>
           </div>
         )}
-        {this.props.element.hasOwnProperty('static') && this.props.element.static && (
+        {/*this.props.element.hasOwnProperty('static') && this.props.element.static && (
           <div className="form-group">
             <label className="control-label">Text Style</label>
             <div className="custom-control custom-checkbox">
@@ -676,7 +788,7 @@ export default class FormElementsEdit extends React.Component {
               </label>
             </div>
           </div>
-        )}
+        )*/}
         {this.props.element.showDescription && (
           <div className="form-group">
             <label className="control-label" htmlFor="questionDescription">

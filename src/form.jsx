@@ -4,6 +4,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { EventEmitter } from 'fbemitter'
+import { Parser } from 'hot-formula-parser'
 import FormElements from './form-elements'
 import CustomElement from './form-elements/custom-element'
 import FormValidator from './form-validator'
@@ -52,10 +53,24 @@ export default class ReactForm extends React.Component {
     super(props)
     this.emitter = new EventEmitter()
     this.getDataById = this.getDataById.bind(this)
+    this.handleVariableChange = this.handleVariableChange.bind(this)
     const ansData = convert(props.answer_data)
     this.state = {
       answerData: ansData,
       variables: this._getVariableValue(ansData, props.data),
+    }
+  }
+
+  componentDidMount() {
+    // Listen to variable changes to update the form's variables state
+    if (this.emitter && typeof this.emitter.addListener === 'function') {
+      this.variableSubscription = this.emitter.addListener('variableChange', this.handleVariableChange)
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.variableSubscription && typeof this.variableSubscription.remove === 'function') {
+      this.variableSubscription.remove()
     }
   }
 
@@ -75,20 +90,47 @@ export default class ReactForm extends React.Component {
   _getVariableValue(ansData, items) {
     const formularItems = items.filter((item) => !!item.formularKey)
     const variables = {}
+
     formularItems.forEach((item) => {
       let value = ansData[item.field_name]
       if (value !== undefined) {
+
         // Check if the value is an object and has a value property
-        if (
+        if (Array.isArray(value) && value.length > 0) {
+          // If value is an array, get the first item and check if it has a value property
+          const firstItem = value[0]
+          if (typeof firstItem === 'object' &&
+            firstItem !== null &&
+            firstItem.hasOwnProperty('value') &&
+            typeof firstItem.value === 'boolean') {
+              // Find the item in the items array that matches the field_name
+              const matchedItem = items.find(target => target.field_name === item.field_name)
+              if (matchedItem && matchedItem.options) {
+                // Find the option where the key matches the firstItem value
+                const matchedOption = matchedItem.options.find(option => option.key === firstItem.key)
+                if (matchedOption) {
+                  value = matchedOption.value || matchedOption.text || firstItem.value
+                } else {
+                  value = firstItem.value
+                }
+              } else {
+                value = firstItem.value
+              }
+            } else {
+              value = firstItem.value
+            }
+        } else if (
           typeof value === 'object' &&
           value !== null &&
           value.hasOwnProperty('value')
         ) {
           value = value.value
         }
+
         variables[item.formularKey] = value
       }
     })
+
     return variables
   }
 
@@ -253,7 +295,7 @@ export default class ReactForm extends React.Component {
     const activeUser = this.props.getActiveUserProperties()
     const oldEditor = this._getEditor(item)
 
-    if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
+    if ((item.element === 'Checkboxes' || item.element === 'RadioButtons') && !!ref) {
       const checked_options = []
 
       item.options.forEach((option) => {
@@ -268,7 +310,7 @@ export default class ReactForm extends React.Component {
 
           checked_options.push({
             key: option.key,
-            value: true,
+            value: option.value,
             info: info,
           })
         }
@@ -511,6 +553,86 @@ export default class ReactForm extends React.Component {
 
   handleChange = (propKey, value) => {
     this.emitter.emit('variableChange', { propKey, value })
+  }
+
+  handleVariableChange = (params) => {
+    // Update the form's variables state when any variable changes
+    this.setState(prevState => {
+      const newVariables = {
+        ...prevState.variables,
+        [params.propKey]: params.value
+      }
+      const newAnswerData = { ...prevState.answerData }
+
+      // Get all formula fields for cascading updates
+      const allFormulaFields = this.props.data.filter(item =>
+        item.element === 'FormulaInput' && item.formula
+      )
+
+      // Keep track of which variables have been updated to detect cascading changes
+      const updatedVariables = new Set([params.propKey])
+      let hasChanges = true
+
+      // Continue recalculating until no more changes occur (cascading updates)
+      while (hasChanges) {
+        hasChanges = false
+
+        // Find formula fields that depend on any recently updated variables
+        const affectedFields = allFormulaFields.filter(formulaField => {
+          return Array.from(updatedVariables).some(varKey =>
+            formulaField.formula.includes(varKey)
+          )
+        })
+
+        // Clear the updated variables set for this iteration
+        updatedVariables.clear()
+
+        affectedFields.forEach(formulaField => {
+          try {
+            // Use same formula parsing logic as FormulaInput component
+            const parser = new Parser()
+
+            // Set all current variables in parser
+            Object.entries(newVariables).forEach(([key, value]) => {
+              const parsedValue = parseFloat(value)
+              if (!Number.isNaN(parsedValue)) {
+                parser.setVariable(key, parsedValue)
+              }
+            })
+
+            // Calculate new formula result
+            const parseResult = parser.parse(formulaField.formula)
+            const newValue = parseResult?.result || 0
+
+            // Update the answer data for this formula field
+            newAnswerData[formulaField.field_name] = {
+              formula: formulaField.formula,
+              value: newValue,
+              variables: newVariables
+            }
+
+            // If this formula field has a formularKey, update variables with its new value
+            if (formulaField.formularKey) {
+              const oldValue = newVariables[formulaField.formularKey]
+              const valueChanged = Math.abs((oldValue || 0) - newValue) > 0.0001
+
+              if (valueChanged) {
+                newVariables[formulaField.formularKey] = newValue
+                updatedVariables.add(formulaField.formularKey)
+                hasChanges = true
+              }
+            }
+          } catch (error) {
+            console.warn(`Error calculating formula for ${formulaField.field_name}:`, error)
+          }
+        })
+      }
+
+      return {
+        variables: newVariables,
+        answerData: newAnswerData
+      }
+    })
   }
 
   getInputElement(item) {

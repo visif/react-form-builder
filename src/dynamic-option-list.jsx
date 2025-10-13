@@ -356,7 +356,13 @@ export default class DynamicOptionList extends React.Component {
                       className="form-control"
                       style={{ width: '100%' }}
                       value={option.text}
-                      onChange={(e) => this.handleOptionChange(index, e)}
+                      onChange={(e) => {
+                        const { element } = this.state
+                        const newElement = { ...element }
+                        newElement.options[index].text = e.target.value
+                        this.setState({ element: newElement, dirty: true })
+                        this.handleOptionChange(index, e)
+                      }}
                       onBlur={this.updateOption}
                     />
                   </div>
