@@ -10,7 +10,8 @@
   },
   "files": [
     "lib",
-    "dist"
+    "dist",
+    "dist/app.css"
   ],
   "keywords": [
     "react",
