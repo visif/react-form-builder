@@ -520,9 +520,6 @@ const Preview = (props) => {
       updateElement: handleUpdateElement,
       getDataById,
       state: { data },
-      // Add direct method references to ensure they're available in the edit form
-      getDataById,
-      updateElement: handleUpdateElement,
     }
 
     const formElementEditProps = {

@@ -1,6 +1,7 @@
 import React from 'react'
-import Lightbox from 'react-image-lightbox'
-import 'react-image-lightbox/style.css'
+// TODO: Replace react-image-lightbox with React 18 compatible alternative
+// import Lightbox from 'react-image-lightbox'
+// import 'react-image-lightbox/style.css'
 import ComponentHeader from './component-header'
 
 // This only needs to be imported once in your app
@@ -158,12 +159,13 @@ class ImageUpload extends React.Component {
             </a>
           </div>
         </div>
-        {this.state.isOpen && (
+        {/* TODO: Re-enable lightbox with React 18 compatible alternative */}
+        {/* this.state.isOpen && (
           <Lightbox
             mainSrc={this.state.blobUrl || this.state.filePath}
             onCloseRequest={() => this.setState({ isOpen: false })}
           />
-        )}
+        ) */}
       </div>
     )
   }

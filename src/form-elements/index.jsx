@@ -1,6 +1,6 @@
 // eslint-disable-next-line max-classes-per-file
 import React from 'react'
-import ReactBootstrapSlider from 'react-bootstrap-slider'
+import { Slider } from 'antd'
 import Select from 'react-select'
 import SignaturePad from 'react-signature-canvas'
 import TextAreaAutosize from 'react-textarea-autosize'
@@ -1436,7 +1436,22 @@ class Range extends React.Component {
               <span className="float-left">{this.props.data.min_label}</span>
               <span className="float-right">{this.props.data.max_label}</span>
             </div>
-            <ReactBootstrapSlider {...props} />
+            <Slider
+              min={props.min}
+              max={props.max}
+              step={props.step}
+              value={props.value}
+              onChange={(value) => {
+                this.setState({ value })
+                if (props.change) {
+                  props.change({ target: { value } })
+                }
+              }}
+              marks={datalist.reduce((acc, val) => {
+                acc[val] = ''
+                return acc
+              }, {})}
+            />
           </div>
           <div className="visible_marks">{visible_marks}</div>
           <input name={name} value={this.state.value} type="hidden" />

@@ -6,7 +6,10 @@ import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    react(),
+    react({
+      // Enable JSX in .js files
+      include: '**/*.{jsx,js}',
+    }),
     cssInjectedByJsPlugin(), // Inject CSS into JS for library build
   ],
 
