@@ -1,10 +1,10 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client'
 import DemoBar from './demobar'
 import FormBuilder from './src/index'
 
 // Add our stylesheets for the demo.
-require('./scss/application.scss')
+import './scss/application.scss'
 
 const url = '/api/formdata'
 const saveUrl = '/api/formdata'
@@ -23,19 +23,19 @@ const commonProps = {
   ],
 }
 
-ReactDOM.render(
+// React 18: Use createRoot instead of ReactDOM.render
+const formBuilderRoot = createRoot(document.getElementById('form-builder'))
+formBuilderRoot.render(
   <FormBuilder.ReactFormBuilder
     url={url}
     saveUrl={saveUrl}
-    onImageUpload={() =>
-      'http://www.isocafe.com:8080/VisiforgeDC//temp/formimage/C27E1F69-7C67-4306-8A08-5A783F27F9F3.jpeg'
-    }
+    onImageUpload={() => 'http://www.isocafe.com:8080/VisiforgeDC//temp/formimage/C27E1F69-7C67-4306-8A08-5A783F27F9F3.jpeg'}
     onChange={(data) => {
       console.log('form builder elements changed', data)
     }}
     {...commonProps}
   />,
-  document.getElementById('form-builder')
 )
 
-ReactDOM.render(<DemoBar {...commonProps} />, document.getElementById('demo-bar'))
+const demoBarRoot = createRoot(document.getElementById('demo-bar'))
+demoBarRoot.render(<DemoBar {...commonProps} />)
