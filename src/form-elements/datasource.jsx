@@ -2,311 +2,274 @@ import React from 'react'
 import ComponentHeader from './component-header'
 import ComponentLabel from './component-label'
 
-class DataSource extends React.Component {
-  constructor(props) {
-    super(props)
-    this.inputField = React.createRef()
-    this.mounted = false
-    this.syncInProgress = false // Flag to prevent infinite sync loops
-    this.lastSyncTimestamp = 0 // Timestamp to prevent rapid sync cycles
+const DataSource = (props) => {
+  const inputField = React.useRef(null)
+  const mounted = React.useRef(false)
+  const syncInProgress = React.useRef(false) // Flag to prevent infinite sync loops
+  const lastSyncTimestamp = React.useRef(0) // Timestamp to prevent rapid sync cycles
 
-    const defaultValue = props.defaultValue || {}
+  const defaultValue = props.defaultValue || {}
 
-    this.state = {
-      sourceList: [],
-      matchedList: [],
-      searchText: defaultValue.value,
-      selectedItem: defaultValue.selectedItem,
-      defaultSelectedItem: defaultValue.selectedItem,
-      isShowingList: false,
-      sourceType: props.data.sourceType,
-      getDataSource: props.getDataSource,
-      loading: true,
-    }
-  }
+  const [sourceList, setSourceList] = React.useState([])
+  const [matchedList, setMatchedList] = React.useState([])
+  const [searchText, setSearchText] = React.useState(defaultValue.value)
+  const [selectedItem, setSelectedItem] = React.useState(defaultValue.selectedItem)
+  const [defaultSelectedItem, setDefaultSelectedItem] = React.useState(defaultValue.selectedItem)
+  const [isShowingList, setIsShowingList] = React.useState(false)
+  const [loading, setLoading] = React.useState(true)
 
-  async componentDidMount() {
-    this.mounted = true
-    await this.loadDataSource()
-    this.checkForValue()
-  }
-
-  componentWillUnmount() {
-    this.mounted = false
-  }
-
-  checkForValue = (attempt = 0) => {
-    const { defaultValue } = this.props
-    const maxRetries = 3
-
-    if (!this.state.selectedItem && defaultValue?.selectedItem) {
-      setTimeout(() => {
-        if (this.mounted && !this.state.selectedItem) {
-          this.setState({
-            searchText: defaultValue.value,
-            selectedItem: defaultValue.selectedItem,
-            defaultSelectedItem: defaultValue.selectedItem,
-            loading: false,
-          }, () => {
-            // Only notify parent after data is fully loaded and state is set
-            this.notifyParentOfInitialization()
-          })
-          if (!this.state.selectedItem && attempt < maxRetries) {
-            this.checkForValue(attempt + 1)
-          }
-        }
-      }, 500)
-    } else {
-      this.setState({ loading: false }, () => {
-        // Only notify parent after data is fully loaded and state is set
-        this.notifyParentOfInitialization()
-      })
-    }
-  }
-
-  notifyParentOfInitialization = () => {
+  const notifyParentOfInitialization = React.useCallback(() => {
     // Only notify parent once the component is fully initialized and not during sync operations
-    if (this.props.data.parentId && this.props.onElementChange && !this.state.loading && !this.syncInProgress) {
-      this.props.onElementChange({
-        ...this.props.data,
+    if (
+      props.data.parentId &&
+      props.onElementChange &&
+      !loading &&
+      !syncInProgress.current
+    ) {
+      props.onElementChange({
+        ...props.data,
         element: 'DataSource',
         initialized: true,
-        sourceType: this.props.data.sourceType,
-        formSource: this.props.data.formSource,
-        selectedItem: this.state.selectedItem,
-        value: this.state.searchText,
+        sourceType: props.data.sourceType,
+        formSource: props.data.formSource,
+        selectedItem: selectedItem,
+        value: searchText,
         isInitialSync: true, // Flag to indicate this is initial synchronization
       })
     }
-  }
+  }, [props, loading, selectedItem, searchText])
 
-  async loadDataSource() {
-    if (typeof this.props.getDataSource === 'function') {
+  const checkForValue = React.useCallback(
+    (attempt = 0) => {
+      const maxRetries = 3
+
+      if (!selectedItem && props.defaultValue?.selectedItem) {
+        setTimeout(() => {
+          if (mounted.current && !selectedItem) {
+            setSearchText(props.defaultValue.value)
+            setSelectedItem(props.defaultValue.selectedItem)
+            setDefaultSelectedItem(props.defaultValue.selectedItem)
+            setLoading(false)
+            // Only notify parent after data is fully loaded and state is set
+            notifyParentOfInitialization()
+            if (!selectedItem && attempt < maxRetries) {
+              checkForValue(attempt + 1)
+            }
+          }
+        }, 500)
+      } else {
+        setLoading(false)
+        // Only notify parent after data is fully loaded and state is set
+        notifyParentOfInitialization()
+      }
+    },
+    [selectedItem, props.defaultValue, notifyParentOfInitialization]
+  )
+
+  const loadDataSource = React.useCallback(async () => {
+    if (typeof props.getDataSource === 'function') {
       try {
-        const data = await this.props.getDataSource(this.props.data)
-        if (this.mounted) {
-          this.setState({
-            sourceList: data,
-            matchedList: data,
-          })
+        const data = await props.getDataSource(props.data)
+        if (mounted.current) {
+          setSourceList(data)
+          setMatchedList(data)
         }
       } catch (error) {
         console.warn('Error loading data source:', error)
-        if (this.mounted) {
-          this.setState({
-            sourceList: [],
-            matchedList: [],
-          })
+        if (mounted.current) {
+          setSourceList([])
+          setMatchedList([])
         }
       }
     }
-  }
+  }, [props])
 
-  static getDerivedStateFromProps(props, state) {
-    // Handle sync updates from other DataSource components in the same column
-    if (props.data.isSyncUpdate && props.data.selectedItem &&
-        JSON.stringify(props.data.selectedItem) !== JSON.stringify(state.selectedItem)) {
-      return {
-        searchText: props.data.value || props.data.selectedItem.name || '',
-        selectedItem: props.data.selectedItem,
-        defaultSelectedItem: props.data.selectedItem,
-      }
+  React.useEffect(() => {
+    mounted.current = true
+
+    const init = async () => {
+      await loadDataSource()
+      checkForValue()
     }
 
+    init()
+
+    return () => {
+      mounted.current = false
+    }
+  }, [loadDataSource, checkForValue])
+
+  React.useEffect(() => {
+    // Handle sync updates from other DataSource components in the same column
     if (
+      props.data.isSyncUpdate &&
+      props.data.selectedItem &&
+      JSON.stringify(props.data.selectedItem) !== JSON.stringify(selectedItem)
+    ) {
+      setSearchText(props.data.value || props.data.selectedItem.name || '')
+      setSelectedItem(props.data.selectedItem)
+      setDefaultSelectedItem(props.data.selectedItem)
+
+      // Clear the sync flag after processing
+      const updatedData = { ...props.data }
+      delete updatedData.isSyncUpdate
+      if (props.updateElement) {
+        props.updateElement(updatedData)
+      }
+    } else if (
       props.defaultValue &&
       JSON.stringify(props.defaultValue.selectedItem) !==
-        JSON.stringify(state.defaultSelectedItem)
+        JSON.stringify(defaultSelectedItem)
     ) {
-      const defaultValue = props.defaultValue || {}
-      return {
-        searchText: defaultValue.value,
-        selectedItem: defaultValue.selectedItem,
-        defaultSelectedItem: defaultValue.selectedItem,
-      }
+      const newDefaultValue = props.defaultValue || {}
+      setSearchText(newDefaultValue.value)
+      setSelectedItem(newDefaultValue.selectedItem)
+      setDefaultSelectedItem(newDefaultValue.selectedItem)
     }
-    return null
-  }
+  }, [props.data, props.defaultValue, props.updateElement, selectedItem, defaultSelectedItem])
 
-  componentDidUpdate(prevProps) {
-    // Clear the sync flag after processing
-    if (this.props.data.isSyncUpdate && prevProps.data.isSyncUpdate !== this.props.data.isSyncUpdate) {
-      // Clear the flag to prevent further processing
-      const updatedData = { ...this.props.data }
-      delete updatedData.isSyncUpdate
-      if (this.props.updateElement) {
-        this.props.updateElement(updatedData)
-      }
-    }
-  }
+  const handleInputFocus = React.useCallback(() => {
+    setIsShowingList(true)
+  }, [])
 
-  handleInputFocus = () => {
-    this.setState({
-      isShowingList: true,
-    })
-  }
-
-  handleInputBlur = () => {
+  const handleInputBlur = React.useCallback(() => {
     setTimeout(() => {
-      this.setState({
-        isShowingList: false,
-      })
+      setIsShowingList(false)
     }, 200)
+  }, [])
+
+  const debounceOnChange = React.useCallback(
+    (value) => {
+      const matchData = sourceList.filter((item) =>
+        `${item.name}`.toLocaleLowerCase().includes(`${value}`.toLocaleLowerCase())
+      )
+      setSearchText(value)
+      setMatchedList(matchData)
+    },
+    [sourceList]
+  )
+
+  const handleOnChange = React.useCallback(
+    (event) => {
+      if (event.key === 'Enter') {
+        return
+      }
+      debounceOnChange(event.target.value)
+    },
+    [debounceOnChange]
+  )
+
+  const handleSelectItem = React.useCallback(
+    (item) => {
+      const currentTime = Date.now()
+
+      // Prevent sync loops during programmatic updates or rapid successive calls
+      if (syncInProgress.current || currentTime - lastSyncTimestamp.current < 200) {
+        setSelectedItem(item)
+        setSearchText(item.name)
+        setIsShowingList(false)
+        return
+      }
+
+      setSelectedItem(item)
+      setSearchText(item.name)
+      setIsShowingList(false)
+
+      // Only notify parent about user-initiated selections, not sync updates
+      if (props.data.parentId && props.onElementChange && !loading) {
+        lastSyncTimestamp.current = currentTime
+        props.onElementChange({
+          ...props.data,
+          element: 'DataSource',
+          selectedItem: item,
+          value: item.name,
+          isUserSelection: true, // Flag to indicate this is a user selection
+          timestamp: currentTime, // Add timestamp to track changes
+        })
+      }
+    },
+    [props, loading]
+  )
+
+  const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()
+
+  const savedEditor = props.editor
+  let isSameEditor = true
+  if (savedEditor && savedEditor.userId && !!userProperties) {
+    isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
-  debounceOnChange = (value) => {
-    const matchData = this.state.sourceList.filter((item) => `${item.name}`.toLocaleLowerCase().includes(`${value}`.toLocaleLowerCase()))
-    this.setState({
-      searchText: value,
-      matchedList: matchData,
-    })
+  const inputProps = {
+    type: 'text',
+    className: 'form-control',
+    name: props.data.field_name,
+    value: searchText,
   }
 
-  handleOnChange = (event) => {
-    if (event.key === 'Enter') {
-      return
-    }
-    this.debounceOnChange(event.target.value)
+  if (props.mutable) {
+    inputProps.defaultValue = props.defaultValue
+    inputProps.ref = inputField
   }
 
-  handleSelectItem = (item) => {
-    const currentTime = Date.now()
-
-    // Prevent sync loops during programmatic updates or rapid successive calls
-    if (this.syncInProgress || currentTime - this.lastSyncTimestamp < 200) {
-      this.setState({
-        selectedItem: item,
-        searchText: item.name,
-        isShowingList: false,
-      })
-      return
-    }
-
-    this.setState({
-      selectedItem: item,
-      searchText: item.name,
-      isShowingList: false,
-    })
-
-    // Only notify parent about user-initiated selections, not sync updates
-    if (this.props.data.parentId && this.props.onElementChange && !this.state.loading) {
-      this.lastSyncTimestamp = currentTime
-      this.props.onElementChange({
-        ...this.props.data,
-        element: 'DataSource',
-        selectedItem: item,
-        value: item.name,
-        isUserSelection: true, // Flag to indicate this is a user selection
-        timestamp: currentTime, // Add timestamp to track changes
-      })
-    }
+  let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
+  if (props.data.pageBreakBefore) {
+    baseClasses += ' alwaysbreak'
   }
 
-  // Method to handle sync updates from parent without triggering more sync events
-  updateFromSync = (syncData) => {
-    this.syncInProgress = true
-
-    if (syncData.selectedItem && syncData.selectedItem !== this.state.selectedItem) {
-      this.setState({
-        selectedItem: syncData.selectedItem,
-        searchText: syncData.selectedItem.name || syncData.value || '',
-        isShowingList: false,
-      }, () => {
-        // Reset sync flag after state update
-        setTimeout(() => {
-          this.syncInProgress = false
-        }, 100)
-      })
-    } else {
-      this.syncInProgress = false
-    }
-  }
-
-  render() {
-    const userProperties =
-      this.props.getActiveUserProperties && this.props.getActiveUserProperties()
-
-    const savedEditor = this.props.editor
-    let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor =
-        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
-    }
-
-    // Add debugging
-
-    const props = {
-      type: 'text',
-      className: 'form-control',
-      name: this.props.data.field_name,
-      value: this.state.searchText,
-    }
-
-    if (this.props.mutable) {
-      props.defaultValue = this.props.defaultValue
-      props.ref = this.inputField
-    }
-
-    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
-    if (this.props.data.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
-    }
-
-    return (
-      <div className={baseClasses}>
-        <ComponentHeader {...this.props} />
-        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
-          <ComponentLabel {...this.props} style={{ display: 'block' }} />
+  return (
+    <div className={baseClasses}>
+      <ComponentHeader {...props} />
+      <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
+        <ComponentLabel {...props} style={{ display: 'block' }} />
+        <div
+          style={{
+            position: 'relative',
+            display: 'inline-block',
+            width: '100%',
+          }}
+        >
+          <div>
+            <input
+              {...inputProps}
+              disabled={props.read_only || !isSameEditor || loading}
+              onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
+              onChange={handleOnChange}
+            />
+          </div>
           <div
             style={{
-              position: 'relative',
-              display: 'inline-block',
-              width: '100%',
+              position: 'absolute',
+              zIndex: 199,
+              top: '100%',
+              left: 0,
+              right: 0,
+              height: 250,
+              overflowY: 'auto',
+              display: isShowingList ? 'block' : 'none',
             }}
           >
-            <div>
-              <input
-                {...props}
-                disabled={this.props.read_only || !isSameEditor || this.state.loading}
-                onFocus={this.handleInputFocus}
-                onBlur={this.handleInputBlur}
-                onChange={this.handleOnChange}
-              />
-            </div>
-            <div
-              style={{
-                position: 'absolute',
-                zIndex: 199,
-                top: '100%',
-                left: 0,
-                right: 0,
-                height: 250,
-                overflowY: 'auto',
-                display: this.state.isShowingList ? 'block' : 'none',
-              }}
-            >
-              {(this.state.matchedList || []).map((item) => (
-                <div
-                  key={item.id}
-                  style={{
-                    position: 'relative',
-                    display: 'block',
-                    padding: '0.75rem 1.25rem',
-                    marginBottom: -1,
-                    backgroundColor: '#fff',
-                    border: '1px solid rgba(0, 0, 0, 0.125)',
-                  }}
-                  onClick={() => this.handleSelectItem(item)}
-                >
-                  {item.name}
-                </div>
-              ))}
-            </div>
+            {(matchedList || []).map((item) => (
+              <div
+                key={item.id}
+                style={{
+                  position: 'relative',
+                  display: 'block',
+                  padding: '0.75rem 1.25rem',
+                  marginBottom: -1,
+                  backgroundColor: '#fff',
+                  border: '1px solid rgba(0, 0, 0, 0.125)',
+                }}
+                onClick={() => handleSelectItem(item)}
+              >
+                {item.name}
+              </div>
+            ))}
           </div>
         </div>
       </div>
-    )
-  }
+    </div>
+  )
 }
 
 export default DataSource
