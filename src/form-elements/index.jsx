@@ -21,120 +21,112 @@ import Table from './table'
 
 const FormElements = {}
 
-class Header extends React.Component {
-  render() {
-    // const headerClasses = `dynamic-input ${this.props.data.element}-input`;
-    let classNames = 'static'
-    if (this.props.data.bold) {
-      classNames += ' bold'
-    }
-    if (this.props.data.italic) {
-      classNames += ' italic'
-    }
-
-    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
-    if (this.props.data.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
-    }
-
-    return (
-      <div className={baseClasses}>
-        <ComponentHeader {...this.props} />
-        <h3
-          className={classNames}
-          dangerouslySetInnerHTML={{
-            __html: myxss.process(this.props.data.content),
-          }}
-        />
-      </div>
-    )
+const Header = (props) => {
+  // const headerClasses = `dynamic-input ${props.data.element}-input`;
+  let classNames = 'static'
+  if (props.data.bold) {
+    classNames += ' bold'
   }
+  if (props.data.italic) {
+    classNames += ' italic'
+  }
+
+  let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
+  if (props.data.pageBreakBefore) {
+    baseClasses += ' alwaysbreak'
+  }
+
+  return (
+    <div className={baseClasses}>
+      <ComponentHeader {...props} />
+      <h3
+        className={classNames}
+        dangerouslySetInnerHTML={{
+          __html: myxss.process(props.data.content),
+        }}
+      />
+    </div>
+  )
 }
 
-class Paragraph extends React.Component {
-  render() {
-    let classNames = 'static'
-    if (this.props.data.bold) {
-      classNames += ' bold'
-    }
-    if (this.props.data.italic) {
-      classNames += ' italic'
-    }
-
-    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
-    if (this.props.data.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
-    }
-
-    return (
-      <div className={baseClasses}>
-        <ComponentHeader {...this.props} />
-        <p
-          className={classNames}
-          dangerouslySetInnerHTML={{
-            __html: myxss.process(this.props.data.content),
-          }}
-        />
-      </div>
-    )
+const Paragraph = (props) => {
+  let classNames = 'static'
+  if (props.data.bold) {
+    classNames += ' bold'
   }
+  if (props.data.italic) {
+    classNames += ' italic'
+  }
+
+  let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
+  if (props.data.pageBreakBefore) {
+    baseClasses += ' alwaysbreak'
+  }
+
+  return (
+    <div className={baseClasses}>
+      <ComponentHeader {...props} />
+      <p
+        className={classNames}
+        dangerouslySetInnerHTML={{
+          __html: myxss.process(props.data.content),
+        }}
+      />
+    </div>
+  )
 }
 
-class Label extends React.Component {
-  render() {
-    let classNames = 'static'
-    if (this.props.data.bold) {
-      classNames += ' bold'
-    }
-    if (this.props.data.italic) {
-      classNames += ' italic'
-    }
-
-    // Add alignment support
-    const style = { display: 'block' } // Always make label a block element
-
-    if (this.props.data.center) {
-      style.textAlign = 'center'
-    } else if (this.props.data.right) {
-      style.textAlign = 'right'
-    } else if (this.props.data.left) {
-      style.textAlign = 'left'
-    }
-
-    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
-    if (this.props.data.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
-    }
-
-    return (
-      <div className={baseClasses}>
-        <ComponentHeader {...this.props} />
-        <label
-          className={classNames}
-          style={style}
-          dangerouslySetInnerHTML={{
-            __html: myxss.process(this.props.data.content),
-          }}
-        />
-      </div>
-    )
+const Label = (props) => {
+  let classNames = 'static'
+  if (props.data.bold) {
+    classNames += ' bold'
   }
+  if (props.data.italic) {
+    classNames += ' italic'
+  }
+
+  // Add alignment support
+  const style = { display: 'block' } // Always make label a block element
+
+  if (props.data.center) {
+    style.textAlign = 'center'
+  } else if (props.data.right) {
+    style.textAlign = 'right'
+  } else if (props.data.left) {
+    style.textAlign = 'left'
+  }
+
+  let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
+  if (props.data.pageBreakBefore) {
+    baseClasses += ' alwaysbreak'
+  }
+
+  return (
+    <div className={baseClasses}>
+      <ComponentHeader {...props} />
+      <label
+        className={classNames}
+        style={style}
+        dangerouslySetInnerHTML={{
+          __html: myxss.process(props.data.content),
+        }}
+      />
+    </div>
+  )
 }
 
-class LineBreak extends React.Component {
-  render() {
-    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
-    if (this.props.data.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
-    }
-
-    return (
-      <div className={baseClasses}>
-        <ComponentHeader {...this.props} />
-        <hr />
-      </div>
-    )
+const LineBreak = (props) => {
+  let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
+  if (props.data.pageBreakBefore) {
+    baseClasses += ' alwaysbreak'
   }
+
+  return (
+    <div className={baseClasses}>
+      <ComponentHeader {...props} />
+      <hr />
+    </div>
+  )
 }
 
 class TextInput extends React.Component {
