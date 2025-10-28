@@ -469,146 +469,132 @@ const Dropdown = (props) => {
   )
 }
 
-class Signature extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      defaultValue: props.defaultValue,
-    }
-    this.inputField = React.createRef()
-    this.canvas = React.createRef()
-  }
+const Signature = (props) => {
+  const [defaultValue, setDefaultValue] = React.useState(props.defaultValue)
+  const inputField = React.useRef(null)
+  const canvas = React.useRef(null)
 
-  clear = () => {
-    if (this.state.defaultValue) {
-      this.setState({ defaultValue: '' })
+  const clear = React.useCallback(() => {
+    if (defaultValue) {
+      setDefaultValue('')
 
       // Immediately apply changes to this component's data when clearing signature
-      if (this.props.onElementChange) {
+      if (props.onElementChange) {
         const updatedData = {
-          ...this.props.data,
+          ...props.data,
           value: '',
         }
 
-        this.props.onElementChange(updatedData)
+        props.onElementChange(updatedData)
 
-        if (this.props.data.dirty === undefined || this.props.data.dirty) {
+        if (props.data.dirty === undefined || props.data.dirty) {
           updatedData.dirty = true
-          if (this.props.updateElement) {
-            this.props.updateElement(updatedData)
+          if (props.updateElement) {
+            props.updateElement(updatedData)
           }
         }
       }
-    } else if (this.canvas.current) {
-      this.canvas.current.clear()
+    } else if (canvas.current) {
+      canvas.current.clear()
     }
-  }
+  }, [defaultValue, props])
 
   // Handle signature changes
-  handleSignatureChange = () => {
+  const handleSignatureChange = React.useCallback(() => {
     // Only trigger if canvas is available
-    if (!this.canvas.current) return
+    if (!canvas.current) return
 
     // Get the signature data
-    const signatureData = this.canvas.current.toDataURL().split(',')[1]
+    const signatureData = canvas.current.toDataURL().split(',')[1]
 
     // If onElementChange is provided, call it to synchronize changes across columns
-    if (this.props.onElementChange) {
+    if (props.onElementChange) {
       const updatedData = {
-        ...this.props.data,
+        ...props.data,
         value: signatureData,
       }
 
-      this.props.onElementChange(updatedData)
+      props.onElementChange(updatedData)
 
       // Immediately apply changes to this component's data
-      if (this.props.data.dirty === undefined || this.props.data.dirty) {
+      if (props.data.dirty === undefined || props.data.dirty) {
         updatedData.dirty = true
-        if (this.props.updateElement) {
-          this.props.updateElement(updatedData)
+        if (props.updateElement) {
+          props.updateElement(updatedData)
         }
       }
     }
 
-    this.setState({ defaultValue: signatureData })
+    setDefaultValue(signatureData)
+  }, [props])
+
+  const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()
+
+  const savedEditor = props.editor
+  let isSameEditor = true
+  if (savedEditor && savedEditor.userId && !!userProperties) {
+    isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
-  render() {
-    const userProperties =
-      this.props.getActiveUserProperties && this.props.getActiveUserProperties()
+  let canClear = !!defaultValue
+  const inputProps = {}
+  inputProps.type = 'hidden'
+  inputProps.name = props.data.field_name
 
-    const savedEditor = this.props.editor
-    let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
-    }
+  if (props.mutable) {
+    inputProps.defaultValue = defaultValue
+    inputProps.ref = inputField
+  }
+  const pad_props = {}
+  // umd requires canvasProps={{ width: 400, height: 150 }}
+  if (props.mutable) {
+    pad_props.defaultValue = defaultValue
+    pad_props.ref = canvas
+    pad_props.onEnd = handleSignatureChange
+    canClear = !props.read_only || isSameEditor
+  }
 
-    const { defaultValue } = this.state
-    let canClear = !!defaultValue
-    const props = {}
-    props.type = 'hidden'
-    props.name = this.props.data.field_name
+  if (props.read_only || !isSameEditor) {
+    inputProps.disabled = 'disabled'
+  }
 
-    if (this.props.mutable) {
-      props.defaultValue = defaultValue
-      props.ref = this.inputField
-    }
-    const pad_props = {}
-    // umd requires canvasProps={{ width: 400, height: 150 }}
-    if (this.props.mutable) {
-      pad_props.defaultValue = defaultValue
-      pad_props.ref = this.canvas
-      pad_props.onEnd = this.handleSignatureChange
-      canClear = !this.props.read_only || isSameEditor
-    }
+  let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
+  if (props.data.pageBreakBefore) {
+    baseClasses += ' alwaysbreak'
+  }
 
-    if (this.props.read_only || !isSameEditor) {
-      props.disabled = 'disabled'
-    }
+  let sourceDataURL
+  if (defaultValue && defaultValue.length > 0) {
+    sourceDataURL = `data:image/png;base64,${defaultValue}`
+  }
 
-    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
-    if (this.props.data.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
-    }
-
-    let sourceDataURL
-    if (defaultValue && defaultValue.length > 0) {
-      sourceDataURL = `data:image/png;base64,${defaultValue}`
-    }
-
-    return (
-      <div className={baseClasses}>
-        <ComponentHeader {...this.props} />
-        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
-          <ComponentLabel {...this.props} />
-          {this.props.read_only === true || !isSameEditor || !!sourceDataURL ? (
-            <img src={sourceDataURL} />
-          ) : (
-            <SignaturePad {...pad_props} />
-          )}
-          {canClear && (
-            <i
-              className="fas fa-times clear-signature"
-              onClick={this.clear}
-              title="Clear Signature"
-            />
-          )}
-          <input {...props} />
-        </div>
+  return (
+    <div className={baseClasses}>
+      <ComponentHeader {...props} />
+      <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
+        <ComponentLabel {...props} />
+        {props.read_only === true || !isSameEditor || !!sourceDataURL ? (
+          <img src={sourceDataURL} />
+        ) : (
+          <SignaturePad {...pad_props} />
+        )}
+        {canClear && (
+          <i
+            className="fas fa-times clear-signature"
+            onClick={clear}
+            title="Clear Signature"
+          />
+        )}
+        <input {...inputProps} />
       </div>
-    )
-  }
+    </div>
+  )
 }
 
-class Tags extends React.Component {
-  constructor(props) {
-    super(props)
-    this.inputField = React.createRef()
-    const { defaultValue, data } = props
-    this.state = { value: this.getDefaultValue(defaultValue, data.options) }
-  }
+const Tags = (props) => {
+  const inputField = React.useRef(null)
 
-  getDefaultValue(defaultValue, options) {
+  const getDefaultValue = React.useCallback((defaultValue, options) => {
     if (defaultValue) {
       if (typeof defaultValue === 'string') {
         const vals = defaultValue.split(',').map((x) => x.trim())
@@ -617,61 +603,60 @@ class Tags extends React.Component {
       return options.filter((x) => defaultValue.indexOf(x.value) > -1)
     }
     return []
+  }, [])
+
+  const [value, setValue] = React.useState(getDefaultValue(props.defaultValue, props.data.options))
+
+  const handleChange = React.useCallback((e) => {
+    setValue(e || [])
+  }, [])
+
+  const options = props.data.options.map((option) => {
+    option.label = option.text
+    return option
+  })
+
+  const selectProps = {}
+  selectProps.isMulti = true
+  selectProps.name = props.data.field_name
+  selectProps.onChange = handleChange
+
+  selectProps.options = options
+  if (!props.mutable) {
+    selectProps.value = options[0].text
+  } // to show a sample of what tags looks like
+
+  const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()
+
+  const savedEditor = props.editor
+  let isSameEditor = true
+  if (savedEditor && savedEditor.userId && !!userProperties) {
+    isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
-  // state = { value: this.props.defaultValue !== undefined ? this.props.defaultValue.split(',') : [] };
-
-  handleChange = (e) => {
-    this.setState({ value: e || [] })
+  if (props.mutable) {
+    // selectProps.isDisabled = props.read_only;
+    selectProps.isDisabled = !!(props.read_only || !isSameEditor)
+    selectProps.value = value
+    selectProps.ref = inputField
   }
 
-  render() {
-    const options = this.props.data.options.map((option) => {
-      option.label = option.text
-      return option
-    })
-    const props = {}
-    props.isMulti = true
-    props.name = this.props.data.field_name
-    props.onChange = this.handleChange
+  let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
+  if (props.data.pageBreakBefore) {
+    baseClasses += ' alwaysbreak'
+  }
 
-    props.options = options
-    if (!this.props.mutable) {
-      props.value = options[0].text
-    } // to show a sample of what tags looks like
-
-    const userProperties =
-      this.props.getActiveUserProperties && this.props.getActiveUserProperties()
-
-    const savedEditor = this.props.editor
-    let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
-    }
-
-    if (this.props.mutable) {
-      // props.isDisabled = this.props.read_only;
-      props.isDisabled = !!(this.props.read_only || !isSameEditor)
-      props.value = this.state.value
-      props.ref = this.inputField
-    }
-
-    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
-    if (this.props.data.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
-    }
-
-    return (
-      <div className={baseClasses}>
-        <ComponentHeader {...this.props} />
-        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
-          <ComponentLabel {...this.props} />
-          <Select {...props} />
-        </div>
+  return (
+    <div className={baseClasses}>
+      <ComponentHeader {...props} />
+      <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
+        <ComponentLabel {...props} />
+        <Select {...selectProps} />
       </div>
-    )
-  }
+    </div>
+  )
 }
+
 
 const Checkboxes = (props) => {
   const optionsRef = React.useRef({})
@@ -1069,102 +1054,85 @@ const Image = (props) => {
   )
 }
 
-class Rating extends React.Component {
-  constructor(props) {
-    super(props)
-    this.inputField = React.createRef()
+const Rating = (props) => {
+  const inputField = React.useRef(null)
+
+  const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()
+
+  const savedEditor = props.editor
+  let isSameEditor = true
+  if (savedEditor && savedEditor.userId && !!userProperties) {
+    isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
-  render() {
-    const userProperties =
-      this.props.getActiveUserProperties && this.props.getActiveUserProperties()
+  const starProps = {}
+  starProps.name = props.data.field_name
+  starProps.ratingAmount = 5
 
-    const savedEditor = this.props.editor
-    let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
-    }
+  if (props.mutable) {
+    starProps.rating = props.defaultValue !== undefined ? parseFloat(props.defaultValue, 10) : 0
+    starProps.editing = true
+    // starProps.disabled = props.read_only ||;
+    starProps.disabled = !!(props.read_only || !isSameEditor)
+    starProps.ref = inputField
+  }
 
-    const props = {}
-    props.name = this.props.data.field_name
-    props.ratingAmount = 5
+  let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
+  if (props.data.pageBreakBefore) {
+    baseClasses += ' alwaysbreak'
+  }
 
-    if (this.props.mutable) {
-      props.rating =
-        this.props.defaultValue !== undefined
-          ? parseFloat(this.props.defaultValue, 10)
-          : 0
-      props.editing = true
-      // props.disabled = this.props.read_only ||;
-      props.disabled = !!(this.props.read_only || !isSameEditor)
-      props.ref = this.inputField
-    }
-
-    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
-    if (this.props.data.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
-    }
-
-    return (
-      <div className={baseClasses}>
-        <ComponentHeader {...this.props} />
-        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
-          <ComponentLabel {...this.props} />
-          <StarRating {...props} />
-        </div>
+  return (
+    <div className={baseClasses}>
+      <ComponentHeader {...props} />
+      <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
+        <ComponentLabel {...props} />
+        <StarRating {...starProps} />
       </div>
-    )
-  }
+    </div>
+  )
 }
 
-class HyperLink extends React.Component {
-  render() {
-    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
-    if (this.props.data.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
-    }
-
-    return (
-      <div className={baseClasses}>
-        <ComponentHeader {...this.props} />
-        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
-          <a target="_blank" href={this.props.data.href} rel="noreferrer">
-            {this.props.data.content}
-          </a>
-        </div>
-      </div>
-    )
+const HyperLink = (props) => {
+  let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
+  if (props.data.pageBreakBefore) {
+    baseClasses += ' alwaysbreak'
   }
+
+  return (
+    <div className={baseClasses}>
+      <ComponentHeader {...props} />
+      <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
+        <a target="_blank" href={props.data.href} rel="noreferrer">
+          {props.data.content}
+        </a>
+      </div>
+    </div>
+  )
 }
 
-class Download extends React.Component {
-  render() {
-    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
-    if (this.props.data.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
-    }
-
-    return (
-      <div className={baseClasses}>
-        <ComponentHeader {...this.props} />
-        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
-          <a href={`${this.props.download_path}?id=${this.props.data.file_path}`}>
-            {this.props.data.content}
-          </a>
-        </div>
-      </div>
-    )
+const Download = (props) => {
+  let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
+  if (props.data.pageBreakBefore) {
+    baseClasses += ' alwaysbreak'
   }
+
+  return (
+    <div className={baseClasses}>
+      <ComponentHeader {...props} />
+      <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
+        <a href={`${props.download_path}?id=${props.data.file_path}`}>
+          {props.data.content}
+        </a>
+      </div>
+    </div>
+  )
 }
 
-class Camera extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = { img: null }
-  }
+const Camera = (props) => {
+  const [img, setImg] = React.useState(null)
 
-  displayImage = (e) => {
-    const self = this
+  const displayImage = React.useCallback((e) => {
     const { target } = e
     let file
     let reader
@@ -1176,199 +1144,173 @@ class Camera extends React.Component {
       reader.readAsDataURL(file)
 
       reader.onloadend = () => {
-        self.setState({
-          img: reader.result,
-        })
+        setImg(reader.result)
       }
     }
+  }, [])
+
+  const clearImage = React.useCallback(() => {
+    setImg(null)
+  }, [])
+
+  let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
+  if (props.data.pageBreakBefore) {
+    baseClasses += ' alwaysbreak'
   }
 
-  clearImage = () => {
-    this.setState({
-      img: null,
-    })
+  const name = props.data.field_name
+  const fileInputStyle = img ? { display: 'none' } : null
+  let sourceDataURL
+  if (props.read_only === true && props.defaultValue && props.defaultValue.length > 0) {
+    if (props.defaultValue.indexOf(name > -1)) {
+      sourceDataURL = props.defaultValue
+    } else {
+      sourceDataURL = `data:image/png;base64,${props.defaultValue}`
+    }
   }
-
-  render() {
-    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
-    if (this.props.data.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
-    }
-
-    const name = this.props.data.field_name
-    const fileInputStyle = this.state.img ? { display: 'none' } : null
-    if (this.props.data.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
-    }
-    let sourceDataURL
-    if (
-      this.props.read_only === true &&
-      this.props.defaultValue &&
-      this.props.defaultValue.length > 0
-    ) {
-      if (this.props.defaultValue.indexOf(name > -1)) {
-        sourceDataURL = this.props.defaultValue
-      } else {
-        sourceDataURL = `data:image/png;base64,${this.props.defaultValue}`
-      }
-    }
-    console.log('sourceDataURL', sourceDataURL)
-    return (
-      <div className={baseClasses}>
-        <ComponentHeader {...this.props} />
-        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
-          <ComponentLabel {...this.props} />
-          {this.props.read_only === true &&
-          this.props.defaultValue &&
-          this.props.defaultValue.length > 0 ? (
-            <div>
-              <img src={sourceDataURL} />
+  console.log('sourceDataURL', sourceDataURL)
+  return (
+    <div className={baseClasses}>
+      <ComponentHeader {...props} />
+      <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
+        <ComponentLabel {...props} />
+        {props.read_only === true && props.defaultValue && props.defaultValue.length > 0 ? (
+          <div>
+            <img src={sourceDataURL} />
+          </div>
+        ) : (
+          <div className="image-upload-container">
+            <div style={fileInputStyle}>
+              <input
+                name={name}
+                type="file"
+                accept="image/*"
+                capture="camera"
+                className="image-upload"
+                onChange={displayImage}
+              />
+              <div className="image-upload-control">
+                <div className="btn btn-default">
+                  <i className="fas fa-camera" /> Upload Photo
+                </div>
+                <p>Select an image from your computer or device.</p>
+              </div>
             </div>
-          ) : (
-            <div className="image-upload-container">
-              <div style={fileInputStyle}>
-                <input
-                  name={name}
-                  type="file"
-                  accept="image/*"
-                  capture="camera"
-                  className="image-upload"
-                  onChange={this.displayImage}
-                />
-                <div className="image-upload-control">
-                  <div className="btn btn-default">
-                    <i className="fas fa-camera" /> Upload Photo
-                  </div>
-                  <p>Select an image from your computer or device.</p>
+
+            {img && (
+              <div>
+                <img src={img} height="100" className="image-upload-preview" />
+                <br />
+                <div className="btn btn-image-clear" onClick={clearImage}>
+                  <i className="fas fa-times" /> Clear Photo
                 </div>
               </div>
-
-              {this.state.img && (
-                <div>
-                  <img
-                    src={this.state.img}
-                    height="100"
-                    className="image-upload-preview"
-                  />
-                  <br />
-                  <div className="btn btn-image-clear" onClick={this.clearImage}>
-                    <i className="fas fa-times" /> Clear Photo
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    )
-  }
-}
-
-class Range extends React.Component {
-  constructor(props) {
-    super(props)
-    this.inputField = React.createRef()
-    this.state = {
-      value:
-        props.defaultValue !== undefined
-          ? parseInt(props.defaultValue, 10)
-          : parseInt(props.data.default_value, 10),
-    }
-  }
-
-  changeValue = (e) => {
-    const { target } = e
-    this.setState({
-      value: target.value,
-    })
-  }
-
-  render() {
-    const props = {}
-    const name = this.props.data.field_name
-
-    props.type = 'range'
-    props.list = `tickmarks_${name}`
-    props.min = this.props.data.min_value
-    props.max = this.props.data.max_value
-    props.step = this.props.data.step
-
-    props.value = this.state.value
-    props.change = this.changeValue
-
-    if (this.props.mutable) {
-      props.ref = this.inputField
-    }
-
-    const datalist = []
-    for (
-      let i = parseInt(props.min_value, 10);
-      i <= parseInt(props.max_value, 10);
-      i += parseInt(props.step, 10)
-    ) {
-      datalist.push(i)
-    }
-
-    const oneBig = 100 / (datalist.length - 1)
-
-    const _datalist = datalist.map((d, idx) => (
-      <option key={`${props.list}_${idx}`}>{d}</option>
-    ))
-
-    const visible_marks = datalist.map((d, idx) => {
-      const option_props = {}
-      let w = oneBig
-      if (idx === 0 || idx === datalist.length - 1) {
-        w = oneBig / 2
-      }
-      option_props.key = `${props.list}_label_${idx}`
-      option_props.style = { width: `${w}%` }
-      if (idx === datalist.length - 1) {
-        option_props.style = { width: `${w}%`, textAlign: 'right' }
-      }
-      return <label {...option_props}>{d}</label>
-    })
-
-    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
-    if (this.props.data.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
-    }
-
-    return (
-      <div className={baseClasses}>
-        <ComponentHeader {...this.props} />
-        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
-          <ComponentLabel {...this.props} />
-          <div className="range">
-            <div className="clearfix">
-              <span className="float-left">{this.props.data.min_label}</span>
-              <span className="float-right">{this.props.data.max_label}</span>
-            </div>
-            <Slider
-              min={props.min}
-              max={props.max}
-              step={props.step}
-              value={props.value}
-              onChange={(value) => {
-                this.setState({ value })
-                if (props.change) {
-                  props.change({ target: { value } })
-                }
-              }}
-              marks={datalist.reduce((acc, val) => {
-                acc[val] = ''
-                return acc
-              }, {})}
-            />
+            )}
           </div>
-          <div className="visible_marks">{visible_marks}</div>
-          <input name={name} value={this.state.value} type="hidden" />
-          <datalist id={props.list}>{_datalist}</datalist>
-        </div>
+        )}
       </div>
-    )
-  }
+    </div>
+  )
 }
+
+const Range = (props) => {
+  const inputField = React.useRef(null)
+  const [value, setValue] = React.useState(
+    props.defaultValue !== undefined
+      ? parseInt(props.defaultValue, 10)
+      : parseInt(props.data.default_value, 10)
+  )
+
+  const changeValue = React.useCallback((e) => {
+    const { target } = e
+    setValue(target.value)
+  }, [])
+
+  const rangeProps = {}
+  const name = props.data.field_name
+
+  rangeProps.type = 'range'
+  rangeProps.list = `tickmarks_${name}`
+  rangeProps.min = props.data.min_value
+  rangeProps.max = props.data.max_value
+  rangeProps.step = props.data.step
+
+  rangeProps.value = value
+  rangeProps.change = changeValue
+
+  if (props.mutable) {
+    rangeProps.ref = inputField
+  }
+
+  const datalist = []
+  for (
+    let i = parseInt(rangeProps.min, 10);
+    i <= parseInt(rangeProps.max, 10);
+    i += parseInt(rangeProps.step, 10)
+  ) {
+    datalist.push(i)
+  }
+
+  const oneBig = 100 / (datalist.length - 1)
+
+  const _datalist = datalist.map((d, idx) => (
+    <option key={`${rangeProps.list}_${idx}`}>{d}</option>
+  ))
+
+  const visible_marks = datalist.map((d, idx) => {
+    const option_props = {}
+    let w = oneBig
+    if (idx === 0 || idx === datalist.length - 1) {
+      w = oneBig / 2
+    }
+    option_props.key = `${rangeProps.list}_label_${idx}`
+    option_props.style = { width: `${w}%` }
+    if (idx === datalist.length - 1) {
+      option_props.style = { width: `${w}%`, textAlign: 'right' }
+    }
+    return <label {...option_props}>{d}</label>
+  })
+
+  let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
+  if (props.data.pageBreakBefore) {
+    baseClasses += ' alwaysbreak'
+  }
+
+  return (
+    <div className={baseClasses}>
+      <ComponentHeader {...props} />
+      <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
+        <ComponentLabel {...props} />
+        <div className="range">
+          <div className="clearfix">
+            <span className="float-left">{props.data.min_label}</span>
+            <span className="float-right">{props.data.max_label}</span>
+          </div>
+          <Slider
+            min={rangeProps.min}
+            max={rangeProps.max}
+            step={rangeProps.step}
+            value={rangeProps.value}
+            onChange={(newValue) => {
+              setValue(newValue)
+              if (rangeProps.change) {
+                rangeProps.change({ target: { value: newValue } })
+              }
+            }}
+            marks={datalist.reduce((acc, val) => {
+              acc[val] = ''
+              return acc
+            }, {})}
+          />
+        </div>
+        <div className="visible_marks">{visible_marks}</div>
+        <input name={name} value={value} type="hidden" />
+        <datalist id={rangeProps.list}>{_datalist}</datalist>
+      </div>
+    </div>
+  )
+}
+
 
 FormElements.Header = Header
 FormElements.HeaderBar = HeaderBar
