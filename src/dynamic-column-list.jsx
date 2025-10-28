@@ -1,236 +1,241 @@
 /**
  * <DynamicColumnList />
  */
-import React from 'react'
+import React, { useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
 // eslint-disable-next-line import/no-cycle
 import FormElementsEdit from './form-elements-edit'
 import ID from './UUID'
 
-export default class DynamicColumnList extends React.Component {
-  constructor(props) {
-    super(props)
-    const { element } = props
-    this.state = {
-      element,
-      showEditModal: false,
-      editingColumn: null,
-      dirty: false,
-    }
-  }
+const DynamicColumnList = ({ element: propsElement, preview = null, updateElement }) => {
+  const [element, setElement] = useState(propsElement)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingColumn, setEditingColumn] = useState(null)
+  const [dirty, setDirty] = useState(false)
 
-  handleEditModalClose = () => {
-    this.setState({
-      showEditModal: false,
-      editingColumn: null,
-    })
-  }
+  const handleEditModalClose = useCallback(() => {
+    setShowEditModal(false)
+    setEditingColumn(null)
+  }, [])
 
-  _setValue = (text) => `${text}`.replace(/[^A-Z0-9]+/gi, '_').toLowerCase()
+  const _setValue = (text) => `${text}`.replace(/[^A-Z0-9]+/gi, '_').toLowerCase()
 
-  editColumn = (index, key, e) => {
-    const { element } = this.state
+  const editColumn = useCallback(
+    (index, key, e) => {
+      setElement((prevElement) => {
+        const newElement = { ...prevElement }
 
-    if (key === 'isSync') {
-      element.columns[index][key] = e.target.checked
-    } else {
-      const val =
-        element.columns[index].value !== this._setValue(element.columns[index][key])
-          ? element.columns[index].value
-          : this._setValue(e.target.value)
+        if (key === 'isSync') {
+          newElement.columns[index][key] = e.target.checked
+        } else {
+          const val =
+            newElement.columns[index].value !== _setValue(newElement.columns[index][key])
+              ? newElement.columns[index].value
+              : _setValue(e.target.value)
 
-      element.columns[index][key] = e.target.value
-      element.columns[index].value = val
-    }
+          newElement.columns[index][key] = e.target.value
+          newElement.columns[index].value = val
+        }
 
-    this.setState({ element, dirty: true })
-  }
+        setDirty(true)
+        return newElement
+      })
+    },
+    [_setValue]
+  )
 
-  updateColumn = () => {
-    const { element, dirty } = this.state
-    const { updateElement, preview } = this.props
+  const updateColumn = useCallback(() => {
     if (dirty) {
       if (preview) {
         updateElement.call(preview, element)
       } else {
         updateElement(element)
       }
-      this.setState({ dirty: false })
+      setDirty(false)
     }
+  }, [dirty, element, preview, updateElement])
+
+  const addColumn = useCallback(
+    (index) => {
+      setElement((prevElement) => {
+        const newElement = { ...prevElement }
+        newElement.columns.splice(index + 1, 0, {
+          value: '',
+          text: '',
+          key: ID.uuid(),
+          width: 1,
+          isSync: true,
+        })
+        return newElement
+      })
+
+      setTimeout(() => {
+        if (preview) {
+          updateElement.call(preview, element)
+        } else {
+          updateElement(element)
+        }
+      }, 0)
+    },
+    [element, preview, updateElement]
+  )
+
+  const removeColumn = useCallback(
+    (index) => {
+      setElement((prevElement) => {
+        const newElement = { ...prevElement }
+        newElement.columns.splice(index, 1)
+        return newElement
+      })
+
+      setTimeout(() => {
+        if (preview) {
+          updateElement.call(preview, element)
+        } else {
+          updateElement(element)
+        }
+      }, 0)
+    },
+    [element, preview, updateElement]
+  )
+
+  const editColumnSettings = useCallback((column) => {
+    setShowEditModal(true)
+    setEditingColumn(column)
+  }, [])
+
+  const handleUpdateElement = useCallback(
+    (updatedElement) => {
+      const columns = [...element.columns]
+      const index = columns.findIndex((col) => col.key === updatedElement.key)
+      if (index !== -1) {
+        columns[index] = updatedElement
+        setElement((prevElement) => ({
+          ...prevElement,
+          columns,
+        }))
+        setDirty(true)
+        setTimeout(() => {
+          updateColumn()
+          handleEditModalClose()
+        }, 0)
+      }
+    },
+    [element.columns, updateColumn, handleEditModalClose]
+  )
+
+  if (dirty) {
+    element.dirty = true
   }
 
-  addColumn = (index) => {
-    const { element } = this.state
-    const { updateElement, preview } = this.props
-    element.columns.splice(index + 1, 0, {
-      value: '',
-      text: '',
-      key: ID.uuid(),
-      width: 1,
-      isSync: true,
-    })
-    if (preview) {
-      updateElement.call(preview, element)
-    } else {
-      updateElement(element)
-    }
-  }
-
-  removeColumn = (index) => {
-    const { element } = this.state
-    const { updateElement, preview } = this.props
-    element.columns.splice(index, 1)
-    if (preview) {
-      updateElement.call(preview, element)
-    } else {
-      updateElement(element)
-    }
-  }
-
-  editColumnSettings = (column) => {
-    this.setState({
-      showEditModal: true,
-      editingColumn: column,
-    })
-  }
-
-  render() {
-    const { element, dirty, showEditModal, editingColumn } = this.state
-    const { preview } = this.props
-
-    if (dirty) {
-      element.dirty = true
-    }
-
-    return (
-      <>
-        <div className="dynamic-option-list">
-          <ul>
-            <li>
-              <div className="row">
-                <div className="col-sm-12">
-                  <b>Columns</b>
-                </div>
-              </div>
-            </li>
-            <li className="clearfix">
-              <div className="row">
-                <div className="col-sm-6">Header Text</div>
-                <div className="col-sm-2">Width</div>
-                <div className="col-sm-1 text-center">Sync</div>
-                <div className="col-sm-3" />
-              </div>
-            </li>
-            {element.columns.map((option, index) => {
-              const editKey = `edit_${option.key}`
-              return (
-                <li className="clearfix" key={editKey}>
-                  <div className="row">
-                    <div className="col-sm-6">
-                      <input
-                        tabIndex={index + 1}
-                        className="form-control"
-                        style={{ width: '100%' }}
-                        type="text"
-                        name={`text_${index}`}
-                        placeholder="Option text"
-                        value={option.text}
-                        onBlur={this.updateColumn}
-                        onChange={(e) => this.editColumn(index, 'text', e)}
-                      />
-                    </div>
-                    <div className="col-sm-2">
-                      <input
-                        tabIndex={index + 1}
-                        className="form-control"
-                        style={{ width: '100%' }}
-                        type="text"
-                        name={`width_${index}`}
-                        placeholder="Width"
-                        value={option.width}
-                        onBlur={this.updateColumn}
-                        onChange={(e) => this.editColumn(index, 'width', e)}
-                      />
-                    </div>
-                    <div className="col-sm-1">
-                      <div
-                        className="d-flex justify-content-center align-items-center"
-                        style={{ height: '38px', minWidth: '56px' }}
-                      >
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          id={`sync_${index}`}
-                          checked={option.isSync || false}
-                          onChange={(e) => this.editColumn(index, 'isSync', e)}
-                          onBlur={this.updateColumn}
-                        />
-                      </div>
-                    </div>
-                    <div className="col-sm-3">
-                      <div className="dynamic-options-actions-buttons">
-                        <button
-                          type="button"
-                          onClick={() => this.addColumn(index)}
-                          className="btn btn-success"
-                        >
-                          <i className="fas fa-plus-circle" />
-                        </button>
-                        {index > 0 && (
-                          <button
-                            type="button"
-                            onClick={() => this.removeColumn(index)}
-                            className="btn btn-danger"
-                          >
-                            <i className="fas fa-minus-circle" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </li>
-              )
-            })}
-          </ul>
-        </div>
-
-        {showEditModal && editingColumn && (
-          <div className="modal show d-block">
-            <div className="modal-dialog modal-lg">
-              <div className="modal-content">
-                <FormElementsEdit
-                  element={editingColumn}
-                  updateElement={(updatedElement) => {
-                    const { element: currentElement } = this.state
-                    const columns = [...currentElement.columns]
-                    const index = columns.findIndex(
-                      (col) => col.key === updatedElement.key
-                    )
-                    if (index !== -1) {
-                      columns[index] = updatedElement
-                      this.setState(
-                        (prevState) => {
-                          const newElement = { ...prevState.element }
-                          newElement.columns = columns
-                          return { element: newElement, dirty: true }
-                        },
-                        () => {
-                          this.updateColumn()
-                          this.handleEditModalClose()
-                        }
-                      )
-                    }
-                  }}
-                  manualEditModeOff={this.handleEditModalClose}
-                  preview={preview}
-                />
+  return (
+    <>
+      <div className="dynamic-option-list">
+        <ul>
+          <li>
+            <div className="row">
+              <div className="col-sm-12">
+                <b>Columns</b>
               </div>
             </div>
+          </li>
+          <li className="clearfix">
+            <div className="row">
+              <div className="col-sm-6">Header Text</div>
+              <div className="col-sm-2">Width</div>
+              <div className="col-sm-1 text-center">Sync</div>
+              <div className="col-sm-3" />
+            </div>
+          </li>
+          {element.columns.map((option, index) => {
+            const editKey = `edit_${option.key}`
+            return (
+              <li className="clearfix" key={editKey}>
+                <div className="row">
+                  <div className="col-sm-6">
+                    <input
+                      tabIndex={index + 1}
+                      className="form-control"
+                      style={{ width: '100%' }}
+                      type="text"
+                      name={`text_${index}`}
+                      placeholder="Option text"
+                      value={option.text}
+                      onBlur={updateColumn}
+                      onChange={(e) => editColumn(index, 'text', e)}
+                    />
+                  </div>
+                  <div className="col-sm-2">
+                    <input
+                      tabIndex={index + 1}
+                      className="form-control"
+                      style={{ width: '100%' }}
+                      type="text"
+                      name={`width_${index}`}
+                      placeholder="Width"
+                      value={option.width}
+                      onBlur={updateColumn}
+                      onChange={(e) => editColumn(index, 'width', e)}
+                    />
+                  </div>
+                  <div className="col-sm-1">
+                    <div
+                      className="d-flex justify-content-center align-items-center"
+                      style={{ height: '38px', minWidth: '56px' }}
+                    >
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        id={`sync_${index}`}
+                        checked={option.isSync || false}
+                        onChange={(e) => editColumn(index, 'isSync', e)}
+                        onBlur={updateColumn}
+                      />
+                    </div>
+                  </div>
+                  <div className="col-sm-3">
+                    <div className="dynamic-options-actions-buttons">
+                      <button
+                        type="button"
+                        onClick={() => addColumn(index)}
+                        className="btn btn-success"
+                      >
+                        <i className="fas fa-plus-circle" />
+                      </button>
+                      {index > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => removeColumn(index)}
+                          className="btn btn-danger"
+                        >
+                          <i className="fas fa-minus-circle" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </li>
+            )
+          })}
+        </ul>
+      </div>
+
+      {showEditModal && editingColumn && (
+        <div className="modal show d-block">
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <FormElementsEdit
+                element={editingColumn}
+                updateElement={handleUpdateElement}
+                manualEditModeOff={handleEditModalClose}
+                preview={preview}
+              />
+            </div>
           </div>
-        )}
-      </>
-    )
-  }
+        </div>
+      )}
+    </>
+  )
 }
 
 DynamicColumnList.propTypes = {
@@ -250,6 +255,4 @@ DynamicColumnList.propTypes = {
   updateElement: PropTypes.func.isRequired,
 }
 
-DynamicColumnList.defaultProps = {
-  preview: null,
-}
+export default DynamicColumnList
