@@ -129,102 +129,89 @@ const LineBreak = (props) => {
   )
 }
 
-class TextInput extends React.Component {
-  constructor(props) {
-    super(props)
-    this.inputField = React.createRef()
-    this.handleChange = this.handleChange.bind(this)
-    this.state = {
-      value: props.defaultValue || '',
-    }
-  }
+const TextInput = (props) => {
+  const inputField = React.useRef()
+  const [value, setValue] = React.useState(props.defaultValue || '')
 
-  handleChange(e) {
-    const { value } = e.target
-    this.setState({ value })
+  const handleChange = React.useCallback(
+    (e) => {
+      const { value: newValue } = e.target
+      setValue(newValue)
 
-    const { data, handleChange } = this.props
-    const { formularKey } = data
-    if (formularKey && handleChange) {
-      handleChange(formularKey, value)
-    }
-
-    // If onElementChange is provided, call it to synchronize changes across the column
-    if (this.props.onElementChange) {
-      // Create updated data object with the new value
-      const updatedData = {
-        ...this.props.data,
-        value,
+      const { data, handleChange: onFormularChange } = props
+      const { formularKey } = data
+      if (formularKey && onFormularChange) {
+        onFormularChange(formularKey, newValue)
       }
 
-      // Send it for synchronization across columns
-      this.props.onElementChange(updatedData)
+      // If onElementChange is provided, call it to synchronize changes across the column
+      if (props.onElementChange) {
+        // Create updated data object with the new value
+        const updatedData = {
+          ...props.data,
+          value: newValue,
+        }
 
-      // Immediately apply changes to this component's data
-      if (this.props.data.dirty === undefined || this.props.data.dirty) {
-        updatedData.dirty = true
-        if (this.props.updateElement) {
-          this.props.updateElement(updatedData)
+        // Send it for synchronization across columns
+        props.onElementChange(updatedData)
+
+        // Immediately apply changes to this component's data
+        if (props.data.dirty === undefined || props.data.dirty) {
+          updatedData.dirty = true
+          if (props.updateElement) {
+            props.updateElement(updatedData)
+          }
         }
       }
-    }
+    },
+    [props]
+  )
+
+  const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()
+
+  const savedEditor = props.editor
+  let isSameEditor = true
+  if (savedEditor && savedEditor.userId && !!userProperties) {
+    isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
-  render() {
-    const userProperties =
-      this.props.getActiveUserProperties && this.props.getActiveUserProperties()
+  const inputProps = {}
+  inputProps.type = 'text'
+  inputProps.className = 'form-control'
+  inputProps.name = props.data.field_name
+  inputProps.onChange = handleChange
+  inputProps.value = value
 
-    const savedEditor = this.props.editor
-    let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
-    }
+  if (props.mutable) {
+    inputProps.defaultValue = props.defaultValue
+    inputProps.ref = inputField
+  }
 
-    const props = {}
-    props.type = 'text'
-    props.className = 'form-control'
-    props.name = this.props.data.field_name
-    props.onChange = this.handleChange
-    props.value = this.state.value
+  let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
+  if (props.data.pageBreakBefore) {
+    baseClasses += ' alwaysbreak'
+  }
 
-    if (this.props.mutable) {
-      props.defaultValue = this.props.defaultValue
-      props.ref = this.inputField
-    }
+  if (props.read_only || !isSameEditor) {
+    inputProps.disabled = 'disabled'
+  }
 
-    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
-    if (this.props.data.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
-    }
-
-    if (this.props.read_only || !isSameEditor) {
-      props.disabled = 'disabled'
-    }
-
-    return (
-      <div className={baseClasses}>
-        <ComponentHeader {...this.props} />
-        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
-          <ComponentLabel {...this.props} />
-          <input {...props} />
-        </div>
+  return (
+    <div className={baseClasses}>
+      <ComponentHeader {...props} />
+      <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
+        <ComponentLabel {...props} />
+        <input {...inputProps} />
       </div>
-    )
-  }
+    </div>
+  )
 }
 
-class NumberInput extends React.Component {
-  constructor(props) {
-    super(props)
-    this.inputField = React.createRef()
-    this.handleChange = this.handleChange.bind(this)
-    this.handleKeyPress = this.handleKeyPress.bind(this)
-    this.state = {
-      value: props.defaultValue || '',
-    }
-  }
+const NumberInput = (props) => {
+  const inputField = React.useRef()
+  const [value, setValue] = React.useState(props.defaultValue || '')
 
-  handleKeyPress(e) {
+  const handleKeyPress = React.useCallback((e) => {
     // Allow: numbers, decimal point, minus sign, plus sign, basic math operators, and percentage
     const allowedChars = /[0-9.\-+*/()=% ]/
     const char = String.fromCharCode(e.which)
@@ -232,165 +219,159 @@ class NumberInput extends React.Component {
     if (!allowedChars.test(char) && !e.ctrlKey && !e.metaKey) {
       e.preventDefault()
     }
-  }
+  }, [])
 
-  handleChange(e) {
-    const { value } = e.target
-    this.setState({ value })
+  const handleChange = React.useCallback(
+    (e) => {
+      const { value: newValue } = e.target
+      setValue(newValue)
 
-    const { data, handleChange } = this.props
-    const { formularKey } = data
-    if (formularKey && handleChange) {
-      handleChange(formularKey, value)
-    }
-
-    // If onElementChange is provided, call it to synchronize changes across the column
-    if (this.props.onElementChange) {
-      // Create updated data object with the new value
-      const updatedData = {
-        ...this.props.data,
-        value,
+      const { data, handleChange: onFormularChange } = props
+      const { formularKey } = data
+      if (formularKey && onFormularChange) {
+        onFormularChange(formularKey, newValue)
       }
 
-      // Send it for synchronization across columns
-      this.props.onElementChange(updatedData)
+      // If onElementChange is provided, call it to synchronize changes across the column
+      if (props.onElementChange) {
+        // Create updated data object with the new value
+        const updatedData = {
+          ...props.data,
+          value: newValue,
+        }
 
-      // Immediately apply changes to this component's data
-      if (this.props.data.dirty === undefined || this.props.data.dirty) {
-        updatedData.dirty = true
-        if (this.props.updateElement) {
-          this.props.updateElement(updatedData)
+        // Send it for synchronization across columns
+        props.onElementChange(updatedData)
+
+        // Immediately apply changes to this component's data
+        if (props.data.dirty === undefined || props.data.dirty) {
+          updatedData.dirty = true
+          if (props.updateElement) {
+            props.updateElement(updatedData)
+          }
         }
       }
-    }
+    },
+    [props]
+  )
+
+  const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()
+
+  const savedEditor = props.editor
+  let isSameEditor = true
+  if (savedEditor && savedEditor.userId && !!userProperties) {
+    isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
-  render() {
-    const userProperties =
-      this.props.getActiveUserProperties && this.props.getActiveUserProperties()
+  const inputProps = {}
+  inputProps.type = 'number'
+  inputProps.className = 'form-control'
+  inputProps.name = props.data.field_name
+  inputProps.onChange = handleChange
+  inputProps.onKeyPress = handleKeyPress
+  inputProps.value = value
 
-    const savedEditor = this.props.editor
-    let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
-    }
+  if (props.mutable) {
+    inputProps.defaultValue = props.defaultValue
+    inputProps.ref = inputField
+  }
 
-    const props = {}
-    props.type = 'number'
-    props.className = 'form-control'
-    props.name = this.props.data.field_name
-    props.onChange = this.handleChange
-    props.onKeyPress = this.handleKeyPress
-    props.value = this.state.value
+  if (props.read_only || !isSameEditor) {
+    inputProps.disabled = 'disabled'
+  }
 
-    if (this.props.mutable) {
-      props.defaultValue = this.props.defaultValue
-      props.ref = this.inputField
-    }
+  let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
+  if (props.data.pageBreakBefore) {
+    baseClasses += ' alwaysbreak'
+  }
 
-    if (this.props.read_only || !isSameEditor) {
-      props.disabled = 'disabled'
-    }
-
-    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
-    if (this.props.data.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
-    }
-
-    return (
-      <div className={baseClasses}>
-        <ComponentHeader {...this.props} />
-        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
-          <ComponentLabel {...this.props} />
-          <input {...props} />
-        </div>
+  return (
+    <div className={baseClasses}>
+      <ComponentHeader {...props} />
+      <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
+        <ComponentLabel {...props} />
+        <input {...inputProps} />
       </div>
-    )
-  }
+    </div>
+  )
 }
 
-class TextArea extends React.Component {
-  constructor(props) {
-    super(props)
-    this.inputField = React.createRef()
-    this.handleChange = this.handleChange.bind(this)
-    this.state = {
-      value: props.defaultValue || '',
-    }
-  }
+const TextArea = (props) => {
+  const inputField = React.useRef()
+  const [value, setValue] = React.useState(props.defaultValue || '')
 
-  handleChange(e) {
-    const { value } = e.target
-    this.setState({ value })
+  const handleChange = React.useCallback(
+    (e) => {
+      const { value: newValue } = e.target
+      setValue(newValue)
 
-    const { data, handleChange } = this.props
-    const { formularKey } = data
-    if (formularKey && handleChange) {
-      handleChange(formularKey, value)
-    }
-
-    // If onElementChange is provided, call it to synchronize changes across the column
-    if (this.props.onElementChange) {
-      // Create updated data object with the new value
-      const updatedData = {
-        ...this.props.data,
-        value,
+      const { data, handleChange: onFormularChange } = props
+      const { formularKey } = data
+      if (formularKey && onFormularChange) {
+        onFormularChange(formularKey, newValue)
       }
 
-      // Send it for synchronization across columns
-      this.props.onElementChange(updatedData)
+      // If onElementChange is provided, call it to synchronize changes across the column
+      if (props.onElementChange) {
+        // Create updated data object with the new value
+        const updatedData = {
+          ...props.data,
+          value: newValue,
+        }
 
-      // Immediately apply changes to this component's data
-      if (this.props.data.dirty === undefined || this.props.data.dirty) {
-        updatedData.dirty = true
-        if (this.props.updateElement) {
-          this.props.updateElement(updatedData)
+        // Send it for synchronization across columns
+        props.onElementChange(updatedData)
+
+        // Immediately apply changes to this component's data
+        if (props.data.dirty === undefined || props.data.dirty) {
+          updatedData.dirty = true
+          if (props.updateElement) {
+            props.updateElement(updatedData)
+          }
         }
       }
-    }
+    },
+    [props]
+  )
+
+  const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()
+
+  const savedEditor = props.editor
+  let isSameEditor = true
+  if (savedEditor && savedEditor.userId && !!userProperties) {
+    isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
-  render() {
-    const userProperties =
-      this.props.getActiveUserProperties && this.props.getActiveUserProperties()
+  const textareaProps = {}
+  textareaProps.className = 'form-control'
+  textareaProps.name = props.data.field_name
+  textareaProps.minRows = 3
+  textareaProps.onChange = handleChange
+  textareaProps.value = value
 
-    const savedEditor = this.props.editor
-    let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
-    }
+  if (props.read_only || !isSameEditor) {
+    textareaProps.disabled = 'disabled'
+  }
 
-    const props = {}
-    props.className = 'form-control'
-    props.name = this.props.data.field_name
-    props.minRows = 3
-    props.onChange = this.handleChange
-    props.value = this.state.value
+  if (props.mutable) {
+    textareaProps.defaultValue = props.defaultValue
+    textareaProps.ref = inputField
+  }
 
-    if (this.props.read_only || !isSameEditor) {
-      props.disabled = 'disabled'
-    }
+  let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
+  if (props.data.pageBreakBefore) {
+    baseClasses += ' alwaysbreak'
+  }
 
-    if (this.props.mutable) {
-      props.defaultValue = this.props.defaultValue
-      props.ref = this.inputField
-    }
-
-    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
-    if (this.props.data.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
-    }
-
-    return (
-      <div className={baseClasses}>
-        <ComponentHeader {...this.props} />
-        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
-          <ComponentLabel {...this.props} />
-          <TextAreaAutosize {...props} />
-        </div>
+  return (
+    <div className={baseClasses}>
+      <ComponentHeader {...props} />
+      <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
+        <ComponentLabel {...props} />
+        <TextAreaAutosize {...textareaProps} />
       </div>
-    )
-  }
+    </div>
+  )
 }
 
 class Dropdown extends React.Component {
