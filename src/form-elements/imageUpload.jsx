@@ -6,61 +6,48 @@ import ComponentHeader from './component-header'
 
 // This only needs to be imported once in your app
 
-class ImageUpload extends React.Component {
-  constructor(props) {
-    super(props)
-    this.inputField = React.createRef(null)
+const ImageUpload = (props) => {
+  const inputField = React.useRef(null)
 
-    const filePath = props.defaultValue && props.defaultValue.filePath
-    const fileName = props.defaultValue && props.defaultValue.fileName
-    const blobUrl = props.defaultValue && props.defaultValue.blobUrl
+  const initFilePath = props.defaultValue && props.defaultValue.filePath
+  const initFileName = props.defaultValue && props.defaultValue.fileName
+  const initBlobUrl = props.defaultValue && props.defaultValue.blobUrl
 
-    this.state = {
-      defaultValue: props.defaultValue,
-      filePath,
-      fileName,
-      blobUrl,
-      isOpen: false,
-    }
-  }
+  const [defaultValue, setDefaultValue] = React.useState(props.defaultValue)
+  const [filePath, setFilePath] = React.useState(initFilePath)
+  const [fileName, setFileName] = React.useState(initFileName)
+  const [blobUrl, setBlobUrl] = React.useState(initBlobUrl)
+  const [isOpen, setIsOpen] = React.useState(false)
 
-  static getDerivedStateFromProps = (props, state) => {
-    console.log('ImageUpload >> getDerivedStateFromProps')
+  React.useEffect(() => {
+    console.log('ImageUpload >> useEffect (prop sync)')
     console.log(props.defaultValue)
     if (
       props.defaultValue &&
-      JSON.stringify(props.defaultValue) !== JSON.stringify(state.defaultValue)
+      JSON.stringify(props.defaultValue) !== JSON.stringify(defaultValue)
     ) {
-      const filePath = props.defaultValue && props.defaultValue.filePath
-      const fileName = props.defaultValue && props.defaultValue.fileName
-      const blobUrl = props.defaultValue && props.defaultValue.blobUrl
+      const newFilePath = props.defaultValue && props.defaultValue.filePath
+      const newFileName = props.defaultValue && props.defaultValue.fileName
+      const newBlobUrl = props.defaultValue && props.defaultValue.blobUrl
 
-      return {
-        defaultValue: props.defaultValue,
-        filePath,
-        fileName,
-        blobUrl,
-      }
+      setDefaultValue(props.defaultValue)
+      setFilePath(newFilePath)
+      setFileName(newFileName)
+      setBlobUrl(newBlobUrl)
     }
+  }, [props.defaultValue, defaultValue])
 
-    return state
-  }
-
-  onRemoveImage = () => {
+  const onRemoveImage = React.useCallback(() => {
     if (!confirm('Confirm delete?')) {
       return
     }
 
-    this.setState(() => {
-      return {
-        filePath: '',
-        fileName: '',
-        blobUrl: '',
-      }
-    })
-  }
+    setFilePath('')
+    setFileName('')
+    setBlobUrl('')
+  }, [])
 
-  uploadImageFile = async (event) => {
+  const uploadImageFile = React.useCallback(async (event) => {
     event.persist()
 
     if (!event || !event.target || !event.target.files) {
@@ -69,106 +56,101 @@ class ImageUpload extends React.Component {
 
     const file = Array.from(event.target.files)[0]
 
-    if (typeof this.props.onUploadImage !== 'function') {
+    if (typeof props.onUploadImage !== 'function') {
       console.log(
         'onUploadImage >>>>> no upload function found',
-        this.props.onUploadImage
+        props.onUploadImage
       )
       return
     }
 
     console.log('Uploading image .....')
     const extension = `${file.name}`.substring(file.name.lastIndexOf('.'))
-    const filePath = await this.props.onUploadImage(file)
+    const uploadedPath = await props.onUploadImage(file)
 
-    const blobUrl = URL.createObjectURL(file)
+    const newBlobUrl = URL.createObjectURL(file)
 
-    this.setState({
-      fileName: file.name,
-      blobUrl,
-      filePath: `${filePath}${extension}`,
-    })
+    setFileName(file.name)
+    setBlobUrl(newBlobUrl)
+    setFilePath(`${uploadedPath}${extension}`)
+  }, [props.onUploadImage])
+
+  const userProperties =
+    props.getActiveUserProperties && props.getActiveUserProperties()
+
+  const savedEditor = props.editor
+  let isSameEditor = true
+  if (savedEditor && savedEditor.userId && !!userProperties) {
+    isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
-  render() {
-    const userProperties =
-      this.props.getActiveUserProperties && this.props.getActiveUserProperties()
-
-    const savedEditor = this.props.editor
-    let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
-    }
-
-    return (
-      <div
-        ref={this.tableRef}
-        className={`SortableItem rfb-item${
-          this.props.data.pageBreakBefore ? ' alwaysbreak' : ''
-        }`}
-      >
-        <ComponentHeader {...this.props} />
-        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
-          <div style={{ position: 'relative' }}>
-            <div
-              className="btn is-isolated"
-              onClick={this.onRemoveImage}
-              style={{
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                display: this.state.filePath ? '' : 'none',
-              }}
-            >
-              <i className="is-isolated fas fa-trash"></i>
-            </div>
-            <img
-              style={{ width: '100%', cursor: 'pointer' }}
-              onClick={() => {
-                this.setState({ isOpen: true })
-              }}
-              src={
-                this.state.blobUrl || this.state.filePath
-                  ? this.state.blobUrl || this.state.filePath
-                  : ''
-              }
-            />
+  return (
+    <div
+      className={`SortableItem rfb-item${
+        props.data.pageBreakBefore ? ' alwaysbreak' : ''
+      }`}
+    >
+      <ComponentHeader {...props} />
+      <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
+        <div style={{ position: 'relative' }}>
+          <div
+            className="btn is-isolated"
+            onClick={onRemoveImage}
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              display: filePath ? '' : 'none',
+            }}
+          >
+            <i className="is-isolated fas fa-trash"></i>
           </div>
-          <div>
-            <input
-              ref={this.inputField}
-              type="file"
-              name="fileUpload"
-              title=" "
-              style={{ display: 'none' }}
-              onChange={this.uploadImageFile}
-            />
-            <a
-              href=""
-              className="btn btn-secondary"
-              style={{
-                display: this.state.filePath ? 'none' : 'inline-block',
-                pointerEvents: isSameEditor ? 'auto' : 'none',
-              }}
-              onClick={(e) => {
-                this.inputField && this.inputField.current.click()
-                e.preventDefault()
-              }}
-            >
-              Upload Image
-            </a>
-          </div>
-        </div>
-        {/* TODO: Re-enable lightbox with React 18 compatible alternative */}
-        {/* this.state.isOpen && (
-          <Lightbox
-            mainSrc={this.state.blobUrl || this.state.filePath}
-            onCloseRequest={() => this.setState({ isOpen: false })}
+          <img
+            style={{ width: '100%', cursor: 'pointer' }}
+            onClick={() => {
+              setIsOpen(true)
+            }}
+            src={
+              blobUrl || filePath
+                ? blobUrl || filePath
+                : ''
+            }
           />
-        ) */}
+        </div>
+        <div>
+          <input
+            ref={inputField}
+            type="file"
+            name="fileUpload"
+            title=" "
+            style={{ display: 'none' }}
+            onChange={uploadImageFile}
+          />
+          <a
+            href=""
+            className="btn btn-secondary"
+            style={{
+              display: filePath ? 'none' : 'inline-block',
+              pointerEvents: isSameEditor ? 'auto' : 'none',
+            }}
+            onClick={(e) => {
+              inputField && inputField.current.click()
+              e.preventDefault()
+            }}
+          >
+            Upload Image
+          </a>
+        </div>
       </div>
-    )
-  }
+      {/* TODO: Re-enable lightbox with React 18 compatible alternative */}
+      {/* isOpen && (
+        <Lightbox
+          mainSrc={blobUrl || filePath}
+          onCloseRequest={() => setIsOpen(false)}
+        />
+      ) */}
+    </div>
+  )
 }
 
 export default ImageUpload
