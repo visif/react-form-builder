@@ -374,111 +374,99 @@ const TextArea = (props) => {
   )
 }
 
-class Dropdown extends React.Component {
-  constructor(props) {
-    super(props)
-    this.inputField = React.createRef()
+const Dropdown = (props) => {
+  const inputField = React.useRef()
+  const [value, setValue] = React.useState(props.defaultValue)
 
-    this.state = {
-      defaultValue: props.defaultValue,
-      value: props.defaultValue,
-    }
-  }
+  // Update value when defaultValue prop changes
+  React.useEffect(() => {
+    setValue(props.defaultValue)
+  }, [props.defaultValue])
 
-  static getDerivedStateFromProps(props, state) {
-    if (JSON.stringify(state.defaultValue) !== JSON.stringify(props.defaultValue)) {
-      return {
-        defaultValue: props.defaultValue,
-        value: props.defaultValue,
-      }
-    }
-    return state
-  }
+  const handleChange = React.useCallback(
+    (e) => {
+      const constValue = e.target.value
+      setValue(constValue)
 
-  handleChange = (e) => {
-    const constValue = e.target.value
-    this.setState({ value: constValue })
-
-    const { data, handleChange } = this.props
-    const { formularKey } = data
-    if (formularKey && handleChange) {
-      handleChange(formularKey, constValue)
-    }
-
-    // If onElementChange is provided, call it to synchronize changes across the column
-    if (this.props.onElementChange) {
-      // Create updated data object with the new value
-      const updatedData = {
-        ...this.props.data,
-        value: constValue,
+      const { data, handleChange: onFormularChange } = props
+      const { formularKey } = data
+      if (formularKey && onFormularChange) {
+        onFormularChange(formularKey, constValue)
       }
 
-      // Send it for synchronization across columns
-      this.props.onElementChange(updatedData)
+      // If onElementChange is provided, call it to synchronize changes across the column
+      if (props.onElementChange) {
+        // Create updated data object with the new value
+        const updatedData = {
+          ...props.data,
+          value: constValue,
+        }
 
-      // Immediately apply changes to this component's data
-      // This makes changes visible in edit mode instantly
-      if (this.props.data.dirty === undefined || this.props.data.dirty) {
-        updatedData.dirty = true
-        if (this.props.updateElement) {
-          this.props.updateElement(updatedData)
+        // Send it for synchronization across columns
+        props.onElementChange(updatedData)
+
+        // Immediately apply changes to this component's data
+        // This makes changes visible in edit mode instantly
+        if (props.data.dirty === undefined || props.data.dirty) {
+          updatedData.dirty = true
+          if (props.updateElement) {
+            props.updateElement(updatedData)
+          }
         }
       }
-    }
+    },
+    [props]
+  )
+
+  const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()
+
+  const savedEditor = props.editor
+  let isSameEditor = true
+  if (savedEditor && savedEditor.userId && !!userProperties) {
+    isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
-  render() {
-    const userProperties =
-      this.props.getActiveUserProperties && this.props.getActiveUserProperties()
+  const selectProps = {}
+  selectProps.className = 'form-control'
+  selectProps.name = props.data.field_name
+  selectProps.value = value
+  selectProps.onChange = handleChange
 
-    const savedEditor = this.props.editor
-    let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
-    }
+  if (props.mutable) {
+    selectProps.defaultValue = value
+    selectProps.ref = inputField
+  }
 
-    const props = {}
-    props.className = 'form-control'
-    props.name = this.props.data.field_name
-    props.value = this.state.value
-    props.onChange = this.handleChange
+  if (props.read_only || !isSameEditor) {
+    selectProps.disabled = 'disabled'
+  }
 
-    if (this.props.mutable) {
-      props.defaultValue = this.state.value
-      props.ref = this.inputField
-    }
+  let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
+  if (props.data.pageBreakBefore) {
+    baseClasses += ' alwaysbreak'
+  }
 
-    if (this.props.read_only || !isSameEditor) {
-      props.disabled = 'disabled'
-    }
-
-    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
-    if (this.props.data.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
-    }
-
-    return (
-      <div className={baseClasses}>
-        <ComponentHeader {...this.props} />
-        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
-          <ComponentLabel {...this.props} />
-          <select {...props}>
-            <option value="" key="default-0">
-              Please Select
-            </option>
-            {this.props.data.options.map((option) => {
-              const this_key = `preview_${option.key}`
-              return (
-                <option value={option.value} key={this_key}>
-                  {option.text}
-                </option>
-              )
-            })}
-          </select>
-        </div>
+  return (
+    <div className={baseClasses}>
+      <ComponentHeader {...props} />
+      <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
+        <ComponentLabel {...props} />
+        <select {...selectProps}>
+          <option value="" key="default-0">
+            Please Select
+          </option>
+          {props.data.options.map((option) => {
+            const this_key = `preview_${option.key}`
+            return (
+              <option value={option.value} key={this_key}>
+                {option.text}
+              </option>
+            )
+          })}
+        </select>
       </div>
-    )
-  }
+    </div>
+  )
 }
 
 class Signature extends React.Component {
@@ -685,429 +673,376 @@ class Tags extends React.Component {
   }
 }
 
-class Checkboxes extends React.Component {
-  constructor(props) {
-    super(props)
-    this.options = {}
-    this.infos = {}
-    this.state = {
-      defaultValue: props.defaultValue,
-      value: props.defaultValue,
-    }
+const Checkboxes = (props) => {
+  const optionsRef = React.useRef({})
+  const infosRef = React.useRef({})
+  const [value, setValue] = React.useState(props.defaultValue)
+
+  // Update value when defaultValue prop changes
+  React.useEffect(() => {
+    setValue(props.defaultValue)
+  }, [props.defaultValue])
+
+  const getActiveValue = React.useCallback(
+    (values, key) => values?.find((item) => item.key === key),
+    []
+  )
+
+  const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()
+
+  const savedEditor = props.editor
+  let isSameEditor = true
+  if (savedEditor && savedEditor.userId && !!userProperties) {
+    isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
-  static getDerivedStateFromProps(props, state) {
-    if (JSON.stringify(state.defaultValue) !== JSON.stringify(props.defaultValue)) {
-      return {
-        defaultValue: props.defaultValue,
-        value: props.defaultValue,
-      }
-    }
-    return state
+  // Add debugging
+  console.log('Checkboxes Debug:', {
+    userProperties,
+    savedEditor,
+    isSameEditor,
+    hasDCCRole: userProperties?.hasDCCRole,
+    readOnly: props.read_only,
+    finalDisabled: props.read_only || !isSameEditor,
+  })
+
+  let classNames = 'custom-control custom-checkbox'
+  if (props.data.inline) {
+    classNames += ' option-inline'
   }
 
-  getActiveValue = (values, key) => values?.find((item) => item.key === key)
+  let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
+  if (props.data.pageBreakBefore) {
+    baseClasses += ' alwaysbreak'
+  }
 
-  render() {
-    const userProperties =
-      this.props.getActiveUserProperties && this.props.getActiveUserProperties()
+  return (
+    <div className={baseClasses}>
+      <ComponentHeader {...props} />
+      <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
+        <ComponentLabel className="form-label" {...props} />
+        {props.data.options.map((option) => {
+          const this_key = `preview_${option.key}`
 
-    const savedEditor = this.props.editor
-    let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
-    }
+          const inputProps = {}
+          inputProps.name = `option_${option.key}`
+          inputProps.type = 'checkbox'
+          inputProps.value = option.value
 
-    // Add debugging
-    console.log('Checkboxes Debug:', {
-      userProperties,
-      savedEditor,
-      isSameEditor,
-      hasDCCRole: userProperties?.hasDCCRole,
-      readOnly: this.props.read_only,
-      finalDisabled: this.props.read_only || !isSameEditor
-    });
+          // Check if the option is selected either from state or option properties
+          const answerItem = getActiveValue(value, option.key)
+          const isCheckedInOptions = option.checked || option.selected
 
-    const self = this
-    let classNames = 'custom-control custom-checkbox'
-    if (this.props.data.inline) {
-      classNames += ' option-inline'
-    }
+          if (props.mutable) {
+            inputProps.checked = answerItem?.value ?? isCheckedInOptions ?? false
+          }
 
-    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
-    if (this.props.data.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
-    }
+          if (props.read_only || !isSameEditor) {
+            inputProps.disabled = 'disabled'
+          }
 
-    return (
-      <div className={baseClasses}>
-        <ComponentHeader {...this.props} />
-        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
-          <ComponentLabel className="form-label" {...this.props} />
-          {this.props.data.options.map((option) => {
-            const this_key = `preview_${option.key}`
+          return (
+            <div
+              className={classNames}
+              key={this_key}
+              style={{ display: 'flex', alignItems: 'center' }}
+            >
+              <input
+                id={`fid_${this_key}`}
+                className="custom-control-input"
+                ref={(c) => {
+                  if (c && props.mutable) {
+                    optionsRef.current[`child_ref_${option.key}`] = c
+                  }
+                }}
+                onChange={() => {
+                  setValue((current) => {
+                    const activeVal = getActiveValue(current, option.key)
+                    const newActiveVal = activeVal
+                      ? { ...activeVal, value: !activeVal.value }
+                      : {
+                          key: option.key,
+                          value: true,
+                          info: '',
+                        }
 
-            const props = {}
-            props.name = `option_${option.key}`
-            props.type = 'checkbox'
-            props.value = option.value
+                    if (!current) {
+                      return current
+                    }
 
-            // Check if the option is selected either from state or option properties
-            const answerItem = self.getActiveValue(self.state.value, option.key)
-            const isCheckedInOptions = option.checked || option.selected
+                    const newValue = [
+                      ...(current || []).filter((item) => item.key !== option.key),
+                      newActiveVal,
+                    ]
 
-            if (self.props.mutable) {
-              props.checked = answerItem?.value ?? isCheckedInOptions ?? false
-            }
+                    // If we're in a dynamic column and this is a UI-only change (selection)
+                    const isInDynamicColumn =
+                      props.data.parentId &&
+                      props.data.row !== undefined &&
+                      props.data.col !== undefined
 
-            if (this.props.read_only || !isSameEditor) {
-              props.disabled = 'disabled'
-            }
+                    // Always update the local element state for immediate visual feedback
+                    if (props.updateElement) {
+                      const updatedData = {
+                        ...props.data,
+                        dirty: true,
+                        value: newValue,
+                      }
 
-            return (
-              <div
-                className={classNames}
-                key={this_key}
-                style={{ display: 'flex', alignItems: 'center' }}
-              >
-                <input
-                  id={`fid_${this_key}`}
-                  className="custom-control-input"
+                      // Update the local options to show selection visually
+                      const localOptions = props.data.options.map((opt) => ({
+                        ...opt,
+                        checked:
+                          opt.key === option.key
+                            ? !activeVal?.value
+                            : getActiveValue(newValue, opt.key)?.value || false,
+                      }))
+                      updatedData.options = localOptions
+
+                      // Update just this element
+                      props.updateElement(updatedData)
+                    }
+
+                    // If onElementChange is provided, but we avoid sending selection state
+                    if (props.onElementChange && isInDynamicColumn) {
+                      const updatedDataForSync = {
+                        ...props.data,
+                      }
+
+                      updatedDataForSync._selectionChangeOnly = true
+                      props.onElementChange(updatedDataForSync)
+                    }
+
+                    return newValue
+                  })
+                }}
+                {...inputProps}
+              />
+              <label className="custom-control-label" htmlFor={`fid_${this_key}`}>
+                {option.text}
+              </label>
+              {inputProps.checked && option.info && (
+                <textarea
+                  id={`fid_${this_key}_info`}
+                  type="text"
+                  className="form-control"
+                  style={{
+                    width: 'auto',
+                    marginLeft: 16,
+                    minHeight: '60px',
+                    marginBottom: 4,
+                  }}
+                  rows={2}
+                  defaultValue={answerItem?.info ?? ''}
                   ref={(c) => {
-                    if (c && self.props.mutable) {
-                      self.options[`child_ref_${option.key}`] = c
+                    if (c && props.mutable) {
+                      infosRef.current[`child_ref_${option.key}_info`] = c
                     }
                   }}
-                  onChange={() => {
-                    // Remove the isSameEditor check here since it's already handled by the disabled prop
-                    self.setState((current) => {
-                      const activeVal = self.getActiveValue(
-                        current && current.value,
-                        option.key
-                      )
-                      const newActiveVal = activeVal
-                        ? { ...activeVal, value: !activeVal.value }
-                        : {
-                            key: option.key,
-                            value: true,
-                            info: '',
-                          }
-
-                      if (!current) {
-                        return current
-                      }
-
-                      const newValue = {
-                        ...current,
-                        value: [
-                          ...(current.value || []).filter(
-                            (item) => item.key !== option.key
-                          ),
-                          newActiveVal,
-                        ],
-                      }
-
-                      // If we're in a dynamic column and this is a UI-only change (selection)
-                      // We need to update just this component's internal state without syncing to other rows
-                      const isInDynamicColumn =
-                        self.props.data.parentId &&
-                        self.props.data.row !== undefined &&
-                        self.props.data.col !== undefined
-
-                      // Always update the local element state for immediate visual feedback
-                      if (self.props.updateElement) {
-                        // Apply the checked state to just this element's data
-                        const updatedData = {
-                          ...self.props.data,
-                          dirty: true,
-                          value: newValue.value,
-                        }
-
-                        // Update the local options to show selection visually
-                        // This only affects THIS element, not others in the column
-                        const localOptions = self.props.data.options.map((opt) => ({
-                          ...opt,
-                          checked:
-                            opt.key === option.key
-                              ? !activeVal?.value
-                              : self.getActiveValue(newValue.value, opt.key)?.value ||
-                                false,
-                        }))
-                        updatedData.options = localOptions
-
-                        // Update just this element
-                        self.props.updateElement(updatedData)
-                      }
-
-                      // If onElementChange is provided, but we avoid sending selection state
-                      if (self.props.onElementChange && isInDynamicColumn) {
-                        // For selection changes in dynamic columns, we don't want to sync the selection state
-                        // but we still need to notify the system that a change happened for other purposes
-                        // Create a copy that doesn't modify the selection state
-                        const updatedDataForSync = {
-                          ...self.props.data,
-                          // Deliberately NOT updating options or selection state
-                        }
-
-                        // Mark this as a selection-only change that shouldn't be synced
-                        updatedDataForSync._selectionChangeOnly = true
-
-                        // Notify the system about the change, but without selection state changes
-                        self.props.onElementChange(updatedDataForSync)
-                      }
-
-                      return newValue
-                    })
-                  }}
-                  {...props}
                 />
-                <label className="custom-control-label" htmlFor={`fid_${this_key}`}>
-                  {option.text}
-                </label>
-                {props.checked && option.info && (
-                  <textarea
-                    id={`fid_${this_key}_info`}
-                    type="text"
-                    className="form-control"
-                    style={{
-                      width: 'auto',
-                      marginLeft: 16,
-                      minHeight: '60px',
-                      // height: 'calc(1.5em + .5rem)',
-                      marginBottom: 4,
-                    }}
-                    rows={2}
-                    defaultValue={answerItem?.info ?? ''}
-                    ref={(c) => {
-                      if (c && self.props.mutable) {
-                        self.infos[`child_ref_${option.key}_info`] = c
-                      }
-                    }}
-                  />
-                )}
-              </div>
-            )
-          })}
-        </div>
+              )}
+            </div>
+          )
+        })}
       </div>
-    )
-  }
+    </div>
+  )
 }
 
-class RadioButtons extends React.Component {
-  constructor(props) {
-    super(props)
-    this.options = {}
-    this.infos = {}
-    this.state = {
-      defaultValue: props.defaultValue,
-      value: props.defaultValue,
+const RadioButtons = (props) => {
+  const optionsRef = React.useRef({})
+  const infosRef = React.useRef({})
+  const [value, setValue] = React.useState(props.defaultValue)
+
+  React.useEffect(() => {
+    if (JSON.stringify(props.defaultValue) !== JSON.stringify(value)) {
+      setValue(props.defaultValue)
     }
+  }, [props.defaultValue, value])
+
+  const getActiveValue = React.useCallback(
+    (values, key) => values?.find((item) => item.key === key),
+    []
+  )
+
+  const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()
+
+  const savedEditor = props.editor
+  let isSameEditor = true
+  if (savedEditor && savedEditor.userId && !!userProperties) {
+    isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
-  static getDerivedStateFromProps(props, state) {
-    if (JSON.stringify(state.defaultValue) !== JSON.stringify(props.defaultValue)) {
-      return {
-        defaultValue: props.defaultValue,
-        value: props.defaultValue,
-      }
-    }
-    return state
+  // Add debugging for RadioButtons
+  console.log('RadioButtons Debug:', {
+    userProperties,
+    savedEditor,
+    isSameEditor,
+    hasDCCRole: userProperties?.hasDCCRole,
+    readOnly: props.read_only,
+    finalDisabled: props.read_only || !isSameEditor,
+  })
+
+  let classNames = 'custom-control custom-radio'
+  if (props.data.inline) {
+    classNames += ' option-inline'
   }
 
-  getActiveValue = (values, key) => values?.find((item) => item.key === key)
+  let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
+  if (props.data.pageBreakBefore) {
+    baseClasses += ' alwaysbreak'
+  }
 
-  render() {
-    const userProperties =
-      this.props.getActiveUserProperties && this.props.getActiveUserProperties()
+  const { data, handleChange } = props
+  const { formularKey } = data
 
-    const savedEditor = this.props.editor
-    let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
-    }
+  // Create unique name for RadioButtons in multi-column layout
+  const isInDynamicColumn =
+    props.data.parentId &&
+    props.data.row !== undefined &&
+    props.data.col !== undefined
 
-    // Add debugging for RadioButtons
-    console.log('RadioButtons Debug:', {
-      userProperties,
-      savedEditor,
-      isSameEditor,
-      hasDCCRole: userProperties?.hasDCCRole,
-      readOnly: this.props.read_only,
-      finalDisabled: this.props.read_only || !isSameEditor
-    });
+  const uniqueName = isInDynamicColumn
+    ? `${props.data.parentId}_row${props.data.row}_col${props.data.col}_${props.data.field_name}`
+    : props.data.field_name
 
-    const self = this
-    let classNames = 'custom-control custom-radio'
-    if (this.props.data.inline) {
-      classNames += ' option-inline'
-    }
+  return (
+    <div className={baseClasses}>
+      <ComponentHeader {...props} />
+      <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
+        <ComponentLabel className="form-label" {...props} />
+        {props.data.options.map((option) => {
+          const this_key = `preview_${option.key}`
+          const inputProps = {}
+          inputProps.name = uniqueName // Use unique name instead of field_name
 
-    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
-    if (this.props.data.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
-    }
+          inputProps.type = 'radio'
+          inputProps.value = option.value
 
-    const { data, handleChange } = this.props
-    const { formularKey } = data
+          // Check if the option is selected either from state or option properties
+          const answerItem = getActiveValue(value, option.key)
+          const isCheckedInOptions = option.checked || option.selected
 
-    // Create unique name for RadioButtons in multi-column layout
-    const isInDynamicColumn =
-      this.props.data.parentId &&
-      this.props.data.row !== undefined &&
-      this.props.data.col !== undefined
+          if (props.mutable) {
+            inputProps.checked = answerItem?.value ?? isCheckedInOptions ?? false
+          }
 
-    const uniqueName = isInDynamicColumn
-      ? `${this.props.data.parentId}_row${this.props.data.row}_col${this.props.data.col}_${this.props.data.field_name}`
-      : this.props.data.field_name
+          if (props.read_only || !isSameEditor) {
+            inputProps.disabled = 'disabled'
+          }
 
-    return (
-      <div className={baseClasses}>
-        <ComponentHeader {...this.props} />
-        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
-          <ComponentLabel className="form-label" {...this.props} />
-          {this.props.data.options.map((option) => {
-            const this_key = `preview_${option.key}`
-            const props = {}
-            props.name = uniqueName // Use unique name instead of field_name
+          return (
+            <div
+              className={classNames}
+              key={this_key}
+              style={{ display: 'flex', alignItems: 'center' }}
+            >
+              <input
+                id={`fid_${this_key}`}
+                className="custom-control-input"
+                ref={(c) => {
+                  if (c && props.mutable) {
+                    optionsRef.current[`child_ref_${option.key}`] = c
+                  }
+                }}
+                onClick={() => {
+                  // Remove the isSameEditor check here since it's already handled by the disabled prop
+                  setValue((current) => {
+                    if (formularKey && handleChange) {
+                      handleChange(formularKey, option.value)
+                    }
 
-            props.type = 'radio'
-            props.value = option.value
+                    // Check if this option is already selected
+                    const currentActiveValue = getActiveValue(current, option.key)
+                    const isCurrentlySelected = currentActiveValue?.value === true
 
-            // Check if the option is selected either from state or option properties
-            const answerItem = self.getActiveValue(self.state.value, option.key)
-            const isCheckedInOptions = option.checked || option.selected
+                    let newValue
+                    if (isCurrentlySelected) {
+                      // If already selected, deselect it (empty array)
+                      newValue = [] // Clear selection
+                    } else {
+                      // If not selected, select this option
+                      newValue = [
+                        {
+                          key: option.key,
+                          value: true,
+                          info: '',
+                        },
+                      ]
+                    }
 
-            if (self.props.mutable) {
-              props.checked = answerItem?.value ?? isCheckedInOptions ?? false
-            }
+                    // Always update the local element state for immediate visual feedback
+                    if (props.updateElement) {
+                      // Apply the checked state to just this element's data
+                      const updatedData = {
+                        ...props.data,
+                        dirty: true,
+                        value: newValue,
+                      }
 
-            if (this.props.read_only || !isSameEditor) {
-              props.disabled = 'disabled'
-            }
+                      // Update the local options to show selection visually
+                      // This only affects THIS element, not others in the column
+                      const localOptions = props.data.options.map((opt) => ({
+                        ...opt,
+                        checked: isCurrentlySelected ? false : opt.key === option.key,
+                        selected: isCurrentlySelected ? false : opt.key === option.key,
+                      }))
+                      updatedData.options = localOptions
 
-            return (
-              <div
-                className={classNames}
-                key={this_key}
-                style={{ display: 'flex', alignItems: 'center' }}
-              >
-                <input
-                  id={`fid_${this_key}`}
-                  className="custom-control-input"
+                      // Update just this element
+                      props.updateElement(updatedData)
+                    }
+
+                    // If onElementChange is provided and we're in a dynamic column
+                    if (props.onElementChange && isInDynamicColumn) {
+                      // For selection changes in dynamic columns, we don't want to sync the selection state
+                      // but we still need to notify the system that a change happened for other purposes
+                      const updatedDataForSync = {
+                        ...props.data,
+                        // Deliberately NOT updating options or selection state
+                      }
+
+                      // Mark this as a selection-only change that shouldn't be synced
+                      updatedDataForSync._selectionChangeOnly = true
+
+                      // Notify the system about the change, but without selection state changes
+                      props.onElementChange(updatedDataForSync)
+                    }
+
+                    return newValue
+                  })
+                }}
+                {...inputProps}
+              />
+              <label className="custom-control-label" htmlFor={`fid_${this_key}`}>
+                {option.text}
+              </label>
+              {inputProps.checked && option.info && (
+                <textarea
+                  id={`fid_${this_key}_info`}
+                  type="text"
+                  className="form-control"
+                  style={{
+                    width: 'auto',
+                    marginLeft: 16,
+                    minHeight: '60px',
+                    // height: 'calc(1.5em + .5rem)',
+                  }}
+                  rows={2}
+                  defaultValue={answerItem?.info ?? ''}
                   ref={(c) => {
-                    if (c && self.props.mutable) {
-                      self.options[`child_ref_${option.key}`] = c
+                    if (c && props.mutable) {
+                      infosRef.current[`child_ref_${option.key}_info`] = c
                     }
                   }}
-                  onClick={() => {
-                    // Remove the isSameEditor check here since it's already handled by the disabled prop
-                    self.setState((current) => {
-                      if (formularKey && handleChange) {
-                        handleChange(formularKey, option.value)
-                      }
-
-                      // Check if this option is already selected
-                      const currentActiveValue = self.getActiveValue(
-                        current?.value,
-                        option.key
-                      )
-                      const isCurrentlySelected = currentActiveValue?.value === true
-
-                      let newValue
-                      if (isCurrentlySelected) {
-                        // If already selected, deselect it (empty array)
-                        newValue = {
-                          ...current,
-                          value: [], // Clear selection
-                        }
-                      } else {
-                        // If not selected, select this option
-                        newValue = {
-                          ...current,
-                          value: [
-                            {
-                              key: option.key,
-                              value: true,
-                              info: '',
-                            },
-                          ],
-                        }
-                      }
-
-                      // Always update the local element state for immediate visual feedback
-                      if (self.props.updateElement) {
-                        // Apply the checked state to just this element's data
-                        const updatedData = {
-                          ...self.props.data,
-                          dirty: true,
-                          value: newValue.value,
-                        }
-
-                        // Update the local options to show selection visually
-                        // This only affects THIS element, not others in the column
-                        const localOptions = self.props.data.options.map((opt) => ({
-                          ...opt,
-                          checked: isCurrentlySelected ? false : opt.key === option.key,
-                          selected: isCurrentlySelected ? false : opt.key === option.key,
-                        }))
-                        updatedData.options = localOptions
-
-                        // Update just this element
-                        self.props.updateElement(updatedData)
-                      }
-
-                      // If onElementChange is provided and we're in a dynamic column
-                      if (self.props.onElementChange && isInDynamicColumn) {
-                        // For selection changes in dynamic columns, we don't want to sync the selection state
-                        // but we still need to notify the system that a change happened for other purposes
-                        const updatedDataForSync = {
-                          ...self.props.data,
-                          // Deliberately NOT updating options or selection state
-                        }
-
-                        // Mark this as a selection-only change that shouldn't be synced
-                        updatedDataForSync._selectionChangeOnly = true
-
-                        // Notify the system about the change, but without selection state changes
-                        self.props.onElementChange(updatedDataForSync)
-                      }
-
-                      return newValue
-                    })
-                  }}
-                  {...props}
                 />
-                <label className="custom-control-label" htmlFor={`fid_${this_key}`}>
-                  {option.text}
-                </label>
-                {props.checked && option.info && (
-                  <textarea
-                    id={`fid_${this_key}_info`}
-                    type="text"
-                    className="form-control"
-                    style={{
-                      width: 'auto',
-                      marginLeft: 16,
-                      minHeight: '60px',
-                      // height: 'calc(1.5em + .5rem)',
-                    }}
-                    rows={2}
-                    defaultValue={answerItem?.info ?? ''}
-                    ref={(c) => {
-                      if (c && self.props.mutable) {
-                        self.infos[`child_ref_${option.key}_info`] = c
-                      }
-                    }}
-                  />
-                )}
-              </div>
-            )
-          })}
-        </div>
+              )}
+            </div>
+          )
+        })}
       </div>
-    )
-  }
+    </div>
+  )
 }
 
 const Image = (props) => {
