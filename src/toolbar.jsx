@@ -26,21 +26,202 @@ function buildItems(items, defaultItems) {
 
 const DATE_FORMAT = 'DD MMM YYYY'
 
-export default class Toolbar extends React.Component {
-  constructor(props) {
-    super(props)
+const Toolbar = (props) => {
+  const items = buildItems(props.items, _defaultItems())
+  const [state, setState] = React.useState({ items })
 
-    const items = buildItems(props.items, this._defaultItems())
-    this.state = {
-      items,
-    }
-    store.subscribe((state) => {
-      this.setState({ store: state })
+  React.useEffect(() => {
+    const unsubscribe = store.subscribe((storeState) => {
+      setState({ store: storeState })
     })
-    this.create = this.create.bind(this)
-  }
+    return () => {
+      if (unsubscribe) unsubscribe()
+    }
+  }, [])
 
-  static _defaultItemOptions(element) {
+  const create = React.useCallback((item) => {
+    const elementOptions = {
+      id: ID.uuid(),
+      element: item.element || item.key,
+      text: item.name,
+      static: item.static,
+      required: false,
+      showDescription: item.showDescription,
+    }
+
+    if (props.showDescription === true && !item.static) {
+      elementOptions.showDescription = true
+    }
+
+    if (item.type === 'custom') {
+      elementOptions.key = item.key
+      elementOptions.custom = true
+      elementOptions.forwardRef = item.forwardRef
+      elementOptions.bare = item.bare
+      elementOptions.props = item.props
+      elementOptions.component = item.component || null
+      elementOptions.custom_options = item.custom_options || []
+    }
+
+    if (item.static) {
+      elementOptions.bold = false
+      elementOptions.italic = false
+    }
+
+    if (item.canHaveAnswer) {
+      elementOptions.canHaveAnswer = item.canHaveAnswer
+    }
+
+    if (item.canHaveInfo) {
+      elementOptions.canHaveInfo = item.canHaveInfo
+    }
+
+    if (item.canReadOnly) {
+      elementOptions.readOnly = false
+    }
+
+    if (item.canDefaultToday) {
+      elementOptions.defaultToday = false
+    }
+
+    if (item.content) {
+      elementOptions.content = item.content
+    }
+
+    if (item.href) {
+      elementOptions.href = item.href
+    }
+
+    elementOptions.canHavePageBreakBefore = item.canHavePageBreakBefore !== false
+    elementOptions.canHaveAlternateForm = item.canHaveAlternateForm !== false
+    elementOptions.canHaveDisplayHorizontal = item.canHaveDisplayHorizontal !== false
+    if (elementOptions.canHaveDisplayHorizontal) {
+      elementOptions.inline = item.inline
+    }
+    elementOptions.canHaveOptionCorrect = item.canHaveOptionCorrect !== false
+    elementOptions.canHaveOptionValue = item.canHaveOptionValue !== false
+    elementOptions.canPopulateFromApi = item.canPopulateFromApi !== false
+
+    if (item.class_name) {
+      elementOptions.class_name = item.class_name
+    }
+
+    if (item.key === 'Image') {
+      elementOptions.src = item.src
+      elementOptions.width = item.src.width || 100
+      elementOptions.height = item.src.height || 100
+    }
+
+    if (item.key === 'DatePicker') {
+      elementOptions.dateFormat = item.dateFormat
+      elementOptions.timeFormat = item.timeFormat
+      elementOptions.showTimeSelect = item.showTimeSelect
+      elementOptions.showTimeSelectOnly = item.showTimeSelectOnly
+      elementOptions.overdueNotification = false
+    }
+
+    if (item.key === 'Download') {
+      elementOptions._href = item._href
+      elementOptions.file_path = item.file_path
+    }
+
+    if (item.key === 'Range') {
+      elementOptions.step = item.step
+      elementOptions.default_value = item.default_value
+      elementOptions.min_value = item.min_value
+      elementOptions.max_value = item.max_value
+      elementOptions.min_label = item.min_label
+      elementOptions.max_label = item.max_label
+    }
+
+    if (item.defaultValue) {
+      elementOptions.defaultValue = item.defaultValue
+    }
+
+    if (item.field_name) {
+      elementOptions.field_name = item.field_name + ID.uuid()
+    }
+
+    if (item.label) {
+      elementOptions.label = item.label
+    }
+
+    if (item.options) {
+      if (item.options.length > 0) {
+        elementOptions.options = item.options
+      } else {
+        elementOptions.options = Toolbar._defaultItemOptions(elementOptions.element)
+      }
+    }
+
+    if (item.key === 'Table' || item.key === 'DynamicColumnRow') {
+      if (item.columns.length > 0) {
+        elementOptions.columns = item.columns
+      } else {
+        elementOptions.columns = Toolbar._defaultItemColumns()
+      }
+
+      if (item.rowLabels?.length > 0) {
+        elementOptions.rowLabels = item.rowLabels
+      } else {
+        elementOptions.rowLabels = []
+      }
+      elementOptions.rows = item.rows || 3
+    }
+
+    if (item.key === 'Section') {
+      elementOptions.header = 'Placeholder Text'
+    }
+
+    if (item.key === 'Signature2') {
+      elementOptions.position = 'Placeholder Text'
+      elementOptions.specificRole = 'specific'
+    }
+
+    if (item.key === 'DataSource') {
+      elementOptions.sourceType = item.sourceType
+      elementOptions.formSource = item.formSource
+      elementOptions.formField = item.formField || {}
+    }
+
+    if (item.key === 'FormLink') {
+      elementOptions.formSource = item.formSource
+    }
+
+    if (item.formularKey !== undefined) {
+      elementOptions.formularKey = item.formularKey
+    }
+
+    if (item.key === 'FormulaInput') {
+      elementOptions.formula = item.formula
+    }
+
+    return elementOptions
+  }, [props.showDescription])
+
+  const _onClick = React.useCallback((item) => {
+    // ElementActions.createElement(create(item));
+    store.dispatch('create', create(item))
+  }, [create])
+
+  return (
+    <div className="react-form-builder-toolbar" style={{ marginTop: 0 }}>
+      <h4>Toolbox</h4>
+      <ul>
+        {state.items.map((item) => (
+          <ToolbarItem
+            data={item}
+            key={item.key}
+            onClick={() => _onClick(item)}
+            onCreate={create}
+          />
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+Toolbar._defaultItemOptions = function(element) {
     switch (element) {
       case 'Dropdown':
         return [
@@ -119,15 +300,15 @@ export default class Toolbar extends React.Component {
     }
   }
 
-  static _defaultItemColumns() {
-    return [
-      { text: 'Column1', key: `table_column_${ID.uuid()}`, width: 1, isSync: true },
-      { text: 'Column2', key: `table_column_${ID.uuid()}`, width: 1, isSync: true },
-      { text: 'Column3', key: `table_column_${ID.uuid()}`, width: 1, isSync: true },
-    ]
-  }
+Toolbar._defaultItemColumns = function() {
+  return [
+    { text: 'Column1', key: `table_column_${ID.uuid()}`, width: 1, isSync: true },
+    { text: 'Column2', key: `table_column_${ID.uuid()}`, width: 1, isSync: true },
+    { text: 'Column3', key: `table_column_${ID.uuid()}`, width: 1, isSync: true },
+  ]
+}
 
-  _defaultItems() {
+function _defaultItems() {
     return [
       {
         key: 'Header',
@@ -401,186 +582,4 @@ export default class Toolbar extends React.Component {
     ]
   }
 
-  create(item) {
-    const elementOptions = {
-      id: ID.uuid(),
-      element: item.element || item.key,
-      text: item.name,
-      static: item.static,
-      required: false,
-      showDescription: item.showDescription,
-    }
-
-    if (this.props.showDescription === true && !item.static) {
-      elementOptions.showDescription = true
-    }
-
-    if (item.type === 'custom') {
-      elementOptions.key = item.key
-      elementOptions.custom = true
-      elementOptions.forwardRef = item.forwardRef
-      elementOptions.bare = item.bare
-      elementOptions.props = item.props
-      elementOptions.component = item.component || null
-      elementOptions.custom_options = item.custom_options || []
-    }
-
-    if (item.static) {
-      elementOptions.bold = false
-      elementOptions.italic = false
-    }
-
-    if (item.canHaveAnswer) {
-      elementOptions.canHaveAnswer = item.canHaveAnswer
-    }
-
-    if (item.canHaveInfo) {
-      elementOptions.canHaveInfo = item.canHaveInfo
-    }
-
-    if (item.canReadOnly) {
-      elementOptions.readOnly = false
-    }
-
-    if (item.canDefaultToday) {
-      elementOptions.defaultToday = false
-    }
-
-    if (item.content) {
-      elementOptions.content = item.content
-    }
-
-    if (item.href) {
-      elementOptions.href = item.href
-    }
-
-    elementOptions.canHavePageBreakBefore = item.canHavePageBreakBefore !== false
-    elementOptions.canHaveAlternateForm = item.canHaveAlternateForm !== false
-    elementOptions.canHaveDisplayHorizontal = item.canHaveDisplayHorizontal !== false
-    if (elementOptions.canHaveDisplayHorizontal) {
-      elementOptions.inline = item.inline
-    }
-    elementOptions.canHaveOptionCorrect = item.canHaveOptionCorrect !== false
-    elementOptions.canHaveOptionValue = item.canHaveOptionValue !== false
-    elementOptions.canPopulateFromApi = item.canPopulateFromApi !== false
-
-    if (item.class_name) {
-      elementOptions.class_name = item.class_name
-    }
-
-    if (item.key === 'Image') {
-      elementOptions.src = item.src
-      elementOptions.width = item.src.width || 100
-      elementOptions.height = item.src.height || 100
-    }
-
-    if (item.key === 'DatePicker') {
-      elementOptions.dateFormat = item.dateFormat
-      elementOptions.timeFormat = item.timeFormat
-      elementOptions.showTimeSelect = item.showTimeSelect
-      elementOptions.showTimeSelectOnly = item.showTimeSelectOnly
-      elementOptions.overdueNotification = false
-    }
-
-    if (item.key === 'Download') {
-      elementOptions._href = item._href
-      elementOptions.file_path = item.file_path
-    }
-
-    if (item.key === 'Range') {
-      elementOptions.step = item.step
-      elementOptions.default_value = item.default_value
-      elementOptions.min_value = item.min_value
-      elementOptions.max_value = item.max_value
-      elementOptions.min_label = item.min_label
-      elementOptions.max_label = item.max_label
-    }
-
-    if (item.defaultValue) {
-      elementOptions.defaultValue = item.defaultValue
-    }
-
-    if (item.field_name) {
-      elementOptions.field_name = item.field_name + ID.uuid()
-    }
-
-    if (item.label) {
-      elementOptions.label = item.label
-    }
-
-    if (item.options) {
-      if (item.options.length > 0) {
-        elementOptions.options = item.options
-      } else {
-        elementOptions.options = Toolbar._defaultItemOptions(elementOptions.element)
-      }
-    }
-
-    if (item.key === 'Table' || item.key === 'DynamicColumnRow') {
-      if (item.columns.length > 0) {
-        elementOptions.columns = item.columns
-      } else {
-        elementOptions.columns = Toolbar._defaultItemColumns()
-      }
-
-      if (item.rowLabels?.length > 0) {
-        elementOptions.rowLabels = item.rowLabels
-      } else {
-        elementOptions.rowLabels = []
-      }
-      elementOptions.rows = item.rows || 3
-    }
-
-    if (item.key === 'Section') {
-      elementOptions.header = 'Placeholder Text'
-    }
-
-    if (item.key === 'Signature2') {
-      elementOptions.position = 'Placeholder Text'
-      elementOptions.specificRole = 'specific'
-    }
-
-    if (item.key === 'DataSource') {
-      elementOptions.sourceType = item.sourceType
-      elementOptions.formSource = item.formSource
-      elementOptions.formField = item.formField || {}
-    }
-
-    if (item.key === 'FormLink') {
-      elementOptions.formSource = item.formSource
-    }
-
-    if (item.formularKey !== undefined) {
-      elementOptions.formularKey = item.formularKey
-    }
-
-    if (item.key === 'FormulaInput') {
-      elementOptions.formula = item.formula
-    }
-
-    return elementOptions
-  }
-
-  _onClick(item) {
-    // ElementActions.createElement(this.create(item));
-    store.dispatch('create', this.create(item))
-  }
-
-  render() {
-    return (
-      <div className="react-form-builder-toolbar" style={{ marginTop: 0 }}>
-        <h4>Toolbox</h4>
-        <ul>
-          {this.state.items.map((item) => (
-            <ToolbarItem
-              data={item}
-              key={item.key}
-              onClick={this._onClick.bind(this, item)}
-              onCreate={this.create}
-            />
-          ))}
-        </ul>
-      </div>
-    )
-  }
-}
+export default Toolbar
