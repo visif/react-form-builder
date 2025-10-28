@@ -2,159 +2,172 @@ import React from 'react'
 import ComponentHeader from './component-header'
 import ComponentLabel from './component-label'
 
-export default class Table extends React.Component {
-  self = this
-  constructor(props) {
-    super(props)
-    this.tableRef = React.createRef()
-    const rowsAdded =
-      (props.defaultValue ? props.defaultValue.length : Number(props.data.rows)) -
-      Number(props.data.rows)
-    this.state = {
-      rows: Number(props.data.rows),
-      rowLabels: props.data.rowLabels,
-      columns: props.data.columns,
-      defaultValue: props.defaultValue,
-      inputs: Table.getInputValues(
-        props.defaultValue,
-        props.data.columns,
-        Number(props.data.rows),
-        rowsAdded,
-        props.data.rowLabels
-      ),
-      rowsAdded,
-    }
-  }
-
-  static getInputValues = (defaultValue = [], columns, rows, addingRows, rowLabels) => {
-    const result = []
-    const isFixedRow = rowLabels?.length > 0
-    const activeRows = isFixedRow ? rowLabels?.length : rows + addingRows
-    Array.from(Array(Number(activeRows)).keys()).map((i) => {
-      const current = []
-      columns.map((j, jIndex) => {
-        let value = defaultValue[i] ? (defaultValue[i][jIndex] ?? '') : ''
-        if (isFixedRow && jIndex === 0) {
-          value = rowLabels[i].text
-        }
-        current.push(value)
-      })
-      result.push(current)
+const getInputValues = (defaultValue = [], columns, rows, addingRows, rowLabels) => {
+  const result = []
+  const isFixedRow = rowLabels?.length > 0
+  const activeRows = isFixedRow ? rowLabels?.length : rows + addingRows
+  Array.from(Array(Number(activeRows)).keys()).map((i) => {
+    const current = []
+    columns.map((j, jIndex) => {
+      let value = defaultValue[i] ? (defaultValue[i][jIndex] ?? '') : ''
+      if (isFixedRow && jIndex === 0) {
+        value = rowLabels[i].text
+      }
+      current.push(value)
     })
+    result.push(current)
+  })
 
-    return result
-  }
+  return result
+}
 
-  static getDerivedStateFromProps = (props, state) => {
-    console.log('Table getDerivedStateFromProps')
+const Table = (props) => {
+  const tableRef = React.useRef(null)
+
+  const initialRowsAdded =
+    (props.defaultValue ? props.defaultValue.length : Number(props.data.rows)) -
+    Number(props.data.rows)
+
+  const [rows, setRows] = React.useState(Number(props.data.rows))
+  const [rowLabels, setRowLabels] = React.useState(props.data.rowLabels)
+  const [columns, setColumns] = React.useState(props.data.columns)
+  const [defaultValue, setDefaultValue] = React.useState(props.defaultValue)
+  const [inputs, setInputs] = React.useState(
+    getInputValues(
+      props.defaultValue,
+      props.data.columns,
+      Number(props.data.rows),
+      initialRowsAdded,
+      props.data.rowLabels
+    )
+  )
+  const [rowsAdded, setRowsAdded] = React.useState(initialRowsAdded)
+
+  React.useEffect(() => {
+    console.log('Table useEffect - columns/rows check')
     if (
-      Number(props.data.rows) !== Number(state.rows) ||
-      JSON.stringify(props.data.columns) !== JSON.stringify(state.columns) ||
-      JSON.stringify(state.rowLabels) !== JSON.stringify(props.data.rowLabels)
+      Number(props.data.rows) !== Number(rows) ||
+      JSON.stringify(props.data.columns) !== JSON.stringify(columns) ||
+      JSON.stringify(rowLabels) !== JSON.stringify(props.data.rowLabels)
     ) {
       console.log('Table default columns/rows changed')
-      return {
-        rows: Number(props.data.rows),
-        columns: props.data.columns,
-        defaultValue: state.defaultValue,
-        inputs: Table.getInputValues(
-          state.inputs,
-          props.data.columns,
-          Number(props.data.rows),
-          state.rowsAdded,
-          props.data.rowLabels
-        ),
-        rowsAdded: state.rowsAdded,
-        rowLabels: props.data.rowLabels,
-      }
-    }
-
-    if (JSON.stringify(state.defaultValue) !== JSON.stringify(props.defaultValue)) {
-      console.log('Table default prop changed', state.defaultValue, props.defaultValue)
-      const rowsAdded =
-        (props.defaultValue ? props.defaultValue.length : Number(props.data.rows)) -
-        Number(props.data.rows)
-      return {
-        rows: Number(props.data.rows),
-        columns: props.data.columns,
-        defaultValue: props.defaultValue,
-        inputs: Table.getInputValues(
-          props.defaultValue,
+      setRows(Number(props.data.rows))
+      setColumns(props.data.columns)
+      setRowLabels(props.data.rowLabels)
+      setInputs(
+        getInputValues(
+          inputs,
           props.data.columns,
           Number(props.data.rows),
           rowsAdded,
           props.data.rowLabels
-        ),
-        rowsAdded,
-        rowLabels: props.data.rowLabels,
-      }
+        )
+      )
     }
+  }, [props.data.rows, props.data.columns, props.data.rowLabels, rows, columns, rowLabels, rowsAdded, inputs])
 
-    return state
-  }
+  React.useEffect(() => {
+    console.log('Table useEffect - defaultValue check')
+    if (JSON.stringify(defaultValue) !== JSON.stringify(props.defaultValue)) {
+      console.log('Table default prop changed', defaultValue, props.defaultValue)
+      const newRowsAdded =
+        (props.defaultValue ? props.defaultValue.length : Number(props.data.rows)) -
+        Number(props.data.rows)
+      setRows(Number(props.data.rows))
+      setColumns(props.data.columns)
+      setDefaultValue(props.defaultValue)
+      setRowLabels(props.data.rowLabels)
+      setInputs(
+        getInputValues(
+          props.defaultValue,
+          props.data.columns,
+          Number(props.data.rows),
+          newRowsAdded,
+          props.data.rowLabels
+        )
+      )
+      setRowsAdded(newRowsAdded)
+    }
+  }, [props.defaultValue, props.data.rows, props.data.columns, props.data.rowLabels, defaultValue])
 
-  addRow = () => {
-    this.setState((current) => ({
-      ...current,
-      rowsAdded: current.rowsAdded + 1,
-      inputs: Table.getInputValues(
-        current.inputs,
-        current.columns,
-        current.rows,
-        current.rowsAdded + 1
-      ),
-    }))
-  }
+  const addRow = React.useCallback(() => {
+    const newRowsAdded = rowsAdded + 1
+    setRowsAdded(newRowsAdded)
+    setInputs(
+      getInputValues(
+        inputs,
+        columns,
+        rows,
+        newRowsAdded
+      )
+    )
+  }, [rowsAdded, inputs, columns, rows])
 
-  removeRow = () => {
-    this.setState((current) => ({
-      ...current,
-      rowsAdded: current.rowsAdded - 1,
-      inputs: Table.getInputValues(
-        current.inputs,
-        current.columns,
-        current.rows,
-        current.rowsAdded - 1
-      ),
-    }))
-  }
+  const removeRow = React.useCallback(() => {
+    const newRowsAdded = rowsAdded - 1
+    setRowsAdded(newRowsAdded)
+    setInputs(
+      getInputValues(
+        inputs,
+        columns,
+        rows,
+        newRowsAdded
+      )
+    )
+  }, [rowsAdded, inputs, columns, rows])
 
-  renderRows = () => {
+  const handleInputChange = React.useCallback((rowIndex, colIndex, value) => {
+    setInputs((prevInputs) => {
+      const newInputs = [...prevInputs]
+      if (!newInputs[rowIndex]) {
+        newInputs[rowIndex] = []
+      }
+      newInputs[rowIndex][colIndex] = value
+      return newInputs
+    })
+  }, [])
+
+  const getColumnWidth = React.useCallback((totalWidthCount, width) => {
+    const currentWidth = parseInt(width) ? Number(width) : 1
+    return `${(currentWidth / totalWidthCount) * 100}%`
+  }, [])
+
+  const renderRows = React.useCallback(() => {
     const userProperties =
-      this.props.getActiveUserProperties && this.props.getActiveUserProperties()
+      props.getActiveUserProperties && props.getActiveUserProperties()
 
-    const savedEditor = this.props.editor
+    const savedEditor = props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
+      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
-    const isFixedRow = this.state.rowLabels?.length > 0
+    const isFixedRow = rowLabels?.length > 0
     const activeRows = isFixedRow
-      ? this.state.rowLabels?.length
-      : this.state.rows + this.state.rowsAdded
+      ? rowLabels?.length
+      : rows + rowsAdded
 
     return (
       <tbody>
         {Array.from(Array(Number(activeRows)).keys()).map((i) => (
           <tr key={'row' + i}>
-            {this.props.data?.columns?.map((j, jIndex) => {
+            {props.data?.columns?.map((j, jIndex) => {
               const isLabel = isFixedRow && jIndex === 0
 
               if (isLabel) {
                 return (
-                  <td>
-                    <label>{this.state.rowLabels[i].text}</label>
+                  <td key={`cell-${i}-${jIndex}`}>
+                    <label>{rowLabels[i].text}</label>
                   </td>
                 )
               }
 
-              const value = this.state.inputs[i]
-                ? (this.state.inputs[i][jIndex] ?? '')
+              const value = inputs[i]
+                ? (inputs[i][jIndex] ?? '')
                 : ''
 
               return (
-                <td>
+                <td key={`cell-${i}-${jIndex}`}>
                   <textarea
                     className="form-control"
                     style={isLabel ? { border: 0, backgroundColor: 'inherit' } : {}}
@@ -163,12 +176,7 @@ export default class Table extends React.Component {
                     value={value}
                     rows={1}
                     onChange={(event) => {
-                      const value = event.target.value
-                      const array = this.state.inputs
-                      array[i][jIndex] = value
-                      this.setState({
-                        inputs: array,
-                      })
+                      handleInputChange(i, jIndex, event.target.value)
                     }}
                   />
                 </td>
@@ -178,86 +186,82 @@ export default class Table extends React.Component {
         ))}
       </tbody>
     )
+  }, [props, rowLabels, rows, rowsAdded, inputs, handleInputChange])
+
+  const userProperties =
+    props.getActiveUserProperties && props.getActiveUserProperties()
+
+  const savedEditor = props.editor
+  let isSameEditor = true
+  if (savedEditor && savedEditor.userId && !!userProperties) {
+    isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
-  getColumnWidth = (totalWidthCount, width) => {
-    const currentWidth = parseInt(width) ? Number(width) : 1
-    return `${(currentWidth / totalWidthCount) * 100}%`
+  let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
+  if (props?.data?.pageBreakBefore) {
+    baseClasses += ' alwaysbreak'
   }
+  const totalWidthCount = props.data?.columns.reduce((previous, current) => {
+    return previous + (parseInt(current.width) ? Number(current.width) : 1)
+  }, 0)
+  const isFixedRow = rowLabels?.length > 0
 
-  render() {
-    const userProperties =
-      this.props.getActiveUserProperties && this.props.getActiveUserProperties()
-
-    const savedEditor = this.props.editor
-    let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
-    }
-
-    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
-    if (this.props?.data?.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
-    }
-    const totalWidthCount = this.props.data?.columns.reduce((previous, current) => {
-      return previous + (parseInt(current.width) ? Number(current.width) : 1)
-    }, 0)
-    const isFixedRow = this.state.rowLabels?.length > 0
-
-    return (
-      <div className={baseClasses} key={`table-container-${this.props.id}`}>
-        <ComponentHeader {...this.props} />
-        <div className="form-group">
-          <ComponentLabel {...this.props} />
-          <table
-            className="table table-bordered"
-            ref={this.tableRef}
-            key={`table-${this.props.id}`}
-          >
-            <thead>
-              <tr>
-                {this.props.data?.columns?.map((col) => {
-                  return (
-                    <th
-                      scope="col"
-                      style={{
-                        width: this.getColumnWidth(totalWidthCount, col.width),
-                      }}
-                    >
-                      {col.text}
-                    </th>
-                  )
-                })}
-              </tr>
-            </thead>
-            {this.renderRows()}
-          </table>
-          {!isFixedRow && (
-            <div style={{ textAlign: 'right' }}>
-              <button
-                type="button"
-                class="btn btn-secondary"
-                onClick={this.removeRow}
-                style={{
-                  marginRight: 8,
-                  display: this.state.inputs.length > 0 ? 'initial' : 'none',
-                }}
-                disabled={!isSameEditor}
-              >
-                Remove Row
-              </button>
-              <button
-                type="button"
-                class="btn btn-info"
-                disabled={!isSameEditor}
-                onClick={this.addRow}
-              >
-                Add Row
-              </button>
-            </div>
-          )}
-        </div>
+  return (
+    <div className={baseClasses} key={`table-container-${props.id}`}>
+      <ComponentHeader {...props} />
+      <div className="form-group">
+        <ComponentLabel {...props} />
+        <table
+          className="table table-bordered"
+          ref={tableRef}
+          key={`table-${props.id}`}
+        >
+          <thead>
+            <tr>
+              {props.data?.columns?.map((col, colIndex) => {
+                return (
+                  <th
+                    key={`header-${colIndex}`}
+                    scope="col"
+                    style={{
+                      width: getColumnWidth(totalWidthCount, col.width),
+                    }}
+                  >
+                    {col.text}
+                  </th>
+                )
+              })}
+            </tr>
+          </thead>
+          {renderRows()}
+        </table>
+        {!isFixedRow && (
+          <div style={{ textAlign: 'right' }}>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={removeRow}
+              style={{
+                marginRight: 8,
+                display: inputs.length > 0 ? 'initial' : 'none',
+              }}
+              disabled={!isSameEditor}
+            >
+              Remove Row
+            </button>
+            <button
+              type="button"
+              className="btn btn-info"
+              disabled={!isSameEditor}
+              onClick={addRow}
+            >
+              Add Row
+            </button>
+          </div>
+        )}
       </div>
-    )
-  }
+    </div>
+  )
 }
+
+export default Table
