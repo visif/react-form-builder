@@ -1,340 +1,344 @@
 /**
  * <FixedRowList />
  */
-import React from 'react'
+import React, { useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import ID from './UUID'
 
-class FixedRowList extends React.Component {
-  constructor(props) {
-    super(props)
-    const { element } = props
-    this.state = {
-      element,
-      dirty: false,
-    }
-  }
+const FixedRowList = ({ element: propsElement, preview = null, updateElement }) => {
+  const [element, setElement] = useState(propsElement)
+  const [dirty, setDirty] = useState(false)
 
-  _setValue(text) {
+  const _setValue = (text) => {
     return `${text || ''}`.replace(/[^A-Z0-9]+/gi, '_').toLowerCase()
   }
 
-  areRowsInSync() {
-    const { element } = this.state
+  const areRowsInSync = useCallback(() => {
     return Number(element.rows || 1) === element.rowLabels.length
-  }
+  }, [element.rows, element.rowLabels.length])
 
-  editRow(index, key, e) {
-    const { element } = this.state
-    const targetValue = e.target.value || ''
+  const editRow = useCallback(
+    (index, key, e) => {
+      setElement((prevElement) => {
+        const newElement = { ...prevElement }
+        const targetValue = e.target.value || ''
 
-    // Ensure rowLabels[index] exists
-    if (!element.rowLabels[index]) {
-      element.rowLabels[index] = { value: '', text: '', key: ID.uuid() }
-    }
+        // Ensure rowLabels[index] exists
+        if (!newElement.rowLabels[index]) {
+          newElement.rowLabels[index] = { value: '', text: '', key: ID.uuid() }
+        }
 
-    // Safely check if value property differs from the generated value
-    const currentValue = element.rowLabels[index].value || ''
-    const currentKeyValue = element.rowLabels[index][key] || ''
+        // Safely check if value property differs from the generated value
+        const currentValue = newElement.rowLabels[index].value || ''
+        const currentKeyValue = newElement.rowLabels[index][key] || ''
 
-    // If value is already custom (not auto-generated from text), keep it
-    // Otherwise, set it to the new auto-generated value
-    const val =
-      currentValue !== this._setValue(currentKeyValue)
-        ? currentValue
-        : this._setValue(targetValue)
+        // If value is already custom (not auto-generated from text), keep it
+        // Otherwise, set it to the new auto-generated value
+        const val =
+          currentValue !== _setValue(currentKeyValue)
+            ? currentValue
+            : _setValue(targetValue)
 
-    // Update the properties
-    element.rowLabels[index][key] = targetValue
-    element.rowLabels[index].value = val
+        // Update the properties
+        newElement.rowLabels[index][key] = targetValue
+        newElement.rowLabels[index].value = val
 
-    this.setState({
-      element,
-      dirty: true,
-    })
-  }
+        setDirty(true)
+        return newElement
+      })
+    },
+    [_setValue]
+  )
 
-  updateRow() {
-    const { element, dirty } = this.state
-    const { updateElement, preview } = this.props
-
+  const updateRow = useCallback(() => {
     if (dirty) {
       updateElement.call(preview, element)
-      this.setState({ dirty: false })
+      setDirty(false)
     }
-  }
+  }, [dirty, element, preview, updateElement])
 
-  addRow(index) {
-    const { element } = this.state
-    const { updateElement, preview } = this.props
-    const newRowIndex = index + 1
+  const addRow = useCallback(
+    (index) => {
+      setElement((prevElement) => {
+        const newElement = { ...prevElement }
+        const newRowIndex = index + 1
 
-    // Add a new row label
-    element.rowLabels.splice(newRowIndex, 0, {
-      value: '',
-      text: `Row ${element.rowLabels.length + 1}`,
-      key: ID.uuid(),
-    })
+        // Add a new row label
+        newElement.rowLabels.splice(newRowIndex, 0, {
+          value: '',
+          text: `Row ${newElement.rowLabels.length + 1}`,
+          key: ID.uuid(),
+        })
 
-    // Update rows count only if it was in sync with rowLabels
-    if (this.areRowsInSync()) {
-      element.rows = element.rowLabels.length
-    }
-
-    // Initialize a new row in childItems if it doesn't exist
-    if (!element.childItems) {
-      element.childItems = []
-    }
-    if (!element.childItems[newRowIndex]) {
-      const columnsCount = element.childItems[0] ? element.childItems[0].length : 0
-      element.childItems[newRowIndex] = Array(columnsCount).fill(null)
-    }
-
-    // If we can access the preview data
-    if (preview?.state?.data && typeof preview.getDataById === 'function') {
-      const allFormData = [...preview.state.data]
-      const newElements = []
-
-      // For each column, create new elements
-      const columnCount = element.childItems[0] ? element.childItems[0].length : 0
-
-      for (let col = 0; col < columnCount; col++) {
-        // Find a template element
-        let templateElement = null
-
-        // Look for existing elements in this column
-        for (let row = 0; row < element.childItems.length; row++) {
-          if (
-            row !== newRowIndex &&
-            element.childItems[row] &&
-            element.childItems[row][col]
-          ) {
-            const elementId = element.childItems[row][col]
-            const foundElement = preview.getDataById(elementId)
-
-            if (foundElement) {
-              templateElement = foundElement
-              break
-            }
-          }
+        // Update rows count only if it was in sync with rowLabels
+        if (Number(newElement.rows || 1) === prevElement.rowLabels.length) {
+          newElement.rows = newElement.rowLabels.length
         }
 
-        // If we found a template element
-        if (templateElement) {
-          const elementType = templateElement.element
-          const timestamp = Date.now() + col + newRowIndex
-
-          // Create a new element
-          const newElement = {
-            element: elementType,
-            id: `${elementType}_${timestamp}_${newRowIndex}_${col}`,
-            row: newRowIndex,
-            col,
-            parentId: element.id,
-            hideLabel: true,
-            field_name: `${elementType}_${newRowIndex}_${col}_${timestamp}`,
-          }
-
-          // Copy basic properties
-          if (templateElement.label) {
-            newElement.label = templateElement.label
-          }
-          if (templateElement.required !== undefined) {
-            newElement.required = templateElement.required
-          }
-
-          // Handle special element types
-          if (elementType === 'Checkboxes' || elementType === 'RadioButtons') {
-            // Create fresh options with unchecked state
-            if (templateElement.options && Array.isArray(templateElement.options)) {
-              newElement.options = templateElement.options.map((option) => ({
-                value: option.value,
-                text: option.text,
-                key: `${timestamp}_${Math.random().toString(36).substring(2, 9)}`,
-                checked: false,
-                selected: false,
-              }))
-              newElement.inline = templateElement.inline || false
-            }
-          } else if (elementType === 'Dropdown') {
-            // Create dropdown options
-            if (templateElement.options && Array.isArray(templateElement.options)) {
-              newElement.options = templateElement.options.map((option) => ({
-                value: option.value,
-                text: option.text,
-                key: `${timestamp}_${Math.random().toString(36).substring(2, 9)}`,
-              }))
-            }
-          } else if (templateElement.options) {
-            // Handle other elements with options
-            newElement.options = JSON.parse(JSON.stringify(templateElement.options)).map(
-              (opt) => ({
-                ...opt,
-                key: `${timestamp}_${Math.random().toString(36).substring(2, 9)}`,
-              })
-            )
-          }
-
-          // Add to our collection
-          newElements.push(newElement)
-          element.childItems[newRowIndex][col] = newElement.id
+        // Initialize a new row in childItems if it doesn't exist
+        if (!newElement.childItems) {
+          newElement.childItems = []
         }
-      }
-
-      // If we created new elements, update the form data
-      if (newElements.length > 0) {
-        const updatedData = [...allFormData, ...newElements]
-
-        // Try to update state
-        try {
-          preview.setState({ data: updatedData }, () => {
-            updateElement.call(preview, element)
-          })
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.error('Error updating state:', e)
-          updateElement.call(preview, element)
+        if (!newElement.childItems[newRowIndex]) {
+          const columnsCount = newElement.childItems[0]
+            ? newElement.childItems[0].length
+            : 0
+          newElement.childItems[newRowIndex] = Array(columnsCount).fill(null)
         }
-      } else {
-        // Just update the element if we can't access data
-        updateElement.call(preview, element)
-      }
-    }
-  }
 
-  removeRow(index) {
-    const { element } = this.state
-    const { updateElement, preview } = this.props
+        return newElement
+      })
 
-    // Remove the row label
-    element.rowLabels.splice(index, 1)
+      // Handle element creation
+      setTimeout(() => {
+        // If we can access the preview data
+        if (preview?.state?.data && typeof preview.getDataById === 'function') {
+          const allFormData = [...preview.state.data]
+          const newElements = []
+          const newRowIndex = index + 1
 
-    // Update rows count only if it was in sync with rowLabels
-    if (this.areRowsInSync()) {
-      element.rows = element.rowLabels.length
-    }
+          // For each column, create new elements
+          const columnCount = element.childItems[0] ? element.childItems[0].length : 0
 
-    // If we have childItems, also remove the row from there
-    if (element.childItems && Array.isArray(element.childItems)) {
-      let updatedData = preview?.state ? [...preview.state.data] : []
+          for (let col = 0; col < columnCount; col++) {
+            // Find a template element
+            let templateElement = null
 
-      // Track elements to remove
-      const elementsToRemove = []
-
-      // Remove the row from childItems
-      if (index < element.childItems.length) {
-        // Find elements in this row to remove them from data
-        if (preview && typeof preview.getDataById === 'function') {
-          const rowItems = element.childItems[index]
-          if (rowItems) {
-            rowItems.forEach((elementId) => {
-              if (elementId) {
+            // Look for existing elements in this column
+            for (let row = 0; row < element.childItems.length; row++) {
+              if (
+                row !== newRowIndex &&
+                element.childItems[row] &&
+                element.childItems[row][col]
+              ) {
+                const elementId = element.childItems[row][col]
                 const foundElement = preview.getDataById(elementId)
+
                 if (foundElement) {
-                  elementsToRemove.push(foundElement)
+                  templateElement = foundElement
+                  break
                 }
               }
-            })
+            }
+
+            // If we found a template element
+            if (templateElement) {
+              const elementType = templateElement.element
+              const timestamp = Date.now() + col + newRowIndex
+
+              // Create a new element
+              const newElementData = {
+                element: elementType,
+                id: `${elementType}_${timestamp}_${newRowIndex}_${col}`,
+                row: newRowIndex,
+                col,
+                parentId: element.id,
+                hideLabel: true,
+                field_name: `${elementType}_${newRowIndex}_${col}_${timestamp}`,
+              }
+
+              // Copy basic properties
+              if (templateElement.label) {
+                newElementData.label = templateElement.label
+              }
+              if (templateElement.required !== undefined) {
+                newElementData.required = templateElement.required
+              }
+
+              // Handle special element types
+              if (elementType === 'Checkboxes' || elementType === 'RadioButtons') {
+                // Create fresh options with unchecked state
+                if (templateElement.options && Array.isArray(templateElement.options)) {
+                  newElementData.options = templateElement.options.map((option) => ({
+                    value: option.value,
+                    text: option.text,
+                    key: `${timestamp}_${Math.random().toString(36).substring(2, 9)}`,
+                    checked: false,
+                    selected: false,
+                  }))
+                  newElementData.inline = templateElement.inline || false
+                }
+              } else if (elementType === 'Dropdown') {
+                // Create dropdown options
+                if (templateElement.options && Array.isArray(templateElement.options)) {
+                  newElementData.options = templateElement.options.map((option) => ({
+                    value: option.value,
+                    text: option.text,
+                    key: `${timestamp}_${Math.random().toString(36).substring(2, 9)}`,
+                  }))
+                }
+              } else if (templateElement.options) {
+                // Handle other elements with options
+                newElementData.options = JSON.parse(
+                  JSON.stringify(templateElement.options)
+                ).map((opt) => ({
+                  ...opt,
+                  key: `${timestamp}_${Math.random().toString(36).substring(2, 9)}`,
+                }))
+              }
+
+              // Add to our collection
+              newElements.push(newElementData)
+              element.childItems[newRowIndex][col] = newElementData.id
+            }
           }
-        }
 
-        // Remove the row from childItems
-        element.childItems.splice(index, 1)
+          // If we created new elements, update the form data
+          if (newElements.length > 0) {
+            const updatedData = [...allFormData, ...newElements]
 
-        // Remove elements from data if we have access to it
-        if (preview?.state && elementsToRemove.length > 0) {
-          updatedData = updatedData.filter((x) => !elementsToRemove.includes(x))
-
-          // Try to update state
-          try {
-            preview.setState({ data: updatedData }, () => {
+            // Try to update state
+            try {
+              preview.setState({ data: updatedData }, () => {
+                updateElement.call(preview, element)
+              })
+            } catch (e) {
+              // eslint-disable-next-line no-console
+              console.error('Error updating state:', e)
               updateElement.call(preview, element)
-            })
-            return
-          } catch (e) {
-            // eslint-disable-next-line no-console
-            console.error('Error updating state:', e)
+            }
+          } else {
+            // Just update the element if we can't access data
+            updateElement.call(preview, element)
           }
         }
-      }
-    }
+      }, 0)
+    },
+    [element, preview, updateElement]
+  )
 
-    // Update the element
-    updateElement.call(preview, element)
-  }
+  const removeRow = useCallback(
+    (index) => {
+      setElement((prevElement) => {
+        const newElement = { ...prevElement }
 
-  render() {
-    const { element } = this.props
+        // Remove the row label
+        newElement.rowLabels.splice(index, 1)
 
-    return (
-      <div className="dynamic-option-list">
-        <ul key="row-labels">
-          <li>
-            <div className="row">
-              <div className="col-sm-12">
-                <b>Rows</b>
+        // Update rows count only if it was in sync with rowLabels
+        if (Number(newElement.rows || 1) === prevElement.rowLabels.length) {
+          newElement.rows = newElement.rowLabels.length
+        }
+
+        return newElement
+      })
+
+      // Handle element removal
+      setTimeout(() => {
+        // If we have childItems, also remove the row from there
+        if (element.childItems && Array.isArray(element.childItems)) {
+          let updatedData = preview?.state ? [...preview.state.data] : []
+
+          // Track elements to remove
+          const elementsToRemove = []
+
+          // Remove the row from childItems
+          if (index < element.childItems.length) {
+            // Find elements in this row to remove them from data
+            if (preview && typeof preview.getDataById === 'function') {
+              const rowItems = element.childItems[index]
+              if (rowItems) {
+                rowItems.forEach((elementId) => {
+                  if (elementId) {
+                    const foundElement = preview.getDataById(elementId)
+                    if (foundElement) {
+                      elementsToRemove.push(foundElement)
+                    }
+                  }
+                })
+              }
+            }
+
+            // Remove the row from childItems
+            element.childItems.splice(index, 1)
+
+            // Remove elements from data if we have access to it
+            if (preview?.state && elementsToRemove.length > 0) {
+              updatedData = updatedData.filter((x) => !elementsToRemove.includes(x))
+
+              // Try to update state
+              try {
+                preview.setState({ data: updatedData }, () => {
+                  updateElement.call(preview, element)
+                })
+                return
+              } catch (e) {
+                // eslint-disable-next-line no-console
+                console.error('Error updating state:', e)
+              }
+            }
+          }
+        }
+
+        // Update the element
+        updateElement.call(preview, element)
+      }, 0)
+    },
+    [element, preview, updateElement]
+  )
+
+  return (
+    <div className="dynamic-option-list">
+      <ul key="row-labels">
+        <li>
+          <div className="row">
+            <div className="col-sm-12">
+              <b>Rows</b>
+            </div>
+          </div>
+        </li>
+        <li className="clearfix" key="li_label_x">
+          <div className="row">
+            <div className="col-sm-9">Row Label</div>
+            <div className="col-sm-3">
+              <div className="dynamic-options-actions-buttons">
+                <button onClick={() => addRow(-1)} className="btn btn-success">
+                  <i className="fas fa-plus-circle" />
+                </button>
               </div>
             </div>
-          </li>
-          <li className="clearfix" key="li_label_x">
-            <div className="row">
-              <div className="col-sm-9">Row Label</div>
-              <div className="col-sm-3">
-                <div className="dynamic-options-actions-buttons">
-                  <button
-                    onClick={this.addRow.bind(this, -1)}
-                    className="btn btn-success"
-                  >
-                    <i className="fas fa-plus-circle" />
-                  </button>
+          </div>
+        </li>
+
+        {propsElement.rowLabels.map((option, index) => {
+          const key = `edit_${option.key}`
+          return (
+            <li className="clearfix" key={`li_label_${key}`}>
+              <div className="row">
+                <div className="col-sm-9">
+                  <input
+                    tabIndex={index + 1}
+                    key={`input_label_${key}`}
+                    className="form-control"
+                    style={{ width: '100%' }}
+                    type="text"
+                    name={`text_${index}`}
+                    placeholder="Row Label"
+                    value={option.text}
+                    onBlur={updateRow}
+                    onChange={(e) => editRow(index, 'text', e)}
+                  />
+                </div>
+                <div className="col-sm-3">
+                  <div className="dynamic-options-actions-buttons">
+                    <button onClick={() => addRow(index)} className="btn btn-success">
+                      <i className="fas fa-plus-circle" />
+                    </button>
+                    <button
+                      onClick={() => removeRow(index)}
+                      className="btn btn-danger"
+                    >
+                      <i className="fas fa-minus-circle" />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </li>
-
-          {element.rowLabels.map((option, index) => {
-            const key = `edit_${option.key}`
-            return (
-              <li className="clearfix" key={`li_label_${key}`}>
-                <div className="row">
-                  <div className="col-sm-9">
-                    <input
-                      tabIndex={index + 1}
-                      key={`input_label_${key}`}
-                      className="form-control"
-                      style={{ width: '100%' }}
-                      type="text"
-                      name={`text_${index}`}
-                      placeholder="Row Label"
-                      value={option.text}
-                      onBlur={this.updateRow.bind(this)}
-                      onChange={this.editRow.bind(this, index, 'text')}
-                    />
-                  </div>
-                  <div className="col-sm-3">
-                    <div className="dynamic-options-actions-buttons">
-                      <button
-                        onClick={this.addRow.bind(this, index)}
-                        className="btn btn-success"
-                      >
-                        <i className="fas fa-plus-circle" />
-                      </button>
-                      <button
-                        onClick={this.removeRow.bind(this, index)}
-                        className="btn btn-danger"
-                      >
-                        <i className="fas fa-minus-circle" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </li>
-            )
-          })}
-        </ul>
-      </div>
-    )
-  }
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )
 }
 
 FixedRowList.propTypes = {
@@ -358,10 +362,6 @@ FixedRowList.propTypes = {
     setState: PropTypes.func,
   }),
   updateElement: PropTypes.func.isRequired,
-}
-
-FixedRowList.defaultProps = {
-  preview: null,
 }
 
 export default FixedRowList
