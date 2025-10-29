@@ -1,7 +1,7 @@
 {
   "name": "react-form-builder2",
-  "version": "0.10.0",
-  "description": "A complete form builder for react.",
+  "version": "1.0.0-beta.1",
+  "description": "A complete React form builder with drag-and-drop - modernized for React 18, Vite, and hooks",
   "main": "lib/index.js",
   "license": "MIT",
   "repository": {
@@ -11,16 +11,27 @@
   "files": [
     "lib",
     "dist",
-    "dist/app.css"
+    "dist/app.css",
+    "README.md",
+    "MIGRATION_GUIDE.md",
+    "CHANGELOG.md"
   ],
   "keywords": [
     "react",
     "react-component",
+    "react-18",
     "form",
+    "form-builder",
     "builder",
     "ui",
     "drag",
-    "drop"
+    "drop",
+    "react-dnd",
+    "hooks",
+    "vite",
+    "ant-design",
+    "form-generator",
+    "drag-drop"
   ],
   "engines": {
     "node": ">=18.0.0"
