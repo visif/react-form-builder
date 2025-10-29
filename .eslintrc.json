@@ -1,13 +1,31 @@
 {
-  "parser": "babel-eslint",
+  "parser": "@babel/eslint-parser",
+  "parserOptions": {
+    "ecmaVersion": 2021,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "requireConfigFile": false,
+    "babelOptions": {
+      "presets": ["@babel/preset-react"]
+    }
+  },
   "extends": [
     "airbnb",
+    "airbnb/hooks",
     "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
     "plugin:jsx-a11y/recommended",
     "plugin:import/errors",
     "plugin:import/warnings"
   ],
-  "plugins": ["react", "jsx-a11y", "import"],
+  "plugins": ["react", "react-hooks", "jsx-a11y", "import"],
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
   "globals": {
     "window": true,
     "document": true,
@@ -31,10 +49,27 @@
     "object-curly-newline": "off",
     "no-prototype-builtins": "warn",
     "react/jsx-uses-vars": [2],
-    "react/jsx-uses-react": 1,
-    "react/react-in-jsx-scope": "off"
+    "react/jsx-uses-react": "off",
+    "react/react-in-jsx-scope": "off",
+    "react/function-component-definition": [
+      "error",
+      {
+        "namedComponents": "arrow-function",
+        "unnamedComponents": "arrow-function"
+      }
+    ],
+    "react/prop-types": "warn",
+    "react/require-default-props": "warn",
+    "react/destructuring-assignment": "warn",
+    "react/jsx-props-no-spreading": "warn",
+    "react/forbid-prop-types": "warn",
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn"
   },
   "settings": {
+    "react": {
+      "version": "18.3.1"
+    },
     "import/resolver": {
       "node": {
         "extensions": [".js", ".jsx"]
