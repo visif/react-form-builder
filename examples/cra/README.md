@@ -1,5 +1,22 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## React Form Builder Example (React 18)
+
+This example demonstrates react-form-builder2 v1.0.0+ with React 18.
+
+### Prerequisites
+
+- Node.js >= 18.0.0
+- React >= 18.0.0
+
+### Installation
+
+```bash
+npm install --legacy-peer-deps
+# or
+yarn install
+```
+
 ## Available Scripts
 
 In the project directory, you can run:
