@@ -225,9 +225,9 @@ Bootstrap has been replaced with Ant Design in v1.0.0. Remove Bootstrap imports 
 ## 📖 Documentation
 
 - [Main README](../README.md)
-- [Migration Guide](../MIGRATION_GUIDE.md)
-- [Changelog](../CHANGELOG.md)
-- [API Documentation](../docs/)
+- [Migration Guide](../docs/MIGRATION_GUIDE.md)
+- [Changelog](../docs/CHANGELOG.md)
+- [API Documentation](../docs/API.md)
 
 ## 🤝 Contributing
 

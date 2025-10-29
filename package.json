@@ -1,49 +1,22 @@
 {
-  "name": "react-form-builder2",
+  "name": "visiforge-form-builder",
   "version": "1.0.0-beta.1",
   "description": "A complete React form builder with drag-and-drop - modernized for React 18, Vite, and hooks",
   "main": "lib/index.js",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/kiho/react-form-builder.git"
-  },
   "files": [
     "lib",
     "dist",
     "dist/app.css",
     "README.md",
-    "MIGRATION_GUIDE.md",
-    "CHANGELOG.md"
-  ],
-  "keywords": [
-    "react",
-    "react-component",
-    "react-18",
-    "form",
-    "form-builder",
-    "builder",
-    "ui",
-    "drag",
-    "drop",
-    "react-dnd",
-    "hooks",
-    "vite",
-    "ant-design",
-    "form-generator",
-    "drag-drop"
+    "docs/MIGRATION_GUIDE.md",
+    "docs/CHANGELOG.md",
+    "docs/API.md",
+    "docs/GETTING_STARTED.md"
   ],
   "engines": {
     "node": ">=18.0.0"
   },
-  "author": "Kiho Chang",
-  "contributors": [
-    {
-      "name": "Zach Robichaud",
-      "email": "zach2825@gmail.com",
-      "url": "https://turtlebytes.com"
-    }
-  ],
   "dependencies": {
     "antd": "^5.23.0",
     "axios": "^1.7.9",

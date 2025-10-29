@@ -28,7 +28,7 @@ A complete react form builder that interfaces with a json endpoint to load and s
 
 **react-form-builder2 v1.0.0** is a major modernization release with React 18, Vite, and modern hooks!
 
-📖 **See the [Migration Guide](./MIGRATION_GUIDE.md)** for step-by-step upgrade instructions.
+📖 **See the [Migration Guide](./docs/MIGRATION_GUIDE.md)** for step-by-step upgrade instructions.
 
 📋 **Key Changes:**
 - React 18.3.1 (use `createRoot` API)
@@ -247,7 +247,7 @@ const customItems = [{
 <ReactFormBuilder customToolbarItems={customItems} />
 ```
 
-See [API.md](./API.md#custom-components) for complete documentation.
+See [API.md](./docs/API.md#custom-components) for complete documentation.
 
 ## Custom Edit Form
 
@@ -298,12 +298,16 @@ Test is not working at this moment.
 
 ## 📚 Documentation
 
-- **[API Documentation](./API.md)** - Complete API reference and prop types
-- **[Migration Guide](./MIGRATION_GUIDE.md)** - Upgrade from v0.10.0 to v1.0.0
-- **[Changelog](./CHANGELOG.md)** - Detailed release notes
-- **[Migration Progress](./MIGRATION_PROGRESS.md)** - Track conversion progress
-- **[Class to Hooks Guide](./CLASS_TO_HOOKS_GUIDE.md)** - Conversion patterns used
+- **[API Documentation](./docs/API.md)** - Complete API reference and prop types
+- **[Migration Guide](./docs/MIGRATION_GUIDE.md)** - Upgrade from v0.10.0 to v1.0.0
+- **[Changelog](./docs/CHANGELOG.md)** - Detailed release notes
+- **[Getting Started](./docs/GETTING_STARTED.md)** - Quick start guide
 - **[Examples](./examples/README.md)** - Working examples for all use cases
+
+### For Contributors
+- **[Migration Progress](./docs/MIGRATION_PROGRESS.md)** - Track conversion progress
+- **[Class to Hooks Guide](./docs/CLASS_TO_HOOKS_GUIDE.md)** - Conversion patterns used
+- **[Migration Plan](./docs/MIGRATION_PLAN.md)** - Complete migration strategy
 
 ## 🤝 Contributing
 
