@@ -1,6 +1,5 @@
-import React, { Component } from 'react'
-import { DragSource, DropTarget } from 'react-dnd'
-import { findDOMNode } from 'react-dom'
+import React, { useRef } from 'react'
+import { useDrag, useDrop } from 'react-dnd'
 import PropTypes from 'prop-types'
 import ItemTypes from './ItemTypes'
 
@@ -12,105 +11,105 @@ const cardStyle = {
   cursor: 'move',
 }
 
-// Drag source specification
-const cardSource = {
-  beginDrag(props) {
-    return {
-      itemType: ItemTypes.CARD,
-      id: props.id,
-      index: props.index,
-    }
-  },
-}
-
-// Drop target specification
-const cardTarget = {
-  drop(props, monitor, component) {
-    if (!component) return
-    const item = monitor.getItem()
-    const dragIndex = item.index
-    const hoverIndex = props.index
-    if (props.data.isContainer || item.itemType === ItemTypes.CARD) {
-      return
-    }
-    if (item.data && typeof item.setAsChild === 'function' && dragIndex === -1) {
-      props.insertCard(item, hoverIndex, item.id)
-    }
-  },
-  hover(props, monitor, component) {
-    const item = monitor.getItem()
-    const dragIndex = item.index
-    const hoverIndex = props.index
-    if (item.data && typeof item.setAsChild === 'function') {
-      return
-    }
-    if (dragIndex === hoverIndex) {
-      return
-    }
-    if (dragIndex === -1) {
-      if (props.data && props.data.isContainer) {
-        return
-      }
-      item.index = hoverIndex
-      props.insertCard(item.onCreate(item.data), hoverIndex)
-    }
-    const hoverBoundingRect = findDOMNode(component).getBoundingClientRect()
-    const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2
-    const clientOffset = monitor.getClientOffset()
-    const hoverClientY = clientOffset.y - hoverBoundingRect.top
-    if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
-      return
-    }
-    if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
-      return
-    }
-    props.moveCard(dragIndex, hoverIndex)
-    item.index = hoverIndex
-  },
-}
-
 const withDragAndDrop = (ComposedComponent) => {
-  class Card extends Component {
-    static propTypes = {
-      connectDragSource: PropTypes.func.isRequired,
-      connectDropTarget: PropTypes.func.isRequired,
-      index: PropTypes.number.isRequired,
-      isDragging: PropTypes.bool,
-      id: PropTypes.any.isRequired,
-      moveCard: PropTypes.func.isRequired,
-      seq: PropTypes.number,
-    }
+  const Card = (props) => {
+    const { id, index, moveCard, insertCard, data, onCreate, seq = -1 } = props
+    const ref = useRef(null)
 
-    static defaultProps = {
-      seq: -1,
-    }
+    const [{ isDragging }, drag] = useDrag(
+      () => ({
+        type: ItemTypes.CARD,
+        item: {
+          itemType: ItemTypes.CARD,
+          id,
+          index,
+        },
+        collect: (monitor) => ({
+          isDragging: monitor.isDragging(),
+        }),
+      }),
+      [id, index]
+    )
 
-    render() {
-      const { isDragging, connectDragSource, connectDropTarget } = this.props
-      const opacity = isDragging ? 0 : 1
+    const [, drop] = useDrop(
+      () => ({
+        accept: [ItemTypes.CARD, ItemTypes.BOX],
+        drop: (item, monitor) => {
+          if (!ref.current) return
+          const dragIndex = item.index
+          const hoverIndex = index
+          if (data.isContainer || item.itemType === ItemTypes.CARD) {
+            return
+          }
+          if (item.data && typeof item.setAsChild === 'function' && dragIndex === -1) {
+            insertCard(item, hoverIndex, item.id)
+          }
+        },
+        hover: (item, monitor) => {
+          if (!ref.current) return
+          const dragIndex = item.index
+          const hoverIndex = index
 
-      return connectDragSource(
-        connectDropTarget(
-          <div>
-            <ComposedComponent {...this.props} style={{ ...cardStyle, opacity }} />
-          </div>
-        )
-      )
-    }
+          if (item.data && typeof item.setAsChild === 'function') {
+            return
+          }
+          if (dragIndex === hoverIndex) {
+            return
+          }
+          if (dragIndex === -1) {
+            if (data && data.isContainer) {
+              return
+            }
+            item.index = hoverIndex
+            insertCard(onCreate(item.data), hoverIndex)
+          }
+
+          const hoverBoundingRect = ref.current.getBoundingClientRect()
+          const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2
+          const clientOffset = monitor.getClientOffset()
+          const hoverClientY = clientOffset.y - hoverBoundingRect.top
+
+          if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+            return
+          }
+          if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+            return
+          }
+
+          moveCard(dragIndex, hoverIndex)
+          item.index = hoverIndex
+        },
+      }),
+      [index, moveCard, insertCard, data, onCreate]
+    )
+
+    // Combine drag and drop refs
+    drag(drop(ref))
+
+    const opacity = isDragging ? 0 : 1
+
+    return (
+      <div ref={ref}>
+        <ComposedComponent {...props} style={{ ...cardStyle, opacity }} />
+      </div>
+    )
   }
 
-  const DroppableCard = DropTarget(
-    [ItemTypes.CARD, ItemTypes.BOX],
-    cardTarget,
-    (connect) => ({
-      connectDropTarget: connect.dropTarget(),
-    })
-  )(Card)
+  Card.propTypes = {
+    index: PropTypes.number.isRequired,
+    id: PropTypes.any.isRequired,
+    moveCard: PropTypes.func.isRequired,
+    insertCard: PropTypes.func,
+    onCreate: PropTypes.func,
+    data: PropTypes.object,
+    seq: PropTypes.number,
+  }
 
-  return DragSource(ItemTypes.CARD, cardSource, (connect, monitor) => ({
-    connectDragSource: connect.dragSource(),
-    isDragging: monitor.isDragging(),
-  }))(DroppableCard)
+  Card.defaultProps = {
+    seq: -1,
+  }
+
+  return Card
 }
 
 export default withDragAndDrop
