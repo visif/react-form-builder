@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import ComponentHeader from './component-header'
 import ComponentLabel from './component-label'
 
@@ -262,6 +263,26 @@ const Table = (props) => {
       </div>
     </div>
   )
+}
+
+Table.propTypes = {
+  data: PropTypes.shape({
+    rows: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    columns: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.array]),
+    rowLabels: PropTypes.arrayOf(PropTypes.shape({
+      text: PropTypes.string,
+      value: PropTypes.string,
+    })),
+    required: PropTypes.bool,
+    bold: PropTypes.bool,
+    italic: PropTypes.bool,
+    label: PropTypes.string,
+  }).isRequired,
+  defaultValue: PropTypes.array,
+  read_only: PropTypes.bool,
+  editor: PropTypes.shape({
+    email: PropTypes.string,
+  }),
 }
 
 export default Table

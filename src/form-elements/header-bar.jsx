@@ -2,6 +2,7 @@
  * <HeaderBar />
  */
 import React from 'react'
+import PropTypes from 'prop-types'
 import Grip from '../multi-column/grip'
 
 const HeaderBar = (props) => {
@@ -34,6 +35,19 @@ const HeaderBar = (props) => {
       </div>
     </div>
   )
+}
+
+HeaderBar.propTypes = {
+  data: PropTypes.shape({
+    text: PropTypes.string,
+    element: PropTypes.string,
+    isContainer: PropTypes.bool,
+  }).isRequired,
+  editModeOn: PropTypes.func,
+  onDestroy: PropTypes.func,
+  parent: PropTypes.object,
+  index: PropTypes.number,
+  setAsChild: PropTypes.func,
 }
 
 export default HeaderBar

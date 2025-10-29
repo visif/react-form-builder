@@ -2,6 +2,7 @@
  * <FormValidator />
  */
 import React from 'react'
+import PropTypes from 'prop-types'
 import xss from 'xss'
 
 const myxss = new xss.FilterXSS({
@@ -68,6 +69,12 @@ const FormValidator = (props) => {
       )}
     </div>
   )
+}
+
+FormValidator.propTypes = {
+  emitter: PropTypes.shape({
+    addListener: PropTypes.func.isRequired,
+  }).isRequired,
 }
 
 export default FormValidator

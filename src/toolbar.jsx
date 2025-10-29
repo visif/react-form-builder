@@ -2,6 +2,7 @@
  * <Toolbar />
  */
 import React from 'react'
+import PropTypes from 'prop-types'
 import store from './stores/store'
 import ToolbarItem from './toolbar-draggable-item'
 import ID from './UUID'
@@ -581,5 +582,22 @@ function _defaultItems() {
       },
     ]
   }
+
+Toolbar.propTypes = {
+  items: PropTypes.arrayOf(PropTypes.shape({
+    element: PropTypes.string,
+    key: PropTypes.string,
+    name: PropTypes.string,
+    icon: PropTypes.string,
+    static: PropTypes.bool,
+    showDescription: PropTypes.bool,
+  })),
+  customItems: PropTypes.arrayOf(PropTypes.shape({
+    key: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    icon: PropTypes.string,
+  })),
+  showDescription: PropTypes.bool,
+}
 
 export default Toolbar

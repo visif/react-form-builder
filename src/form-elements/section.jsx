@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import ComponentHeader from './component-header'
 
 const Section = (props) => {
@@ -14,6 +15,14 @@ const Section = (props) => {
       <hr />
     </div>
   )
+}
+
+Section.propTypes = {
+  data: PropTypes.shape({
+    header: PropTypes.string,
+    isShowLabel: PropTypes.bool,
+    pageBreakBefore: PropTypes.bool,
+  }).isRequired,
 }
 
 export default Section
