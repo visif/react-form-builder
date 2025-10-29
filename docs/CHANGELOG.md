@@ -5,11 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2025-01-XX (Unreleased)
+## [1.0.0] - 2025-10-30
 
 ### 🎉 Major Modernization Release
 
 This is a complete modernization of react-form-builder2, bringing it up to date with React 18 and modern build tools.
+
+**Migration Status: 95% Complete (38/40 components converted to hooks)**
 
 ### Added
 
@@ -210,6 +212,26 @@ See [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md) for detailed upgrade instructions
 3. **CJS Vite API deprecation warning**
    - Non-critical warning during build
    - Will be addressed when dependencies update
+
+### Repository Cleanup
+
+- ❌ **Removed 152+ files** from repository
+  - Webpack and legacy build system (47 files, 2,874 lines)
+  - Outdated examples (64 files, 22,099 lines)
+  - Demo server and public folders (39 files, 21,994 lines)
+  - Old documentation build artifacts
+  
+- ✨ **Removed 536 packages** from dependencies
+  - 479 packages from webpack ecosystem
+  - 55 packages from demo server (express, multer)
+  - 2 outdated Babel plugins
+  
+- 📁 **Reorganized documentation**
+  - All .md files moved to `docs/` folder
+  - Cleaner repository structure
+  - Better navigation
+
+- **Total cleanup: ~61,391 lines deleted**
 
 ### Contributors
 

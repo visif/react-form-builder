@@ -1,6 +1,6 @@
 {
   "name": "visiforge-form-builder",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0",
   "description": "A complete React form builder with drag-and-drop - modernized for React 18, Vite, and hooks",
   "main": "lib/index.js",
   "license": "MIT",
