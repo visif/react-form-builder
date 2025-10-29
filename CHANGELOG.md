@@ -19,7 +19,7 @@ This is a complete modernization of react-form-builder2, bringing it up to date 
   - Production builds in ~11s (was ~45s)
   - ES module and UMD bundles
   - Source maps included
-  
+
 - ✅ **Modern ESLint** configuration
   - Updated to `@babel/eslint-parser`
   - Added `eslint-plugin-react-hooks` for hooks validation
@@ -151,7 +151,7 @@ This is a complete modernization of react-form-builder2, bringing it up to date 
 - ✅ Fixed Slider component onChange handler for Ant Design
 - ✅ Fixed react-dnd v16 compatibility
   - Grip.jsx: DragSource → useDrag
-  - Dustbin.jsx: DropTarget → useDrop  
+  - Dustbin.jsx: DropTarget → useDrop
   - sortable-element.jsx: Both HOCs → combined hooks
 
 ### Migration Path
@@ -201,7 +201,7 @@ See [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md) for detailed upgrade instructions
 1. **react-image-lightbox temporarily disabled**
    - Not compatible with React 18
    - Will be replaced with modern alternative in future release
-   
+
 2. **2 components still using class patterns**
    - ReactForm (972 lines)
    - FormElementsEdit (1079 lines)

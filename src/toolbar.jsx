@@ -1,5 +1,56 @@
 /**
- * <Toolbar />
+ * Toolbar - Draggable form element toolbox
+ *
+ * @component
+ * @description Displays a palette of draggable form elements that can be added to the form builder.
+ * Supports both default form elements and custom toolbar items. Uses react-dnd for drag functionality.
+ *
+ * @example
+ * // Basic usage with default items
+ * import { Toolbar } from 'react-form-builder2';
+ *
+ * <Toolbar showDescription={true} />
+ *
+ * @example
+ * // With custom toolbar items
+ * const customItems = [
+ *   {
+ *     key: 'CustomElement',
+ *     name: 'My Custom Element',
+ *     icon: 'fa fa-custom',
+ *     static: false,
+ *     element: 'CustomElement',
+ *     component: CustomComponent,
+ *     type: 'custom'
+ *   }
+ * ];
+ *
+ * <Toolbar
+ *   items={customItems}
+ *   showDescription={true}
+ * />
+ *
+ * @param {Object} props - Component props
+ * @param {Array} [props.items] - Array of toolbar items to display (uses defaults if not provided)
+ * @param {Array} [props.customItems] - Additional custom items to append to toolbar
+ * @param {boolean} [props.showDescription=false] - Show descriptions for non-static elements
+ *
+ * @param {Object} props.items[] - Individual toolbar item configuration
+ * @param {string} props.items[].key - Unique identifier for the item
+ * @param {string} props.items[].element - Element type identifier
+ * @param {string} props.items[].name - Display name in toolbar
+ * @param {string} props.items[].icon - FontAwesome icon class (e.g., 'fa fa-header')
+ * @param {boolean} [props.items[].static=false] - Whether element is static (non-input)
+ * @param {boolean} [props.items[].canHaveAnswer=false] - Whether element can accept answers
+ * @param {boolean} [props.items[].canHaveInfo=false] - Whether element can have info text
+ * @param {boolean} [props.items[].canReadOnly=false] - Whether element supports read-only mode
+ * @param {string} [props.items[].type] - 'custom' for custom elements
+ * @param {React.Component} [props.items[].component] - Custom component for rendering
+ *
+ * @returns {React.ReactElement} The toolbar with draggable form elements
+ *
+ * @since 1.0.0 - Converted to functional component with hooks
+ * @requires react-dnd v16+ for drag functionality
  */
 import React from 'react'
 import PropTypes from 'prop-types'

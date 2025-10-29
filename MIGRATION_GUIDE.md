@@ -35,7 +35,7 @@ root.render(<ReactFormBuilder />);
 Bootstrap components have been replaced with Ant Design:
 
 **Removed:**
-- `react-bootstrap-slider` 
+- `react-bootstrap-slider`
 
 **Replaced with:**
 - Ant Design `Slider` component
@@ -239,7 +239,7 @@ function CustomItem(props) {
       isDragging: monitor.isDragging(),
     }),
   }));
-  
+
   return <div ref={drag} style={{ opacity: isDragging ? 0.5 : 1 }}>
     {/* ... */}
   </div>;

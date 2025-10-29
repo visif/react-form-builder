@@ -215,6 +215,42 @@ npm run legacy:start
 ```
 
 # Customizations
+
+## Custom Form Elements
+
+To create custom form elements, define a component and add it to the toolbar:
+
+```jsx
+import React from 'react';
+
+const CustomRating = React.forwardRef(({ name, defaultValue, onChange }, ref) => {
+  const [rating, setRating] = React.useState(defaultValue || 0);
+  
+  return (
+    <div ref={ref}>
+      {/* Your custom component */}
+      <input type="hidden" name={name} value={rating} />
+    </div>
+  );
+});
+
+const customItems = [{
+  key: 'CustomRating',
+  name: 'Star Rating',
+  icon: 'fa fa-star',
+  element: 'CustomRating',
+  type: 'custom',
+  component: CustomRating,
+  forwardRef: true
+}];
+
+<ReactFormBuilder customToolbarItems={customItems} />
+```
+
+See [API.md](./API.md#custom-components) for complete documentation.
+
+## Custom Edit Form
+
 - to customize the field edit form copy "src/form-elements-edit.jsx" to your project and pass it to the ReactFormBuilder as a prop. Here is an example
 ```jsx
 <ReactFormBuilder
@@ -228,6 +264,8 @@ npm run legacy:start
     renderEditForm={props => <FormElementsEdit {...props}/>}
 />
 ```
+
+## Custom Submit Button
 
 - to customize the ReactFormGenerator submit button use it like this
 
@@ -260,10 +298,12 @@ Test is not working at this moment.
 
 ## 📚 Documentation
 
+- **[API Documentation](./API.md)** - Complete API reference and prop types
 - **[Migration Guide](./MIGRATION_GUIDE.md)** - Upgrade from v0.10.0 to v1.0.0
 - **[Changelog](./CHANGELOG.md)** - Detailed release notes
 - **[Migration Progress](./MIGRATION_PROGRESS.md)** - Track conversion progress
 - **[Class to Hooks Guide](./CLASS_TO_HOOKS_GUIDE.md)** - Conversion patterns used
+- **[Examples](./examples/README.md)** - Working examples for all use cases
 
 ## 🤝 Contributing
 
