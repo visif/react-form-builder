@@ -25,39 +25,7 @@ npm start
 
 ---
 
-### 2. **Demo** - `./demo/`
-Basic demonstration with minimal setup.
-
-- Simple HTML + bundled JS
-- Good for understanding core concepts
-- Updated for React 18 and Font Awesome 6
-
-**Run:**
-```bash
-cd demo
-npm install --legacy-peer-deps
-npm start
-```
-
----
-
-### 3. **Custom** - `./custom/`
-Custom implementation with JSON API integration.
-
-- Shows custom toolbar items
-- Form data persistence
-- API integration examples
-
-**Run:**
-```bash
-cd custom
-npm install --legacy-peer-deps
-npm start
-```
-
----
-
-### 4. **Next.js** - `./next/`
+### 2. **Next.js** - `./next/`
 Server-side rendering with Next.js.
 
 - Next.js integration
@@ -80,23 +48,7 @@ npm run dev
 
 ---
 
-### 5. **UMD** - `./umd/`
-Standalone UMD build usage (no bundler required).
-
-- Use in plain HTML
-- CDN-friendly
-- No build step needed
-
-**Run:**
-```bash
-cd umd
-# Just open index.html in browser
-open index.html
-```
-
----
-
-### 6. **Local Test** - `./local-test/`
+### 3. **Local Test** - `./local-test/`
 Development testing environment.
 
 - Quick testing setup
