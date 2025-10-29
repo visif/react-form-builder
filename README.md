@@ -280,14 +280,6 @@ See [API.md](./docs/API.md#custom-components) for complete documentation.
 />
 ```
 
-# Examples
-- [Basic](https://github.com/Kiho/react-form-builder/tree/master/examples/demo)
-- [JSON Post](https://github.com/Kiho/react-form-builder/tree/master/examples/custom)
-- [UMD](https://github.com/Kiho/react-form-builder/tree/master/examples/umd)
-- [NEXT](https://github.com/Kiho/react-form-builder/tree/master/examples/next)
-- [NEXT-Mongo](https://github.com/Kiho/react-form-builder/tree/master/examples/mongo)
-- [create-react-app](https://github.com/Kiho/react-form-builder/tree/master/examples/cra)
-
 # Tests
 ```bash
 $ npm test
@@ -302,7 +294,6 @@ Test is not working at this moment.
 - **[Migration Guide](./docs/MIGRATION_GUIDE.md)** - Upgrade from v0.10.0 to v1.0.0
 - **[Changelog](./docs/CHANGELOG.md)** - Detailed release notes
 - **[Getting Started](./docs/GETTING_STARTED.md)** - Quick start guide
-- **[Examples](./examples/README.md)** - Working examples for all use cases
 
 ### For Contributors
 - **[Migration Progress](./docs/MIGRATION_PROGRESS.md)** - Track conversion progress
