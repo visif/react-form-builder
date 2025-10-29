@@ -1,10 +1,10 @@
 /**
  * Preview - Form builder preview and editing panel
- * 
+ *
  * @component
  * @description Main preview component that displays the form being built. Handles drag-and-drop
  * reordering, element editing, undo/redo functionality, and form state management.
- * 
+ *
  * @param {Object} props - Component props
  * @param {Array} props.data - Initial form data
  * @param {string} [props.url] - URL to load form data
@@ -16,9 +16,9 @@
  * @param {Function} [props.renderEditForm] - Custom edit form renderer
  * @param {boolean} [props.editMode] - Initial edit mode state
  * @param {Object} [props.editElement] - Element to edit initially
- * 
+ *
  * @returns {React.ReactElement} The form preview with drag-drop and edit capabilities
- * 
+ *
  * @since 1.0.0
  * @requires SortableFormElements for drag-drop functionality
  * @requires useUndoRedo hook for undo/redo state management

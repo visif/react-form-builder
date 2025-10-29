@@ -162,7 +162,7 @@ const customItems = [
   }
 ];
 
-<Toolbar 
+<Toolbar
   items={customItems}
   showDescription={true}
 />
@@ -222,24 +222,24 @@ Each element can have the following common properties:
   canHaveAnswer: true,          // Can accept answer
   field_name: 'field_name',     // Field name for submission
   label: 'Label text',          // Label text
-  
+
   // Optional properties
   placeholder: '',              // Placeholder text
   description: '',              // Help text
   defaultValue: '',             // Default value
   readOnly: false,              // Read-only mode
   disabled: false,              // Disabled state
-  
+
   // Validation
   min_value: undefined,         // Minimum value (numbers)
   max_value: undefined,         // Maximum value (numbers)
   step: undefined,              // Step increment (numbers/range)
-  
+
   // Styling
   bold: false,                  // Bold text
   italic: false,                // Italic text
   className: '',                // Custom CSS class
-  
+
   // Layout
   col_width: undefined,         // Column width (multi-column)
   inline: false,                // Inline layout
@@ -347,14 +347,14 @@ import React from 'react';
 
 const CustomRating = React.forwardRef(({ name, defaultValue, onChange, ...props }, ref) => {
   const [rating, setRating] = React.useState(defaultValue || 0);
-  
+
   const handleRate = (value) => {
     setRating(value);
     if (onChange) {
       onChange({ target: { name, value } });
     }
   };
-  
+
   return (
     <div ref={ref} className="custom-rating">
       {[1, 2, 3, 4, 5].map(star => (
@@ -487,14 +487,14 @@ declare module 'react-form-builder2' {
     static?: boolean;
     // ... other properties
   }
-  
+
   export interface FormBuilderProps {
     url?: string;
     saveUrl?: string;
     onSubmit?: (data: any) => void;
     // ... other props
   }
-  
+
   export const ReactFormBuilder: React.FC<FormBuilderProps>;
   export const ReactFormGenerator: React.FC<any>;
   export const Toolbar: React.FC<any>;
@@ -522,5 +522,5 @@ See the [examples/](./examples/) directory for complete working examples:
 
 ---
 
-**Last Updated:** v1.0.0-beta.1  
+**Last Updated:** v1.0.0-beta.1
 **License:** MIT

@@ -225,7 +225,7 @@ import React from 'react';
 
 const CustomRating = React.forwardRef(({ name, defaultValue, onChange }, ref) => {
   const [rating, setRating] = React.useState(defaultValue || 0);
-  
+
   return (
     <div ref={ref}>
       {/* Your custom component */}
