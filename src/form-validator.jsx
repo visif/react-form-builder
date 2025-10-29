@@ -23,56 +23,51 @@ const myxss = new xss.FilterXSS({
   },
 })
 
-export default class FormValidator extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      errors: [],
-    }
-  }
+const FormValidator = (props) => {
+  const [errors, setErrors] = React.useState([])
 
-  componentDidMount() {
-    this.subscription = this.props.emitter.addListener('formValidation', (errors) => {
-      this.setState({ errors })
+  React.useEffect(() => {
+    const subscription = props.emitter.addListener('formValidation', (errors) => {
+      setErrors(errors)
     })
-  }
 
-  componentWillUnmount() {
-    this.subscription.remove()
-  }
+    return () => {
+      subscription.remove()
+    }
+  }, [props.emitter])
 
-  dismissModal(e) {
+  const dismissModal = React.useCallback((e) => {
     e.preventDefault()
-    this.setState({ errors: [] })
-  }
+    setErrors([])
+  }, [])
 
-  render() {
-    const errors = this.state.errors.map((error, index) => (
-      <li
-        key={`error_${index}`}
-        dangerouslySetInnerHTML={{ __html: myxss.process(error) }}
-      />
-    ))
+  const errorItems = errors.map((error, index) => (
+    <li
+      key={`error_${index}`}
+      dangerouslySetInnerHTML={{ __html: myxss.process(error) }}
+    />
+  ))
 
-    return (
-      <div>
-        {this.state.errors.length > 0 && (
-          <div className="alert alert-danger validation-error">
-            <div className="clearfix">
-              <i className="fas fa-exclamation-triangle float-left"></i>
-              <ul className="float-left">{errors}</ul>
-            </div>
-            <div className="clearfix">
-              <a
-                className="float-right btn btn-default btn-sm btn-danger"
-                onClick={this.dismissModal.bind(this)}
-              >
-                Dismiss
-              </a>
-            </div>
+  return (
+    <div>
+      {errors.length > 0 && (
+        <div className="alert alert-danger validation-error">
+          <div className="clearfix">
+            <i className="fas fa-exclamation-triangle float-left"></i>
+            <ul className="float-left">{errorItems}</ul>
           </div>
-        )}
-      </div>
-    )
-  }
+          <div className="clearfix">
+            <a
+              className="float-right btn btn-default btn-sm btn-danger"
+              onClick={dismissModal}
+            >
+              Dismiss
+            </a>
+          </div>
+        </div>
+      )}
+    </div>
+  )
 }
+
+export default FormValidator
