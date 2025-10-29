@@ -1,11 +1,11 @@
 /* eslint-disable */
 // Private array of chars to use
-var CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('')
-var ID = {}
-ID.uuid = function (len, radix) {
-  var chars = CHARS,
-    uuid = [],
-    i
+const CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('')
+
+const uuid = function (len, radix) {
+  const chars = CHARS
+  const uuid = []
+  let i
   radix = radix || chars.length
 
   if (len) {
@@ -13,7 +13,7 @@ ID.uuid = function (len, radix) {
     for (i = 0; i < len; i++) uuid[i] = chars[0 | (Math.random() * radix)]
   } else {
     // rfc4122, version 4 form
-    var r
+    let r
 
     // rfc4122 requires these characters
     uuid[8] = uuid[13] = uuid[18] = uuid[23] = '-'
@@ -34,12 +34,12 @@ ID.uuid = function (len, radix) {
 
 // A more performant, but slightly bulkier, RFC4122v4 solution.  We boost performance
 // by minimizing calls to random()
-ID.uuidFast = function () {
-  var chars = CHARS,
-    uuid = new Array(36),
-    rnd = 0,
-    r
-  for (var i = 0; i < 36; i++) {
+const uuidFast = function () {
+  const chars = CHARS
+  const uuid = new Array(36)
+  let rnd = 0
+  let r
+  for (let i = 0; i < 36; i++) {
     if (i == 8 || i == 13 || i == 18 || i == 23) {
       uuid[i] = '-'
     } else if (i == 14) {
@@ -55,11 +55,18 @@ ID.uuidFast = function () {
 }
 
 // A more compact, but less performant, RFC4122v4 solution:
-ID.uuidCompact = function () {
+const uuidCompact = function () {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    var r = (Math.random() * 16) | 0,
-      v = c == 'x' ? r : (r & 0x3) | 0x8
+    const r = (Math.random() * 16) | 0
+    const v = c == 'x' ? r : (r & 0x3) | 0x8
     return v.toString(16)
   })
 }
-module.exports = ID
+
+const ID = {
+  uuid,
+  uuidFast,
+  uuidCompact,
+}
+
+export default ID

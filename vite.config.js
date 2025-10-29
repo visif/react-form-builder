@@ -48,6 +48,21 @@ export default defineConfig({
     open: true,
   },
 
+  // Enable JSX in .js files via esbuild
+  esbuild: {
+    loader: 'jsx',
+    include: /src\/.*\.jsx?$/,
+    exclude: [],
+  },
+
+  optimizeDeps: {
+    esbuildOptions: {
+      loader: {
+        '.js': 'jsx',
+      },
+    },
+  },
+
   resolve: {
     alias: {
       // Stub jQuery as before

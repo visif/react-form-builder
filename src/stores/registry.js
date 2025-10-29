@@ -46,4 +46,6 @@ function regg() {
   return self
 }
 
-module.exports = regg()
+const Registry = regg()
+
+export default Registry

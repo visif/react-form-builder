@@ -1,19 +1,17 @@
 import React from 'react'
-import { DragSource } from 'react-dnd'
+import { useDrag } from 'react-dnd'
 import ItemTypes from '../ItemTypes'
 
 const style = {
-  // display: 'inline-block',
-  // border: '1px dashed gray',
-  // padding: '0.5rem 1rem',
-  // backgroundColor: 'white',
   cursor: 'move',
 }
 
-const gripSource = {
-  beginDrag(props) {
-    const { data, index, onDestroy, setAsChild, getDataById } = props
-    return {
+const Grip = (props) => {
+  const { data, index, onDestroy, setAsChild, getDataById } = props
+
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: ItemTypes.BOX,
+    item: {
       itemType: ItemTypes.BOX,
       index: data.parentId ? -1 : index,
       parentIndex: data.parentIndex,
@@ -23,17 +21,24 @@ const gripSource = {
       setAsChild,
       getDataById,
       data,
-    }
-  },
-}
+    },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  }), [data, index, onDestroy, setAsChild, getDataById])
 
-const Grip = ({ connectDragSource }) =>
-  connectDragSource(
-    <div className="btn is-isolated" style={style}>
+  return (
+    <div
+      ref={drag}
+      className="btn is-isolated"
+      style={{
+        ...style,
+        opacity: isDragging ? 0.5 : 1,
+      }}
+    >
       <i className="is-isolated fas fa-grip-vertical"></i>
     </div>
   )
+}
 
-export default DragSource(ItemTypes.BOX, gripSource, (connect) => ({
-  connectDragSource: connect.dragSource(),
-}))(Grip)
+export default Grip

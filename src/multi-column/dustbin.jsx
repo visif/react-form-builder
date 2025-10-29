@@ -1,5 +1,5 @@
 import React, { useImperativeHandle } from 'react'
-import { DropTarget } from 'react-dnd'
+import { useDrop } from 'react-dnd'
 import FormElements from '../form-elements'
 import CustomElement from '../form-elements/custom-element'
 import ItemTypes from '../ItemTypes'
@@ -78,9 +78,6 @@ const Dustbin = React.forwardRef(
   (
     {
       greedy,
-      isOver,
-      isOverCurrent,
-      connectDropTarget,
       items,
       col,
       row,
@@ -88,13 +85,37 @@ const Dustbin = React.forwardRef(
       setAsChild,
       syncColumnChanges,
       updateElement,
+      accepts,
       ...rest
     },
     ref,
   ) => {
     const item = getDataById(items[col])
 
-    // Handle drop operations
+    const [{ isOver, isOverCurrent, canDrop }, drop] = useDrop(
+      () => ({
+        accept: accepts,
+        drop: (droppedItem, monitor) => {
+          if (!isContainerItem(droppedItem)) {
+            if (droppedItem.data && typeof setAsChild === 'function') {
+              const isNew = !droppedItem.data.id
+              const data = isNew
+                ? droppedItem.onCreate(droppedItem.data)
+                : droppedItem.data
+              setAsChild(rest.data, data, row, col)
+            }
+          }
+        },
+        collect: (monitor) => ({
+          isOver: monitor.isOver(),
+          isOverCurrent: monitor.isOver({ shallow: true }),
+          canDrop: monitor.canDrop(),
+        }),
+      }),
+      [accepts, setAsChild, col, row, rest.data],
+    )
+
+    // Handle drop operations (legacy interface)
     useImperativeHandle(
       ref,
       () => ({
@@ -106,7 +127,7 @@ const Dustbin = React.forwardRef(
           }
         },
       }),
-      [setAsChild, col, rest.data],
+      [setAsChild, col, row, rest.data],
     )
 
     // Determine background color based on drag state
@@ -121,27 +142,12 @@ const Dustbin = React.forwardRef(
       updateElement,
     })
 
-    return connectDropTarget(<div style={dustbinStyles(backgroundColor)}>{element}</div>)
+    return (
+      <div ref={drop} style={dustbinStyles(backgroundColor)}>
+        {element}
+      </div>
+    )
   },
 )
 
-// Drop Target Configuration
-const dropTargetSpec = {
-  drop(props, monitor, component) {
-    if (!component) return
-
-    const item = monitor.getItem()
-    if (!isContainerItem(item)) {
-      component.onDrop(item)
-    }
-  },
-}
-
-const collect = (connect, monitor) => ({
-  connectDropTarget: connect.dropTarget(),
-  isOver: monitor.isOver(),
-  isOverCurrent: monitor.isOver({ shallow: true }),
-  canDrop: monitor.canDrop(),
-})
-
-export default DropTarget((props) => props.accepts, dropTargetSpec, collect)(Dustbin)
+export default Dustbin
