@@ -356,6 +356,221 @@ const FormElementsEdit = (props) => {
     fileOptions.unshift({ id: '', file_name: '' })
   }
 
+  // Field-to-component mapping configuration
+  const fieldConfigs = [
+    {
+      condition: () => 'content' in props.element,
+      component: WysiwygEditor,
+      props: {
+        label: "Text to display:",
+        toolbar,
+        defaultEditorState: contentEditorState,
+        editorState: editorStates.content || contentEditorState,
+        onBlur: updateElement,
+        onChange: (es) => onEditorStateChange('content', es),
+        stripPastedStyles: false,
+      },
+    },
+    {
+      condition: () => 'file_path' in props.element,
+      component: SelectFieldEditor,
+      props: {
+        id: "fileSelect",
+        label: "Choose file:",
+        value: props.element.file_path,
+        options: fileOptions,
+        onChange: (e) => editElementProp('file_path', 'value', e),
+        onBlur: updateElement,
+        renderOption: (file) => (
+          <option value={file.id} key={`file_${file.id}`}>
+            {file.file_name}
+          </option>
+        ),
+      },
+    },
+    {
+      condition: () => 'href' in props.element,
+      component: TextFieldEditor,
+      props: {
+        id: "href",
+        value: props.element.href,
+        onChange: (e) => editElementProp('href', 'value', e),
+        onBlur: updateElement,
+        multiline: true,
+      },
+    },
+    {
+      condition: () => 'src' in props.element,
+      component: ImageEditor,
+      props: {
+        element: props.element,
+        onUploadFile,
+        onChange: editElementProp,
+        onBlur: updateElement,
+      },
+    },
+    {
+      condition: () => 'label' in props.element || props.element.element === 'Signature2',
+      component: LabelEditor,
+      props: {
+        element: props.element,
+        labelEditorState,
+        editorStates,
+        toolbar,
+        onChange: editElementProp,
+        onEditorStateChange,
+        onBlur: updateElement,
+        canHaveDisplayHorizontal,
+      },
+    },
+    {
+      condition: () => element.element === 'Signature' || element.element === 'Signature2',
+      component: SignatureEditor,
+      props: {
+        element: props.element,
+        onChange: editElementProp,
+        onBlur: updateElement,
+      },
+    },
+    {
+      condition: () => 'step' in props.element || 'min_value' in props.element || 
+                       'max_value' in props.element || 'default_value' in props.element,
+      component: RangeEditor,
+      props: {
+        element: props.element,
+        onChange: editElementProp,
+        onBlur: updateElement,
+      },
+    },
+    {
+      condition: () => props.element.showDescription,
+      component: TextFieldEditor,
+      props: {
+        id: "questionDescription",
+        label: "Description",
+        value: props.element.description,
+        onChange: (e) => editElementProp('description', 'value', e),
+        onBlur: updateElement,
+        multiline: true,
+      },
+    },
+    {
+      condition: () => props.showCorrectColumn && props.element.canHaveAnswer && !('options' in props.element),
+      component: TextFieldEditor,
+      props: {
+        id: "correctAnswer",
+        label: "Correct Answer",
+        value: props.element.correct,
+        onChange: (e) => editElementProp('correct', 'value', e),
+        onBlur: updateElement,
+      },
+    },
+    {
+      condition: () => 'header' in props.element,
+      component: TextFieldEditor,
+      props: {
+        id: "header",
+        label: "Section Header",
+        value: props.element.header,
+        onChange: (e) => editElementProp('header', 'value', e),
+        onBlur: updateElement,
+      },
+    },
+    {
+      condition: () => 'options' in props.element,
+      component: DynamicOptionList,
+      props: {
+        showCorrectColumn: props.showCorrectColumn,
+        canHaveOptionCorrect,
+        canHaveOptionValue,
+        canHaveInfo,
+        data: props.preview?.state?.data,
+        updateElement: props.updateElement,
+        preview: props.preview,
+        element: props.element,
+        key: `option-${props.element.options.length}`,
+      },
+    },
+    {
+      condition: () => 'rows' in props.element,
+      component: TextFieldEditor,
+      props: {
+        id: "rowInput",
+        label: "Row Count",
+        value: props.element.rows,
+        onChange: (e) => editElementProp('rows', 'value', e),
+        onBlur: updateElement,
+        type: "text",
+      },
+    },
+    {
+      condition: () => 'rowLabels' in props.element,
+      component: FixedRowList,
+      props: {
+        data: props.preview?.state?.data,
+        updateElement: props.updateElement,
+        preview: props.preview,
+        element: props.element,
+        key: "table-row-labels",
+      },
+    },
+    {
+      condition: () => 'columns' in props.element,
+      component: DynamicColumnList,
+      props: {
+        data: props.preview?.state?.data,
+        updateElement: props.updateElement,
+        preview: props.preview,
+        element: props.element,
+        key: "table-columns",
+      },
+    },
+    {
+      condition: () => 'sourceType' in props.element,
+      component: DataSourceEditor,
+      props: {
+        element: props.element,
+        formDataSource,
+        activeForm,
+        onChange: editElementProp,
+        onBlur: updateElement,
+      },
+    },
+    {
+      condition: () => 'formula' in props.element,
+      component: TextFieldEditor,
+      props: {
+        id: "formula",
+        label: "Formula",
+        value: props.element.formula,
+        onChange: (e) => editElementProp('formula', 'value', e),
+        onBlur: updateElement,
+      },
+    },
+    {
+      condition: () => 'formularKey' in props.element,
+      component: TextFieldEditor,
+      props: {
+        id: "formularKey",
+        label: "Formula Key",
+        value: props.element.formularKey,
+        onChange: (e) => editElementProp('formularKey', 'value', e),
+        onBlur: updateElement,
+      },
+    },
+    {
+      condition: () => props.element.element === 'FormLink',
+      component: FormLinkEditor,
+      props: {
+        element: props.element,
+        formDataSource,
+        activeForm,
+        onChange: editElementProp,
+        onBlur: updateElement,
+      },
+    },
+  ]
+
   return (
     <div>
       <div className="clearfix">
@@ -366,220 +581,11 @@ const FormElementsEdit = (props) => {
         />
       </div>
 
-      {/* Content Editor (WYSIWYG) */}
-      {'content' in props.element && (
-        <WysiwygEditor
-          label="Text to display:"
-          toolbar={toolbar}
-          defaultEditorState={contentEditorState}
-          editorState={editorStates.content || contentEditorState}
-          onBlur={updateElement}
-          onChange={(es) => onEditorStateChange('content', es)}
-          stripPastedStyles={false}
-        />
-      )}
-
-      {/* File Selection */}
-      {'file_path' in props.element && (
-        <SelectFieldEditor
-          id="fileSelect"
-          label="Choose file:"
-          value={props.element.file_path}
-          options={fileOptions}
-          onChange={(e) => editElementProp('file_path', 'value', e)}
-          onBlur={updateElement}
-          renderOption={(file) => (
-            <option value={file.id} key={`file_${file.id}`}>
-              {file.file_name}
-            </option>
-          )}
-        />
-      )}
-
-      {/* Href/Link */}
-      {'href' in props.element && (
-        <TextFieldEditor
-          id="href"
-          value={props.element.href}
-          onChange={(e) => editElementProp('href', 'value', e)}
-          onBlur={updateElement}
-          multiline
-        />
-      )}
-
-      {/* Image Upload & Configuration */}
-      {'src' in props.element && (
-        <ImageEditor
-          element={props.element}
-          onUploadFile={onUploadFile}
-          onChange={editElementProp}
-          onBlur={updateElement}
-        />
-      )}
-
-      {/* Label & Required Settings */}
-      {('label' in props.element || props.element.element === 'Signature2') && (
-        <LabelEditor
-          element={props.element}
-          labelEditorState={labelEditorState}
-          editorStates={editorStates}
-          toolbar={toolbar}
-          onChange={editElementProp}
-          onEditorStateChange={onEditorStateChange}
-          onBlur={updateElement}
-          canHaveDisplayHorizontal={canHaveDisplayHorizontal}
-        />
-      )}
-
-      {/* Signature-specific fields */}
-      {(element.element === 'Signature' || element.element === 'Signature2') && (
-        <SignatureEditor
-          element={props.element}
-          onChange={editElementProp}
-          onBlur={updateElement}
-        />
-      )}
-
-      {/* Range-specific fields (step, min, max, default) */}
-      {('step' in props.element ||
-        'min_value' in props.element ||
-        'max_value' in props.element ||
-        'default_value' in props.element) && (
-        <RangeEditor
-          element={props.element}
-          onChange={editElementProp}
-          onBlur={updateElement}
-        />
-      )}
-
-      {/* Description */}
-      {props.element.showDescription && (
-        <TextFieldEditor
-          id="questionDescription"
-          label="Description"
-          value={props.element.description}
-          onChange={(e) => editElementProp('description', 'value', e)}
-          onBlur={updateElement}
-          multiline
-        />
-      )}
-
-      {/* Correct Answer (for grading) */}
-      {props.showCorrectColumn &&
-        props.element.canHaveAnswer &&
-        !('options' in props.element) && (
-          <TextFieldEditor
-            id="correctAnswer"
-            label="Correct Answer"
-            value={props.element.correct}
-            onChange={(e) => editElementProp('correct', 'value', e)}
-            onBlur={updateElement}
-          />
-        )}
-
-      {/* Section Header */}
-      {'header' in props.element && (
-        <TextFieldEditor
-          id="header"
-          label="Section Header"
-          value={props.element.header}
-          onChange={(e) => editElementProp('header', 'value', e)}
-          onBlur={updateElement}
-        />
-      )}
-
-      {/* Options (Dropdown, RadioButtons, Checkboxes) */}
-      {'options' in props.element && (
-        <DynamicOptionList
-          showCorrectColumn={props.showCorrectColumn}
-          canHaveOptionCorrect={canHaveOptionCorrect}
-          canHaveOptionValue={canHaveOptionValue}
-          canHaveInfo={canHaveInfo}
-          data={props.preview?.state?.data}
-          updateElement={props.updateElement}
-          preview={props.preview}
-          element={props.element}
-          key={`option-${props.element.options.length}`}
-        />
-      )}
-
-      {/* Table Rows */}
-      {'rows' in props.element && (
-        <TextFieldEditor
-          id="rowInput"
-          label="Row Count"
-          value={props.element.rows}
-          onChange={(e) => editElementProp('rows', 'value', e)}
-          onBlur={updateElement}
-          type="text"
-        />
-      )}
-
-      {/* Table Row Labels */}
-      {'rowLabels' in props.element && (
-        <FixedRowList
-          data={props.preview?.state?.data}
-          updateElement={props.updateElement}
-          preview={props.preview}
-          element={props.element}
-          key="table-row-labels"
-        />
-      )}
-
-      {/* Table Columns */}
-      {'columns' in props.element && (
-        <DynamicColumnList
-          data={props.preview?.state?.data}
-          updateElement={props.updateElement}
-          preview={props.preview}
-          element={props.element}
-          key="table-columns"
-        />
-      )}
-
-      {/* DataSource Editor */}
-      {'sourceType' in props.element && (
-        <DataSourceEditor
-          element={props.element}
-          formDataSource={formDataSource}
-          activeForm={activeForm}
-          onChange={editElementProp}
-          onBlur={updateElement}
-        />
-      )}
-
-      {/* Formula */}
-      {'formula' in props.element && (
-        <TextFieldEditor
-          id="formula"
-          label="Formula"
-          value={props.element.formula}
-          onChange={(e) => editElementProp('formula', 'value', e)}
-          onBlur={updateElement}
-        />
-      )}
-
-      {/* Formula Key */}
-      {'formularKey' in props.element && (
-        <TextFieldEditor
-          id="formularKey"
-          label="Formula Key"
-          value={props.element.formularKey}
-          onChange={(e) => editElementProp('formularKey', 'value', e)}
-          onBlur={updateElement}
-        />
-      )}
-
-      {/* FormLink Editor */}
-      {props.element.element === 'FormLink' && (
-        <FormLinkEditor
-          element={props.element}
-          formDataSource={formDataSource}
-          activeForm={activeForm}
-          onChange={editElementProp}
-          onBlur={updateElement}
-        />
-      )}
+      {fieldConfigs.map((config, index) => {
+        if (!config.condition()) return null
+        const Component = config.component
+        return <Component key={index} {...config.props} />
+      })}
     </div>
   )
 }
