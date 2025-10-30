@@ -137,7 +137,7 @@ const handleVariableChange = useCallback((params) => {
     const newVariables = { ...prevVariables, [params.propKey]: params.value }
     const updatedVariables = new Set([params.propKey])
     let hasChanges = true
-    
+
     // Continue recalculating until no more changes (cascading)
     while (hasChanges) {
       hasChanges = false
@@ -146,13 +146,13 @@ const handleVariableChange = useCallback((params) => {
           formulaField.formula.includes(varKey)
         )
       })
-      
+
       affectedFields.forEach(formulaField => {
         // Recalculate and check if it triggers more changes
         // ...
       })
     }
-    
+
     return newVariables
   })
 }, [props])
@@ -229,17 +229,17 @@ const ReactForm = (props) => {
   const inputsRef = useRef({})
   const emitterRef = useRef(new EventEmitter())
   const variableSubscriptionRef = useRef(null)
-  
+
   // State
   const [answerData, setAnswerData] = useState(...)
   const [variables, setVariables] = useState(...)
-  
+
   // Effects
   useEffect(() => { ... }, [...])
-  
+
   // Methods as useCallback
   const method1 = useCallback(() => { ... }, [...])
-  
+
   // Render
   return (...)
 }
