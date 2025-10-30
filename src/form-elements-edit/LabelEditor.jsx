@@ -16,10 +16,10 @@ const LabelEditor = ({
   onBlur,
   canHaveDisplayHorizontal = false
 }) => {
-  const checked_required = element.hasOwnProperty('required') ? element.required : false
-  const checked_inline = element.hasOwnProperty('inline') ? element.inline : false
-  const checked_show_time_select = element.hasOwnProperty('showTimeSelect') ? element.showTimeSelect : false
-  const checked_show_time_select_only = element.hasOwnProperty('showTimeSelectOnly') ? element.showTimeSelectOnly : false
+  const checked_required = 'required' in element ? element.required : false
+  const checked_inline = 'inline' in element ? element.inline : false
+  const checked_show_time_select = 'showTimeSelect' in element ? element.showTimeSelect : false
+  const checked_show_time_select_only = 'showTimeSelectOnly' in element ? element.showTimeSelectOnly : false
 
   return (
     <div className="form-group">
@@ -45,7 +45,7 @@ const LabelEditor = ({
         onChange={(e) => onChange('required', 'checked', e)}
       />
 
-      {element.hasOwnProperty('showTimeSelect') && (
+      {'showTimeSelect' in element && (
         <CheckboxFieldEditor
           id="show-time-select"
           label="Show Time Select?"
@@ -54,7 +54,7 @@ const LabelEditor = ({
         />
       )}
 
-      {checked_show_time_select && element.hasOwnProperty('showTimeSelectOnly') && (
+      {checked_show_time_select && 'showTimeSelectOnly' in element && (
         <CheckboxFieldEditor
           id="show-time-select-only"
           label="Show Time Select Only?"
@@ -63,7 +63,7 @@ const LabelEditor = ({
         />
       )}
 
-      {element.hasOwnProperty('overdueNotification') && (
+      {'overdueNotification' in element && (
         <CheckboxFieldEditor
           id="overdueNotification"
           label="Overdue Notification"

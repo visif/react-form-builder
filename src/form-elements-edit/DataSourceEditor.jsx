@@ -15,7 +15,7 @@ const DataSourceEditor = ({
 }) => {
   return (
     <div>
-      {element.hasOwnProperty('sourceType') && (
+      {'sourceType' in element && (
         <SelectFieldEditor
           id="sourceType"
           label="Source Type"
@@ -33,7 +33,7 @@ const DataSourceEditor = ({
 
       {element.sourceType === 'form' && (
         <div>
-          {element.hasOwnProperty('formSource') && (
+          {'formSource' in element && (
             <SelectFieldEditor
               id="formSource"
               label="Form Source"
@@ -60,7 +60,7 @@ const DataSourceEditor = ({
                   id={item.field_name}
                   label={item.label || item.text || ''}
                   checked={
-                    element.hasOwnProperty(`formField${item.field_name}`)
+                    `formField${item.field_name}` in element
                       ? element[`formField${item.field_name}`]
                       : false
                   }

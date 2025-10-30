@@ -13,7 +13,7 @@ const SignatureEditor = ({
 }) => {
   return (
     <div>
-      {element.hasOwnProperty('position') && (
+      {'position' in element && (
         <TextFieldEditor
           id="position"
           label="Role / Position"
@@ -23,7 +23,7 @@ const SignatureEditor = ({
         />
       )}
 
-      {element.hasOwnProperty('specificRole') && (
+      {'specificRole' in element && (
         <SelectFieldEditor
           id="specificRole"
           label={`Pre Defined User / Role ${Boolean(element.specificRole)}`}

@@ -367,7 +367,7 @@ const FormElementsEdit = (props) => {
       </div>
 
       {/* Content Editor (WYSIWYG) */}
-      {props.element.hasOwnProperty('content') && (
+      {'content' in props.element && (
         <WysiwygEditor
           label="Text to display:"
           toolbar={toolbar}
@@ -380,7 +380,7 @@ const FormElementsEdit = (props) => {
       )}
 
       {/* File Selection */}
-      {props.element.hasOwnProperty('file_path') && (
+      {'file_path' in props.element && (
         <SelectFieldEditor
           id="fileSelect"
           label="Choose file:"
@@ -397,7 +397,7 @@ const FormElementsEdit = (props) => {
       )}
 
       {/* Href/Link */}
-      {props.element.hasOwnProperty('href') && (
+      {'href' in props.element && (
         <TextFieldEditor
           id="href"
           value={props.element.href}
@@ -408,7 +408,7 @@ const FormElementsEdit = (props) => {
       )}
 
       {/* Image Upload & Configuration */}
-      {props.element.hasOwnProperty('src') && (
+      {'src' in props.element && (
         <ImageEditor
           element={props.element}
           onUploadFile={onUploadFile}
@@ -418,7 +418,7 @@ const FormElementsEdit = (props) => {
       )}
 
       {/* Label & Required Settings */}
-      {(props.element.hasOwnProperty('label') || props.element.element === 'Signature2') && (
+      {('label' in props.element || props.element.element === 'Signature2') && (
         <LabelEditor
           element={props.element}
           labelEditorState={labelEditorState}
@@ -441,10 +441,10 @@ const FormElementsEdit = (props) => {
       )}
 
       {/* Range-specific fields (step, min, max, default) */}
-      {(props.element.hasOwnProperty('step') ||
-        props.element.hasOwnProperty('min_value') ||
-        props.element.hasOwnProperty('max_value') ||
-        props.element.hasOwnProperty('default_value')) && (
+      {('step' in props.element ||
+        'min_value' in props.element ||
+        'max_value' in props.element ||
+        'default_value' in props.element) && (
         <RangeEditor
           element={props.element}
           onChange={editElementProp}
@@ -467,7 +467,7 @@ const FormElementsEdit = (props) => {
       {/* Correct Answer (for grading) */}
       {props.showCorrectColumn &&
         props.element.canHaveAnswer &&
-        !props.element.hasOwnProperty('options') && (
+        !('options' in props.element) && (
           <TextFieldEditor
             id="correctAnswer"
             label="Correct Answer"
@@ -478,7 +478,7 @@ const FormElementsEdit = (props) => {
         )}
 
       {/* Section Header */}
-      {props.element.hasOwnProperty('header') && (
+      {'header' in props.element && (
         <TextFieldEditor
           id="header"
           label="Section Header"
@@ -489,7 +489,7 @@ const FormElementsEdit = (props) => {
       )}
 
       {/* Options (Dropdown, RadioButtons, Checkboxes) */}
-      {props.element.hasOwnProperty('options') && (
+      {'options' in props.element && (
         <DynamicOptionList
           showCorrectColumn={props.showCorrectColumn}
           canHaveOptionCorrect={canHaveOptionCorrect}
@@ -504,7 +504,7 @@ const FormElementsEdit = (props) => {
       )}
 
       {/* Table Rows */}
-      {props.element.hasOwnProperty('rows') && (
+      {'rows' in props.element && (
         <TextFieldEditor
           id="rowInput"
           label="Row Count"
@@ -516,7 +516,7 @@ const FormElementsEdit = (props) => {
       )}
 
       {/* Table Row Labels */}
-      {props.element.hasOwnProperty('rowLabels') && (
+      {'rowLabels' in props.element && (
         <FixedRowList
           data={props.preview?.state?.data}
           updateElement={props.updateElement}
@@ -527,7 +527,7 @@ const FormElementsEdit = (props) => {
       )}
 
       {/* Table Columns */}
-      {props.element.hasOwnProperty('columns') && (
+      {'columns' in props.element && (
         <DynamicColumnList
           data={props.preview?.state?.data}
           updateElement={props.updateElement}
@@ -538,7 +538,7 @@ const FormElementsEdit = (props) => {
       )}
 
       {/* DataSource Editor */}
-      {props.element.hasOwnProperty('sourceType') && (
+      {'sourceType' in props.element && (
         <DataSourceEditor
           element={props.element}
           formDataSource={formDataSource}
@@ -549,7 +549,7 @@ const FormElementsEdit = (props) => {
       )}
 
       {/* Formula */}
-      {props.element.hasOwnProperty('formula') && (
+      {'formula' in props.element && (
         <TextFieldEditor
           id="formula"
           label="Formula"
@@ -560,7 +560,7 @@ const FormElementsEdit = (props) => {
       )}
 
       {/* Formula Key */}
-      {props.element.hasOwnProperty('formularKey') && (
+      {'formularKey' in props.element && (
         <TextFieldEditor
           id="formularKey"
           label="Formula Key"

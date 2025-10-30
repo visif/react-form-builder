@@ -12,7 +12,7 @@ const RangeEditor = ({
 }) => {
   return (
     <div>
-      {element.hasOwnProperty('step') && (
+      {'step' in element && (
         <NumberFieldEditor
           id="rangeStep"
           label="Step"
@@ -22,7 +22,7 @@ const RangeEditor = ({
         />
       )}
 
-      {element.hasOwnProperty('min_value') && (
+      {'min_value' in element && (
         <div className="form-group">
           <div className="form-group-range">
             <label className="control-label" htmlFor="rangeMin">
@@ -47,7 +47,7 @@ const RangeEditor = ({
         </div>
       )}
 
-      {element.hasOwnProperty('max_value') && (
+      {'max_value' in element && (
         <div className="form-group">
           <div className="form-group-range">
             <label className="control-label" htmlFor="rangeMax">
@@ -72,7 +72,7 @@ const RangeEditor = ({
         </div>
       )}
 
-      {element.hasOwnProperty('default_value') && (
+      {'default_value' in element && (
         <NumberFieldEditor
           id="defaultSelected"
           label="Default Selected"

@@ -40,7 +40,7 @@ const FormLinkEditor = ({
               id={item.field_name}
               label={item.label || item.text || ''}
               checked={
-                element.hasOwnProperty(`formField${item.field_name}`)
+                `formField${item.field_name}` in element
                   ? element[`formField${item.field_name}`]
                   : false
               }

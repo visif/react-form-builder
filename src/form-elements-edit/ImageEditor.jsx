@@ -11,7 +11,7 @@ const ImageEditor = ({
   onChange,
   onBlur
 }) => {
-  const checked_center = element.hasOwnProperty('center') ? element.center : false
+  const checked_center = 'center' in element ? element.center : false
 
   return (
     <div>
