@@ -1,6 +1,4 @@
 import React, { useState, useRef, useCallback } from 'react'
-import { Editor } from 'react-draft-wysiwyg'
-import TextAreaAutosize from 'react-textarea-autosize'
 import { ContentState, convertFromHTML, convertToRaw, EditorState, convertFromRaw } from 'draft-js'
 import draftToHtml from 'draftjs-to-html'
 // eslint-disable-next-line import/no-cycle
@@ -8,9 +6,19 @@ import DynamicColumnList from './dynamic-column-list'
 import DynamicOptionList from './dynamic-option-list'
 import FixedRowList from './fixed-row-list'
 import { get } from './stores/requests'
-import ID from './UUID'
 import './styles/draft-align.css'
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css'
+
+// Import reusable field editors
+import TextFieldEditor from './form-elements-edit/TextFieldEditor'
+import SelectFieldEditor from './form-elements-edit/SelectFieldEditor'
+import WysiwygEditor from './form-elements-edit/WysiwygEditor'
+import LabelEditor from './form-elements-edit/LabelEditor'
+import ImageEditor from './form-elements-edit/ImageEditor'
+import RangeEditor from './form-elements-edit/RangeEditor'
+import SignatureEditor from './form-elements-edit/SignatureEditor'
+import FormLinkEditor from './form-elements-edit/FormLinkEditor'
+import DataSourceEditor from './form-elements-edit/DataSourceEditor'
 
 const toolbar = {
   options: ['inline', 'list', 'textAlign', 'fontSize', 'link', 'colorPicker', 'history'],
@@ -304,14 +312,14 @@ const FormElementsEdit = (props) => {
   }, [])
 
   const addOptions = useCallback(() => {
-    const optionsApiUrl = document.getElementById('optionsApiUrl').value
+    const optionsApiUrl = document.getElementById('optionsApiUrl')?.value
     if (optionsApiUrl) {
       get(optionsApiUrl).then((data) => {
         props.element.options = []
         const { options } = props.element
         data.forEach((x) => {
           // eslint-disable-next-line no-param-reassign
-          x.key = ID.uuid()
+          x.key = `${Math.random()}-${Date.now()}`
           options.push(x)
         })
         setElement(element)
@@ -330,749 +338,250 @@ const FormElementsEdit = (props) => {
     props.element.dirty = true
   }
 
-  // Helper variables for render
-  const this_checked = props.element.hasOwnProperty('required')
-    ? props.element.required
-    : false
-    const this_read_only = props.element.hasOwnProperty('readOnly')
-      ? props.element.readOnly
-      : false
-    const this_default_today = props.element.hasOwnProperty('defaultToday')
-      ? props.element.defaultToday
-      : false
-    const this_show_time_select = props.element.hasOwnProperty('showTimeSelect')
-      ? props.element.showTimeSelect
-      : false
-    const this_show_time_select_only = props.element.hasOwnProperty(
-      'showTimeSelectOnly'
-    )
-      ? props.element.showTimeSelectOnly
-      : false
-    const this_checked_inline = props.element.hasOwnProperty('inline')
-      ? props.element.inline
-      : false
-    const this_checked_bold = props.element.hasOwnProperty('bold')
-      ? props.element.bold
-      : false
-    const this_checked_italic = props.element.hasOwnProperty('italic')
-      ? props.element.italic
-      : false
-    const this_checked_center = props.element.hasOwnProperty('center')
-      ? props.element.center
-      : false
-    const this_checked_page_break = props.element.hasOwnProperty('pageBreakBefore')
-      ? props.element.pageBreakBefore
-      : false
-    const this_checked_alternate_form = props.element.hasOwnProperty('alternateForm')
-      ? props.element.alternateForm
-      : false
+  // Build editor states (prefer stored raw)
+  const contentEditorState = getEditorStateFrom(element, 'content')
+  const labelEditorState = getEditorStateFrom(element, 'label')
 
-    // Determine if element is inside a DynamicColumnRow or other column container
-    const isInsideColumnContainer =
-      props.element.parentId &&
-      props.preview &&
-      typeof props.preview.getDataById === 'function'
-        ? (() => {
-            const parentElement = props.preview.getDataById(
-              props.element.parentId
-            )
-            return (
-              parentElement &&
-              (parentElement.element === 'DynamicColumnRow' ||
-                parentElement.element?.includes('ColumnRow') ||
-                (parentElement.isContainer && parentElement.childItems))
-            )
-          })()
-        : false
+  // Extract element capabilities
+  const {
+    canHaveDisplayHorizontal,
+    canHaveOptionCorrect,
+    canHaveOptionValue,
+    canHaveInfo,
+  } = props.element
 
-    const {
-      canHaveDisplayHorizontal,
-      canHaveOptionCorrect,
-      canHaveOptionValue,
-      canHaveInfo,
-    } = props.element
+  // Prepare file options if needed
+  const fileOptions = props.files?.length ? props.files : []
+  if (fileOptions.length < 1 || (fileOptions.length > 0 && fileOptions[0].id !== '')) {
+    fileOptions.unshift({ id: '', file_name: '' })
+  }
 
-    const this_files = props.files.length ? props.files : []
-    if (this_files.length < 1 || (this_files.length > 0 && this_files[0].id !== '')) {
-      this_files.unshift({ id: '', file_name: '' })
-    }
-
-    // Build editor states (prefer stored raw)
-    const contentEditorState = getEditorStateFrom(element, 'content')
-    const labelEditorState = getEditorStateFrom(element, 'label')
-
-    return (
-      <div>
-        <div className="clearfix">
-          <h4 className="float-left">{props.element.text}</h4>
-          <i
-            className="float-right fas fa-times dismiss-edit"
-            onClick={props.manualEditModeOff}
-          />
-        </div>
-        {props.element.hasOwnProperty('content') && (
-          <div className="form-group">
-            <label className="control-label">Text to display:</label>
-            <Editor
-              toolbar={toolbar}
-              defaultEditorState={contentEditorState}
-              editorState={editorStates.content || contentEditorState}
-              onBlur={updateElement}
-              onEditorStateChange={(es) => onEditorStateChange('content', es)}
-              stripPastedStyles={false}
-            />
-          </div>
-        )}
-        {props.element.hasOwnProperty('file_path') && (
-          <div className="form-group">
-            <label className="control-label" htmlFor="fileSelect">
-              Choose file:
-            </label>
-            <select
-              id="fileSelect"
-              className="form-control"
-              defaultValue={props.element.file_path}
-              onBlur={updateElement}
-              onChange={(e) => editElementProp("file_path", "value", e)}
-            >
-              {this_files.map((file) => {
-                const this_key = `file_${file.id}`
-                return (
-                  <option value={file.id} key={this_key}>
-                    {file.file_name}
-                  </option>
-                )
-              })}
-            </select>
-          </div>
-        )}
-        {props.element.hasOwnProperty('href') && (
-          <div className="form-group">
-            <TextAreaAutosize
-              type="text"
-              className="form-control"
-              defaultValue={props.element.href}
-              onBlur={updateElement}
-              onChange={(e) => editElementProp("href", "value", e)}
-            />
-          </div>
-        )}
-
-        {props.element.hasOwnProperty('src') && (
-          <div>
-            <div className="form-group">
-              <input id="srcImage" type="file" onChange={onUploadFile} />
-            </div>
-            <div className="form-group">
-              <label className="control-label" htmlFor="srcInput">
-                Link to:
-              </label>
-              <input
-                id="srcInput"
-                type="text"
-                className="form-control"
-                value={props.element.src}
-                defaultValue={props.element.src}
-                onBlur={updateElement}
-                onChange={(e) => editElementProp("src", "value", e)}
-              />
-            </div>
-            <div className="form-group">
-              <div className="custom-control custom-checkbox">
-                <input
-                  id="do-center"
-                  className="custom-control-input"
-                  type="checkbox"
-                  checked={this_checked_center}
-                  value
-                  onChange={(e) => editElementProp("center", "checked", e)}
-                />
-                <label className="custom-control-label" htmlFor="do-center">
-                  Center?
-                </label>
-              </div>
-            </div>
-            <div className="row">
-              <div className="col-sm-3">
-                <label className="control-label" htmlFor="elementWidth">
-                  Width:
-                </label>
-                <input
-                  id="elementWidth"
-                  type="text"
-                  className="form-control"
-                  value={props.element.width}
-                  defaultValue={props.element.width}
-                  onBlur={updateElement}
-                  onChange={(e) => editElementProp("width", "value", e)}
-                />
-              </div>
-              <div className="col-sm-3">
-                <label className="control-label" htmlFor="elementHeight">
-                  Height:
-                </label>
-                <input
-                  id="elementHeight"
-                  type="text"
-                  className="form-control"
-                  value={props.element.height}
-                  defaultValue={props.element.height}
-                  onBlur={updateElement}
-                  onChange={(e) => editElementProp("height", "value", e)}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {(props.element.hasOwnProperty('label') ||
-          props.element.element === 'Signature2') && (
-          <div className="form-group">
-            {props.element.element !== 'Signature2' && (
-              <>
-                {/* Always show label editing section regardless of container type */}
-                <label>Display Label</label>
-                <Editor
-                  toolbar={toolbar}
-                  defaultEditorState={labelEditorState}
-                  editorState={editorStates.label || labelEditorState}
-                  onBlur={updateElement}
-                  onEditorStateChange={(es) => onEditorStateChange('label', es)}
-                  stripPastedStyles={false}
-                />
-                <br />
-              </>
-            )}
-
-            <div className="custom-control custom-checkbox">
-              <input
-                id="is-required"
-                className="custom-control-input"
-                type="checkbox"
-                checked={this_checked}
-                value
-                onChange={(e) => editElementProp("required", "checked", e)}
-              />
-              <label className="custom-control-label" htmlFor="is-required">
-                Required
-              </label>
-            </div>
-
-            {/* "Display label in column" option removed as it's no longer needed */}
-
-            {/*props.element.hasOwnProperty('defaultToday') && (
-              <div className="custom-control custom-checkbox">
-                <input
-                  id="is-default-to-today"
-                  className="custom-control-input"
-                  type="checkbox"
-                  checked={this_default_today}
-                  value
-                  onChange={(e) => editElementProp("defaultToday", "checked", e)}
-                />
-                <label className="custom-control-label" htmlFor="is-default-to-today">
-                  Default to Today?
-                </label>
-              </div>
-            )*/}
-
-            {props.element.hasOwnProperty('showTimeSelect') && (
-              <div className="custom-control custom-checkbox">
-                <input
-                  id="show-time-select"
-                  className="custom-control-input"
-                  type="checkbox"
-                  checked={this_show_time_select}
-                  value
-                  onChange={(e) => editElementProp("showTimeSelect", "checked", e)}
-                />
-                <label className="custom-control-label" htmlFor="show-time-select">
-                  Show Time Select?
-                </label>
-              </div>
-            )}
-
-            {this_show_time_select &&
-              props.element.hasOwnProperty('showTimeSelectOnly') && (
-                <div className="custom-control custom-checkbox">
-                  <input
-                    id="show-time-select-only"
-                    className="custom-control-input"
-                    type="checkbox"
-                    checked={this_show_time_select_only}
-                    value
-                    onChange={this.editElementProp.bind(
-                      this,
-                      'showTimeSelectOnly',
-                      'checked'
-                    )}
-                  />
-                  <label className="custom-control-label" htmlFor="show-time-select-only">
-                    Show Time Select Only?
-                  </label>
-                </div>
-              )}
-
-            {props.element.hasOwnProperty('overdueNotification') && (
-              <div className="custom-control custom-checkbox">
-                <input
-                  id="overdueNotification"
-                  className="custom-control-input"
-                  type="checkbox"
-                  checked={!!props.element.overdueNotification}
-                  value
-                  onChange={this.editElementProp.bind(
-                    this,
-                    'overdueNotification',
-                    'checked'
-                  )}
-                />
-                <label className="custom-control-label" htmlFor="overdueNotification">
-                  Overdue Notification
-                </label>
-              </div>
-            )}
-
-            {(element.element === 'RadioButtons' ||
-              element.element === 'Checkboxes') &&
-              canHaveDisplayHorizontal && (
-                <div className="custom-control custom-checkbox">
-                  <input
-                    id="display-horizontal"
-                    className="custom-control-input"
-                    type="checkbox"
-                    checked={this_checked_inline}
-                    value
-                    onChange={(e) => editElementProp("inline", "checked", e)}
-                  />
-                  <label className="custom-control-label" htmlFor="display-horizontal">
-                    Display horizonal
-                  </label>
-                </div>
-              )}
-          </div>
-        )}
-
-        {element.element === 'Signature' && props.element.readOnly ? (
-          <div className="form-group">
-            <label className="control-label" htmlFor="variableKey">
-              Variable Key:
-            </label>
-            <input
-              id="variableKey"
-              type="text"
-              className="form-control"
-              defaultValue={props.element.variableKey}
-              onBlur={updateElement}
-              onChange={(e) => editElementProp("variableKey", "value", e)}
-            />
-            <p className="help-block">
-              This will give the element a key that can be used to replace the content
-              with a runtime value.
-            </p>
-          </div>
-        ) : (
-          <div />
-        )}
-
-        {props.element.hasOwnProperty('step') && (
-          <div className="form-group">
-            <div className="form-group-range">
-              <label className="control-label" htmlFor="rangeStep">
-                Step
-              </label>
-              <input
-                id="rangeStep"
-                type="number"
-                className="form-control"
-                defaultValue={props.element.step}
-                onBlur={updateElement}
-                onChange={(e) => editElementProp("step", "value", e)}
-              />
-            </div>
-          </div>
-        )}
-
-        {props.element.hasOwnProperty('min_value') && (
-          <div className="form-group">
-            <div className="form-group-range">
-              <label className="control-label" htmlFor="rangeMin">
-                Min
-              </label>
-              <input
-                id="rangeMin"
-                type="number"
-                className="form-control"
-                defaultValue={props.element.min_value}
-                onBlur={updateElement}
-                onChange={(e) => editElementProp("min_value", "value", e)}
-              />
-              <input
-                type="text"
-                className="form-control"
-                defaultValue={props.element.min_label}
-                onBlur={updateElement}
-                onChange={(e) => editElementProp("min_label", "value", e)}
-              />
-            </div>
-          </div>
-        )}
-
-        {props.element.hasOwnProperty('max_value') && (
-          <div className="form-group">
-            <div className="form-group-range">
-              <label className="control-label" htmlFor="rangeMax">
-                Max
-              </label>
-              <input
-                id="rangeMax"
-                type="number"
-                className="form-control"
-                defaultValue={props.element.max_value}
-                onBlur={updateElement}
-                onChange={(e) => editElementProp("max_value", "value", e)}
-              />
-              <input
-                type="text"
-                className="form-control"
-                defaultValue={props.element.max_label}
-                onBlur={updateElement}
-                onChange={(e) => editElementProp("max_label", "value", e)}
-              />
-            </div>
-          </div>
-        )}
-        {props.element.hasOwnProperty('default_value') && (
-          <div className="form-group">
-            <div className="form-group-range">
-              <label className="control-label" htmlFor="defaultSelected">
-                Default Selected
-              </label>
-              <input
-                id="defaultSelected"
-                type="number"
-                className="form-control"
-                defaultValue={props.element.default_value}
-                onBlur={updateElement}
-                onChange={(e) => editElementProp("default_value", "value", e)}
-              />
-            </div>
-          </div>
-        )}
-        {/*props.element.hasOwnProperty('static') && props.element.static && (
-          <div className="form-group">
-            <label className="control-label">Text Style</label>
-            <div className="custom-control custom-checkbox">
-              <input
-                id="do-bold"
-                className="custom-control-input"
-                type="checkbox"
-                checked={this_checked_bold}
-                value
-                onChange={(e) => editElementProp("bold", "checked", e)}
-              />
-              <label className="custom-control-label" htmlFor="do-bold">
-                Bold
-              </label>
-            </div>
-            <div className="custom-control custom-checkbox">
-              <input
-                id="do-italic"
-                className="custom-control-input"
-                type="checkbox"
-                checked={this_checked_italic}
-                value
-                onChange={(e) => editElementProp("italic", "checked", e)}
-              />
-              <label className="custom-control-label" htmlFor="do-italic">
-                Italic
-              </label>
-            </div>
-          </div>
-        )*/}
-        {props.element.showDescription && (
-          <div className="form-group">
-            <label className="control-label" htmlFor="questionDescription">
-              Description
-            </label>
-            <TextAreaAutosize
-              type="text"
-              className="form-control"
-              id="questionDescription"
-              defaultValue={props.element.description}
-              onBlur={updateElement}
-              onChange={(e) => editElementProp("description", "value", e)}
-            />
-          </div>
-        )}
-        {props.showCorrectColumn &&
-          props.element.canHaveAnswer &&
-          !props.element.hasOwnProperty('options') && (
-            <div className="form-group">
-              <label className="control-label" htmlFor="correctAnswer">
-                Correct Answer
-              </label>
-              <input
-                id="correctAnswer"
-                type="text"
-                className="form-control"
-                defaultValue={props.element.correct}
-                onBlur={updateElement}
-                onChange={(e) => editElementProp("correct", "value", e)}
-              />
-            </div>
-          )}
-        {props.element.hasOwnProperty('header') && (
-          <div className="form-group">
-            <label className="control-label" htmlFor="header">
-              Section Header
-            </label>
-            <input
-              id="header"
-              type="text"
-              className="form-control"
-              defaultValue={props.element.header}
-              onBlur={updateElement}
-              onChange={(e) => editElementProp("header", "value", e)}
-            />
-          </div>
-        )}
-        {props.element.hasOwnProperty('position') && (
-          <div className="form-group">
-            <label className="control-label" htmlFor="position">
-              Role / Position
-            </label>
-            <input
-              id="position"
-              type="text"
-              className="form-control"
-              defaultValue={props.element.position}
-              onBlur={updateElement}
-              onChange={(e) => editElementProp("position", "value", e)}
-            />
-          </div>
-        )}
-        {props.element.hasOwnProperty('specificRole') && (
-          <div className="form-group">
-            <label className="control-label">
-              Pre Defined User / Role {Boolean(props.element.specificRole)}
-            </label>
-            <select
-              className="form-control"
-              id="specificRole"
-              defaultValue={props.element.specificRole}
-              onBlur={updateElement}
-              onChange={(e) => editElementProp("specificRole", "value", e)}
-            >
-              <option value="specific" key="specific">
-                Specific role only
-              </option>
-              <option value="notSpecific" key="notSpecific">
-                Anyone can sign
-              </option>
-            </select>
-          </div>
-        )}
-
-        {props.element.hasOwnProperty('options') && (
-          <DynamicOptionList
-            showCorrectColumn={props.showCorrectColumn}
-            canHaveOptionCorrect={canHaveOptionCorrect}
-            canHaveOptionValue={canHaveOptionValue}
-            canHaveInfo={canHaveInfo}
-            data={props.preview?.state?.data}
-            updateElement={props.updateElement}
-            preview={props.preview}
-            element={props.element}
-            key={`option-${props.element.options.length}`}
-          />
-        )}
-
-        {props.element.hasOwnProperty('rows') && (
-          <div className="form-group">
-            <label className="control-label" htmlFor="rowInput">
-              Row Count
-            </label>
-            <input
-              id="rowInput"
-              type="text"
-              className="form-control"
-              defaultValue={props.element.rows}
-              onBlur={updateElement}
-              onChange={(e) => editElementProp("rows", "value", e)}
-            />
-          </div>
-        )}
-
-        {props.element.hasOwnProperty('rowLabels') && (
-          <FixedRowList
-            data={props.preview?.state?.data}
-            updateElement={props.updateElement}
-            preview={props.preview}
-            element={props.element}
-            key="table-row-labels"
-          />
-        )}
-
-        {props.element.hasOwnProperty('columns') && (
-          <DynamicColumnList
-            data={props.preview?.state?.data}
-            updateElement={props.updateElement}
-            preview={props.preview}
-            element={props.element}
-            key="table-columns"
-          />
-        )}
-
-        {props.element.hasOwnProperty('sourceType') && (
-          <div className="form-group">
-            <label className="control-label" htmlFor="sourceType">
-              Source Type
-            </label>
-            <select
-              className="form-control"
-              id="sourceType"
-              defaultValue={props.element.sourceType}
-              onBlur={updateElement}
-              onChange={(e) => editElementProp("sourceType", "value", e)}
-            >
-              <option value="name" key="name">
-                Name
-              </option>
-              <option value="department" key="department">
-                Department
-              </option>
-              <option value="role" key="role">
-                Role
-              </option>
-              <option value="form" key="form">
-                Form
-              </option>
-            </select>
-          </div>
-        )}
-
-        {props.element.sourceType === 'form' && (
-          <div>
-            {props.element.hasOwnProperty('formSource') && (
-              <div className="form-group">
-                <label className="control-label" htmlFor="formSource">
-                  Form Source
-                </label>
-                <select
-                  className="form-control"
-                  id="formSource"
-                  value={props.element.formSource}
-                  defaultValue={props.element.formSource}
-                  onBlur={updateElement}
-                  onChange={(e) => editElementProp("formSource", "value", e)}
-                >
-                  <option value={-1} key={-1}>
-                    " Please select "
-                  </option>
-                  {formDataSource &&
-                    formDataSource.map((item) => (
-                      <option value={item.id} key={item.id}>
-                        {item.name}
-                      </option>
-                    ))}
-                </select>
-              </div>
-            )}
-
-            {props.element.sourceType === 'form' && (
-              <div className="form-group">
-                <label className="control-label" htmlFor="formSource">
-                  Select Fields
-                </label>
-                {activeForm &&
-                  activeForm.columns &&
-                  activeForm.columns.map((item) => (
-                    <div className="custom-control custom-checkbox">
-                      <input
-                        id={item.field_name}
-                        className="custom-control-input"
-                        type="checkbox"
-                        checked={
-                          props.element.hasOwnProperty(`formField${item.field_name}`)
-                            ? props.element[`formField${item.field_name}`]
-                            : false
-                        }
-                        value={item.field_name}
-                        onChange={this.editElementProp.bind(
-                          this,
-                          `formField${item.field_name}`,
-                          'checked'
-                        )}
-                      />
-                      <label className="custom-control-label" htmlFor={item.field_name}>
-                        {item.label || item.text || ''}
-                      </label>
-                    </div>
-                  ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {props.element.hasOwnProperty('formula') && (
-          <div className="form-group">
-            <label className="control-label" htmlFor="rowInput">
-              Formula
-            </label>
-            <input
-              id="formula"
-              type="text"
-              className="form-control"
-              defaultValue={props.element.formula}
-              onBlur={updateElement}
-              onChange={(e) => editElementProp("formula", "value", e)}
-            />
-          </div>
-        )}
-
-        {props.element.hasOwnProperty('formularKey') && (
-          <div className="form-group">
-            <label className="control-label" htmlFor="rowInput">
-              Formula Key
-            </label>
-            <input
-              id="formularKey"
-              type="text"
-              className="form-control"
-              defaultValue={props.element.formularKey}
-              onBlur={updateElement}
-              onChange={(e) => editElementProp("formularKey", "value", e)}
-            />
-          </div>
-        )}
-        {props.element.element === 'FormLink' && (
-          <div className="form-group">
-            <label className="control-label" htmlFor="formLinkSource">
-              Select Form
-            </label>
-            <select
-              className="form-control"
-              id="formLinkSource"
-              value={props.element.formSource || ''}
-              defaultValue={props.element.formSource || ''}
-              onBlur={updateElement}
-              onChange={(e) => editElementProp("formSource", "value", e)}
-            >
-              <option value="" key={-1}>
-                Select a form...
-              </option>
-              {formDataSource &&
-                formDataSource.map((form) => (
-                  <option value={form.id} key={form.id}>
-                    {form.name || form.title}
-                  </option>
-                ))}
-            </select>
-          </div>
-        )}
+  return (
+    <div>
+      <div className="clearfix">
+        <h4 className="float-left">{props.element.text}</h4>
+        <i
+          className="float-right fas fa-times dismiss-edit"
+          onClick={props.manualEditModeOff}
+        />
       </div>
-    )
+
+      {/* Content Editor (WYSIWYG) */}
+      {props.element.hasOwnProperty('content') && (
+        <WysiwygEditor
+          label="Text to display:"
+          toolbar={toolbar}
+          defaultEditorState={contentEditorState}
+          editorState={editorStates.content || contentEditorState}
+          onBlur={updateElement}
+          onChange={(es) => onEditorStateChange('content', es)}
+          stripPastedStyles={false}
+        />
+      )}
+
+      {/* File Selection */}
+      {props.element.hasOwnProperty('file_path') && (
+        <SelectFieldEditor
+          id="fileSelect"
+          label="Choose file:"
+          value={props.element.file_path}
+          options={fileOptions}
+          onChange={(e) => editElementProp('file_path', 'value', e)}
+          onBlur={updateElement}
+          renderOption={(file) => (
+            <option value={file.id} key={`file_${file.id}`}>
+              {file.file_name}
+            </option>
+          )}
+        />
+      )}
+
+      {/* Href/Link */}
+      {props.element.hasOwnProperty('href') && (
+        <TextFieldEditor
+          id="href"
+          value={props.element.href}
+          onChange={(e) => editElementProp('href', 'value', e)}
+          onBlur={updateElement}
+          multiline
+        />
+      )}
+
+      {/* Image Upload & Configuration */}
+      {props.element.hasOwnProperty('src') && (
+        <ImageEditor
+          element={props.element}
+          onUploadFile={onUploadFile}
+          onChange={editElementProp}
+          onBlur={updateElement}
+        />
+      )}
+
+      {/* Label & Required Settings */}
+      {(props.element.hasOwnProperty('label') || props.element.element === 'Signature2') && (
+        <LabelEditor
+          element={props.element}
+          labelEditorState={labelEditorState}
+          editorStates={editorStates}
+          toolbar={toolbar}
+          onChange={editElementProp}
+          onEditorStateChange={onEditorStateChange}
+          onBlur={updateElement}
+          canHaveDisplayHorizontal={canHaveDisplayHorizontal}
+        />
+      )}
+
+      {/* Signature-specific fields */}
+      {(element.element === 'Signature' || element.element === 'Signature2') && (
+        <SignatureEditor
+          element={props.element}
+          onChange={editElementProp}
+          onBlur={updateElement}
+        />
+      )}
+
+      {/* Range-specific fields (step, min, max, default) */}
+      {(props.element.hasOwnProperty('step') ||
+        props.element.hasOwnProperty('min_value') ||
+        props.element.hasOwnProperty('max_value') ||
+        props.element.hasOwnProperty('default_value')) && (
+        <RangeEditor
+          element={props.element}
+          onChange={editElementProp}
+          onBlur={updateElement}
+        />
+      )}
+
+      {/* Description */}
+      {props.element.showDescription && (
+        <TextFieldEditor
+          id="questionDescription"
+          label="Description"
+          value={props.element.description}
+          onChange={(e) => editElementProp('description', 'value', e)}
+          onBlur={updateElement}
+          multiline
+        />
+      )}
+
+      {/* Correct Answer (for grading) */}
+      {props.showCorrectColumn &&
+        props.element.canHaveAnswer &&
+        !props.element.hasOwnProperty('options') && (
+          <TextFieldEditor
+            id="correctAnswer"
+            label="Correct Answer"
+            value={props.element.correct}
+            onChange={(e) => editElementProp('correct', 'value', e)}
+            onBlur={updateElement}
+          />
+        )}
+
+      {/* Section Header */}
+      {props.element.hasOwnProperty('header') && (
+        <TextFieldEditor
+          id="header"
+          label="Section Header"
+          value={props.element.header}
+          onChange={(e) => editElementProp('header', 'value', e)}
+          onBlur={updateElement}
+        />
+      )}
+
+      {/* Options (Dropdown, RadioButtons, Checkboxes) */}
+      {props.element.hasOwnProperty('options') && (
+        <DynamicOptionList
+          showCorrectColumn={props.showCorrectColumn}
+          canHaveOptionCorrect={canHaveOptionCorrect}
+          canHaveOptionValue={canHaveOptionValue}
+          canHaveInfo={canHaveInfo}
+          data={props.preview?.state?.data}
+          updateElement={props.updateElement}
+          preview={props.preview}
+          element={props.element}
+          key={`option-${props.element.options.length}`}
+        />
+      )}
+
+      {/* Table Rows */}
+      {props.element.hasOwnProperty('rows') && (
+        <TextFieldEditor
+          id="rowInput"
+          label="Row Count"
+          value={props.element.rows}
+          onChange={(e) => editElementProp('rows', 'value', e)}
+          onBlur={updateElement}
+          type="text"
+        />
+      )}
+
+      {/* Table Row Labels */}
+      {props.element.hasOwnProperty('rowLabels') && (
+        <FixedRowList
+          data={props.preview?.state?.data}
+          updateElement={props.updateElement}
+          preview={props.preview}
+          element={props.element}
+          key="table-row-labels"
+        />
+      )}
+
+      {/* Table Columns */}
+      {props.element.hasOwnProperty('columns') && (
+        <DynamicColumnList
+          data={props.preview?.state?.data}
+          updateElement={props.updateElement}
+          preview={props.preview}
+          element={props.element}
+          key="table-columns"
+        />
+      )}
+
+      {/* DataSource Editor */}
+      {props.element.hasOwnProperty('sourceType') && (
+        <DataSourceEditor
+          element={props.element}
+          formDataSource={formDataSource}
+          activeForm={activeForm}
+          onChange={editElementProp}
+          onBlur={updateElement}
+        />
+      )}
+
+      {/* Formula */}
+      {props.element.hasOwnProperty('formula') && (
+        <TextFieldEditor
+          id="formula"
+          label="Formula"
+          value={props.element.formula}
+          onChange={(e) => editElementProp('formula', 'value', e)}
+          onBlur={updateElement}
+        />
+      )}
+
+      {/* Formula Key */}
+      {props.element.hasOwnProperty('formularKey') && (
+        <TextFieldEditor
+          id="formularKey"
+          label="Formula Key"
+          value={props.element.formularKey}
+          onChange={(e) => editElementProp('formularKey', 'value', e)}
+          onBlur={updateElement}
+        />
+      )}
+
+      {/* FormLink Editor */}
+      {props.element.element === 'FormLink' && (
+        <FormLinkEditor
+          element={props.element}
+          formDataSource={formDataSource}
+          activeForm={activeForm}
+          onChange={editElementProp}
+          onBlur={updateElement}
+        />
+      )}
+    </div>
+  )
 }
 
 FormElementsEdit.defaultProps = { className: 'edit-element-fields' }
