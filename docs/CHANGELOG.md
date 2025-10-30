@@ -47,6 +47,17 @@ This is a complete modernization of react-form-builder2, bringing it up to date 
 
 ### Changed
 
+#### State Management
+- ✅ **Replaced Beedle with React Context + useReducer**
+  - Removed deprecated `beedle` dependency (no longer maintained)
+  - Created modern `FormBuilderContext.jsx` with React Context and useReducer
+  - Maintained backward compatibility with singleton API
+  - Fixed store subscription to properly return unsubscribe functions
+  - Prevented memory leaks with proper cleanup
+  - Exported `FormBuilderProvider` and `useFormBuilderStore` for modern usage
+  - Fixed toolbar state merging to preserve items
+  - Added global polyfill for draft-js browser compatibility
+
 #### React Upgrade
 - ✅ **React 16.14.0 → 18.3.1**
   - Updated to `createRoot` API

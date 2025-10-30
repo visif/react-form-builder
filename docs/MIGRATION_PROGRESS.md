@@ -684,6 +684,62 @@ commit [pending] - Documentation review and polish complete
 
 ---
 
+## Phase 17.5: State Management Modernization ✅ COMPLETED
+**Date**: January 2025
+
+### What was done:
+- ✅ **Removed Beedle dependency**
+  - Deprecated library (no longer maintained)
+  - Replaced with React Context + useReducer pattern
+  - Modern state management approach
+
+- ✅ **Created FormBuilderContext.jsx** (320+ lines)
+  - FormBuilderProvider component
+  - useFormBuilderStore hook for modern usage
+  - Singleton getStoreInstance() for backward compatibility
+  - Proper action types: SET_DATA, CREATE_ELEMENT, DELETE_ELEMENT, UPDATE_ELEMENT, UPDATE_ORDER
+  - Fixed subscription to return proper unsubscribe functions
+  - Prevented memory leaks with subscriber cleanup
+
+- ✅ **Updated store.js**
+  - Simplified to re-export from FormBuilderContext
+  - Maintained backward compatibility (82 lines → 4 lines)
+
+- ✅ **Fixed hoisting issues**
+  - src/preview.jsx: Moved syncRowChanges before usage, wrapped in useCallback
+  - Proper dependency management
+
+- ✅ **Fixed state management bugs**
+  - src/toolbar.jsx: Fixed setState to merge state instead of replacing
+  - Prevented items array from being lost on store updates
+
+- ✅ **Added browser compatibility**
+  - vite.config.js: Added global polyfill for draft-js
+  - define: { global: 'globalThis' }
+
+- ✅ **Updated exports**
+  - src/index.jsx: Added FormBuilderProvider and useFormBuilderStore exports
+  - Modern API for new projects while maintaining legacy compatibility
+
+### Committed:
+```
+commit 5762ac9 - refactor: migrate from Beedle to React Context + useReducer for state management
+```
+
+### Files Created/Updated: 10
+- src/stores/FormBuilderContext.jsx (new - 320+ lines)
+- src/stores/store.js (simplified)
+- src/index.jsx (added exports)
+- src/preview.jsx (fixed hoisting)
+- src/toolbar.jsx (fixed state merge)
+- vite.config.js (global polyfill)
+- package.json (removed beedle)
+- package-lock.json (updated)
+- .gitignore (dev files)
+- docs/CHANGELOG.md (documented changes)
+
+---
+
 ## Next Steps
 
 ### Final Phase:
