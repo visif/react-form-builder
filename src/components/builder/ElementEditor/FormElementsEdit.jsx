@@ -488,7 +488,7 @@ const FormElementsEdit = (props) => {
         updateElement: props.updateElement,
         preview: props.preview,
         element: props.element,
-        key: `option-${props.element.options.length}`,
+        key: `option-${props.element.options?.length || 0}`,
       },
     },
     {
@@ -573,12 +573,23 @@ const FormElementsEdit = (props) => {
 
   return (
     <div>
-      <div className="clearfix">
-        <h4 className="float-left">{props.element.text}</h4>
-        <i
-          className="float-right fas fa-times dismiss-edit"
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+        <h4 style={{ margin: 0 }}>{props.element.text}</h4>
+        <button
+          type="button"
+          className="dismiss-edit"
           onClick={props.manualEditModeOff}
-        />
+          style={{
+            border: 'none',
+            background: 'none',
+            padding: '5px',
+            cursor: 'pointer',
+            fontSize: '125%',
+            color: '#333'
+          }}
+        >
+          <i className="fas fa-times" />
+        </button>
       </div>
 
       {fieldConfigs.map((config, index) => {

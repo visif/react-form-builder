@@ -191,6 +191,8 @@
             position: absolute;
             right: 20px;
             margin-top:-20px;
+            display: flex;
+            gap: 5px;
           }
         }
         &:hover {
@@ -419,7 +421,7 @@
 }
 
 .form-place-holder {
-  margin:10px; 
+  margin:10px;
   border:2px dashed #bbb;
   -moz-border-radius:5px;
   -webkit-border-radius:5px;
