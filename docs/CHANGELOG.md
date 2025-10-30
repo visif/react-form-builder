@@ -220,12 +220,12 @@ See [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md) for detailed upgrade instructions
   - Outdated examples (64 files, 22,099 lines)
   - Demo server and public folders (39 files, 21,994 lines)
   - Old documentation build artifacts
-  
+
 - ✨ **Removed 536 packages** from dependencies
   - 479 packages from webpack ecosystem
   - 55 packages from demo server (express, multer)
   - 2 outdated Babel plugins
-  
+
 - 📁 **Reorganized documentation**
   - All .md files moved to `docs/` folder
   - Cleaner repository structure

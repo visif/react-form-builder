@@ -60,6 +60,7 @@ import ReactFormGenerator from './form'
 import Preview from './preview'
 import Registry from './stores/registry'
 import store from './stores/store'
+import { FormBuilderProvider, useFormBuilderStore } from './stores/FormBuilderContext'
 import Toolbar from './toolbar'
 
 const ReactFormBuilder = (props) => {
@@ -193,4 +194,4 @@ FormBuilders.Registry = Registry
 
 export default FormBuilders
 
-export { ReactFormBuilder, ReactFormGenerator, store as ElementStore, Registry }
+export { ReactFormBuilder, ReactFormGenerator, store as ElementStore, Registry, FormBuilderProvider, useFormBuilderStore }

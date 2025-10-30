@@ -13,6 +13,11 @@ export default defineConfig({
     cssInjectedByJsPlugin(), // Inject CSS into JS for library build
   ],
 
+  // Define global for draft-js compatibility
+  define: {
+    global: 'globalThis',
+  },
+
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.jsx'),

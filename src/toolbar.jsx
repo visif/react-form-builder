@@ -84,7 +84,7 @@ const Toolbar = (props) => {
 
   React.useEffect(() => {
     const unsubscribe = store.subscribe((storeState) => {
-      setState({ store: storeState })
+      setState((prevState) => ({ ...prevState, store: storeState }))
     })
     return () => {
       if (unsubscribe) unsubscribe()
