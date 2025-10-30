@@ -433,7 +433,7 @@ const FormElementsEdit = (props) => {
       },
     },
     {
-      condition: () => 'step' in props.element || 'min_value' in props.element || 
+      condition: () => 'step' in props.element || 'min_value' in props.element ||
                        'max_value' in props.element || 'default_value' in props.element,
       component: RangeEditor,
       props: {
