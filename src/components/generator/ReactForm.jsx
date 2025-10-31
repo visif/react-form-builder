@@ -58,13 +58,11 @@
  *
  * @since 0.1.0
  * @requires hot-formula-parser for formula fields
- * @requires fbemitter for variable change events
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import ReactDOM from 'react-dom'
 
-import { EventEmitter } from 'fbemitter'
 import { Parser } from 'hot-formula-parser'
 
 import { FormProvider, useFormContext } from '../../contexts/FormContext'
@@ -111,18 +109,19 @@ const ReactForm = (props) => {
   // Refs (replacing class properties)
   const formRef = useRef(null)
   const inputsRef = useRef({})
-  const emitterRef = useRef(new EventEmitter())
-  const variableSubscriptionRef = useRef(null)
 
   // Get form context
   const formContext = useFormContext()
 
   // State (replacing this.state)
   const [answerData, setAnswerData] = useState(() => convert(props.answer_data))
-  const [variables, setVariables] = useState(() => {
+
+  // Initialize variables in context
+  useEffect(() => {
     const ansData = convert(props.answer_data)
-    return getVariableValueHelper(ansData, props.data)
-  })
+    const initialVariables = getVariableValueHelper(ansData, props.data)
+    formContext.setAllVariables(initialVariables)
+  }, []) // Only on mount
 
   // Helper function to extract formula variables from answer data
   function getVariableValueHelper(ansData, items) {
@@ -180,123 +179,114 @@ const ReactForm = (props) => {
   useEffect(() => {
     const ansData = convert(props.answer_data)
     setAnswerData(ansData)
-    setVariables(getVariableValueHelper(ansData, props.data))
-  }, [props.answer_data, props.data])
+    const newVariables = getVariableValueHelper(ansData, props.data)
+    formContext.setAllVariables(newVariables)
+  }, [props.answer_data, props.data, formContext])
 
-  // Handle input changes and emit variable change events
+  // Handle input changes and update variables via context
   const handleChange = useCallback(
     (propKey, value) => {
       // Update the form context with the new value
       formContext.updateValue(propKey, value)
-      // Also emit variable change event for formula updates
-      emitterRef.current.emit('variableChange', { propKey, value })
+      // Update variable if this field has a formularKey
+      const item = props.data.find((d) => d.field_name === propKey)
+      if (item?.formularKey) {
+        formContext.updateVariable(item.formularKey, value)
+      }
     },
-    [formContext]
+    [formContext, props.data]
   )
 
   // Variable change handler with cascading formula updates
   const handleVariableChange = useCallback(
     (params) => {
-      setVariables((prevVariables) => {
-        const newVariables = {
-          ...prevVariables,
-          [params.propKey]: params.value,
+      const allVariables = formContext.getAllVariables()
+      const newVariables = {
+        ...allVariables,
+        [params.propKey]: params.value,
+      }
+
+      setAnswerData((prevAnswerData) => {
+        const newAnswerData = { ...prevAnswerData }
+
+        // Get all formula fields for cascading updates
+        const allFormulaFields = props.data.filter(
+          (item) => item.element === 'FormulaInput' && item.formula
+        )
+
+        // Keep track of which variables have been updated to detect cascading changes
+        const updatedVariables = new Set([params.propKey])
+        let hasChanges = true
+
+        // Continue recalculating until no more changes occur (cascading updates)
+        while (hasChanges) {
+          hasChanges = false
+
+          // Find formula fields that depend on any recently updated variables
+          const affectedFields = allFormulaFields.filter((formulaField) => {
+            return Array.from(updatedVariables).some((varKey) =>
+              formulaField.formula.includes(varKey)
+            )
+          })
+
+          // Clear the updated variables set for this iteration
+          updatedVariables.clear()
+
+          affectedFields.forEach((formulaField) => {
+            try {
+              // Use same formula parsing logic as FormulaInput component
+              const parser = new Parser()
+
+              // Set all current variables in parser
+              Object.entries(newVariables).forEach(([key, value]) => {
+                const parsedValue = parseFloat(value)
+                if (!Number.isNaN(parsedValue)) {
+                  parser.setVariable(key, parsedValue)
+                }
+              })
+
+              // Calculate new formula result
+              const parseResult = parser.parse(formulaField.formula)
+              const newValue = parseResult?.result || 0
+
+              // Update the answer data for this formula field
+              newAnswerData[formulaField.field_name] = {
+                formula: formulaField.formula,
+                value: newValue,
+                variables: newVariables,
+              }
+
+              // If this formula field has a formularKey, update variables with its new value
+              if (formulaField.formularKey) {
+                const oldValue = newVariables[formulaField.formularKey]
+                const valueChanged = Math.abs((oldValue || 0) - newValue) > 0.0001
+
+                if (valueChanged) {
+                  newVariables[formulaField.formularKey] = newValue
+                  updatedVariables.add(formulaField.formularKey)
+                  hasChanges = true
+                }
+              }
+            } catch (error) {
+              console.warn(`Error calculating formula for ${formulaField.field_name}:`, error)
+            }
+          })
         }
 
-        setAnswerData((prevAnswerData) => {
-          const newAnswerData = { ...prevAnswerData }
+        // Update context with all new variables
+        formContext.setAllVariables(newVariables)
 
-          // Get all formula fields for cascading updates
-          const allFormulaFields = props.data.filter(
-            (item) => item.element === 'FormulaInput' && item.formula
-          )
-
-          // Keep track of which variables have been updated to detect cascading changes
-          const updatedVariables = new Set([params.propKey])
-          let hasChanges = true
-
-          // Continue recalculating until no more changes occur (cascading updates)
-          while (hasChanges) {
-            hasChanges = false
-
-            // Find formula fields that depend on any recently updated variables
-            const affectedFields = allFormulaFields.filter((formulaField) => {
-              return Array.from(updatedVariables).some((varKey) =>
-                formulaField.formula.includes(varKey)
-              )
-            })
-
-            // Clear the updated variables set for this iteration
-            updatedVariables.clear()
-
-            affectedFields.forEach((formulaField) => {
-              try {
-                // Use same formula parsing logic as FormulaInput component
-                const parser = new Parser()
-
-                // Set all current variables in parser
-                Object.entries(newVariables).forEach(([key, value]) => {
-                  const parsedValue = parseFloat(value)
-                  if (!Number.isNaN(parsedValue)) {
-                    parser.setVariable(key, parsedValue)
-                  }
-                })
-
-                // Calculate new formula result
-                const parseResult = parser.parse(formulaField.formula)
-                const newValue = parseResult?.result || 0
-
-                // Update the answer data for this formula field
-                newAnswerData[formulaField.field_name] = {
-                  formula: formulaField.formula,
-                  value: newValue,
-                  variables: newVariables,
-                }
-
-                // If this formula field has a formularKey, update variables with its new value
-                if (formulaField.formularKey) {
-                  const oldValue = newVariables[formulaField.formularKey]
-                  const valueChanged = Math.abs((oldValue || 0) - newValue) > 0.0001
-
-                  if (valueChanged) {
-                    newVariables[formulaField.formularKey] = newValue
-                    updatedVariables.add(formulaField.formularKey)
-                    hasChanges = true
-                  }
-                }
-              } catch (error) {
-                console.warn(`Error calculating formula for ${formulaField.field_name}:`, error)
-              }
-            })
-          }
-
-          return newAnswerData
-        })
-
-        return newVariables
+        return newAnswerData
       })
     },
-    [props.data]
+    [props.data, formContext]
   )
 
-  // Subscribe to variable changes (replaces componentDidMount/componentWillUnmount)
+  // Subscribe to variable changes via context
   useEffect(() => {
-    if (emitterRef.current && typeof emitterRef.current.addListener === 'function') {
-      variableSubscriptionRef.current = emitterRef.current.addListener(
-        'variableChange',
-        handleVariableChange
-      )
-    }
-
-    return () => {
-      if (
-        variableSubscriptionRef.current &&
-        typeof variableSubscriptionRef.current.remove === 'function'
-      ) {
-        variableSubscriptionRef.current.remove()
-      }
-    }
-  }, [handleVariableChange])
+    const unsubscribe = formContext.addVariableListener(handleVariableChange)
+    return unsubscribe
+  }, [formContext, handleVariableChange])
 
   // Helper: Get default value for a field
   const getDefaultValue = useCallback(
@@ -621,8 +611,8 @@ const ReactForm = (props) => {
         let errors = []
         if (!props.skip_validations) {
           errors = validateForm()
-          // Publish errors, if any.
-          emitterRef.current.emit('formValidation', errors)
+          // Publish errors to context
+          formContext.setErrors(errors)
         }
 
         // Only submit if there are no errors.
@@ -636,8 +626,8 @@ const ReactForm = (props) => {
         let errors = []
         if (!props.skip_validations) {
           errors = validateForm()
-          // Publish errors, if any.
-          emitterRef.current.emit('formValidation', errors)
+          // Publish errors to context
+          formContext.setErrors(errors)
         }
 
         // Only submit if there are no errors.
@@ -648,7 +638,7 @@ const ReactForm = (props) => {
       }
       // }
     },
-    [props, collectFormData]
+    [props, collectFormData, formContext]
   )
 
   // Form validation with section logic
@@ -810,12 +800,11 @@ const ReactForm = (props) => {
           onUploadImage={props.onUploadImage}
           getFormSource={props.getFormSource}
           broadcastChange={props.broadcastChange}
-          emitter={emitterRef.current}
-          variables={variables}
+          variables={formContext.getAllVariables()}
         />
       )
     },
-    [props, handleChange, getDefaultValue, getEditor, variables, getCustomElement]
+    [props, handleChange, getDefaultValue, getEditor, formContext, getCustomElement]
   )
 
   const getContainerElement = useCallback(
@@ -905,7 +894,6 @@ const ReactForm = (props) => {
               editor={getEditor(item)}
               getDataSource={props.getDataSource}
               getActiveUserProperties={props.getActiveUserProperties}
-              emitter={emitterRef.current}
             />
           )
         case 'CustomElement':
@@ -1054,7 +1042,7 @@ const ReactForm = (props) => {
 
   return (
     <div>
-      <FormValidator emitter={emitterRef.current} />
+      <FormValidator />
       <div className="react-form-builder-form">
         <form
           encType="multipart/form-data"

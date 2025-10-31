@@ -3,9 +3,9 @@
  */
 import React from 'react'
 
-import PropTypes from 'prop-types'
-
 import xss from 'xss'
+
+import { useFormContext } from '../../contexts/FormContext'
 
 const myxss = new xss.FilterXSS({
   whiteList: {
@@ -26,23 +26,13 @@ const myxss = new xss.FilterXSS({
   },
 })
 
-const FormValidator = (props) => {
-  const [errors, setErrors] = React.useState([])
+const FormValidator = () => {
+  const formContext = useFormContext()
+  const errors = formContext.validationErrors
 
-  React.useEffect(() => {
-    const subscription = props.emitter.addListener('formValidation', (errors) => {
-      setErrors(errors)
-    })
-
-    return () => {
-      subscription.remove()
-    }
-  }, [props.emitter])
-
-  const dismissModal = React.useCallback((e) => {
-    e.preventDefault()
-    setErrors([])
-  }, [])
+  const dismissModal = React.useCallback(() => {
+    formContext.setErrors([])
+  }, [formContext])
 
   const errorItems = errors.map((error, index) => (
     <li key={`error_${index}`} dangerouslySetInnerHTML={{ __html: myxss.process(error) }} />
@@ -65,12 +55,6 @@ const FormValidator = (props) => {
       )}
     </div>
   )
-}
-
-FormValidator.propTypes = {
-  emitter: PropTypes.shape({
-    addListener: PropTypes.func.isRequired,
-  }).isRequired,
 }
 
 export default FormValidator
