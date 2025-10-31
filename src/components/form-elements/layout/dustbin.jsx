@@ -3,7 +3,7 @@ import { useDrop } from 'react-dnd'
 import FormElements from '../index.jsx'
 import CustomElement from '../shared/CustomElement'
 import ItemTypes from '../../../constants/itemTypes'
-import Registry from '../../../contexts/registry'
+import Registry from '../../../utils/registry'
 
 // Styles
 const dustbinStyles = (backgroundColor) => ({
