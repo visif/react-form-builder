@@ -1,4 +1,5 @@
 import React from 'react'
+
 import TextAreaAutosize from 'react-textarea-autosize'
 
 /**
@@ -15,7 +16,7 @@ const TextFieldEditor = ({
   multiline = false,
   placeholder = '',
   helpText = null,
-  className = 'form-control'
+  className = 'form-control',
 }) => {
   return (
     <div className="form-group">

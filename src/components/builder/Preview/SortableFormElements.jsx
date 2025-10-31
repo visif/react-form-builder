@@ -1,12 +1,12 @@
 import BaseFormElements from '../../form-elements/index'
-import CustomElement from '../../form-elements/shared/CustomElement'
-import PlaceHolder from './FormPlaceHolder'
 import {
   DynamicColumnRow,
   FourColumnRow,
   ThreeColumnRow,
   TwoColumnRow,
 } from '../../form-elements/layout'
+import CustomElement from '../../form-elements/shared/CustomElement'
+import PlaceHolder from './FormPlaceHolder'
 import SortableElement from './SortableElement'
 
 const {

@@ -1,9 +1,12 @@
 import React, { Component } from 'react'
+
 import PropTypes from 'prop-types'
+
 import { Parser } from 'hot-formula-parser'
+
+import debounce from '../../../utils/debounce'
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
-import debounce from '../../../utils/debounce'
 
 class FormulaInput extends Component {
   constructor(props) {
@@ -31,7 +34,7 @@ class FormulaInput extends Component {
     }
 
     this.handleVariableChange = this.handleVariableChange.bind(this)
-  this.debouncedUpdate = debounce(this.processVariableChange.bind(this), 100)
+    this.debouncedUpdate = debounce(this.processVariableChange.bind(this), 100)
   }
 
   componentDidMount() {
@@ -45,14 +48,18 @@ class FormulaInput extends Component {
     if (this.subscription && typeof this.subscription.remove === 'function') {
       this.subscription.remove()
     }
-  if (this.debouncedUpdate && this.debouncedUpdate.cancel) this.debouncedUpdate.cancel()
+    if (this.debouncedUpdate && this.debouncedUpdate.cancel) this.debouncedUpdate.cancel()
   }
 
   static getDerivedStateFromProps(props, state) {
     // Check if defaultValue exists and is different from current state
     if (props.defaultValue && props.defaultValue.value !== state.value) {
       // If defaultValue has a specific value, use it instead of recalculating
-      if (props.defaultValue.value !== '' && props.defaultValue.value !== null && props.defaultValue.value !== undefined) {
+      if (
+        props.defaultValue.value !== '' &&
+        props.defaultValue.value !== null &&
+        props.defaultValue.value !== undefined
+      ) {
         return {
           formula: props.defaultValue.formula || state.formula,
           variables: props.defaultValue.variables || state.variables,
@@ -71,7 +78,7 @@ class FormulaInput extends Component {
     const prevVars = state.variables || {}
     let variablesChanged = Object.keys(incomingVars).length !== Object.keys(prevVars).length
     if (!variablesChanged) {
-      variablesChanged = Object.keys(incomingVars).some(k => {
+      variablesChanged = Object.keys(incomingVars).some((k) => {
         const incomingValue = parseFloat(incomingVars[k])
         const prevValue = parseFloat(prevVars[k])
         // Handle NaN comparison properly
@@ -109,16 +116,16 @@ class FormulaInput extends Component {
   }
 
   handleVariableChange(params) {
-  const { formula, isUpdating } = this.state
+    const { formula, isUpdating } = this.state
     if (!formula) {
-  // Invalid / missing formula: nothing to compute
+      // Invalid / missing formula: nothing to compute
       return
     }
 
-  if (isUpdating) {
+    if (isUpdating) {
       return
     }
-  this.debouncedUpdate(params)
+    this.debouncedUpdate(params)
   }
 
   // Format the value for display
@@ -134,7 +141,8 @@ class FormulaInput extends Component {
     })
   }
 
-  processVariableChange(params) { // Reordered below formatNumber to satisfy style rule
+  processVariableChange(params) {
+    // Reordered below formatNumber to satisfy style rule
     const { formula, variables: currentVars, value: currentValue } = this.state
     const { data, handleChange } = this.props
     if (!formula) return
@@ -148,13 +156,18 @@ class FormulaInput extends Component {
       } else {
         const processedValue = params.value
         if (typeof processedValue === 'string' && processedValue.trim().endsWith('%')) {
-          const numericPart = processedValue.trim().slice(0, -1)
-            .replace(/,/g, '')
+          const numericPart = processedValue.trim().slice(0, -1).replace(/,/g, '')
           const parsedValue = parseFloat(numericPart)
-          newVariables = { ...currentVars, [params.propKey]: !Number.isNaN(parsedValue) ? parsedValue / 100 : 0 }
+          newVariables = {
+            ...currentVars,
+            [params.propKey]: !Number.isNaN(parsedValue) ? parsedValue / 100 : 0,
+          }
         } else {
           const parsedValue = parseFloat(String(processedValue).replace(/,/g, ''))
-          newVariables = { ...currentVars, [params.propKey]: !Number.isNaN(parsedValue) ? parsedValue : 0 }
+          newVariables = {
+            ...currentVars,
+            [params.propKey]: !Number.isNaN(parsedValue) ? parsedValue : 0,
+          }
         }
       }
 
@@ -179,7 +192,7 @@ class FormulaInput extends Component {
 
   render() {
     const { error, value } = this.state
-  const { data, style } = this.props
+    const { data, style } = this.props
 
     const inputProps = {
       type: 'text',
@@ -189,8 +202,8 @@ class FormulaInput extends Component {
       disabled: true,
     }
 
-  let baseClasses = `${data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
-  if (data.pageBreakBefore) {
+    let baseClasses = `${data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
+    if (data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
 
@@ -200,7 +213,13 @@ class FormulaInput extends Component {
         <ComponentHeader data={data} style={style} {...this.props} />
         <div className={data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel data={data} style={style} {...this.props} />
-          <input type={inputProps.type} className={inputProps.className} name={inputProps.name} value={inputProps.value} disabled={inputProps.disabled} />
+          <input
+            type={inputProps.type}
+            className={inputProps.className}
+            name={inputProps.name}
+            value={inputProps.value}
+            disabled={inputProps.disabled}
+          />
           {/* eslint-enable react/jsx-props-no-spreading */}
           {error && <div className="invalid-feedback">{error}</div>}
         </div>

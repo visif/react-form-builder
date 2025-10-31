@@ -1,7 +1,10 @@
 import React from 'react'
+
 import ReactDOM from 'react-dom'
-import cx from 'classnames'
+
 import PropTypes from 'prop-types'
+
+import cx from 'classnames'
 
 /**
  * @fileoverview react-star-rating
@@ -36,18 +39,21 @@ const StarRating = (props) => {
     return stars
   }, [props.ratingAmount])
 
-  const getStarRatingPosition = React.useCallback((val) => {
-    const getWidthFromValue = (val) => {
-      if (val <= min || min === max) {
-        return 0
+  const getStarRatingPosition = React.useCallback(
+    (val) => {
+      const getWidthFromValue = (val) => {
+        if (val <= min || min === max) {
+          return 0
+        }
+        if (val >= max) {
+          return 100
+        }
+        return (val / (max - min)) * 100
       }
-      if (val >= max) {
-        return 100
-      }
-      return (val / (max - min)) * 100
-    }
-    return `${getWidthFromValue(val)}%`
-  }, [min, max])
+      return `${getWidthFromValue(val)}%`
+    },
+    [min, max]
+  )
 
   const ratingVal = props.rating
   const initialRatingCache = {
@@ -89,46 +95,53 @@ const StarRating = (props) => {
 
   const getDecimalPlaces = React.useCallback((num) => {
     const match = `${num}`.match(/(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/)
-    return !match
-      ? 0
-      : Math.max(0, (match[1] ? match[1].length : 0) - (match[2] ? +match[2] : 0))
+    return !match ? 0 : Math.max(0, (match[1] ? match[1].length : 0) - (match[2] ? +match[2] : 0))
   }, [])
 
-  const getWidthFromValue = React.useCallback((val) => {
-    if (val <= min || min === max) {
-      return 0
-    }
-    if (val >= max) {
-      return 100
-    }
-    return (val / (max - min)) * 100
-  }, [min, max])
+  const getWidthFromValue = React.useCallback(
+    (val) => {
+      if (val <= min || min === max) {
+        return 0
+      }
+      if (val >= max) {
+        return 100
+      }
+      return (val / (max - min)) * 100
+    },
+    [min, max]
+  )
 
-  const getValueFromPosition = React.useCallback((pos) => {
-    const precision = getDecimalPlaces(props.step)
-    const maxWidth = ratingContainer.current.offsetWidth
-    const diff = max - min
-    let factor = (diff * pos) / (maxWidth * props.step)
-    factor = Math.ceil(factor)
-    let val = applyPrecision(
-      parseFloat(min + factor * props.step),
-      precision
-    )
-    val = Math.max(Math.min(val, max), min)
-    return val
-  }, [props.step, max, min, getDecimalPlaces, applyPrecision])
+  const getValueFromPosition = React.useCallback(
+    (pos) => {
+      const precision = getDecimalPlaces(props.step)
+      const maxWidth = ratingContainer.current.offsetWidth
+      const diff = max - min
+      let factor = (diff * pos) / (maxWidth * props.step)
+      factor = Math.ceil(factor)
+      let val = applyPrecision(parseFloat(min + factor * props.step), precision)
+      val = Math.max(Math.min(val, max), min)
+      return val
+    },
+    [props.step, max, min, getDecimalPlaces, applyPrecision]
+  )
 
-  const calculate = React.useCallback((pos) => {
-    const val = getValueFromPosition(pos)
-    let width = getWidthFromValue(val)
-    width += '%'
-    return { width, val }
-  }, [getValueFromPosition, getWidthFromValue])
+  const calculate = React.useCallback(
+    (pos) => {
+      const val = getValueFromPosition(pos)
+      let width = getWidthFromValue(val)
+      width += '%'
+      return { width, val }
+    },
+    [getValueFromPosition, getWidthFromValue]
+  )
 
-  const getRatingEvent = React.useCallback((e) => {
-    const pos = getPosition(e)
-    return calculate(pos)
-  }, [getPosition, calculate])
+  const getRatingEvent = React.useCallback(
+    (e) => {
+      const pos = getPosition(e)
+      return calculate(pos)
+    },
+    [getPosition, calculate]
+  )
 
   const updateRating = React.useCallback((width, val) => {
     setPos(width)
@@ -140,29 +153,35 @@ const StarRating = (props) => {
     setRating(ratingCache.rating)
   }, [ratingCache])
 
-  const handleMouseMove = React.useCallback((e) => {
-    const ratingEvent = getRatingEvent(e)
-    updateRating(ratingEvent.width, ratingEvent.val)
-  }, [getRatingEvent, updateRating])
+  const handleMouseMove = React.useCallback(
+    (e) => {
+      const ratingEvent = getRatingEvent(e)
+      updateRating(ratingEvent.width, ratingEvent.val)
+    },
+    [getRatingEvent, updateRating]
+  )
 
-  const handleClick = React.useCallback((e) => {
-    if (props.disabled) {
-      e.stopPropagation()
-      e.preventDefault()
-      return false
-    }
+  const handleClick = React.useCallback(
+    (e) => {
+      if (props.disabled) {
+        e.stopPropagation()
+        e.preventDefault()
+        return false
+      }
 
-    const newRatingCache = {
-      pos,
-      rating,
-      caption: props.caption,
-      name: props.name,
-    }
+      const newRatingCache = {
+        pos,
+        rating,
+        caption: props.caption,
+        name: props.name,
+      }
 
-    setRatingCache(newRatingCache)
-    props.onRatingClick(e, newRatingCache)
-    return true
-  }, [props, pos, rating])
+      setRatingCache(newRatingCache)
+      props.onRatingClick(e, newRatingCache)
+      return true
+    },
+    [props, pos, rating]
+  )
 
   const classes = cx({
     'react-star-rating__root': true,
@@ -182,36 +201,20 @@ const StarRating = (props) => {
         onMouseLeave={handleMouseLeave}
         onClick={handleClick}
       >
-        <div
-          className="rating-stars"
-          data-content={glyph}
-          style={{ width: pos }}
-        ></div>
+        <div className="rating-stars" data-content={glyph} style={{ width: pos }}></div>
       </div>
     )
   } else {
     starRating = (
-      <div
-        ref={node}
-        className="rating-container rating-gly-star"
-        data-content={glyph}
-      >
-        <div
-          className="rating-stars"
-          data-content={glyph}
-          style={{ width: pos }}
-        ></div>
+      <div ref={node} className="rating-container rating-gly-star" data-content={glyph}>
+        <div className="rating-stars" data-content={glyph} style={{ width: pos }}></div>
       </div>
     )
   }
 
   return (
     <span className="react-star-rating">
-      <span
-        ref={rootNode}
-        style={{ cursor: 'pointer' }}
-        className={classes}
-      >
+      <span ref={rootNode} style={{ cursor: 'pointer' }} className={classes}>
         {starRating}
         <input
           type="hidden"

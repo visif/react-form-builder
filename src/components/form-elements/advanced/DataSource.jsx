@@ -1,4 +1,5 @@
 import React from 'react'
+
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
 
@@ -20,12 +21,7 @@ const DataSource = (props) => {
 
   const notifyParentOfInitialization = React.useCallback(() => {
     // Only notify parent once the component is fully initialized and not during sync operations
-    if (
-      props.data.parentId &&
-      props.onElementChange &&
-      !loading &&
-      !syncInProgress.current
-    ) {
+    if (props.data.parentId && props.onElementChange && !loading && !syncInProgress.current) {
       props.onElementChange({
         ...props.data,
         element: 'DataSource',
@@ -118,8 +114,7 @@ const DataSource = (props) => {
       }
     } else if (
       props.defaultValue &&
-      JSON.stringify(props.defaultValue.selectedItem) !==
-        JSON.stringify(defaultSelectedItem)
+      JSON.stringify(props.defaultValue.selectedItem) !== JSON.stringify(defaultSelectedItem)
     ) {
       const newDefaultValue = props.defaultValue || {}
       setSearchText(newDefaultValue.value)
@@ -196,7 +191,8 @@ const DataSource = (props) => {
   const savedEditor = props.editor
   let isSameEditor = true
   if (savedEditor && savedEditor.userId && !!userProperties) {
-    isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
+    isSameEditor =
+      userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
   const inputProps = {

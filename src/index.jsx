@@ -53,31 +53,37 @@
  * @requires react-dnd v16+ for drag-and-drop functionality
  */
 import React from 'react'
+
 import PropTypes from 'prop-types'
+
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
-import ReactFormGenerator from './components/generator/ReactForm'
+
 import Preview from './components/builder/Preview/Preview'
-import Registry from './utils/registry'
+import Toolbar from './components/builder/Toolbar/Toolbar'
+import ReactFormGenerator from './components/generator/ReactForm'
 import store from './contexts/FormBuilderContext'
 import { FormBuilderProvider, useFormBuilderStore } from './contexts/FormBuilderContext'
-import Toolbar from './components/builder/Toolbar/Toolbar'
+import Registry from './utils/registry'
 
 const ReactFormBuilder = (props) => {
   const [editMode, setEditMode] = React.useState(false)
   const [editElement, setEditElement] = React.useState(null)
 
-  const editModeOn = React.useCallback((data, e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (editMode) {
-      setEditMode(false)
-      setEditElement(null)
-    } else {
-      setEditMode(true)
-      setEditElement(data)
-    }
-  }, [editMode])
+  const editModeOn = React.useCallback(
+    (data, e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      if (editMode) {
+        setEditMode(false)
+        setEditElement(null)
+      } else {
+        setEditMode(true)
+        setEditElement(data)
+      }
+    },
+    [editMode]
+  )
 
   const manualEditModeOff = React.useCallback(() => {
     if (editMode) {
@@ -194,4 +200,11 @@ FormBuilders.Registry = Registry
 
 export default FormBuilders
 
-export { ReactFormBuilder, ReactFormGenerator, store as ElementStore, Registry, FormBuilderProvider, useFormBuilderStore }
+export {
+  ReactFormBuilder,
+  ReactFormGenerator,
+  store as ElementStore,
+  Registry,
+  FormBuilderProvider,
+  useFormBuilderStore,
+}

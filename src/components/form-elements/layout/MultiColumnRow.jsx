@@ -1,10 +1,11 @@
 /* eslint-disable camelcase */
 import React from 'react'
+
+import ItemTypes from '../../../constants/itemTypes'
+import useSyncColumnChanges from '../../../hooks/useSyncColumnChanges'
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
-import ItemTypes from '../../../constants/itemTypes'
 import Dustbin from './dustbin'
-import useSyncColumnChanges from '../../../hooks/useSyncColumnChanges'
 
 const accepts = [ItemTypes.BOX, ItemTypes.CARD]
 
@@ -31,25 +32,30 @@ const MultiColumnRow = (props) => {
   const syncColumnChanges = useSyncColumnChanges(childItems, getDataById, updateElement)
 
   // Calculate column widths once for the entire component
-  const columnWidths = data.columns ? (() => {
-    const totalWidth = data.columns.reduce((sum, col) => {
-      const width = Number(col.width) || 1
-      return sum + width
-    }, 0)
-    const widths = data.columns.map(column => {
-      const width = Number(column.width) || 1
-      return (width / totalWidth) * 100
-    })
+  const columnWidths = data.columns
+    ? (() => {
+        const totalWidth = data.columns.reduce((sum, col) => {
+          const width = Number(col.width) || 1
+          return sum + width
+        }, 0)
+        const widths = data.columns.map((column) => {
+          const width = Number(column.width) || 1
+          return (width / totalWidth) * 100
+        })
 
-    return widths
-  })() : []
+        return widths
+      })()
+    : []
 
   return (
     <div className={baseClasses}>
       <ComponentHeader {...props} />
       <div>
         <ComponentLabel {...props} />
-        <table className="table table-bordered" style={{ borderCollapse: 'collapse', tableLayout: 'fixed', width: '100%' }}>
+        <table
+          className="table table-bordered"
+          style={{ borderCollapse: 'collapse', tableLayout: 'fixed', width: '100%' }}
+        >
           {data.columns && (
             <thead>
               <tr>
@@ -112,7 +118,11 @@ const MultiColumnRow = (props) => {
                   // Get column width with proper fallback handling
                   let columnWidth = 100 / row.length // Default: equal distribution
 
-                  if (data.columns && columnWidths.length > 0 && columnIndex < columnWidths.length) {
+                  if (
+                    data.columns &&
+                    columnWidths.length > 0 &&
+                    columnIndex < columnWidths.length
+                  ) {
                     const calculatedWidth = columnWidths[columnIndex]
                     if (!Number.isNaN(calculatedWidth) && calculatedWidth > 0) {
                       columnWidth = calculatedWidth
@@ -179,7 +189,8 @@ const MultiColumnRow = (props) => {
  * - Applies the provided `class_name` or falls back to `defaultClassName`.
  */
 const createColumnRow =
-  (defaultClassName, numberOfColumns, numberOfRows = 1) => ({ data = {}, class_name, ...rest }) => {
+  (defaultClassName, numberOfColumns, numberOfRows = 1) =>
+  ({ data = {}, class_name, ...rest }) => {
     const className = `${class_name || defaultClassName} mb-2`
     const rows = data.rows || numberOfRows
 
@@ -201,7 +212,8 @@ const createColumnRow =
  * Uses the same pattern as createColumnRow for consistency.
  */
 const createDynamicColumnRow =
-  () => ({ data = {}, class_name, ...rest }) => {
+  () =>
+  ({ data = {}, class_name, ...rest }) => {
     const rows = Number(data.rows) || 1
     const columns = data.columns?.length || 2
     const defaultClassName = `col-md-${Math.floor(12 / columns)}`

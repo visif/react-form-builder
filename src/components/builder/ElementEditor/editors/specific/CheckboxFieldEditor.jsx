@@ -9,7 +9,7 @@ const CheckboxFieldEditor = ({
   label,
   checked,
   onChange,
-  className = 'custom-control custom-checkbox'
+  className = 'custom-control custom-checkbox',
 }) => {
   return (
     <div className={className}>

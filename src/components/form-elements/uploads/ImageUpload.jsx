@@ -1,4 +1,5 @@
 import React from 'react'
+
 // TODO: Replace react-image-lightbox with React 18 compatible alternative
 // import Lightbox from 'react-image-lightbox'
 // import 'react-image-lightbox/style.css'
@@ -22,10 +23,7 @@ const ImageUpload = (props) => {
   React.useEffect(() => {
     console.log('ImageUpload >> useEffect (prop sync)')
     console.log(props.defaultValue)
-    if (
-      props.defaultValue &&
-      JSON.stringify(props.defaultValue) !== JSON.stringify(defaultValue)
-    ) {
+    if (props.defaultValue && JSON.stringify(props.defaultValue) !== JSON.stringify(defaultValue)) {
       const newFilePath = props.defaultValue && props.defaultValue.filePath
       const newFileName = props.defaultValue && props.defaultValue.fileName
       const newBlobUrl = props.defaultValue && props.defaultValue.blobUrl
@@ -47,49 +45,45 @@ const ImageUpload = (props) => {
     setBlobUrl('')
   }, [])
 
-  const uploadImageFile = React.useCallback(async (event) => {
-    event.persist()
+  const uploadImageFile = React.useCallback(
+    async (event) => {
+      event.persist()
 
-    if (!event || !event.target || !event.target.files) {
-      return
-    }
+      if (!event || !event.target || !event.target.files) {
+        return
+      }
 
-    const file = Array.from(event.target.files)[0]
+      const file = Array.from(event.target.files)[0]
 
-    if (typeof props.onUploadImage !== 'function') {
-      console.log(
-        'onUploadImage >>>>> no upload function found',
-        props.onUploadImage
-      )
-      return
-    }
+      if (typeof props.onUploadImage !== 'function') {
+        console.log('onUploadImage >>>>> no upload function found', props.onUploadImage)
+        return
+      }
 
-    console.log('Uploading image .....')
-    const extension = `${file.name}`.substring(file.name.lastIndexOf('.'))
-    const uploadedPath = await props.onUploadImage(file)
+      console.log('Uploading image .....')
+      const extension = `${file.name}`.substring(file.name.lastIndexOf('.'))
+      const uploadedPath = await props.onUploadImage(file)
 
-    const newBlobUrl = URL.createObjectURL(file)
+      const newBlobUrl = URL.createObjectURL(file)
 
-    setFileName(file.name)
-    setBlobUrl(newBlobUrl)
-    setFilePath(`${uploadedPath}${extension}`)
-  }, [props.onUploadImage])
+      setFileName(file.name)
+      setBlobUrl(newBlobUrl)
+      setFilePath(`${uploadedPath}${extension}`)
+    },
+    [props.onUploadImage]
+  )
 
-  const userProperties =
-    props.getActiveUserProperties && props.getActiveUserProperties()
+  const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()
 
   const savedEditor = props.editor
   let isSameEditor = true
   if (savedEditor && savedEditor.userId && !!userProperties) {
-    isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
+    isSameEditor =
+      userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
   return (
-    <div
-      className={`SortableItem rfb-item${
-        props.data.pageBreakBefore ? ' alwaysbreak' : ''
-      }`}
-    >
+    <div className={`SortableItem rfb-item${props.data.pageBreakBefore ? ' alwaysbreak' : ''}`}>
       <ComponentHeader {...props} />
       <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
         <div style={{ position: 'relative' }}>
@@ -110,11 +104,7 @@ const ImageUpload = (props) => {
             onClick={() => {
               setIsOpen(true)
             }}
-            src={
-              blobUrl || filePath
-                ? blobUrl || filePath
-                : ''
-            }
+            src={blobUrl || filePath ? blobUrl || filePath : ''}
           />
         </div>
         <div>

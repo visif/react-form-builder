@@ -1,43 +1,38 @@
 // Display Components
-import Header from './display/Header'
-import HeaderBar from './display/HeaderBar'
-import Paragraph from './display/Paragraph'
-import Label from './display/Label'
-import LineBreak from './display/LineBreak'
-import Image from './display/Image'
-import HyperLink from './display/HyperLink'
-import Download from './display/Download'
-import Section from './display/Section'
-
-// Basic Input Components
-import TextInput from './inputs/TextInput'
-import NumberInput from './inputs/NumberInput'
-import TextArea from './inputs/TextArea'
-import Dropdown from './inputs/Dropdown'
-import Range from './inputs/Range'
-import DatePicker from './inputs/DatePicker'
-import Table from './inputs/Table'
-
-// Selection Components
-import Checkboxes from './inputs/Checkboxes'
-import RadioButtons from './inputs/RadioButtons'
-import Tags from './inputs/Tags'
-
+import DataSource from './advanced/DataSource'
+import FormLink from './advanced/FormLink'
+import Rating from './advanced/Rating'
 // Advanced Components
 import Signature from './advanced/Signature'
 import Signature2 from './advanced/Signature2'
-import Rating from './advanced/Rating'
 import StarRating from './advanced/StarRating'
-import DataSource from './advanced/DataSource'
-import FormLink from './advanced/FormLink'
-
+import Download from './display/Download'
+import Header from './display/Header'
+import HeaderBar from './display/HeaderBar'
+import HyperLink from './display/HyperLink'
+import Image from './display/Image'
+import Label from './display/Label'
+import LineBreak from './display/LineBreak'
+import Paragraph from './display/Paragraph'
+import Section from './display/Section'
+// Selection Components
+import Checkboxes from './inputs/Checkboxes'
+import DatePicker from './inputs/DatePicker'
+import Dropdown from './inputs/Dropdown'
+// Formula Component
+import FormulaInput from './inputs/FormulaInput'
+import NumberInput from './inputs/NumberInput'
+import RadioButtons from './inputs/RadioButtons'
+import Range from './inputs/Range'
+import Table from './inputs/Table'
+import Tags from './inputs/Tags'
+import TextArea from './inputs/TextArea'
+// Basic Input Components
+import TextInput from './inputs/TextInput'
 // Upload Components
 import Camera from './uploads/Camera'
 import FileUpload from './uploads/FileUpload'
 import ImageUpload from './uploads/ImageUpload'
-
-// Formula Component
-import FormulaInput from './inputs/FormulaInput'
 
 const FormElements = {}
 

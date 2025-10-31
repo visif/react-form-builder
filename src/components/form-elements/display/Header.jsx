@@ -1,6 +1,7 @@
 import React from 'react'
-import ComponentHeader from '../shared/ComponentHeader'
+
 import myxss from '../../../utils/xss'
+import ComponentHeader from '../shared/ComponentHeader'
 
 const Header = (props) => {
   let classNames = 'static'

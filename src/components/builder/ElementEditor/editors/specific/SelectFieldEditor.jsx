@@ -13,7 +13,7 @@ const SelectFieldEditor = ({
   onBlur,
   className = 'form-control',
   renderOption = null,
-  helpText = null
+  helpText = null,
 }) => {
   return (
     <div className="form-group">

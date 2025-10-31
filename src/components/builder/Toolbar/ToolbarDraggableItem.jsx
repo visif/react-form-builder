@@ -2,9 +2,11 @@
  * <ToolbarItem />
  */
 import React from 'react'
-import { useDrag } from 'react-dnd'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+
 import * as fa from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { useDrag } from 'react-dnd'
+
 import ItemTypes from '../../../constants/itemTypes'
 import ID from '../../../utils/uuid'
 

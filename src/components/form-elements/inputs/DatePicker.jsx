@@ -1,87 +1,95 @@
-import React from "react";
-import { DatePicker as AntDatePicker, TimePicker as AntTimePicker } from "antd";
-import dayjs from "dayjs";
-import ComponentHeader from "../shared/ComponentHeader";
-import ComponentLabel from "../shared/ComponentLabel";
-import utc from 'dayjs/plugin/utc';
-import buddhistEra from 'dayjs/plugin/buddhistEra';
+import React from 'react'
 
-dayjs.extend(utc);
-dayjs.extend(buddhistEra);
+import { DatePicker as AntDatePicker, TimePicker as AntTimePicker } from 'antd'
+import dayjs from 'dayjs'
+import buddhistEra from 'dayjs/plugin/buddhistEra'
+import utc from 'dayjs/plugin/utc'
 
-const keyDateFormat = "setting_date_format";
-const keyCalendarType = "setting_calendar_type";
+import ComponentHeader from '../shared/ComponentHeader'
+import ComponentLabel from '../shared/ComponentLabel'
+
+dayjs.extend(utc)
+dayjs.extend(buddhistEra)
+
+const keyDateFormat = 'setting_date_format'
+const keyCalendarType = 'setting_calendar_type'
 
 const dateFormatList = {
-  "dd MMMM yyyy": "DD MMMM YYYY",
-  "dd-MMM-yyyy": "DD-MMM-YYYY",
-  "dd-MMM-yy": "DD-MMM-YY",
-  "yyyy-MM-dd": "YYYY-MM-DD",
-  "MM/dd/yyyy": "MM/DD/YYYY",
-  "dd/MM/yyyy": "DD/MM/YYYY",
-  "dd/MM/yy": "DD/MM/YY",
-  "MMM dd, yyyy": "MMM DD, YYYY",
-};
+  'dd MMMM yyyy': 'DD MMMM YYYY',
+  'dd-MMM-yyyy': 'DD-MMM-YYYY',
+  'dd-MMM-yy': 'DD-MMM-YY',
+  'yyyy-MM-dd': 'YYYY-MM-DD',
+  'MM/dd/yyyy': 'MM/DD/YYYY',
+  'dd/MM/yyyy': 'DD/MM/YYYY',
+  'dd/MM/yy': 'DD/MM/YY',
+  'MMM dd, yyyy': 'MMM DD, YYYY',
+}
 
 const dateTimeFormatList = {
-  "dd MMMM yyyy": "DD MMMM YYYY HH:MM",
-  "dd-MMM-yyyy": "DD-MMM-YYYY HH:MM",
-  "dd-MMM-yy": "DD-MMM-YY HH:MM",
-  "yyyy-MM-dd": "YYYY-MM-DD HH:MM",
-  "MM/dd/yyyy": "MM/DD/YYYY HH:MM",
-  "dd/MM/yyyy": "DD/MM/YYYY HH:MM",
-  "dd/MM/yy": "DD/MM/YY HH:MM",
-  "MMM dd, yyyy": "MMM DD, YYYY HH:MM",
-};
+  'dd MMMM yyyy': 'DD MMMM YYYY HH:MM',
+  'dd-MMM-yyyy': 'DD-MMM-YYYY HH:MM',
+  'dd-MMM-yy': 'DD-MMM-YY HH:MM',
+  'yyyy-MM-dd': 'YYYY-MM-DD HH:MM',
+  'MM/dd/yyyy': 'MM/DD/YYYY HH:MM',
+  'dd/MM/yyyy': 'DD/MM/YYYY HH:MM',
+  'dd/MM/yy': 'DD/MM/YY HH:MM',
+  'MMM dd, yyyy': 'MMM DD, YYYY HH:MM',
+}
 
 export const getDateFormat = (showTimeSelect) => {
   const key = showTimeSelect
     ? dateTimeFormatList[localStorage.getItem(keyDateFormat)]
-    : dateFormatList[localStorage.getItem(keyDateFormat)];
-  return key || (showTimeSelect ? "DD MMMM YYYY HH:MM" : "DD MMMM YYYY");
-};
+    : dateFormatList[localStorage.getItem(keyDateFormat)]
+  return key || (showTimeSelect ? 'DD MMMM YYYY HH:MM' : 'DD MMMM YYYY')
+}
 
 export const getCalendarType = () => {
-  var key = localStorage.getItem(keyCalendarType);
-  return key || "EN";
-};
+  var key = localStorage.getItem(keyCalendarType)
+  return key || 'EN'
+}
 
 const DatePicker = (props) => {
   const inputField = React.useRef(null)
   const mounted = React.useRef(false)
 
-  const updateFormat = React.useCallback((oldFormatMask) => {
-    const formatMask = getDateFormat(props.data.showTimeSelect)
-    const updated = formatMask !== oldFormatMask
-    return { updated, formatMask }
-  }, [props.data.showTimeSelect])
+  const updateFormat = React.useCallback(
+    (oldFormatMask) => {
+      const formatMask = getDateFormat(props.data.showTimeSelect)
+      const updated = formatMask !== oldFormatMask
+      return { updated, formatMask }
+    },
+    [props.data.showTimeSelect]
+  )
 
-  const updateDateTime = React.useCallback((formatMask) => {
-    let value
-    const { defaultToday } = props.data
+  const updateDateTime = React.useCallback(
+    (formatMask) => {
+      let value
+      const { defaultToday } = props.data
 
-    if (defaultToday && !props.defaultValue) {
-      value = dayjs().toISOString()
-    } else if (props.defaultValue) {
-      try {
-        // Use formatMask for parsing if available
-        value = dayjs(props.defaultValue, formatMask).isValid()
-          ? dayjs(props.defaultValue, formatMask).toISOString()
-          : dayjs(props.defaultValue).utc(true).toISOString()
-      } catch (error) {
-        console.warn('Invalid date value:', props.defaultValue)
-        value = null
+      if (defaultToday && !props.defaultValue) {
+        value = dayjs().toISOString()
+      } else if (props.defaultValue) {
+        try {
+          // Use formatMask for parsing if available
+          value = dayjs(props.defaultValue, formatMask).isValid()
+            ? dayjs(props.defaultValue, formatMask).toISOString()
+            : dayjs(props.defaultValue).utc(true).toISOString()
+        } catch (error) {
+          console.warn('Invalid date value:', props.defaultValue)
+          value = null
+        }
       }
-    }
 
-    return {
-      value,
-      placeholder: formatMask.toLowerCase(),
-      defaultToday,
-      formatMask,
-      defaultValue: props.defaultValue,
-    }
-  }, [props.data, props.defaultValue])
+      return {
+        value,
+        placeholder: formatMask.toLowerCase(),
+        defaultToday,
+        formatMask,
+        defaultValue: props.defaultValue,
+      }
+    },
+    [props.data, props.defaultValue]
+  )
 
   const { formatMask: initialFormatMask } = updateFormat(null)
   const initialState = updateDateTime(initialFormatMask)
@@ -134,11 +142,14 @@ const DatePicker = (props) => {
     }
   }, [props.defaultValue, value, formatMask, updateFormat, updateDateTime])
 
-  const handleChange = React.useCallback((date) => {
-    const isoDate = date ? date.toISOString() : null
-    setValue(isoDate)
-    setPlaceholder(formatMask.toLowerCase())
-  }, [formatMask])
+  const handleChange = React.useCallback(
+    (date) => {
+      const isoDate = date ? date.toISOString() : null
+      setValue(isoDate)
+      setPlaceholder(formatMask.toLowerCase())
+    },
+    [formatMask]
+  )
 
   const handleTimeChange = React.useCallback((time) => {
     const isoTime = time ? time.toISOString() : null
@@ -163,7 +174,8 @@ const DatePicker = (props) => {
   const savedEditor = props.editor
   let isSameEditor = true
   if (savedEditor && savedEditor.userId && !!userProperties) {
-    isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
+    isSameEditor =
+      userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
   const inputProps = {
@@ -235,4 +247,3 @@ const DatePicker = (props) => {
 }
 
 export default DatePicker
-

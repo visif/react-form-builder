@@ -1,4 +1,5 @@
 import React from 'react'
+
 import CheckboxFieldEditor from './CheckboxFieldEditor'
 import WysiwygEditor from './WysiwygEditor'
 
@@ -14,12 +15,13 @@ const LabelEditor = ({
   onChange,
   onEditorStateChange,
   onBlur,
-  canHaveDisplayHorizontal = false
+  canHaveDisplayHorizontal = false,
 }) => {
   const checked_required = 'required' in element ? element.required : false
   const checked_inline = 'inline' in element ? element.inline : false
   const checked_show_time_select = 'showTimeSelect' in element ? element.showTimeSelect : false
-  const checked_show_time_select_only = 'showTimeSelectOnly' in element ? element.showTimeSelectOnly : false
+  const checked_show_time_select_only =
+    'showTimeSelectOnly' in element ? element.showTimeSelectOnly : false
 
   return (
     <div className="form-group">

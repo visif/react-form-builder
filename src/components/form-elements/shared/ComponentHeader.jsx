@@ -1,4 +1,5 @@
 import React from 'react'
+
 import HeaderBar from '../display/HeaderBar'
 
 const ComponentHeader = (props) => {

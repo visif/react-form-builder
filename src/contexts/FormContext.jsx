@@ -14,8 +14,7 @@
  * const { values, updateValue } = useFormContext()
  * updateValue('field_name', newValue)
  */
-
-import React, { createContext, useContext, useState, useCallback } from 'react'
+import React, { createContext, useCallback, useContext, useState } from 'react'
 
 const FormContext = createContext(null)
 
@@ -23,15 +22,18 @@ export const FormProvider = ({ children, initialValues = {} }) => {
   const [values, setValues] = useState(initialValues)
 
   const updateValue = useCallback((fieldName, value) => {
-    setValues(prev => ({
+    setValues((prev) => ({
       ...prev,
-      [fieldName]: value
+      [fieldName]: value,
     }))
   }, [])
 
-  const getValue = useCallback((fieldName) => {
-    return values[fieldName]
-  }, [values])
+  const getValue = useCallback(
+    (fieldName) => {
+      return values[fieldName]
+    },
+    [values]
+  )
 
   const getAllValues = useCallback(() => {
     return values
@@ -46,14 +48,10 @@ export const FormProvider = ({ children, initialValues = {} }) => {
     updateValue,
     getValue,
     getAllValues,
-    resetValues
+    resetValues,
   }
 
-  return (
-    <FormContext.Provider value={value}>
-      {children}
-    </FormContext.Provider>
-  )
+  return <FormContext.Provider value={value}>{children}</FormContext.Provider>
 }
 
 export const useFormContext = () => {

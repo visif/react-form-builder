@@ -1,4 +1,5 @@
 import React from 'react'
+
 import ComponentHeader from '../shared/ComponentHeader'
 
 const Image = (props) => {

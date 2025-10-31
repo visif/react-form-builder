@@ -1,18 +1,13 @@
 import React from 'react'
-import SelectFieldEditor from './SelectFieldEditor'
+
 import CheckboxFieldEditor from './CheckboxFieldEditor'
+import SelectFieldEditor from './SelectFieldEditor'
 
 /**
  * DataSource element editor
  * Handles sourceType selection and form field mapping
  */
-const DataSourceEditor = ({
-  element,
-  formDataSource,
-  activeForm,
-  onChange,
-  onBlur
-}) => {
+const DataSourceEditor = ({ element, formDataSource, activeForm, onChange, onBlur }) => {
   return (
     <div>
       {'sourceType' in element && (
@@ -24,7 +19,7 @@ const DataSourceEditor = ({
             { value: 'name', label: 'Name', key: 'name' },
             { value: 'department', label: 'Department', key: 'department' },
             { value: 'role', label: 'Role', key: 'role' },
-            { value: 'form', label: 'Form', key: 'form' }
+            { value: 'form', label: 'Form', key: 'form' },
           ]}
           onChange={(e) => onChange('sourceType', 'value', e)}
           onBlur={onBlur}
@@ -40,11 +35,11 @@ const DataSourceEditor = ({
               value={element.formSource}
               options={[
                 { value: -1, label: 'Please select', key: -1 },
-                ...(formDataSource || []).map(item => ({
+                ...(formDataSource || []).map((item) => ({
                   value: item.id,
                   label: item.name,
-                  key: item.id
-                }))
+                  key: item.id,
+                })),
               ]}
               onChange={(e) => onChange('formSource', 'value', e)}
               onBlur={onBlur}

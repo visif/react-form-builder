@@ -1,7 +1,8 @@
 import React from 'react'
-import StarRating from './StarRating'
+
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
+import StarRating from './StarRating'
 
 const Rating = (props) => {
   const inputField = React.useRef(null)
@@ -11,7 +12,8 @@ const Rating = (props) => {
   const savedEditor = props.editor
   let isSameEditor = true
   if (savedEditor && savedEditor.userId && !!userProperties) {
-    isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
+    isSameEditor =
+      userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
   const starProps = {}

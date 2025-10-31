@@ -1,16 +1,12 @@
 import React from 'react'
+
 import CheckboxFieldEditor from './CheckboxFieldEditor'
 
 /**
  * Image upload and configuration editor
  * Handles file upload, src URL, dimensions, and centering
  */
-const ImageEditor = ({
-  element,
-  onUploadFile,
-  onChange,
-  onBlur
-}) => {
+const ImageEditor = ({ element, onUploadFile, onChange, onBlur }) => {
   const checked_center = 'center' in element ? element.center : false
 
   return (

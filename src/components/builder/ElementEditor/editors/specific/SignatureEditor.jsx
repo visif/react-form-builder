@@ -1,16 +1,13 @@
 import React from 'react'
-import TextFieldEditor from './TextFieldEditor'
+
 import SelectFieldEditor from './SelectFieldEditor'
+import TextFieldEditor from './TextFieldEditor'
 
 /**
  * Signature element editor
  * Handles position, specificRole, and variableKey for signature fields
  */
-const SignatureEditor = ({
-  element,
-  onChange,
-  onBlur
-}) => {
+const SignatureEditor = ({ element, onChange, onBlur }) => {
   return (
     <div>
       {'position' in element && (
@@ -30,7 +27,7 @@ const SignatureEditor = ({
           value={element.specificRole}
           options={[
             { value: 'specific', label: 'Specific role only', key: 'specific' },
-            { value: 'notSpecific', label: 'Anyone can sign', key: 'notSpecific' }
+            { value: 'notSpecific', label: 'Anyone can sign', key: 'notSpecific' },
           ]}
           onChange={(e) => onChange('specificRole', 'value', e)}
           onBlur={onBlur}

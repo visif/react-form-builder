@@ -1,11 +1,13 @@
 /**
  * <DynamicColumnList />
  */
-import React, { useState, useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
+
 import PropTypes from 'prop-types'
+
+import ID from '../../../utils/uuid'
 // eslint-disable-next-line import/no-cycle
 import FormElementsEdit from './FormElementsEdit'
-import ID from '../../../utils/uuid'
 
 const DynamicColumnList = ({ element: propsElement, preview = null, updateElement }) => {
   const [element, setElement] = useState(propsElement)

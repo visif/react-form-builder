@@ -1,8 +1,10 @@
 /**
  * <DynamicOptionList />
  */
-import React, { useState, useRef, useEffect, useCallback } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+
 import PropTypes from 'prop-types'
+
 import ID from '../../../utils/uuid'
 
 const DynamicOptionList = ({
@@ -340,9 +342,7 @@ const DynamicOptionList = ({
                       className="form-control"
                       type="checkbox"
                       value="1"
-                      checked={
-                        Object.prototype.hasOwnProperty.call(option, 'info') && option.info
-                      }
+                      checked={Object.prototype.hasOwnProperty.call(option, 'info') && option.info}
                       onChange={() => handleOptionInfo(index)}
                     />
                   </div>
@@ -354,8 +354,7 @@ const DynamicOptionList = ({
                       type="checkbox"
                       value="1"
                       checked={
-                        Object.prototype.hasOwnProperty.call(option, 'correct') &&
-                        option.correct
+                        Object.prototype.hasOwnProperty.call(option, 'correct') && option.correct
                       }
                       onChange={() => handleOptionCorrect(index)}
                     />

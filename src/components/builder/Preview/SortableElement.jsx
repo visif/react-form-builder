@@ -1,6 +1,9 @@
 import React, { useRef } from 'react'
-import { useDrag, useDrop } from 'react-dnd'
+
 import PropTypes from 'prop-types'
+
+import { useDrag, useDrop } from 'react-dnd'
+
 import ItemTypes from '../../../constants/itemTypes'
 
 const cardStyle = {

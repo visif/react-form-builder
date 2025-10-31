@@ -1,15 +1,12 @@
 import React from 'react'
-import TextFieldEditor from './TextFieldEditor'
+
 import NumberFieldEditor from './NumberFieldEditor'
+import TextFieldEditor from './TextFieldEditor'
 
 /**
  * Range element editor with min/max values, labels, step, and default
  */
-const RangeEditor = ({
-  element,
-  onChange,
-  onBlur
-}) => {
+const RangeEditor = ({ element, onChange, onBlur }) => {
   return (
     <div>
       {'step' in element && (

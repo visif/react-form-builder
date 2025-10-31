@@ -1,4 +1,5 @@
 import React from 'react'
+
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
 
@@ -37,7 +38,8 @@ const RadioButtons = (props) => {
   const savedEditor = props.editor
   let isSameEditor = true
   if (savedEditor && savedEditor.userId && !!userProperties) {
-    isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
+    isSameEditor =
+      userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
   let classNames = 'custom-control custom-radio'
@@ -55,9 +57,7 @@ const RadioButtons = (props) => {
 
   // Create unique name for RadioButtons in multi-column layout
   const isInDynamicColumn =
-    props.data.parentId &&
-    props.data.row !== undefined &&
-    props.data.col !== undefined
+    props.data.parentId && props.data.row !== undefined && props.data.col !== undefined
 
   const uniqueName = isInDynamicColumn
     ? `${props.data.parentId}_row${props.data.row}_col${props.data.col}_${props.data.field_name}`

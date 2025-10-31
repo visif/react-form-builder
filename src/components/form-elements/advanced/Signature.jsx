@@ -1,5 +1,7 @@
 import React from 'react'
+
 import SignaturePad from 'react-signature-canvas'
+
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
 
@@ -67,7 +69,8 @@ const Signature = (props) => {
   const savedEditor = props.editor
   let isSameEditor = true
   if (savedEditor && savedEditor.userId && !!userProperties) {
-    isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
+    isSameEditor =
+      userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
   let canClear = !!defaultValue
@@ -113,11 +116,7 @@ const Signature = (props) => {
           <SignaturePad {...pad_props} />
         )}
         {canClear && (
-          <i
-            className="fas fa-times clear-signature"
-            onClick={clear}
-            title="Clear Signature"
-          />
+          <i className="fas fa-times clear-signature" onClick={clear} title="Clear Signature" />
         )}
         <input {...inputProps} />
       </div>

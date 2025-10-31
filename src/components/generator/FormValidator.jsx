@@ -2,7 +2,9 @@
  * <FormValidator />
  */
 import React from 'react'
+
 import PropTypes from 'prop-types'
+
 import xss from 'xss'
 
 const myxss = new xss.FilterXSS({
@@ -43,10 +45,7 @@ const FormValidator = (props) => {
   }, [])
 
   const errorItems = errors.map((error, index) => (
-    <li
-      key={`error_${index}`}
-      dangerouslySetInnerHTML={{ __html: myxss.process(error) }}
-    />
+    <li key={`error_${index}`} dangerouslySetInnerHTML={{ __html: myxss.process(error) }} />
   ))
 
   return (
@@ -58,10 +57,7 @@ const FormValidator = (props) => {
             <ul className="float-left">{errorItems}</ul>
           </div>
           <div className="clearfix">
-            <a
-              className="float-right btn btn-default btn-sm btn-danger"
-              onClick={dismissModal}
-            >
+            <a className="float-right btn btn-default btn-sm btn-danger" onClick={dismissModal}>
               Dismiss
             </a>
           </div>

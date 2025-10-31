@@ -1,5 +1,7 @@
 import React from 'react'
+
 import dayjs from 'dayjs'
+
 import { formatDate } from '../../../utils/dateUtil'
 import ComponentHeader from '../shared/ComponentHeader'
 
@@ -7,9 +9,7 @@ const Signature2 = (props) => {
   const inputField = React.useRef(null)
   const tableRef = React.useRef(null)
 
-  const [isSigned, setIsSigned] = React.useState(
-    props.defaultValue && props.defaultValue.isSigned
-  )
+  const [isSigned, setIsSigned] = React.useState(props.defaultValue && props.defaultValue.isSigned)
   const [signedPerson, setSignedPerson] = React.useState(
     props.defaultValue && props.defaultValue.signedPerson
   )
@@ -88,7 +88,8 @@ const Signature2 = (props) => {
   const savedEditor = props.editor
   let isSameEditor = true
   if (savedEditor && savedEditor.userId && !!userProperties) {
-    isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
+    isSameEditor =
+      userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
   const hasRequiredLabel =
@@ -119,9 +120,7 @@ const Signature2 = (props) => {
             Required
           </span>
         )}
-        <h5 style={{ textAlign: 'center' }}>
-          {isSigned ? 'Already signed' : '(Click to sign)'}
-        </h5>
+        <h5 style={{ textAlign: 'center' }}>{isSigned ? 'Already signed' : '(Click to sign)'}</h5>
         <div
           style={{
             textAlign: 'center',
@@ -132,13 +131,9 @@ const Signature2 = (props) => {
         >
           {isError ? 'You have no permission to sign' : '__________________'}
         </div>
-        <h6 style={{ textAlign: 'center', minHeight: 20 }}>
-          {isSigned && `(${signedPerson})`}
-        </h6>
+        <h6 style={{ textAlign: 'center', minHeight: 20 }}>{isSigned && `(${signedPerson})`}</h6>
         <h6 style={{ textAlign: 'center' }}>{props.data.position || 'Placeholder Text'}</h6>
-        {signedDateTime && (
-          <h6 style={{ textAlign: 'center' }}>{formatDate(signedDateTime)}</h6>
-        )}
+        {signedDateTime && <h6 style={{ textAlign: 'center' }}>{formatDate(signedDateTime)}</h6>}
       </div>
     </div>
   )

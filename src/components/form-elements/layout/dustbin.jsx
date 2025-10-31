@@ -1,9 +1,11 @@
 import React, { useImperativeHandle } from 'react'
+
 import { useDrop } from 'react-dnd'
-import FormElements from '../index.jsx'
-import CustomElement from '../shared/CustomElement'
+
 import ItemTypes from '../../../constants/itemTypes'
 import Registry from '../../../utils/registry'
+import FormElements from '../index.jsx'
+import CustomElement from '../shared/CustomElement'
 
 // Styles
 const dustbinStyles = (backgroundColor) => ({
@@ -38,14 +40,9 @@ const renderElement = (item, props) => {
 
   // Check if this is a syncable element type
   if (
-    [
-      'Checkboxes',
-      'RadioButtons',
-      'Dropdown',
-      'DataSource',
-      'Signature2',
-      'FormLink',
-    ].includes(item.element) &&
+    ['Checkboxes', 'RadioButtons', 'Dropdown', 'DataSource', 'Signature2', 'FormLink'].includes(
+      item.element
+    ) &&
     props.syncColumnChanges &&
     props.editModeOn
   ) {
@@ -88,7 +85,7 @@ const Dustbin = React.forwardRef(
       accepts,
       ...rest
     },
-    ref,
+    ref
   ) => {
     const item = getDataById(items[col])
 
@@ -99,9 +96,7 @@ const Dustbin = React.forwardRef(
           if (!isContainerItem(droppedItem)) {
             if (droppedItem.data && typeof setAsChild === 'function') {
               const isNew = !droppedItem.data.id
-              const data = isNew
-                ? droppedItem.onCreate(droppedItem.data)
-                : droppedItem.data
+              const data = isNew ? droppedItem.onCreate(droppedItem.data) : droppedItem.data
               setAsChild(rest.data, data, row, col)
             }
           }
@@ -112,7 +107,7 @@ const Dustbin = React.forwardRef(
           canDrop: monitor.canDrop(),
         }),
       }),
-      [accepts, setAsChild, col, row, rest.data],
+      [accepts, setAsChild, col, row, rest.data]
     )
 
     // Handle drop operations (legacy interface)
@@ -127,12 +122,11 @@ const Dustbin = React.forwardRef(
           }
         },
       }),
-      [setAsChild, col, row, rest.data],
+      [setAsChild, col, row, rest.data]
     )
 
     // Determine background color based on drag state
-    const backgroundColor =
-      isOverCurrent || (isOver && greedy) ? 'darkgreen' : 'rgba(0, 0, 0, .03)'
+    const backgroundColor = isOverCurrent || (isOver && greedy) ? 'darkgreen' : 'rgba(0, 0, 0, .03)'
 
     const element = renderElement(item, {
       ...rest,
@@ -147,7 +141,7 @@ const Dustbin = React.forwardRef(
         {element}
       </div>
     )
-  },
+  }
 )
 
 export default Dustbin

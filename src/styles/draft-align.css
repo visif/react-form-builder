@@ -1,12 +1,31 @@
-.draft-align-center { text-align: center; }
-.draft-align-right { text-align: right; }
-.draft-align-left { text-align: left; }
-.draft-align-justify { text-align: justify; }
+.draft-align-center {
+  text-align: center;
+}
+.draft-align-right {
+  text-align: right;
+}
+.draft-align-left {
+  text-align: left;
+}
+.draft-align-justify {
+  text-align: justify;
+}
 .draft-align-center ul,
-.draft-align-center ol { text-align: center; }
+.draft-align-center ol {
+  text-align: center;
+}
 
 .rainbow-color-picker .rdw-colorpicker-wrapper button {
-  background: linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3) !important;
+  background: linear-gradient(
+    45deg,
+    #ff0000,
+    #ff7f00,
+    #ffff00,
+    #00ff00,
+    #0000ff,
+    #4b0082,
+    #9400d3
+  ) !important;
   border: none; /* Optional: Remove default border for cleaner look */
   color: white; /* Optional: Ensure any text is visible, though unlikely */
   width: 32px; /* Optional: Set a fixed size for consistency */
@@ -21,7 +40,16 @@
 
 /* Force the color picker button to show rainbow background and hide the icon */
 .rainbow-color-picker button {
-  background: linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3) !important;
+  background: linear-gradient(
+    45deg,
+    #ff0000,
+    #ff7f00,
+    #ffff00,
+    #00ff00,
+    #0000ff,
+    #4b0082,
+    #9400d3
+  ) !important;
   border: none !important;
   padding: 0 !important;
   width: 32px !important;

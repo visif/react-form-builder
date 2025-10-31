@@ -1,5 +1,7 @@
 import React from 'react'
+
 import { Slider } from 'antd'
+
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
 
@@ -43,9 +45,7 @@ const Range = (props) => {
 
   const oneBig = 100 / (datalist.length - 1)
 
-  const _datalist = datalist.map((d, idx) => (
-    <option key={`${rangeProps.list}_${idx}`}>{d}</option>
-  ))
+  const _datalist = datalist.map((d, idx) => <option key={`${rangeProps.list}_${idx}`}>{d}</option>)
 
   const visible_marks = datalist.map((d, idx) => {
     const option_props = {}

@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useReducer, useCallback, useRef } from 'react'
+import React, { createContext, useCallback, useContext, useReducer, useRef } from 'react'
+
 import { get, post } from '../utils/requests'
 
 // Create context
@@ -85,28 +86,25 @@ export function FormBuilderProvider({ children }) {
       [saveData]
     ),
 
-    load: useCallback(
-      ({ loadUrl, saveUrl, data = [], action }) => {
-        saveUrlRef.current = saveUrl
+    load: useCallback(({ loadUrl, saveUrl, data = [], action }) => {
+      saveUrlRef.current = saveUrl
 
-        if (onLoadRef.current) {
-          onLoadRef.current().then((loadedData) => {
-            dispatch({ type: SET_DATA, payload: { data: loadedData, action } })
-          })
-        } else if (loadUrl) {
-          get(loadUrl).then((loadedData) => {
-            const finalData = [...loadedData]
-            if (data && data.length > 0 && loadedData.length === 0) {
-              data.forEach((item) => finalData.push(item))
-            }
-            dispatch({ type: SET_DATA, payload: { data: finalData, action } })
-          })
-        } else {
-          dispatch({ type: SET_DATA, payload: { data, action } })
-        }
-      },
-      []
-    ),
+      if (onLoadRef.current) {
+        onLoadRef.current().then((loadedData) => {
+          dispatch({ type: SET_DATA, payload: { data: loadedData, action } })
+        })
+      } else if (loadUrl) {
+        get(loadUrl).then((loadedData) => {
+          const finalData = [...loadedData]
+          if (data && data.length > 0 && loadedData.length === 0) {
+            data.forEach((item) => finalData.push(item))
+          }
+          dispatch({ type: SET_DATA, payload: { data: finalData, action } })
+        })
+      } else {
+        dispatch({ type: SET_DATA, payload: { data, action } })
+      }
+    }, []),
 
     update: useCallback(({ data, action }) => {
       dispatch({ type: SET_DATA, payload: { data, action } })

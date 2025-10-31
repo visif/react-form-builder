@@ -2,7 +2,9 @@
  * <HeaderBar />
  */
 import React from 'react'
+
 import PropTypes from 'prop-types'
+
 import Grip from '../layout/Grip'
 
 const HeaderBar = (props) => {
@@ -18,10 +20,7 @@ const HeaderBar = (props) => {
             <i className="is-isolated fas fa-edit"></i>
           </div>
         )}
-        <div
-          className="btn is-isolated"
-          onClick={props.onDestroy?.bind(null, props.data)}
-        >
+        <div className="btn is-isolated" onClick={props.onDestroy?.bind(null, props.data)}>
           <i className="is-isolated fas fa-trash"></i>
         </div>
         {!props.data.isContainer && (

@@ -1,5 +1,7 @@
 import React from 'react'
+
 import PropTypes from 'prop-types'
+
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
 
@@ -65,7 +67,16 @@ const Table = (props) => {
         )
       )
     }
-  }, [props.data.rows, props.data.columns, props.data.rowLabels, rows, columns, rowLabels, rowsAdded, inputs])
+  }, [
+    props.data.rows,
+    props.data.columns,
+    props.data.rowLabels,
+    rows,
+    columns,
+    rowLabels,
+    rowsAdded,
+    inputs,
+  ])
 
   React.useEffect(() => {
     console.log('Table useEffect - defaultValue check')
@@ -94,27 +105,13 @@ const Table = (props) => {
   const addRow = React.useCallback(() => {
     const newRowsAdded = rowsAdded + 1
     setRowsAdded(newRowsAdded)
-    setInputs(
-      getInputValues(
-        inputs,
-        columns,
-        rows,
-        newRowsAdded
-      )
-    )
+    setInputs(getInputValues(inputs, columns, rows, newRowsAdded))
   }, [rowsAdded, inputs, columns, rows])
 
   const removeRow = React.useCallback(() => {
     const newRowsAdded = rowsAdded - 1
     setRowsAdded(newRowsAdded)
-    setInputs(
-      getInputValues(
-        inputs,
-        columns,
-        rows,
-        newRowsAdded
-      )
-    )
+    setInputs(getInputValues(inputs, columns, rows, newRowsAdded))
   }, [rowsAdded, inputs, columns, rows])
 
   const handleInputChange = React.useCallback((rowIndex, colIndex, value) => {
@@ -134,19 +131,17 @@ const Table = (props) => {
   }, [])
 
   const renderRows = React.useCallback(() => {
-    const userProperties =
-      props.getActiveUserProperties && props.getActiveUserProperties()
+    const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()
 
     const savedEditor = props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
+      isSameEditor =
+        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
     const isFixedRow = rowLabels?.length > 0
-    const activeRows = isFixedRow
-      ? rowLabels?.length
-      : rows + rowsAdded
+    const activeRows = isFixedRow ? rowLabels?.length : rows + rowsAdded
 
     return (
       <tbody>
@@ -163,9 +158,7 @@ const Table = (props) => {
                 )
               }
 
-              const value = inputs[i]
-                ? (inputs[i][jIndex] ?? '')
-                : ''
+              const value = inputs[i] ? (inputs[i][jIndex] ?? '') : ''
 
               return (
                 <td key={`cell-${i}-${jIndex}`}>
@@ -189,13 +182,13 @@ const Table = (props) => {
     )
   }, [props, rowLabels, rows, rowsAdded, inputs, handleInputChange])
 
-  const userProperties =
-    props.getActiveUserProperties && props.getActiveUserProperties()
+  const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()
 
   const savedEditor = props.editor
   let isSameEditor = true
   if (savedEditor && savedEditor.userId && !!userProperties) {
-    isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
+    isSameEditor =
+      userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
   let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
@@ -212,11 +205,7 @@ const Table = (props) => {
       <ComponentHeader {...props} />
       <div className="form-group">
         <ComponentLabel {...props} />
-        <table
-          className="table table-bordered"
-          ref={tableRef}
-          key={`table-${props.id}`}
-        >
+        <table className="table table-bordered" ref={tableRef} key={`table-${props.id}`}>
           <thead>
             <tr>
               {props.data?.columns?.map((col, colIndex) => {
@@ -269,10 +258,12 @@ Table.propTypes = {
   data: PropTypes.shape({
     rows: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     columns: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.array]),
-    rowLabels: PropTypes.arrayOf(PropTypes.shape({
-      text: PropTypes.string,
-      value: PropTypes.string,
-    })),
+    rowLabels: PropTypes.arrayOf(
+      PropTypes.shape({
+        text: PropTypes.string,
+        value: PropTypes.string,
+      })
+    ),
     required: PropTypes.bool,
     bold: PropTypes.bool,
     italic: PropTypes.bool,

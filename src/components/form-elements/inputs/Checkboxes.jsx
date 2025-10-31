@@ -1,4 +1,5 @@
 import React from 'react'
+
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
 
@@ -38,7 +39,8 @@ const Checkboxes = (props) => {
   const savedEditor = props.editor
   let isSameEditor = true
   if (savedEditor && savedEditor.userId && !!userProperties) {
-    isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
+    isSameEditor =
+      userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
   let classNames = 'custom-control custom-checkbox'
@@ -82,7 +84,7 @@ const Checkboxes = (props) => {
             finalChecked: inputProps.checked,
             mutable: props.mutable,
             disabled: inputProps.disabled,
-            value: value
+            value: value,
           })
 
           return (
@@ -117,10 +119,7 @@ const Checkboxes = (props) => {
 
                   // Build new value array - filter out this option, then add if selected
                   const newValue = newActiveVal
-                    ? [
-                        ...(value || []).filter((item) => item.key !== option.key),
-                        newActiveVal,
-                      ]
+                    ? [...(value || []).filter((item) => item.key !== option.key), newActiveVal]
                     : (value || []).filter((item) => item.key !== option.key)
 
                   console.log('New value:', newValue)

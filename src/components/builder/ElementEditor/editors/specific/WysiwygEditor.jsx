@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { Editor } from 'react-draft-wysiwyg'
 
 /**
@@ -12,7 +13,7 @@ const WysiwygEditor = ({
   onChange,
   onBlur,
   toolbar,
-  stripPastedStyles = false
+  stripPastedStyles = false,
 }) => {
   return (
     <div className="form-group">

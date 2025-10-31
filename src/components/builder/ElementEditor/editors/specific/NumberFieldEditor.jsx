@@ -15,7 +15,7 @@ const NumberFieldEditor = ({
   max = null,
   step = null,
   className = 'form-control',
-  helpText = null
+  helpText = null,
 }) => {
   return (
     <div className="form-group">

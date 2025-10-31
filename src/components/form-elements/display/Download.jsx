@@ -1,4 +1,5 @@
 import React from 'react'
+
 import ComponentHeader from '../shared/ComponentHeader'
 
 const Download = (props) => {
@@ -11,9 +12,7 @@ const Download = (props) => {
     <div className={baseClasses}>
       <ComponentHeader {...props} />
       <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
-        <a href={`${props.download_path}?id=${props.data.file_path}`}>
-          {props.data.content}
-        </a>
+        <a href={`${props.download_path}?id=${props.data.file_path}`}>{props.data.content}</a>
       </div>
     </div>
   )

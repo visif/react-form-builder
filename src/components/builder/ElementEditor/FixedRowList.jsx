@@ -1,8 +1,10 @@
 /**
  * <FixedRowList />
  */
-import React, { useState, useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
+
 import PropTypes from 'prop-types'
+
 import ID from '../../../utils/uuid'
 
 const FixedRowList = ({ element: propsElement, preview = null, updateElement }) => {
@@ -35,9 +37,7 @@ const FixedRowList = ({ element: propsElement, preview = null, updateElement }) 
         // If value is already custom (not auto-generated from text), keep it
         // Otherwise, set it to the new auto-generated value
         const val =
-          currentValue !== _setValue(currentKeyValue)
-            ? currentValue
-            : _setValue(targetValue)
+          currentValue !== _setValue(currentKeyValue) ? currentValue : _setValue(targetValue)
 
         // Update the properties
         newElement.rowLabels[index][key] = targetValue
@@ -80,9 +80,7 @@ const FixedRowList = ({ element: propsElement, preview = null, updateElement }) 
           newElement.childItems = []
         }
         if (!newElement.childItems[newRowIndex]) {
-          const columnsCount = newElement.childItems[0]
-            ? newElement.childItems[0].length
-            : 0
+          const columnsCount = newElement.childItems[0] ? newElement.childItems[0].length : 0
           newElement.childItems[newRowIndex] = Array(columnsCount).fill(null)
         }
 
@@ -106,11 +104,7 @@ const FixedRowList = ({ element: propsElement, preview = null, updateElement }) 
 
             // Look for existing elements in this column
             for (let row = 0; row < element.childItems.length; row++) {
-              if (
-                row !== newRowIndex &&
-                element.childItems[row] &&
-                element.childItems[row][col]
-              ) {
+              if (row !== newRowIndex && element.childItems[row] && element.childItems[row][col]) {
                 const elementId = element.childItems[row][col]
                 const foundElement = preview.getDataById(elementId)
 
@@ -169,12 +163,12 @@ const FixedRowList = ({ element: propsElement, preview = null, updateElement }) 
                 }
               } else if (templateElement.options) {
                 // Handle other elements with options
-                newElementData.options = JSON.parse(
-                  JSON.stringify(templateElement.options)
-                ).map((opt) => ({
-                  ...opt,
-                  key: `${timestamp}_${Math.random().toString(36).substring(2, 9)}`,
-                }))
+                newElementData.options = JSON.parse(JSON.stringify(templateElement.options)).map(
+                  (opt) => ({
+                    ...opt,
+                    key: `${timestamp}_${Math.random().toString(36).substring(2, 9)}`,
+                  })
+                )
               }
 
               // Add to our collection
@@ -324,10 +318,7 @@ const FixedRowList = ({ element: propsElement, preview = null, updateElement }) 
                     <button onClick={() => addRow(index)} className="btn btn-success">
                       <i className="fas fa-plus-circle" />
                     </button>
-                    <button
-                      onClick={() => removeRow(index)}
-                      className="btn btn-danger"
-                    >
+                    <button onClick={() => removeRow(index)} className="btn btn-danger">
                       <i className="fas fa-minus-circle" />
                     </button>
                   </div>
