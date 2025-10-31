@@ -67,6 +67,7 @@ import { Parser } from 'hot-formula-parser'
 import FormElements from '../form-elements/index'
 import CustomElement from '../form-elements/shared/CustomElement'
 import FormValidator from './FormValidator'
+import { FormProvider, useFormContext } from '../../contexts/FormContext'
 import {
   DynamicColumnRow,
   FourColumnRow,
@@ -110,6 +111,9 @@ const ReactForm = (props) => {
   const emitterRef = useRef(new EventEmitter())
   const variableSubscriptionRef = useRef(null)
 
+  // Get form context
+  const formContext = useFormContext()
+
   // State (replacing this.state)
   const [answerData, setAnswerData] = useState(() => convert(props.answer_data))
   const [variables, setVariables] = useState(() => {
@@ -119,6 +123,11 @@ const ReactForm = (props) => {
 
   // Helper function to extract formula variables from answer data
   function getVariableValueHelper(ansData, items) {
+    // Safety check: ensure items is an array
+    if (!Array.isArray(items)) {
+      return {}
+    }
+
     const formularItems = items.filter((item) => !!item.formularKey)
     const variables = {}
 
@@ -171,6 +180,14 @@ const ReactForm = (props) => {
     setAnswerData(ansData)
     setVariables(getVariableValueHelper(ansData, props.data))
   }, [props.answer_data, props.data])
+
+  // Handle input changes and emit variable change events
+  const handleChange = useCallback((propKey, value) => {
+    // Update the form context with the new value
+    formContext.updateValue(propKey, value)
+    // Also emit variable change event for formula updates
+    emitterRef.current.emit('variableChange', { propKey, value })
+  }, [formContext])
 
   // Variable change handler with cascading formula updates
   const handleVariableChange = useCallback((params) => {
@@ -387,7 +404,7 @@ const ReactForm = (props) => {
   const isInvalid = useCallback((item) => {
     let invalid = false
     if (item.required === true) {
-      const ref = this.inputs[item.field_name]
+      const ref = inputsRef.current[item.field_name]
       if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
         let checked_options = 0
         item.options.forEach((option) => {
@@ -401,7 +418,7 @@ const ReactForm = (props) => {
           invalid = true
         }
       } else {
-        const $item = this._getItemValue(item, ref)
+        const $item = getItemValue(item, ref)
         if (item.element === 'Rating') {
           if ($item.value === 0) {
             invalid = true
@@ -431,10 +448,30 @@ const ReactForm = (props) => {
       name: item.field_name,
       custom_name: item.custom_name || item.field_name,
     }
+
+    // Try to get value from context first
+    const contextValue = formContext.getValue(item.field_name)
     const ref = inputsRef.current[item.field_name]
-    const activeUser = props.getActiveUserProperties()
+
+    console.log(`Collecting ${item.field_name}:`, {
+      hasContextValue: contextValue !== undefined,
+      hasRef: !!ref,
+      element: item.element,
+      contextValue,
+      allRefs: Object.keys(inputsRef.current)
+    })
+
+    const activeUser = props.getActiveUserProperties ? props.getActiveUserProperties() : null
     const oldEditor = getEditor(item)
 
+    // If we have a context value, use it (this is the new path)
+    if (contextValue !== undefined) {
+      itemData.value = contextValue
+      itemData.editor = oldEditor ? oldEditor : contextValue ? activeUser : null
+      return itemData
+    }
+
+    // Otherwise fall back to ref-based collection (legacy path)
     if ((item.element === 'Checkboxes' || item.element === 'RadioButtons') && !!ref) {
       const checked_options = []
 
@@ -467,7 +504,7 @@ const ReactForm = (props) => {
         return null
       }
 
-      const valueItem = this._getItemValue(item, ref)
+      const valueItem = getItemValue(item, ref)
 
       itemData.value = valueItem.value
       itemData.editor = oldEditor ? oldEditor : valueItem.value ? activeUser : null
@@ -507,7 +544,7 @@ const ReactForm = (props) => {
     }
 
     return itemData
-  }, [props, getEditor, getItemValue])
+  }, [props, getEditor, getItemValue, formContext])
 
   // Collect all form data
   const collectFormData = useCallback((data) => {
@@ -598,12 +635,12 @@ const ReactForm = (props) => {
   // Form validation with section logic
   const validateForm = useCallback(() => {
     const errors = []
-    let data_items = this.props.data
+    let data_items = props.data
 
     // re-order items to avoid items inside
     let orderedItems = []
-    this.props.data.forEach((item) => {
-      const childItems = this.props.data.filter((child) => child.parentId === item.id)
+    props.data.forEach((item) => {
+      const childItems = props.data.filter((child) => child.parentId === item.id)
       if (childItems?.length > 0) {
         orderedItems = orderedItems.concat(childItems)
       } else if (!item.parentId) {
@@ -612,7 +649,7 @@ const ReactForm = (props) => {
     })
 
     // get all input items
-    const formItems = this._collectFormItems(orderedItems)
+    const formItems = collectFormItems(orderedItems)
     const sectionItems = formItems.filter((item) => item.element === 'Section')
 
     // Validate with special condition when there is any section
@@ -670,15 +707,15 @@ const ReactForm = (props) => {
       })
 
       const itemIds = activeItems.map((item) => item.id)
-      data_items = this.props.data.filter((item) => itemIds.includes(item.id))
+      data_items = props.data.filter((item) => itemIds.includes(item.id))
     }
 
     data_items.forEach((item) => {
       if (item.element === 'Signature') {
-        this._getSignatureImg(item)
+        getSignatureImg(item)
       }
 
-      if (this._isInvalid(item)) {
+      if (isInvalid(item)) {
         errors.push(`${item.label || item.position} is required!`)
       }
 
@@ -733,6 +770,7 @@ const ReactForm = (props) => {
       <Input
         handleChange={handleChange}
         ref={(c) => {
+          console.log(`Setting ref for ${item.field_name} (${item.element}):`, c)
           inputsRef.current[item.field_name] = c
         }}
         mutable={true}
@@ -797,15 +835,21 @@ const ReactForm = (props) => {
   // Render logic
   let data_items = props.data
 
-  if (props.display_short) {
+  if (props.display_short && Array.isArray(props.data)) {
     data_items = props.data.filter((i) => i.alternateForm === true)
   }
 
-  data_items?.forEach((item) => {
+  // Ensure data_items is always an array
+  if (!Array.isArray(data_items)) {
+    data_items = []
+  }
+
+  data_items.forEach((item) => {
     if (
       item &&
       item.readOnly &&
       item.variableKey &&
+      props.variables &&
       props.variables[item.variableKey]
     ) {
       answerData[item.field_name] = props.variables[item.variableKey]
@@ -813,7 +857,7 @@ const ReactForm = (props) => {
   })
 
   const items = data_items
-    ?.filter((x) => !x.parentId)
+    .filter((x) => !x.parentId)
     .map((item) => {
       if (!item) return null
       switch (item.element) {
@@ -1031,6 +1075,22 @@ const ReactForm = (props) => {
   )
 }
 
-ReactForm.defaultProps = { validateForCorrectness: false }
+ReactForm.defaultProps = {
+  validateForCorrectness: false,
+  data: [],
+  answer_data: {}
+}
 
-export default ReactForm
+// Wrapper component that provides FormContext
+const ReactFormWithContext = (props) => {
+  // Convert answer_data to initial values for context
+  const initialValues = props.answer_data || {}
+
+  return (
+    <FormProvider initialValues={initialValues}>
+      <ReactForm {...props} />
+    </FormProvider>
+  )
+}
+
+export default ReactFormWithContext

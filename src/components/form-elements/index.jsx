@@ -139,9 +139,12 @@ const TextInput = (props) => {
       setValue(newValue)
 
       const { data, handleChange: onFormularChange } = props
-      const { formularKey } = data
-      if (formularKey && onFormularChange) {
-        onFormularChange(formularKey, newValue)
+      const { formularKey, field_name } = data
+
+      // Always call handleChange to update the form context
+      if (onFormularChange) {
+        // Use formularKey if it exists, otherwise use field_name
+        onFormularChange(formularKey || field_name, newValue)
       }
 
       // If onElementChange is provided, call it to synchronize changes across the column
@@ -227,9 +230,12 @@ const NumberInput = (props) => {
       setValue(newValue)
 
       const { data, handleChange: onFormularChange } = props
-      const { formularKey } = data
-      if (formularKey && onFormularChange) {
-        onFormularChange(formularKey, newValue)
+      const { formularKey, field_name } = data
+
+      // Always call handleChange to update the form context
+      if (onFormularChange) {
+        // Use formularKey if it exists, otherwise use field_name
+        onFormularChange(formularKey || field_name, newValue)
       }
 
       // If onElementChange is provided, call it to synchronize changes across the column
@@ -306,9 +312,12 @@ const TextArea = (props) => {
       setValue(newValue)
 
       const { data, handleChange: onFormularChange } = props
-      const { formularKey } = data
-      if (formularKey && onFormularChange) {
-        onFormularChange(formularKey, newValue)
+      const { formularKey, field_name } = data
+
+      // Always call handleChange to update the form context
+      if (onFormularChange) {
+        // Use formularKey if it exists, otherwise use field_name
+        onFormularChange(formularKey || field_name, newValue)
       }
 
       // If onElementChange is provided, call it to synchronize changes across the column
@@ -389,9 +398,12 @@ const Dropdown = (props) => {
       setValue(constValue)
 
       const { data, handleChange: onFormularChange } = props
-      const { formularKey } = data
-      if (formularKey && onFormularChange) {
-        onFormularChange(formularKey, constValue)
+      const { formularKey, field_name } = data
+
+      // Always call handleChange to update the form context
+      if (onFormularChange) {
+        // Use formularKey if it exists, otherwise use field_name
+        onFormularChange(formularKey || field_name, constValue)
       }
 
       // If onElementChange is provided, call it to synchronize changes across the column
@@ -661,12 +673,28 @@ const Tags = (props) => {
 const Checkboxes = (props) => {
   const optionsRef = React.useRef({})
   const infosRef = React.useRef({})
-  const [value, setValue] = React.useState(props.defaultValue)
+  // Initialize with empty array if defaultValue is null/undefined
+  const [value, setValue] = React.useState(props.defaultValue || [])
 
-  // Update value when defaultValue prop changes
+  // Only update from defaultValue on initial mount or when explicitly changed externally
+  // Don't reset on every render as it breaks user interactions
+  const initialDefaultValue = React.useRef(props.defaultValue)
   React.useEffect(() => {
-    setValue(props.defaultValue)
-  }, [props.defaultValue])
+    // Deep comparison for arrays since defaultValue might be recreated on every render
+    const defaultValueJSON = JSON.stringify(props.defaultValue || [])
+    const currentValueJSON = JSON.stringify(value || [])
+    const initialValueJSON = JSON.stringify(initialDefaultValue.current || [])
+
+    // Only sync if defaultValue changed from initial AND is different from current value
+    const defaultChanged = defaultValueJSON !== initialValueJSON
+    const differentFromCurrent = defaultValueJSON !== currentValueJSON
+
+    if (defaultChanged && differentFromCurrent) {
+      console.log('RESETTING VALUE because defaultValue changed externally')
+      setValue(props.defaultValue || [])
+      initialDefaultValue.current = props.defaultValue
+    }
+  }, [props.defaultValue, value])
 
   const getActiveValue = React.useCallback(
     (values, key) => values?.find((item) => item.key === key),
@@ -680,16 +708,6 @@ const Checkboxes = (props) => {
   if (savedEditor && savedEditor.userId && !!userProperties) {
     isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
-
-  // Add debugging
-  console.log('Checkboxes Debug:', {
-    userProperties,
-    savedEditor,
-    isSameEditor,
-    hasDCCRole: userProperties?.hasDCCRole,
-    readOnly: props.read_only,
-    finalDisabled: props.read_only || !isSameEditor,
-  })
 
   let classNames = 'custom-control custom-checkbox'
   if (props.data.inline) {
@@ -726,6 +744,15 @@ const Checkboxes = (props) => {
             inputProps.disabled = 'disabled'
           }
 
+          console.log('Rendering checkbox:', option.key, {
+            answerItem,
+            isCheckedInOptions,
+            finalChecked: inputProps.checked,
+            mutable: props.mutable,
+            disabled: inputProps.disabled,
+            value: value
+          })
+
           return (
             <div
               className={classNames}
@@ -735,73 +762,86 @@ const Checkboxes = (props) => {
               <input
                 id={`fid_${this_key}`}
                 className="custom-control-input"
+                {...inputProps}
                 ref={(c) => {
                   if (c && props.mutable) {
                     optionsRef.current[`child_ref_${option.key}`] = c
                   }
                 }}
                 onChange={() => {
-                  setValue((current) => {
-                    const activeVal = getActiveValue(current, option.key)
-                    const newActiveVal = activeVal
-                      ? { ...activeVal, value: !activeVal.value }
-                      : {
-                          key: option.key,
-                          value: true,
-                          info: '',
-                        }
+                  console.log('Checkbox clicked!', option.key, 'Current value:', value)
+                  // Calculate the new value first
+                  const activeVal = getActiveValue(value, option.key)
 
-                    if (!current) {
-                      return current
-                    }
-
-                    const newValue = [
-                      ...(current || []).filter((item) => item.key !== option.key),
-                      newActiveVal,
-                    ]
-
-                    // If we're in a dynamic column and this is a UI-only change (selection)
-                    const isInDynamicColumn =
-                      props.data.parentId &&
-                      props.data.row !== undefined &&
-                      props.data.col !== undefined
-
-                    // Always update the local element state for immediate visual feedback
-                    if (props.updateElement) {
-                      const updatedData = {
-                        ...props.data,
-                        dirty: true,
-                        value: newValue,
+                  // Toggle: if currently selected, remove it; otherwise add with actual option value
+                  const isCurrentlySelected = activeVal?.value
+                  const newActiveVal = isCurrentlySelected
+                    ? null // Will be filtered out below
+                    : {
+                        key: option.key,
+                        value: option.value, // Use actual option value, not just true
+                        info: '',
                       }
 
-                      // Update the local options to show selection visually
-                      const localOptions = props.data.options.map((opt) => ({
-                        ...opt,
-                        checked:
-                          opt.key === option.key
-                            ? !activeVal?.value
-                            : getActiveValue(newValue, opt.key)?.value || false,
-                      }))
-                      updatedData.options = localOptions
+                  // Build new value array - filter out this option, then add if selected
+                  const newValue = newActiveVal
+                    ? [
+                        ...(value || []).filter((item) => item.key !== option.key),
+                        newActiveVal,
+                      ]
+                    : (value || []).filter((item) => item.key !== option.key)
 
-                      // Update just this element
-                      props.updateElement(updatedData)
+                  console.log('New value:', newValue)
+
+                  // Update local state
+                  setValue(newValue)
+
+                  // Call parent handleChange to update form context
+                  if (props.handleChange) {
+                    console.log('Calling handleChange with:', props.data.field_name, newValue)
+                    props.handleChange(props.data.field_name, newValue)
+                  } else {
+                    console.log('No handleChange prop!')
+                  }
+
+                  // If we're in a dynamic column and this is a UI-only change (selection)
+                  const isInDynamicColumn =
+                    props.data.parentId &&
+                    props.data.row !== undefined &&
+                    props.data.col !== undefined
+
+                  // Always update the local element state for immediate visual feedback
+                  if (props.updateElement) {
+                    const updatedData = {
+                      ...props.data,
+                      dirty: true,
+                      value: newValue,
                     }
 
-                    // If onElementChange is provided, but we avoid sending selection state
-                    if (props.onElementChange && isInDynamicColumn) {
-                      const updatedDataForSync = {
-                        ...props.data,
-                      }
+                    // Update the local options to show selection visually
+                    const localOptions = props.data.options.map((opt) => ({
+                      ...opt,
+                      checked:
+                        opt.key === option.key
+                          ? !activeVal?.value
+                          : getActiveValue(newValue, opt.key)?.value || false,
+                    }))
+                    updatedData.options = localOptions
 
-                      updatedDataForSync._selectionChangeOnly = true
-                      props.onElementChange(updatedDataForSync)
+                    // Update just this element
+                    props.updateElement(updatedData)
+                  }
+
+                  // If onElementChange is provided, but we avoid sending selection state
+                  if (props.onElementChange && isInDynamicColumn) {
+                    const updatedDataForSync = {
+                      ...props.data,
                     }
 
-                    return newValue
-                  })
+                    updatedDataForSync._selectionChangeOnly = true
+                    props.onElementChange(updatedDataForSync)
+                  }
                 }}
-                {...inputProps}
               />
               <label className="custom-control-label" htmlFor={`fid_${this_key}`}>
                 {option.text}
@@ -837,11 +877,25 @@ const Checkboxes = (props) => {
 const RadioButtons = (props) => {
   const optionsRef = React.useRef({})
   const infosRef = React.useRef({})
-  const [value, setValue] = React.useState(props.defaultValue)
+  // Initialize with empty array if defaultValue is null/undefined
+  const [value, setValue] = React.useState(props.defaultValue || [])
 
+  // Only update from defaultValue when it actually changes externally
+  // Don't reset on every render as it breaks user interactions
+  const initialDefaultValue = React.useRef(props.defaultValue)
   React.useEffect(() => {
-    if (JSON.stringify(props.defaultValue) !== JSON.stringify(value)) {
-      setValue(props.defaultValue)
+    // Deep comparison for arrays since defaultValue might be recreated on every render
+    const defaultValueJSON = JSON.stringify(props.defaultValue || [])
+    const currentValueJSON = JSON.stringify(value || [])
+    const initialValueJSON = JSON.stringify(initialDefaultValue.current || [])
+
+    // Only sync if defaultValue changed from initial AND is different from current value
+    const defaultChanged = defaultValueJSON !== initialValueJSON
+    const differentFromCurrent = defaultValueJSON !== currentValueJSON
+
+    if (defaultChanged && differentFromCurrent) {
+      setValue(props.defaultValue || [])
+      initialDefaultValue.current = props.defaultValue
     }
   }, [props.defaultValue, value])
 
@@ -857,16 +911,6 @@ const RadioButtons = (props) => {
   if (savedEditor && savedEditor.userId && !!userProperties) {
     isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
-
-  // Add debugging for RadioButtons
-  console.log('RadioButtons Debug:', {
-    userProperties,
-    savedEditor,
-    isSameEditor,
-    hasDCCRole: userProperties?.hasDCCRole,
-    readOnly: props.read_only,
-    finalDisabled: props.read_only || !isSameEditor,
-  })
 
   let classNames = 'custom-control custom-radio'
   if (props.data.inline) {
@@ -925,77 +969,78 @@ const RadioButtons = (props) => {
               <input
                 id={`fid_${this_key}`}
                 className="custom-control-input"
+                {...inputProps}
                 ref={(c) => {
                   if (c && props.mutable) {
                     optionsRef.current[`child_ref_${option.key}`] = c
                   }
                 }}
-                onClick={() => {
-                  // Remove the isSameEditor check here since it's already handled by the disabled prop
-                  setValue((current) => {
-                    if (formularKey && handleChange) {
-                      handleChange(formularKey, option.value)
+                onChange={() => {
+                  // Use onChange instead of onClick for proper radio button behavior
+                  // Check if this option is already selected
+                  const currentActiveValue = getActiveValue(value, option.key)
+                  const isCurrentlySelected = currentActiveValue?.value
+
+                  let newValue
+                  if (isCurrentlySelected) {
+                    // If already selected, deselect it (empty array)
+                    newValue = [] // Clear selection
+                  } else {
+                    // If not selected, select this option with actual option value
+                    newValue = [
+                      {
+                        key: option.key,
+                        value: option.value, // Use actual option value, not just true
+                        info: '',
+                      },
+                    ]
+                  }
+
+                  // Update local state
+                  setValue(newValue)
+
+                  // Always call handleChange to update form context
+                  if (handleChange) {
+                    handleChange(formularKey || props.data.field_name, newValue)
+                  }
+
+                  // Always update the local element state for immediate visual feedback
+                  if (props.updateElement) {
+                    // Apply the checked state to just this element's data
+                    const updatedData = {
+                      ...props.data,
+                      dirty: true,
+                      value: newValue,
                     }
 
-                    // Check if this option is already selected
-                    const currentActiveValue = getActiveValue(current, option.key)
-                    const isCurrentlySelected = currentActiveValue?.value === true
+                    // Update the local options to show selection visually
+                    // This only affects THIS element, not others in the column
+                    const localOptions = props.data.options.map((opt) => ({
+                      ...opt,
+                      checked: isCurrentlySelected ? false : opt.key === option.key,
+                      selected: isCurrentlySelected ? false : opt.key === option.key,
+                    }))
+                    updatedData.options = localOptions
 
-                    let newValue
-                    if (isCurrentlySelected) {
-                      // If already selected, deselect it (empty array)
-                      newValue = [] // Clear selection
-                    } else {
-                      // If not selected, select this option
-                      newValue = [
-                        {
-                          key: option.key,
-                          value: true,
-                          info: '',
-                        },
-                      ]
+                    // Update just this element
+                    props.updateElement(updatedData)
+                  }
+
+                  // If onElementChange is provided and we're in a dynamic column
+                  if (props.onElementChange && isInDynamicColumn) {
+                    // For selection changes in dynamic columns, we don't want to sync the selection state
+                    // but we still need to notify the system that a change happened for other purposes
+                    const updatedDataForSync = {
+                      ...props.data,
+                      // Deliberately NOT updating options or selection state
                     }
 
-                    // Always update the local element state for immediate visual feedback
-                    if (props.updateElement) {
-                      // Apply the checked state to just this element's data
-                      const updatedData = {
-                        ...props.data,
-                        dirty: true,
-                        value: newValue,
-                      }
+                    // Mark this as a selection-only change that shouldn't be synced
+                    updatedDataForSync._selectionChangeOnly = true
 
-                      // Update the local options to show selection visually
-                      // This only affects THIS element, not others in the column
-                      const localOptions = props.data.options.map((opt) => ({
-                        ...opt,
-                        checked: isCurrentlySelected ? false : opt.key === option.key,
-                        selected: isCurrentlySelected ? false : opt.key === option.key,
-                      }))
-                      updatedData.options = localOptions
-
-                      // Update just this element
-                      props.updateElement(updatedData)
-                    }
-
-                    // If onElementChange is provided and we're in a dynamic column
-                    if (props.onElementChange && isInDynamicColumn) {
-                      // For selection changes in dynamic columns, we don't want to sync the selection state
-                      // but we still need to notify the system that a change happened for other purposes
-                      const updatedDataForSync = {
-                        ...props.data,
-                        // Deliberately NOT updating options or selection state
-                      }
-
-                      // Mark this as a selection-only change that shouldn't be synced
-                      updatedDataForSync._selectionChangeOnly = true
-
-                      // Notify the system about the change, but without selection state changes
-                      props.onElementChange(updatedDataForSync)
-                    }
-
-                    return newValue
-                  })
+                    // Notify the system about the change, but without selection state changes
+                    props.onElementChange(updatedDataForSync)
+                  }
                 }}
                 {...inputProps}
               />
