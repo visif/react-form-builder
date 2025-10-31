@@ -1,0 +1,40 @@
+# Dependencies
+node_modules
+bower_components
+
+# Build outputs
+dist
+build
+lib
+*.min.js
+*.min.css
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Temporary files
+.cache
+*.tmp
+*.temp
+
+# Examples (optional - uncomment if you don't want to format examples)
+# examples/
+
+# Docs
+docs/
+
+# Config files that should remain unformatted
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.gitignore
+
+# Coverage
+coverage
+.nyc_output
+
+# OS files
+.DS_Store
+Thumbs.db

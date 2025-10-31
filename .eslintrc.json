@@ -1,7 +1,7 @@
 {
   "parser": "@babel/eslint-parser",
   "parserOptions": {
-    "ecmaVersion": 2021,
+    "ecmaVersion": 2022,
     "sourceType": "module",
     "ecmaFeatures": {
       "jsx": true
@@ -23,32 +23,54 @@
   "plugins": ["react", "react-hooks", "jsx-a11y", "import"],
   "env": {
     "browser": true,
-    "es2021": true,
+    "es2022": true,
     "node": true
   },
   "globals": {
     "window": true,
     "document": true,
-    "navigator": true
+    "navigator": true,
+    "FormData": true,
+    "File": true,
+    "Blob": true
   },
   "rules": {
-    "max-len": [1, 180, 2, { "ignoreComments": true }],
-    "semi": [2, "never"],
-    "comma-dangle": "warn",
-    "camelcase": "warn",
-    "prefer-destructuring": "warn",
-    "no-param-reassign": "warn",
-    "linebreak-style": 0,
+    // Code quality
+    "max-len": ["warn", { "code": 100, "ignoreComments": true, "ignoreStrings": true, "ignoreTemplateLiterals": true }],
+    "semi": ["error", "never"],
+    "comma-dangle": ["warn", "es5"],
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "no-debugger": "warn",
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+    "prefer-const": "error",
+    "no-var": "error",
+
+    // Style preferences
+    "camelcase": ["warn", { "properties": "never", "ignoreDestructuring": true }],
+    "prefer-destructuring": ["warn", { "object": true, "array": false }],
+    "no-param-reassign": ["warn", { "props": false }],
+    "linebreak-style": "off",
     "operator-linebreak": "off",
-    "no-underscore-dangle": "off",
+    "no-underscore-dangle": ["warn", { "allow": ["_id", "__typename"] }],
     "class-methods-use-this": "off",
-    "arrow-parens": "off",
+    "arrow-parens": ["error", "always"],
     "indent": "off",
     "no-plusplus": "off",
     "no-return-assign": "off",
     "object-curly-newline": "off",
     "no-prototype-builtins": "warn",
-    "react/jsx-uses-vars": [2],
+    "implicit-arrow-linebreak": "off",
+    "function-paren-newline": "off",
+    "consistent-return": "warn",
+
+    // Import rules
+    "import/prefer-default-export": "off",
+    "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
+    "import/extensions": ["error", "ignorePackages", { "js": "never", "jsx": "never" }],
+    "import/order": "off", // Let Prettier plugin handle this
+
+    // React specific
+    "react/jsx-uses-vars": "error",
     "react/jsx-uses-react": "off",
     "react/react-in-jsx-scope": "off",
     "react/function-component-definition": [
@@ -59,20 +81,33 @@
       }
     ],
     "react/prop-types": "warn",
-    "react/require-default-props": "warn",
+    "react/require-default-props": "off",
     "react/destructuring-assignment": "warn",
-    "react/jsx-props-no-spreading": "warn",
+    "react/jsx-props-no-spreading": "off",
     "react/forbid-prop-types": "warn",
+    "react/jsx-filename-extension": ["warn", { "extensions": [".jsx", ".js"] }],
+    "react/jsx-no-useless-fragment": "warn",
+    "react/self-closing-comp": "warn",
+    "react/no-array-index-key": "warn",
+    "react/jsx-boolean-value": ["warn", "never"],
+    "react/jsx-curly-brace-presence": ["warn", { "props": "never", "children": "never" }],
+
+    // React Hooks
     "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn"
+    "react-hooks/exhaustive-deps": "warn",
+
+    // JSX a11y
+    "jsx-a11y/label-has-associated-control": "warn",
+    "jsx-a11y/click-events-have-key-events": "warn",
+    "jsx-a11y/no-static-element-interactions": "warn"
   },
   "settings": {
     "react": {
-      "version": "18.3.1"
+      "version": "detect"
     },
     "import/resolver": {
       "node": {
-        "extensions": [".js", ".jsx"]
+        "extensions": [".js", ".jsx", ".json"]
       }
     }
   }

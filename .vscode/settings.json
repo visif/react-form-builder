@@ -1,35 +1,76 @@
 {
+  // Editor: Code Actions & Formatting
   "editor.codeActionsOnSave": {
     "source.fixAll": "never",
-    "source.fixAll.eslint": "always",
+    "source.fixAll.eslint": "explicit",
     "source.fixAll.stylelint": "never",
     "source.organizeImports": "never"
   },
   "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  // Editor: Display & Behavior
   "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
   "editor.wordWrap": "on",
   "editor.bracketPairColorization.enabled": true,
   "editor.guides.bracketPairs": true,
   "editor.suggestSelection": "first",
   "editor.linkedEditing": true,
   "editor.stickyScroll.enabled": true,
+  "editor.inlineSuggest.enabled": true,
+  "editor.quickSuggestions": {
+    "strings": true
+  },
 
-  // File handling
+  // Files
   "files.eol": "\n",
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.associations": {
+    "*.css": "css",
+    "*.scss": "scss",
+    "*.jsx": "javascriptreact"
+  },
 
-  // Search settings
+  // Search
   "search.exclude": {
     "**/node_modules": true,
     "**/bower_components": true,
     "**/*.code-search": true,
     "**/dist": true,
     "**/build": true,
-    "**/.next": true
+    "**/lib": true,
+    "**/.next": true,
+    "**/.vscode": true,
+    "**/coverage": true,
+    "**/.git": true
   },
 
+  // ESLint
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.format.enable": false,
+  "eslint.lintTask.enable": true,
+
+  // Prettier
+  "prettier.requireConfig": true,
+  "prettier.useEditorConfig": false,
+
+  // Language-specific
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.suggest.showKeywords": true
@@ -43,9 +84,26 @@
   "[jsonc]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
   "[markdown]": {
     "editor.formatOnSave": false,
-    "editor.wordWrap": "on"
+    "editor.wordWrap": "on",
+    "files.trimTrailingWhitespace": false
   },
-  "terminal.integrated.defaultProfile.osx": "zsh"
+
+  // Terminal
+  "terminal.integrated.defaultProfile.osx": "zsh",
+
+  // Git
+  "git.enableSmartCommit": true,
+  "git.confirmSync": false,
+  "git.autofetch": true
 }

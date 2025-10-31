@@ -1,15 +1,22 @@
 {
   "plugins": ["@trivago/prettier-plugin-sort-imports"],
   "importOrder": [
-    "^react(.*)",
+    "^react$",
+    "^react-dom$",
+    "^react/(.*)$",
+    "^prop-types$",
     "<THIRD_PARTY_MODULES>",
-    "^@/(components|containers)/(.*)$",
-    "^@/(hooks|utils)/(.*)$",
-    "^@/(types|interfaces)/(.*)$",
-    "^@/(.*)",
+    "^@/components/(.*)$",
+    "^@/contexts/(.*)$",
+    "^@/hooks/(.*)$",
+    "^@/utils/(.*)$",
+    "^@/constants/(.*)$",
+    "^@/types/(.*)$",
+    "^@/assets/(.*)$",
     "^[./]",
-    "^./*.*.css$"
+    "\\.(css|scss)$"
   ],
+  "importOrderSeparation": true,
   "importOrderSortSpecifiers": true,
   "importOrderGroupNamespaceSpecifiers": true,
   "importOrderCaseInsensitive": true,
@@ -17,9 +24,14 @@
   "singleQuote": true,
   "tabWidth": 2,
   "trailingComma": "es5",
-  "printWidth": 90,
+  "printWidth": 100,
   "bracketSpacing": true,
   "jsxSingleQuote": false,
   "arrowParens": "always",
-  "endOfLine": "lf"
+  "endOfLine": "lf",
+  "useTabs": false,
+  "bracketSameLine": false,
+  "proseWrap": "preserve",
+  "htmlWhitespaceSensitivity": "css",
+  "embeddedLanguageFormatting": "auto"
 }

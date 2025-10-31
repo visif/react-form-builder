@@ -1,2 +1,50 @@
+# Build-generated variables
 **/variables.js
+
+# Webpack configs
 **/webpack.*.js
+webpack.config.js
+webpack.config.babel.js
+webpack.production.config.js
+
+# Dependencies
+node_modules
+bower_components
+
+# Build outputs
+dist
+build
+lib
+*.min.js
+
+# Examples (built files)
+examples/**/bundle.js
+examples/**/dist
+examples/**/build
+examples/**/node_modules
+
+# Docs
+docs/
+
+# Logs
+logs
+*.log
+
+# Temporary files
+.cache
+*.tmp
+*.temp
+
+# Coverage
+coverage
+.nyc_output
+
+# Server
+server/
+
+# Public
+public/
+
+# Test fixtures
+**/__fixtures__
+**/__mocks__
