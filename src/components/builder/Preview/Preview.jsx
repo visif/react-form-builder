@@ -28,7 +28,7 @@ import update from 'immutability-helper'
 import FormElementsEdit from '../ElementEditor/FormElementsEdit'
 import useUndoRedo, { ACTION } from '../../../hooks/useUndoRedo'
 import SortableFormElements from './SortableFormElements'
-import store from '../../../stores/store'
+import store from '../../../contexts/FormBuilderContext'
 
 const { PlaceHolder } = SortableFormElements
 

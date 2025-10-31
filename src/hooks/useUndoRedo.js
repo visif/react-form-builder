@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import store from '../stores/store'
+import store from '../contexts/FormBuilderContext'
 
 export const ACTION = {
   UNDO: 'undo',

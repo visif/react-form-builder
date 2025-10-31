@@ -54,7 +54,7 @@
  */
 import React from 'react'
 import PropTypes from 'prop-types'
-import store from '../../../stores/store'
+import store from '../../../contexts/FormBuilderContext'
 import ToolbarItem from './ToolbarDraggableItem'
 import ID from '../../../utils/uuid'
 

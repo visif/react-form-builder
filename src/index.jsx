@@ -58,9 +58,9 @@ import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import ReactFormGenerator from './components/generator/ReactForm'
 import Preview from './components/builder/Preview/Preview'
-import Registry from './stores/registry'
-import store from './stores/store'
-import { FormBuilderProvider, useFormBuilderStore } from './stores/FormBuilderContext'
+import Registry from './contexts/registry'
+import store from './contexts/FormBuilderContext'
+import { FormBuilderProvider, useFormBuilderStore } from './contexts/FormBuilderContext'
 import Toolbar from './components/builder/Toolbar/Toolbar'
 
 const ReactFormBuilder = (props) => {

@@ -74,7 +74,7 @@ import {
   ThreeColumnRow,
   TwoColumnRow,
 } from '../form-elements/layout'
-import Registry from '../../stores/registry'
+import Registry from '../../contexts/registry'
 
 const {
   Image,
