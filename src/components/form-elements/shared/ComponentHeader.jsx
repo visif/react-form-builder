@@ -16,6 +16,7 @@ const ComponentHeader = (props) => {
         data={props.data}
         index={props.index}
         setAsChild={props.setAsChild}
+        getDataById={props.getDataById}
         onDestroy={props._onDestroy}
         onEdit={props.onEdit}
         static={props.data.static}

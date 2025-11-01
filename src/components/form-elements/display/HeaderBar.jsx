@@ -29,6 +29,7 @@ const HeaderBar = (props) => {
             index={props.index}
             onDestroy={props.onDestroy}
             setAsChild={props.setAsChild}
+            getDataById={props.getDataById}
           />
         )}
       </div>
@@ -47,6 +48,7 @@ HeaderBar.propTypes = {
   parent: PropTypes.object,
   index: PropTypes.number,
   setAsChild: PropTypes.func,
+  getDataById: PropTypes.func,
 }
 
 export default HeaderBar

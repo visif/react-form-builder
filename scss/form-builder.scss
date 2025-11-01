@@ -137,7 +137,6 @@
       transition: opacity .25s ease-in;
       position: relative;
       cursor: move;
-      overflow-x: visible;
       box-sizing: border-box;
       -webkit-touch-callout: none;
       -webkit-user-select: none;
@@ -168,6 +167,9 @@
             .label-required {
               margin-left: 5px;
             }
+          }
+          .is-isolated {
+            pointer-events: auto;
           }
           &.is-dragging {
             position: absolute;
