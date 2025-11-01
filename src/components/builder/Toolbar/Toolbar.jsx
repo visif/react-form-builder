@@ -55,10 +55,13 @@
 import React from 'react'
 
 import PropTypes from 'prop-types'
+import { Typography } from 'antd'
 
 import store from '../../../contexts/FormBuilderContext'
 import ID from '../../../utils/uuid'
 import ToolbarItem from './ToolbarDraggableItem'
+
+const { Title } = Typography
 
 function isDefaultItem(item) {
   const keys = Object.keys(item)
@@ -266,8 +269,22 @@ const Toolbar = (props) => {
 
   return (
     <div className="react-form-builder-toolbar" style={{ marginTop: 0 }}>
-      <h4>Toolbox</h4>
-      <ul>
+      <div style={{ borderBottom: '1px solid #e8e8e8', paddingBottom: '12px', marginBottom: '12px' }}>
+        <Title
+          level={4}
+          style={{
+            textAlign: 'center',
+            marginBottom: '0',
+            marginTop: '10px',
+            fontWeight: 600,
+            fontSize: '18px',
+            color: '#262626',
+          }}
+        >
+          Toolbox
+        </Title>
+      </div>
+      <div style={{ padding: '0 8px' }}>
         {state.items.map((item) => (
           <ToolbarItem
             data={item}
@@ -276,7 +293,7 @@ const Toolbar = (props) => {
             onCreate={create}
           />
         ))}
-      </ul>
+      </div>
     </div>
   )
 }
