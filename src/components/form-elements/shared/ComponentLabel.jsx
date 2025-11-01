@@ -38,7 +38,7 @@ const ComponentLabel = (props) => {
   }
 
   return (
-    <label className={props.className || ''}>
+    <label className={props.className || ''} style={{ display: 'block', marginBottom: '8px' }}>
       <span dangerouslySetInnerHTML={{ __html: labelText }} />
       {hasRequiredLabel && <span className="label-required badge badge-danger">Required</span>}
     </label>
