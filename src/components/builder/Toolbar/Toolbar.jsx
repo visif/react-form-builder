@@ -268,8 +268,17 @@ const Toolbar = (props) => {
   )
 
   return (
-    <div className="react-form-builder-toolbar" style={{ marginTop: 0 }}>
-      <div style={{ borderBottom: '1px solid #e8e8e8', paddingBottom: '12px', marginBottom: '12px' }}>
+    <div
+      className="react-form-builder-toolbar"
+      style={{
+        marginTop: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        overflow: 'hidden',
+      }}
+    >
+      <div style={{ borderBottom: '1px solid #e8e8e8', paddingBottom: '12px', marginBottom: '12px', flexShrink: 0 }}>
         <Title
           level={4}
           style={{
@@ -284,7 +293,14 @@ const Toolbar = (props) => {
           Toolbox
         </Title>
       </div>
-      <div style={{ padding: '0 8px' }}>
+      <div
+        style={{
+          padding: '0 8px',
+          overflowY: 'auto',
+          flex: 1,
+          minHeight: 0,
+        }}
+      >
         {state.items.map((item) => (
           <ToolbarItem
             data={item}
