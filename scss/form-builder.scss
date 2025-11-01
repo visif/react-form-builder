@@ -8,6 +8,8 @@
     box-shadow: 0 0 2px 1px rgba(0,0,0,0.1);
     min-height: 750px;
     width:100%;
+    overflow-x: auto;
+    box-sizing: border-box;
 
     .preview-page-break {
       padding: 5px 0;
@@ -135,6 +137,8 @@
       transition: opacity .25s ease-in;
       position: relative;
       cursor: move;
+      overflow-x: visible;
+      box-sizing: border-box;
       -webkit-touch-callout: none;
       -webkit-user-select: none;
       -khtml-user-select: none;
@@ -143,6 +147,7 @@
       user-select: none;
       .rfb-item {
         padding: 10px 20px;
+        box-sizing: border-box;
         &.SortableItem {
           position: relative;
           .form-group {
@@ -171,6 +176,7 @@
             background: #fff;
             cursor: move;
             padding: 10px 20px;
+            margin: 2px 0;
           }
         }
         &.is-placeholder {
@@ -178,6 +184,7 @@
           z-index: auto;
           opacity: .4;
           border: 2px #ccc dashed;
+          margin: 2px 0;
         }
         .toolbar-header {
           opacity: 0;
