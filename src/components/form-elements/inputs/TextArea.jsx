@@ -1,9 +1,11 @@
 import React from 'react'
 
-import TextAreaAutosize from 'react-textarea-autosize'
+import { Input } from 'antd'
 
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
+
+const { TextArea: AntTextArea } = Input
 
 const TextArea = (props) => {
   const inputField = React.useRef()
@@ -56,18 +58,18 @@ const TextArea = (props) => {
   }
 
   const textareaProps = {}
-  textareaProps.className = 'form-control'
   textareaProps.name = props.data.field_name
-  textareaProps.minRows = 3
+  textareaProps.rows = 3
+  textareaProps.autoSize = { minRows: 3, maxRows: 10 }
   textareaProps.onChange = handleChange
   textareaProps.value = value
+  textareaProps.style = { width: '100%' }
 
   if (props.read_only || !isSameEditor) {
-    textareaProps.disabled = 'disabled'
+    textareaProps.disabled = true
   }
 
   if (props.mutable) {
-    textareaProps.defaultValue = props.defaultValue
     textareaProps.ref = inputField
   }
 
@@ -81,7 +83,7 @@ const TextArea = (props) => {
       <ComponentHeader {...props} />
       <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
         <ComponentLabel {...props} />
-        <TextAreaAutosize {...textareaProps} />
+        <AntTextArea {...textareaProps} />
       </div>
     </div>
   )

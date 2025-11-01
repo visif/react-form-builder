@@ -1,7 +1,11 @@
 import React from 'react'
 
+import { Checkbox, Input } from 'antd'
+
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
+
+const { TextArea } = Input
 
 const Checkboxes = (props) => {
   const optionsRef = React.useRef({})
@@ -43,15 +47,14 @@ const Checkboxes = (props) => {
       userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
-  let classNames = 'custom-control custom-checkbox'
-  if (props.data.inline) {
-    classNames += ' option-inline'
-  }
-
   let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
   if (props.data.pageBreakBefore) {
     baseClasses += ' alwaysbreak'
   }
+
+  const checkboxStyle = props.data.inline
+    ? { display: 'inline-block', marginRight: '16px', marginBottom: '4px' }
+    : { display: 'block', marginBottom: '4px' }
 
   return (
     <div className={baseClasses}>
@@ -61,65 +64,31 @@ const Checkboxes = (props) => {
         {props.data.options.map((option) => {
           const this_key = `preview_${option.key}`
 
-          const inputProps = {}
-          inputProps.name = `option_${option.key}`
-          inputProps.type = 'checkbox'
-          inputProps.value = option.value
-
           // Check if the option is selected either from state or option properties
           const answerItem = getActiveValue(value, option.key)
           const isCheckedInOptions = option.checked || option.selected
+          const isChecked = answerItem?.value ?? isCheckedInOptions ?? false
 
-          if (props.mutable) {
-            inputProps.checked = answerItem?.value ?? isCheckedInOptions ?? false
+          const checkboxProps = {
+            checked: props.mutable ? isChecked : isCheckedInOptions,
+            disabled: props.read_only || !isSameEditor,
           }
-
-          if (props.read_only || !isSameEditor) {
-            inputProps.disabled = 'disabled'
-          }
-
-          console.log('Rendering checkbox:', option.key, {
-            answerItem,
-            isCheckedInOptions,
-            finalChecked: inputProps.checked,
-            mutable: props.mutable,
-            disabled: inputProps.disabled,
-            value: value,
-          })
 
           return (
-            <div
-              className={classNames}
-              key={this_key}
-              style={{ display: 'flex', alignItems: 'center' }}
-            >
-              <input
-                id={`fid_${this_key}`}
-                className="custom-control-input"
-                {...inputProps}
-                ref={(c) => {
-                  if (c && props.mutable) {
-                    optionsRef.current[`child_ref_${option.key}`] = c
-                  }
-                }}
-                onChange={() => {
-                  console.log('Checkbox clicked!', option.key, 'Current value:', value)
-                  // Calculate the new value first
-                  const activeVal = getActiveValue(value, option.key)
+            <div key={this_key} style={checkboxStyle}>
+              <Checkbox
+                {...checkboxProps}
+                onChange={(e) => {
+                  const checked = e.target.checked
+                  console.log('Checkbox clicked!', option.key, 'Checked:', checked)
 
-                  // Toggle: if currently selected, remove it; otherwise add with actual option value
-                  const isCurrentlySelected = activeVal?.value
-                  const newActiveVal = isCurrentlySelected
-                    ? null // Will be filtered out below
-                    : {
+                  // Build new value array
+                  const newValue = checked
+                    ? [...(value || []).filter((item) => item.key !== option.key), {
                         key: option.key,
-                        value: option.value, // Use actual option value, not just true
+                        value: option.value,
                         info: '',
-                      }
-
-                  // Build new value array - filter out this option, then add if selected
-                  const newValue = newActiveVal
-                    ? [...(value || []).filter((item) => item.key !== option.key), newActiveVal]
+                      }]
                     : (value || []).filter((item) => item.key !== option.key)
 
                   console.log('New value:', newValue)
@@ -131,15 +100,7 @@ const Checkboxes = (props) => {
                   if (props.handleChange) {
                     console.log('Calling handleChange with:', props.data.field_name, newValue)
                     props.handleChange(props.data.field_name, newValue)
-                  } else {
-                    console.log('No handleChange prop!')
                   }
-
-                  // If we're in a dynamic column and this is a UI-only change (selection)
-                  const isInDynamicColumn =
-                    props.data.parentId &&
-                    props.data.row !== undefined &&
-                    props.data.col !== undefined
 
                   // Always update the local element state for immediate visual feedback
                   if (props.updateElement) {
@@ -147,48 +108,27 @@ const Checkboxes = (props) => {
                       ...props.data,
                       dirty: true,
                       value: newValue,
+                      options: props.data.options.map((opt) => ({
+                        ...opt,
+                        checked: opt.key === option.key ? checked : getActiveValue(newValue, opt.key)?.value || false,
+                      })),
                     }
-
-                    // Update the local options to show selection visually
-                    const localOptions = props.data.options.map((opt) => ({
-                      ...opt,
-                      checked:
-                        opt.key === option.key
-                          ? !activeVal?.value
-                          : getActiveValue(newValue, opt.key)?.value || false,
-                    }))
-                    updatedData.options = localOptions
-
-                    // Update just this element
                     props.updateElement(updatedData)
                   }
 
-                  // If onElementChange is provided, but we avoid sending selection state
+                  // If onElementChange is provided for column sync
+                  const isInDynamicColumn = props.data.parentId && props.data.row !== undefined
                   if (props.onElementChange && isInDynamicColumn) {
-                    const updatedDataForSync = {
-                      ...props.data,
-                    }
-
-                    updatedDataForSync._selectionChangeOnly = true
-                    props.onElementChange(updatedDataForSync)
+                    props.onElementChange({ ...props.data, _selectionChangeOnly: true })
                   }
                 }}
-              />
-              <label className="custom-control-label" htmlFor={`fid_${this_key}`}>
-                {option.text}
-              </label>
-              {inputProps.checked && option.info && (
-                <textarea
-                  id={`fid_${this_key}_info`}
-                  type="text"
-                  className="form-control"
-                  style={{
-                    width: 'auto',
-                    marginLeft: 16,
-                    minHeight: '60px',
-                    marginBottom: 4,
-                  }}
+              >
+                <span style={{ fontSize: '13px', color: '#262626' }}>{option.text}</span>
+              </Checkbox>
+              {isChecked && option.info && (
+                <TextArea
                   rows={2}
+                  style={{ width: '100%', marginTop: '8px' }}
                   defaultValue={answerItem?.info ?? ''}
                   ref={(c) => {
                     if (c && props.mutable) {

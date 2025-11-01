@@ -1,5 +1,7 @@
 import React from 'react'
 
+import { InputNumber } from 'antd'
+
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
 
@@ -7,20 +9,11 @@ const NumberInput = (props) => {
   const inputField = React.useRef()
   const [value, setValue] = React.useState(props.defaultValue || '')
 
-  const handleKeyPress = React.useCallback((e) => {
-    // Allow: numbers, decimal point, minus sign, plus sign, basic math operators, and percentage
-    const allowedChars = /[0-9.\-+*/()=% ]/
-    const char = String.fromCharCode(e.which)
-
-    if (!allowedChars.test(char) && !e.ctrlKey && !e.metaKey) {
-      e.preventDefault()
-    }
-  }, [])
-
   const handleChange = React.useCallback(
-    (e) => {
-      const { value: newValue } = e.target
-      setValue(newValue)
+    (newValue) => {
+      // InputNumber returns number or null, convert to string for consistency
+      const stringValue = newValue !== null && newValue !== undefined ? String(newValue) : ''
+      setValue(stringValue)
 
       const { data, handleChange: onFormularChange } = props
       const { formularKey, field_name } = data
@@ -28,7 +21,7 @@ const NumberInput = (props) => {
       // Always call handleChange to update the form context
       if (onFormularChange) {
         // Use formularKey if it exists, otherwise use field_name
-        onFormularChange(formularKey || field_name, newValue)
+        onFormularChange(formularKey || field_name, stringValue)
       }
 
       // If onElementChange is provided, call it to synchronize changes across the column
@@ -36,7 +29,7 @@ const NumberInput = (props) => {
         // Create updated data object with the new value
         const updatedData = {
           ...props.data,
-          value: newValue,
+          value: stringValue,
         }
 
         // Send it for synchronization across columns
@@ -64,20 +57,19 @@ const NumberInput = (props) => {
   }
 
   const inputProps = {}
-  inputProps.type = 'number'
-  inputProps.className = 'form-control'
   inputProps.name = props.data.field_name
   inputProps.onChange = handleChange
-  inputProps.onKeyPress = handleKeyPress
-  inputProps.value = value
+  inputProps.value = value ? Number(value) : null
+  inputProps.style = { width: '100%' }
+  inputProps.controls = true
+  inputProps.keyboard = true
 
   if (props.mutable) {
-    inputProps.defaultValue = props.defaultValue
     inputProps.ref = inputField
   }
 
   if (props.read_only || !isSameEditor) {
-    inputProps.disabled = 'disabled'
+    inputProps.disabled = true
   }
 
   let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
@@ -90,7 +82,7 @@ const NumberInput = (props) => {
       <ComponentHeader {...props} />
       <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
         <ComponentLabel {...props} />
-        <input {...inputProps} />
+        <InputNumber {...inputProps} />
       </div>
     </div>
   )

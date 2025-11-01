@@ -4,7 +4,7 @@
 import React from 'react'
 
 import PropTypes from 'prop-types'
-import { Button } from 'antd'
+import { Button, Tag } from 'antd'
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons'
 
 import Grip from '../layout/Grip'
@@ -12,7 +12,9 @@ import Grip from '../layout/Grip'
 const HeaderBar = (props) => {
   return (
     <div className="toolbar-header">
-      <span className="badge badge-secondary">{props.data.text}</span>
+      <Tag bordered={false} style={{ backgroundColor: 'transparent', padding: 0 }}>
+        {props.data.text}
+      </Tag>
       <div className="toolbar-header-buttons">
         {props.data.element !== 'LineBreak' && (
           <Button

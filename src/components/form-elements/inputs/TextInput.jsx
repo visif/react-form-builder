@@ -1,5 +1,7 @@
 import React from 'react'
 
+import { Input } from 'antd'
+
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
 
@@ -55,13 +57,12 @@ const TextInput = (props) => {
 
   const inputProps = {}
   inputProps.type = 'text'
-  inputProps.className = 'form-control'
   inputProps.name = props.data.field_name
   inputProps.onChange = handleChange
   inputProps.value = value
+  inputProps.style = { width: '100%' }
 
   if (props.mutable) {
-    inputProps.defaultValue = props.defaultValue
     inputProps.ref = inputField
   }
 
@@ -71,7 +72,7 @@ const TextInput = (props) => {
   }
 
   if (props.read_only || !isSameEditor) {
-    inputProps.disabled = 'disabled'
+    inputProps.disabled = true
   }
 
   return (
@@ -79,7 +80,7 @@ const TextInput = (props) => {
       <ComponentHeader {...props} />
       <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
         <ComponentLabel {...props} />
-        <input {...inputProps} />
+        <Input {...inputProps} />
       </div>
     </div>
   )
