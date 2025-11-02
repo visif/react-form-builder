@@ -1,11 +1,13 @@
 import React from 'react'
-import { Button } from 'antd'
+import { Button, Input } from 'antd'
 import { PlusOutlined, MinusOutlined } from '@ant-design/icons'
 
 import PropTypes from 'prop-types'
 
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
+
+const { TextArea } = Input
 
 const getInputValues = (defaultValue = [], columns, rows, addingRows, rowLabels) => {
   const result = []
@@ -154,7 +156,14 @@ const Table = (props) => {
 
               if (isLabel) {
                 return (
-                  <td key={`cell-${i}-${jIndex}`}>
+                  <td
+                    key={`cell-${i}-${jIndex}`}
+                    style={{
+                      border: '1px solid #d9d9d9',
+                      padding: '8px',
+                      backgroundColor: '#fafafa',
+                    }}
+                  >
                     <label>{rowLabels[i].text}</label>
                   </td>
                 )
@@ -163,14 +172,17 @@ const Table = (props) => {
               const value = inputs[i] ? (inputs[i][jIndex] ?? '') : ''
 
               return (
-                <td key={`cell-${i}-${jIndex}`}>
-                  <textarea
-                    className="form-control"
-                    style={isLabel ? { border: 0, backgroundColor: 'inherit' } : {}}
+                <td
+                  key={`cell-${i}-${jIndex}`}
+                  style={{
+                    border: '1px solid #d9d9d9',
+                    padding: '8px',
+                  }}
+                >
+                  <TextArea
+                    autoSize={{ minRows: 1, maxRows: 5 }}
                     disabled={isLabel || !isSameEditor}
-                    type="text"
                     value={value}
-                    rows={1}
                     onChange={(event) => {
                       handleInputChange(i, jIndex, event.target.value)
                     }}
@@ -207,7 +219,15 @@ const Table = (props) => {
       <ComponentHeader {...props} />
       <div className="form-group">
         <ComponentLabel {...props} />
-        <table className="table table-bordered" ref={tableRef} key={`table-${props.id}`}>
+        <table
+          style={{
+            width: '100%',
+            borderCollapse: 'collapse',
+            border: '1px solid #d9d9d9',
+          }}
+          ref={tableRef}
+          key={`table-${props.id}`}
+        >
           <thead>
             <tr>
               {props.data?.columns?.map((col, colIndex) => {
@@ -217,6 +237,10 @@ const Table = (props) => {
                     scope="col"
                     style={{
                       width: getColumnWidth(totalWidthCount, col.width),
+                      border: '1px solid #d9d9d9',
+                      padding: '8px',
+                      backgroundColor: '#fafafa',
+                      fontWeight: 500,
                     }}
                   >
                     {col.text}
@@ -228,19 +252,16 @@ const Table = (props) => {
           {renderRows()}
         </table>
         {!isFixedRow && (
-          <div style={{ textAlign: 'right' }}>
-            <Button
-              type="default"
-              icon={<MinusOutlined />}
-              onClick={removeRow}
-              style={{
-                marginRight: 8,
-                display: inputs.length > 0 ? 'initial' : 'none',
-              }}
-              disabled={!isSameEditor}
-            >
-              Remove Row
-            </Button>
+          <div style={{ marginTop: '12px', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+            {inputs.length > 0 && (
+              <Button
+                icon={<MinusOutlined />}
+                onClick={removeRow}
+                disabled={!isSameEditor}
+              >
+                Remove Row
+              </Button>
+            )}
             <Button
               type="primary"
               icon={<PlusOutlined />}
