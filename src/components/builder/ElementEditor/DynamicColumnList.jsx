@@ -2,6 +2,8 @@
  * <DynamicColumnList />
  */
 import React, { useCallback, useState } from 'react'
+import { Input, Checkbox, Button, Space } from 'antd'
+import { PlusOutlined, MinusOutlined } from '@ant-design/icons'
 
 import PropTypes from 'prop-types'
 
@@ -133,88 +135,67 @@ const DynamicColumnList = ({ element: propsElement, preview = null, updateElemen
   return (
     <>
       <div className="dynamic-option-list">
-        <ul>
+        <ul style={{ listStyle: 'none', padding: 0 }}>
           <li>
-            <div className="row">
-              <div className="col-sm-12">
-                <b>Columns</b>
-              </div>
+            <div style={{ marginBottom: '12px' }}>
+              <b>Columns</b>
             </div>
           </li>
-          <li className="clearfix">
-            <div className="row">
-              <div className="col-sm-6">Header Text</div>
-              <div className="col-sm-2">Width</div>
-              <div className="col-sm-1 text-center">Sync</div>
-              <div className="col-sm-3" />
+          <li style={{ marginBottom: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px 60px 120px', gap: '8px', alignItems: 'center' }}>
+              <div style={{ fontSize: '13px', fontWeight: 500 }}>Header Text</div>
+              <div style={{ fontSize: '13px', fontWeight: 500 }}>Width</div>
+              <div style={{ fontSize: '13px', fontWeight: 500, textAlign: 'center' }}>Sync</div>
+              <div />
             </div>
           </li>
           {element.columns.map((option, index) => {
             const editKey = `edit_${option.key}`
             return (
-              <li className="clearfix" key={editKey}>
-                <div className="row">
-                  <div className="col-sm-6">
-                    <input
-                      tabIndex={index + 1}
-                      className="form-control"
-                      style={{ width: '100%' }}
-                      type="text"
-                      name={`text_${index}`}
-                      placeholder="Option text"
-                      value={option.text}
+              <li key={editKey} style={{ marginBottom: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px 60px 120px', gap: '8px', alignItems: 'center' }}>
+                  <Input
+                    tabIndex={index + 1}
+                    type="text"
+                    name={`text_${index}`}
+                    placeholder="Column header text"
+                    value={option.text}
+                    onBlur={updateColumn}
+                    onChange={(e) => editColumn(index, 'text', e)}
+                  />
+                  <Input
+                    tabIndex={index + 1}
+                    type="text"
+                    name={`width_${index}`}
+                    placeholder="Width"
+                    value={option.width}
+                    onBlur={updateColumn}
+                    onChange={(e) => editColumn(index, 'width', e)}
+                  />
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <Checkbox
+                      id={`sync_${index}`}
+                      checked={option.isSync || false}
+                      onChange={(e) => editColumn(index, 'isSync', e)}
                       onBlur={updateColumn}
-                      onChange={(e) => editColumn(index, 'text', e)}
                     />
                   </div>
-                  <div className="col-sm-2">
-                    <input
-                      tabIndex={index + 1}
-                      className="form-control"
-                      style={{ width: '100%' }}
-                      type="text"
-                      name={`width_${index}`}
-                      placeholder="Width"
-                      value={option.width}
-                      onBlur={updateColumn}
-                      onChange={(e) => editColumn(index, 'width', e)}
+                  <Space size={8}>
+                    <Button
+                      type="primary"
+                      icon={<PlusOutlined />}
+                      size="small"
+                      onClick={() => addColumn(index)}
                     />
-                  </div>
-                  <div className="col-sm-1">
-                    <div
-                      className="d-flex justify-content-center align-items-center"
-                      style={{ height: '38px', minWidth: '56px' }}
-                    >
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        id={`sync_${index}`}
-                        checked={option.isSync || false}
-                        onChange={(e) => editColumn(index, 'isSync', e)}
-                        onBlur={updateColumn}
+                    {index > 0 && (
+                      <Button
+                        danger
+                        icon={<MinusOutlined />}
+                        size="small"
+                        onClick={() => removeColumn(index)}
                       />
-                    </div>
-                  </div>
-                  <div className="col-sm-3">
-                    <div className="dynamic-options-actions-buttons">
-                      <button
-                        type="button"
-                        onClick={() => addColumn(index)}
-                        className="btn btn-success"
-                      >
-                        <i className="fas fa-plus-circle" />
-                      </button>
-                      {index > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => removeColumn(index)}
-                          className="btn btn-danger"
-                        >
-                          <i className="fas fa-minus-circle" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
+                    )}
+                  </Space>
                 </div>
               </li>
             )
