@@ -181,7 +181,8 @@ const ReactForm = (props) => {
     setAnswerData(ansData)
     const newVariables = getVariableValueHelper(ansData, props.data)
     formContext.setAllVariables(newVariables)
-  }, [props.answer_data, props.data, formContext])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.answer_data, props.data])
 
   // Handle input changes and update variables via context
   const handleChange = useCallback(
@@ -194,7 +195,8 @@ const ReactForm = (props) => {
         formContext.updateVariable(item.formularKey, value)
       }
     },
-    [formContext, props.data]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [props.data]
   )
 
   // Variable change handler with cascading formula updates
@@ -279,14 +281,16 @@ const ReactForm = (props) => {
         return newAnswerData
       })
     },
-    [props.data, formContext]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [props.data]
   )
 
   // Subscribe to variable changes via context
   useEffect(() => {
     const unsubscribe = formContext.addVariableListener(handleVariableChange)
     return unsubscribe
-  }, [formContext, handleVariableChange])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [handleVariableChange])
 
   // Helper: Get default value for a field
   const getDefaultValue = useCallback(
@@ -543,7 +547,8 @@ const ReactForm = (props) => {
 
       return itemData
     },
-    [props, getEditor, getItemValue, formContext]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [props, getEditor, getItemValue]
   )
 
   // Collect all form data
@@ -638,7 +643,8 @@ const ReactForm = (props) => {
       }
       // }
     },
-    [props, collectFormData, formContext]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [props, collectFormData]
   )
 
   // Form validation with section logic

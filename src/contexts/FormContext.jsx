@@ -15,7 +15,7 @@
  * updateValue('field_name', newValue)
  * updateVariable('varKey', computedValue)
  */
-import React, { createContext, useCallback, useContext, useState } from 'react'
+import React, { createContext, useCallback, useContext, useState, useRef, useMemo } from 'react'
 
 const FormContext = createContext(null)
 
@@ -23,7 +23,7 @@ export const FormProvider = ({ children, initialValues = {} }) => {
   const [values, setValues] = useState(initialValues)
   const [variables, setVariables] = useState({})
   const [validationErrors, setValidationErrors] = useState([])
-  const [variableListeners, setVariableListeners] = useState([])
+  const variableListenersRef = useRef([])
 
   const updateValue = useCallback((fieldName, value) => {
     setValues((prev) => ({
@@ -56,11 +56,8 @@ export const FormProvider = ({ children, initialValues = {} }) => {
       }
 
       // Notify listeners about variable change
-      setVariableListeners((listeners) => {
-        listeners.forEach((listener) => {
-          listener({ propKey: varKey, value })
-        })
-        return listeners
+      variableListenersRef.current.forEach((listener) => {
+        listener({ propKey: varKey, value })
       })
 
       return newVariables
@@ -83,10 +80,10 @@ export const FormProvider = ({ children, initialValues = {} }) => {
   }, [])
 
   const addVariableListener = useCallback((listener) => {
-    setVariableListeners((prev) => [...prev, listener])
+    variableListenersRef.current.push(listener)
     // Return unsubscribe function
     return () => {
-      setVariableListeners((prev) => prev.filter((l) => l !== listener))
+      variableListenersRef.current = variableListenersRef.current.filter((l) => l !== listener)
     }
   }, [])
 
@@ -99,22 +96,40 @@ export const FormProvider = ({ children, initialValues = {} }) => {
     return validationErrors
   }, [validationErrors])
 
-  const value = {
-    values,
-    updateValue,
-    getValue,
-    getAllValues,
-    resetValues,
-    variables,
-    updateVariable,
-    getVariable,
-    getAllVariables,
-    setAllVariables,
-    addVariableListener,
-    validationErrors,
-    setErrors,
-    getErrors,
-  }
+  const value = useMemo(
+    () => ({
+      values,
+      updateValue,
+      getValue,
+      getAllValues,
+      resetValues,
+      variables,
+      updateVariable,
+      getVariable,
+      getAllVariables,
+      setAllVariables,
+      addVariableListener,
+      validationErrors,
+      setErrors,
+      getErrors,
+    }),
+    [
+      values,
+      updateValue,
+      getValue,
+      getAllValues,
+      resetValues,
+      variables,
+      updateVariable,
+      getVariable,
+      getAllVariables,
+      setAllVariables,
+      addVariableListener,
+      validationErrors,
+      setErrors,
+      getErrors,
+    ]
+  )
 
   return <FormContext.Provider value={value}>{children}</FormContext.Provider>
 }

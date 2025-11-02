@@ -1,4 +1,6 @@
 import React from 'react'
+import { Button, List } from 'antd'
+import { UploadOutlined, DeleteOutlined, DownloadOutlined } from '@ant-design/icons'
 
 import ComponentHeader from '../shared/ComponentHeader'
 
@@ -129,63 +131,50 @@ const FileUpload = (props) => {
             onChange={onUploadMultipleFiles}
             disabled={!isSameEditor}
           />
-          <a
-            href="#"
-            style={{ marginTop: 6 }}
-            className="btn btn-secondary"
+          <Button
+            icon={<UploadOutlined />}
             onClick={(e) => {
               e.preventDefault()
               inputField && inputField.current.click()
             }}
+            disabled={!isSameEditor}
           >
             Upload files
-          </a>
+          </Button>
           {fileList && fileList.length > 0 && (
-            <ul
-              style={{
-                display: 'flex',
-                maxWidth: '450px',
-                flexDirection: 'column',
-                marginTop: '1rem',
-              }}
-            >
-              {fileList.map((file, index) => {
-                return (
-                  <li
-                    key={`file${index}`}
-                    style={{
-                      listStyleType: 'none',
-                      fontSize: 16,
-                      display: 'block',
-                    }}
+            <List
+              style={{ marginTop: '1rem', maxWidth: '450px' }}
+              size="small"
+              dataSource={fileList}
+              renderItem={(file, index) => (
+                <List.Item
+                  actions={
+                    isSameEditor
+                      ? [
+                          <Button
+                            key="delete"
+                            type="text"
+                            size="small"
+                            danger
+                            icon={<DeleteOutlined />}
+                            onClick={() => onRemoveFile(file)}
+                          />,
+                        ]
+                      : []
+                  }
+                >
+                  <Button
+                    type="link"
+                    size="small"
+                    icon={<DownloadOutlined />}
+                    onClick={() => onDownloadFile(file)}
+                    style={{ padding: 0 }}
                   >
-                    <span
-                      style={{ float: 'left', cursor: 'pointer' }}
-                      onClick={() => {
-                        onDownloadFile(file)
-                      }}
-                    >
-                      <span style={{ marginRight: 4 }}>{index + 1}.</span> {file.originalName}
-                    </span>
-                    {/* Only show delete button if user is the same editor */}
-                    {isSameEditor && (
-                      <span
-                        style={{
-                          float: 'right',
-                          cursor: 'pointer',
-                          marginTop: 4,
-                        }}
-                        onClick={() => {
-                          onRemoveFile(file)
-                        }}
-                      >
-                        <i className="fas fa-trash"></i>
-                      </span>
-                    )}
-                  </li>
-                )
-              })}
-            </ul>
+                    {index + 1}. {file.originalName}
+                  </Button>
+                </List.Item>
+              )}
+            />
           )}
         </div>
       </div>
