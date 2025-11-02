@@ -24,6 +24,8 @@
  * @requires useUndoRedo hook for undo/redo state management
  */
 import React, { useEffect, useRef, useState } from 'react'
+import { Button } from 'antd'
+import { UndoOutlined, RedoOutlined } from '@ant-design/icons'
 
 import update from 'immutability-helper'
 
@@ -832,14 +834,9 @@ const Preview = (props) => {
 
   return (
     <div className={classes} style={{ height: '100%', scrollbarWidth: 'none' }}>
-      <div className="preview-toolbar">
-        <span
-          style={{
-            border: '1px solid #ddd',
-            padding: 8,
-            marginRight: '4px',
-            backgroundColor: '#ffffff',
-          }}
+      <div className="preview-toolbar" style={{ display: 'flex', gap: '8px', padding: '12px', backgroundColor: '#fafafa', borderBottom: '1px solid #d9d9d9' }}>
+        <Button
+          icon={<UndoOutlined />}
           onClick={() => {
             const event = new KeyboardEvent('keydown', {
               key: 'z',
@@ -848,15 +845,10 @@ const Preview = (props) => {
             document.dispatchEvent(event)
           }}
         >
-          <i className="fas fa-history" style={{ marginRight: 8 }} />
           Undo
-        </span>
-        <span
-          style={{
-            border: '1px solid #ddd',
-            padding: 8,
-            backgroundColor: '#ffffff',
-          }}
+        </Button>
+        <Button
+          icon={<RedoOutlined style={{ transform: 'scaleX(-1)' }} />}
           onClick={() => {
             const event = new KeyboardEvent('keydown', {
               key: 'y',
@@ -865,9 +857,8 @@ const Preview = (props) => {
             document.dispatchEvent(event)
           }}
         >
-          <i className="fas fa-redo" style={{ marginRight: 8 }} />
           Redo
-        </span>
+        </Button>
       </div>
       <div className="edit-form" ref={editForm}>
         {props.editElement !== null && showEditForm()}
