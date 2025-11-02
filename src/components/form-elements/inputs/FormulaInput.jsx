@@ -212,7 +212,11 @@ class FormulaInput extends Component {
             value={this.formatNumber(value)}
             disabled={true}
             status={error ? 'error' : ''}
-            style={{ width: '100%' }}
+            style={{ 
+              width: '100%',
+              borderStyle: 'solid',
+              cursor: 'not-allowed',
+            }}
           />
           {/* eslint-enable react/jsx-props-no-spreading */}
           {error && <div style={{ color: '#ff4d4f', fontSize: '14px', marginTop: '4px' }}>{error}</div>}
