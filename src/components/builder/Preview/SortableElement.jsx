@@ -7,7 +7,6 @@ import { useDrag, useDrop } from 'react-dnd'
 import ItemTypes from '../../../constants/itemTypes'
 
 const cardStyle = {
-  border: '1px solid #d9d9d9',
   padding: '0.5rem 1rem',
   marginBottom: '.5rem',
   backgroundColor: 'white',
