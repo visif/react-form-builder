@@ -1,11 +1,14 @@
 import React from 'react'
+import { Rate } from 'antd'
 
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
-import StarRating from './StarRating'
 
 const Rating = (props) => {
   const inputField = React.useRef(null)
+  const [value, setValue] = React.useState(
+    props.defaultValue !== undefined ? parseFloat(props.defaultValue) : 0
+  )
 
   const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()
 
@@ -16,16 +19,9 @@ const Rating = (props) => {
       userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
-  const starProps = {}
-  starProps.name = props.data.field_name
-  starProps.ratingAmount = 5
-
-  if (props.mutable) {
-    starProps.rating = props.defaultValue !== undefined ? parseFloat(props.defaultValue, 10) : 0
-    starProps.editing = true
-    starProps.disabled = !!(props.read_only || !isSameEditor)
-    starProps.ref = inputField
-  }
+  const handleChange = React.useCallback((newValue) => {
+    setValue(newValue)
+  }, [])
 
   let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
   if (props.data.pageBreakBefore) {
@@ -37,7 +33,14 @@ const Rating = (props) => {
       <ComponentHeader {...props} />
       <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
         <ComponentLabel {...props} />
-        <StarRating {...starProps} />
+        <Rate
+          ref={inputField}
+          count={5}
+          value={value}
+          onChange={handleChange}
+          disabled={!props.mutable || props.read_only || !isSameEditor}
+        />
+        <input type="hidden" name={props.data.field_name} value={value} />
       </div>
     </div>
   )

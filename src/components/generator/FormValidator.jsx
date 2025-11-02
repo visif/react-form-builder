@@ -2,6 +2,8 @@
  * <FormValidator />
  */
 import React from 'react'
+import { Alert, Button } from 'antd'
+import { ExclamationCircleOutlined } from '@ant-design/icons'
 
 import xss from 'xss'
 
@@ -41,17 +43,20 @@ const FormValidator = () => {
   return (
     <div>
       {errors.length > 0 && (
-        <div className="alert alert-danger validation-error">
-          <div className="clearfix">
-            <i className="fas fa-exclamation-triangle float-left"></i>
-            <ul className="float-left">{errorItems}</ul>
-          </div>
-          <div className="clearfix">
-            <a className="float-right btn btn-default btn-sm btn-danger" onClick={dismissModal}>
-              Dismiss
-            </a>
-          </div>
-        </div>
+        <Alert
+          message={
+            <div>
+              <ExclamationCircleOutlined style={{ marginRight: 8 }} />
+              <ul style={{ display: 'inline-block', margin: 0, paddingLeft: 20 }}>
+                {errorItems}
+              </ul>
+            </div>
+          }
+          type="error"
+          closable
+          onClose={dismissModal}
+          style={{ marginBottom: 16 }}
+        />
       )}
     </div>
   )

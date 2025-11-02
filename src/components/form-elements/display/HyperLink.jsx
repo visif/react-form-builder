@@ -1,6 +1,9 @@
 import React from 'react'
+import { Typography } from 'antd'
 
 import ComponentHeader from '../shared/ComponentHeader'
+
+const { Link } = Typography
 
 const HyperLink = (props) => {
   let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
@@ -12,9 +15,9 @@ const HyperLink = (props) => {
     <div className={baseClasses}>
       <ComponentHeader {...props} />
       <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
-        <a target="_blank" href={props.data.href} rel="noreferrer">
+        <Link target="_blank" href={props.data.href}>
           {props.data.content}
-        </a>
+        </Link>
       </div>
     </div>
   )

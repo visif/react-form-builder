@@ -60,6 +60,7 @@
  * @requires hot-formula-parser for formula fields
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { Button } from 'antd'
 
 import ReactDOM from 'react-dom'
 
@@ -841,7 +842,13 @@ const ReactForm = (props) => {
   const handleRenderSubmit = useCallback(() => {
     const { actionName = 'Submit', submitButton = false } = props
 
-    return submitButton || <input type="submit" className="btn btn-big" value={actionName} />
+    return (
+      submitButton || (
+        <Button type="primary" htmlType="submit" size="large">
+          {actionName}
+        </Button>
+      )
+    )
   }, [props])
 
   // Render logic
@@ -1068,9 +1075,9 @@ const ReactForm = (props) => {
           <div className="btn-toolbar">
             {!props.hide_actions && handleRenderSubmit()}
             {!props.hide_actions && props.back_action && (
-              <a href={props.back_action} className="btn btn-default btn-cancel btn-big">
+              <Button href={props.back_action} size="large" style={{ marginLeft: 8 }}>
                 {backName}
-              </a>
+              </Button>
             )}
           </div>
         </form>

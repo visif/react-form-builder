@@ -1,4 +1,6 @@
 import React from 'react'
+import { Button } from 'antd'
+import { PlusOutlined, MinusOutlined } from '@ant-design/icons'
 
 import PropTypes from 'prop-types'
 
@@ -227,9 +229,9 @@ const Table = (props) => {
         </table>
         {!isFixedRow && (
           <div style={{ textAlign: 'right' }}>
-            <button
-              type="button"
-              className="btn btn-secondary"
+            <Button
+              type="default"
+              icon={<MinusOutlined />}
               onClick={removeRow}
               style={{
                 marginRight: 8,
@@ -238,15 +240,15 @@ const Table = (props) => {
               disabled={!isSameEditor}
             >
               Remove Row
-            </button>
-            <button
-              type="button"
-              className="btn btn-info"
+            </Button>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
               disabled={!isSameEditor}
               onClick={addRow}
             >
               Add Row
-            </button>
+            </Button>
           </div>
         )}
       </div>
