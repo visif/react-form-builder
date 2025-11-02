@@ -212,7 +212,7 @@ class FormulaInput extends Component {
             value={this.formatNumber(value)}
             disabled={true}
             status={error ? 'error' : ''}
-            style={{ 
+            style={{
               width: '100%',
               borderStyle: 'solid',
               cursor: 'not-allowed',
