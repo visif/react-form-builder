@@ -1,17 +1,12 @@
 import React from 'react'
+import { Typography } from 'antd'
 
 import myxss from '../../../utils/xss'
 import ComponentHeader from '../shared/ComponentHeader'
 
-const Paragraph = (props) => {
-  let classNames = 'static'
-  if (props.data.bold) {
-    classNames += ' bold'
-  }
-  if (props.data.italic) {
-    classNames += ' italic'
-  }
+const { Paragraph: AntParagraph } = Typography
 
+const Paragraph = (props) => {
   let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
   if (props.data.pageBreakBefore) {
     baseClasses += ' alwaysbreak'
@@ -20,12 +15,18 @@ const Paragraph = (props) => {
   return (
     <div className={baseClasses}>
       <ComponentHeader {...props} />
-      <p
-        className={classNames}
-        dangerouslySetInnerHTML={{
-          __html: myxss.process(props.data.content),
+      <AntParagraph
+        style={{
+          fontWeight: props.data.bold ? 'bold' : 'normal',
+          fontStyle: props.data.italic ? 'italic' : 'normal',
         }}
-      />
+      >
+        <div
+          dangerouslySetInnerHTML={{
+            __html: myxss.process(props.data.content),
+          }}
+        />
+      </AntParagraph>
     </div>
   )
 }
