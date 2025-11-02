@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { Input } from 'antd'
 
 import PropTypes from 'prop-types'
 
@@ -194,14 +195,6 @@ class FormulaInput extends Component {
     const { error, value } = this.state
     const { data, style } = this.props
 
-    const inputProps = {
-      type: 'text',
-      className: `form-control ${error ? 'is-invalid' : ''}`,
-      name: data?.field_name,
-      value: this.formatNumber(value),
-      disabled: true,
-    }
-
     let baseClasses = `${data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
@@ -213,15 +206,16 @@ class FormulaInput extends Component {
         <ComponentHeader data={data} style={style} {...this.props} />
         <div className={data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel data={data} style={style} {...this.props} />
-          <input
-            type={inputProps.type}
-            className={inputProps.className}
-            name={inputProps.name}
-            value={inputProps.value}
-            disabled={inputProps.disabled}
+          <Input
+            type="text"
+            name={data?.field_name}
+            value={this.formatNumber(value)}
+            disabled={true}
+            status={error ? 'error' : ''}
+            style={{ width: '100%' }}
           />
           {/* eslint-enable react/jsx-props-no-spreading */}
-          {error && <div className="invalid-feedback">{error}</div>}
+          {error && <div style={{ color: '#ff4d4f', fontSize: '14px', marginTop: '4px' }}>{error}</div>}
         </div>
       </div>
     )
