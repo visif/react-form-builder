@@ -1,4 +1,6 @@
 import React from 'react'
+import { Button, Image } from 'antd'
+import { CameraOutlined, CloseOutlined } from '@ant-design/icons'
 
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
@@ -62,22 +64,29 @@ const Camera = (props) => {
                 capture="camera"
                 className="image-upload"
                 onChange={displayImage}
+                style={{ display: 'none' }}
+                id={`camera-input-${name}`}
               />
-              <div className="image-upload-control">
-                <div className="btn btn-default">
-                  <i className="fas fa-camera" /> Upload Photo
-                </div>
-                <p>Select an image from your computer or device.</p>
-              </div>
+              <label htmlFor={`camera-input-${name}`}>
+                <Button icon={<CameraOutlined />} onClick={() => document.getElementById(`camera-input-${name}`).click()}>
+                  Upload Photo
+                </Button>
+              </label>
+              <p style={{ marginTop: '8px', color: '#8c8c8c' }}>Select an image from your computer or device.</p>
             </div>
 
             {img && (
               <div>
-                <img src={img} height="100" className="image-upload-preview" />
+                <Image src={img} height={100} className="image-upload-preview" />
                 <br />
-                <div className="btn btn-image-clear" onClick={clearImage}>
-                  <i className="fas fa-times" /> Clear Photo
-                </div>
+                <Button
+                  icon={<CloseOutlined />}
+                  onClick={clearImage}
+                  danger
+                  style={{ marginTop: '8px' }}
+                >
+                  Clear Photo
+                </Button>
               </div>
             )}
           </div>

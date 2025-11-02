@@ -1,11 +1,8 @@
 import React from 'react'
+import { Button, Image, Modal } from 'antd'
+import { UploadOutlined, DeleteOutlined } from '@ant-design/icons'
 
-// TODO: Replace react-image-lightbox with React 18 compatible alternative
-// import Lightbox from 'react-image-lightbox'
-// import 'react-image-lightbox/style.css'
 import ComponentHeader from '../shared/ComponentHeader'
-
-// This only needs to be imported once in your app
 
 const ImageUpload = (props) => {
   const inputField = React.useRef(null)
@@ -36,13 +33,15 @@ const ImageUpload = (props) => {
   }, [props.defaultValue, defaultValue])
 
   const onRemoveImage = React.useCallback(() => {
-    if (!confirm('Confirm delete?')) {
-      return
-    }
-
-    setFilePath('')
-    setFileName('')
-    setBlobUrl('')
+    Modal.confirm({
+      title: 'Confirm delete?',
+      content: 'Are you sure you want to delete this image?',
+      onOk: () => {
+        setFilePath('')
+        setFileName('')
+        setBlobUrl('')
+      },
+    })
   }, [])
 
   const uploadImageFile = React.useCallback(
@@ -87,58 +86,55 @@ const ImageUpload = (props) => {
       <ComponentHeader {...props} />
       <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
         <div style={{ position: 'relative' }}>
-          <div
-            className="btn is-isolated"
-            onClick={onRemoveImage}
-            style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              display: filePath ? '' : 'none',
-            }}
-          >
-            <i className="is-isolated fas fa-trash"></i>
-          </div>
-          <img
-            style={{ width: '100%', cursor: 'pointer' }}
-            onClick={() => {
-              setIsOpen(true)
-            }}
-            src={blobUrl || filePath ? blobUrl || filePath : ''}
-          />
+          {filePath && (
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={onRemoveImage}
+              style={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                zIndex: 1,
+              }}
+            />
+          )}
+          {(blobUrl || filePath) && (
+            <Image
+              style={{ width: '100%', cursor: 'pointer' }}
+              src={blobUrl || filePath}
+              preview={{
+                visible: isOpen,
+                onVisibleChange: (visible) => setIsOpen(visible),
+              }}
+            />
+          )}
         </div>
         <div>
           <input
             ref={inputField}
             type="file"
             name="fileUpload"
+            accept="image/*"
             title=" "
             style={{ display: 'none' }}
             onChange={uploadImageFile}
           />
-          <a
-            href=""
-            className="btn btn-secondary"
-            style={{
-              display: filePath ? 'none' : 'inline-block',
-              pointerEvents: isSameEditor ? 'auto' : 'none',
-            }}
-            onClick={(e) => {
-              inputField && inputField.current.click()
-              e.preventDefault()
-            }}
-          >
-            Upload Image
-          </a>
+          {!filePath && (
+            <Button
+              icon={<UploadOutlined />}
+              disabled={!isSameEditor}
+              onClick={(e) => {
+                inputField && inputField.current.click()
+                e.preventDefault()
+              }}
+            >
+              Upload Image
+            </Button>
+          )}
         </div>
       </div>
-      {/* TODO: Re-enable lightbox with React 18 compatible alternative */}
-      {/* isOpen && (
-        <Lightbox
-          mainSrc={blobUrl || filePath}
-          onCloseRequest={() => setIsOpen(false)}
-        />
-      ) */}
     </div>
   )
 }
