@@ -67,8 +67,6 @@ const MultiColumnRow = (props) => {
                       width: 'var(--rfb-table-row-header-width, 150px)',
                       fontWeight: 'var(--rfb-table-header-font-weight, bold)',
                       fontFamily: 'var(--rfb-table-header-font-family, inherit)',
-                      backgroundColor: '#e9ecef',
-                      borderBottom: '2px solid #dee2e6',
                     }}
                   />
                 )}
@@ -80,8 +78,6 @@ const MultiColumnRow = (props) => {
                       textAlign: 'center',
                       fontWeight: 'var(--rfb-table-header-font-weight, bold)',
                       fontFamily: 'var(--rfb-table-header-font-family, inherit)',
-                      backgroundColor: '#e9ecef',
-                      borderBottom: '2px solid #dee2e6',
                       padding: '10px 8px',
                       width: `${columnWidths[columnIndex]}%`,
                       maxWidth: `${columnWidths[columnIndex]}%`,

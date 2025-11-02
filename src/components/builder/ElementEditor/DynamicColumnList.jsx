@@ -143,9 +143,21 @@ const DynamicColumnList = ({ element: propsElement, preview = null, updateElemen
           </li>
           <li style={{ marginBottom: '8px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px 60px 120px', gap: '8px', alignItems: 'center' }}>
-              <div style={{ fontSize: '13px', fontWeight: 500 }}>Header Text</div>
-              <div style={{ fontSize: '13px', fontWeight: 500 }}>Width</div>
-              <div style={{ fontSize: '13px', fontWeight: 500, textAlign: 'center' }}>Sync</div>
+              <Input
+                disabled
+                value="Header Text"
+                style={{ fontWeight: 500, color: '#262626' }}
+              />
+              <Input
+                disabled
+                value="Width"
+                style={{ fontWeight: 500, color: '#262626' }}
+              />
+              <Input
+                disabled
+                value="Sync"
+                style={{ fontWeight: 500, color: '#262626', textAlign: 'center' }}
+              />
               <div />
             </div>
           </li>
