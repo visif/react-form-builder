@@ -1,4 +1,5 @@
 import React from 'react'
+import { Input } from 'antd'
 
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
@@ -197,7 +198,6 @@ const DataSource = (props) => {
 
   const inputProps = {
     type: 'text',
-    className: 'form-control',
     name: props.data.field_name,
     value: searchText,
   }
@@ -225,7 +225,7 @@ const DataSource = (props) => {
           }}
         >
           <div>
-            <input
+            <Input
               {...inputProps}
               disabled={props.read_only || !isSameEditor || loading}
               onFocus={handleInputFocus}

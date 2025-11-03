@@ -125,7 +125,6 @@
           margin: 0;
           padding: 0;
           li {
-            margin-top: 10px;
             input {
               &.form-control {
                 width: 84.26%;
@@ -214,7 +213,7 @@
           }
           .toolbar-header-buttons {
             position: absolute;
-            right: 20px;
+            right: 0;
             margin-top:-20px;
             display: flex;
             gap: 5px;
