@@ -1,6 +1,7 @@
 import React from 'react'
+import { Input } from 'antd'
 
-import TextAreaAutosize from 'react-textarea-autosize'
+const { TextArea } = Input
 
 /**
  * Reusable text field editor component
@@ -16,7 +17,7 @@ const TextFieldEditor = ({
   multiline = false,
   placeholder = '',
   helpText = null,
-  className = 'form-control',
+  className,
 }) => {
   return (
     <div className="form-group">
@@ -26,21 +27,19 @@ const TextFieldEditor = ({
         </label>
       )}
       {multiline ? (
-        <TextAreaAutosize
+        <TextArea
           id={id}
-          type={type}
-          className={className}
           value={value}
           defaultValue={value}
           onBlur={onBlur}
           onChange={onChange}
           placeholder={placeholder}
+          autoSize={{ minRows: 2, maxRows: 6 }}
         />
       ) : (
-        <input
+        <Input
           id={id}
           type={type}
-          className={className}
           value={value}
           defaultValue={value}
           onBlur={onBlur}

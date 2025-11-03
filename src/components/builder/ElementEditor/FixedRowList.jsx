@@ -2,6 +2,8 @@
  * <FixedRowList />
  */
 import React, { useCallback, useState } from 'react'
+import { Input, Button, Space } from 'antd'
+import { PlusOutlined, MinusOutlined } from '@ant-design/icons'
 
 import PropTypes from 'prop-types'
 
@@ -275,22 +277,22 @@ const FixedRowList = ({ element: propsElement, preview = null, updateElement }) 
     <div className="dynamic-option-list">
       <ul key="row-labels">
         <li>
-          <div className="row">
-            <div className="col-sm-12">
-              <b>Rows</b>
-            </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px', gap: '8px', alignItems: 'center', padding: '4px 0' }}>
+            <Input value="Rows" disabled />
+            <div></div>
           </div>
         </li>
         <li className="clearfix" key="li_label_x">
-          <div className="row">
-            <div className="col-sm-9">Row Label</div>
-            <div className="col-sm-3">
-              <div className="dynamic-options-actions-buttons">
-                <button onClick={() => addRow(-1)} className="btn btn-success">
-                  <i className="fas fa-plus-circle" />
-                </button>
-              </div>
-            </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px', gap: '8px', alignItems: 'center', padding: '4px 0' }}>
+            <Input value="Row Label" disabled />
+            <Space size="small">
+              <Button
+                onClick={() => addRow(-1)}
+                type="primary"
+                size="small"
+                icon={<PlusOutlined />}
+              />
+            </Space>
           </div>
         </li>
 
@@ -298,31 +300,31 @@ const FixedRowList = ({ element: propsElement, preview = null, updateElement }) 
           const key = `edit_${option.key}`
           return (
             <li className="clearfix" key={`li_label_${key}`}>
-              <div className="row">
-                <div className="col-sm-9">
-                  <input
-                    tabIndex={index + 1}
-                    key={`input_label_${key}`}
-                    className="form-control"
-                    style={{ width: '100%' }}
-                    type="text"
-                    name={`text_${index}`}
-                    placeholder="Row Label"
-                    value={option.text}
-                    onBlur={updateRow}
-                    onChange={(e) => editRow(index, 'text', e)}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px', gap: '8px', alignItems: 'center', padding: '4px 0' }}>
+                <Input
+                  tabIndex={index + 1}
+                  key={`input_label_${key}`}
+                  type="text"
+                  name={`text_${index}`}
+                  placeholder="Row Label"
+                  value={option.text}
+                  onBlur={updateRow}
+                  onChange={(e) => editRow(index, 'text', e)}
+                />
+                <Space size="small">
+                  <Button
+                    onClick={() => addRow(index)}
+                    type="primary"
+                    size="small"
+                    icon={<PlusOutlined />}
                   />
-                </div>
-                <div className="col-sm-3">
-                  <div className="dynamic-options-actions-buttons">
-                    <button onClick={() => addRow(index)} className="btn btn-success">
-                      <i className="fas fa-plus-circle" />
-                    </button>
-                    <button onClick={() => removeRow(index)} className="btn btn-danger">
-                      <i className="fas fa-minus-circle" />
-                    </button>
-                  </div>
-                </div>
+                  <Button
+                    onClick={() => removeRow(index)}
+                    danger
+                    size="small"
+                    icon={<MinusOutlined />}
+                  />
+                </Space>
               </div>
             </li>
           )

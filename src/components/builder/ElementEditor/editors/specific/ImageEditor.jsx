@@ -1,4 +1,6 @@
 import React from 'react'
+import { Input, Upload, Button } from 'antd'
+import { UploadOutlined } from '@ant-design/icons'
 
 import CheckboxFieldEditor from './CheckboxFieldEditor'
 
@@ -12,17 +14,24 @@ const ImageEditor = ({ element, onUploadFile, onChange, onBlur }) => {
   return (
     <div>
       <div className="form-group">
-        <input id="srcImage" type="file" onChange={onUploadFile} />
+        <label className="control-label">Upload Image:</label>
+        <Upload
+          beforeUpload={(file) => {
+            onUploadFile({ target: { files: [file] } })
+            return false
+          }}
+          maxCount={1}
+        >
+          <Button icon={<UploadOutlined />}>Select File</Button>
+        </Upload>
       </div>
 
       <div className="form-group">
         <label className="control-label" htmlFor="srcInput">
           Link to:
         </label>
-        <input
+        <Input
           id="srcInput"
-          type="text"
-          className="form-control"
           value={element.src}
           defaultValue={element.src}
           onBlur={onBlur}
@@ -37,29 +46,25 @@ const ImageEditor = ({ element, onUploadFile, onChange, onBlur }) => {
         onChange={(e) => onChange('center', 'checked', e)}
       />
 
-      <div className="row">
-        <div className="col-sm-3">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+        <div>
           <label className="control-label" htmlFor="elementWidth">
             Width:
           </label>
-          <input
+          <Input
             id="elementWidth"
-            type="text"
-            className="form-control"
             value={element.width}
             defaultValue={element.width}
             onBlur={onBlur}
             onChange={(e) => onChange('width', 'value', e)}
           />
         </div>
-        <div className="col-sm-3">
+        <div>
           <label className="control-label" htmlFor="elementHeight">
             Height:
           </label>
-          <input
+          <Input
             id="elementHeight"
-            type="text"
-            className="form-control"
             value={element.height}
             defaultValue={element.height}
             onBlur={onBlur}

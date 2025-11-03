@@ -1,4 +1,5 @@
 import React from 'react'
+import { InputNumber } from 'antd'
 
 /**
  * Number range field editor with min/max/step controls
@@ -14,7 +15,7 @@ const NumberFieldEditor = ({
   min = null,
   max = null,
   step = null,
-  className = 'form-control',
+  className,
   helpText = null,
 }) => {
   return (
@@ -25,10 +26,8 @@ const NumberFieldEditor = ({
             {label}
           </label>
         )}
-        <input
+        <InputNumber
           id={id}
-          type={type}
-          className={className}
           value={value}
           defaultValue={value}
           onBlur={onBlur}
@@ -36,6 +35,7 @@ const NumberFieldEditor = ({
           min={min}
           max={max}
           step={step}
+          style={{ width: '100%' }}
         />
         {helpText && <p className="help-block">{helpText}</p>}
       </div>

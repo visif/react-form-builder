@@ -1,4 +1,5 @@
 import React from 'react'
+import { InputNumber, Input } from 'antd'
 
 import NumberFieldEditor from './NumberFieldEditor'
 import TextFieldEditor from './TextFieldEditor'
@@ -25,17 +26,14 @@ const RangeEditor = ({ element, onChange, onBlur }) => {
             <label className="control-label" htmlFor="rangeMin">
               Min
             </label>
-            <input
+            <InputNumber
               id="rangeMin"
-              type="number"
-              className="form-control"
               defaultValue={element.min_value}
               onBlur={onBlur}
-              onChange={(e) => onChange('min_value', 'value', e)}
+              onChange={(value) => onChange('min_value', 'value', { target: { value } })}
+              style={{ width: '100%', marginBottom: '4px' }}
             />
-            <input
-              type="text"
-              className="form-control"
+            <Input
               defaultValue={element.min_label}
               onBlur={onBlur}
               onChange={(e) => onChange('min_label', 'value', e)}
@@ -50,17 +48,14 @@ const RangeEditor = ({ element, onChange, onBlur }) => {
             <label className="control-label" htmlFor="rangeMax">
               Max
             </label>
-            <input
+            <InputNumber
               id="rangeMax"
-              type="number"
-              className="form-control"
               defaultValue={element.max_value}
               onBlur={onBlur}
-              onChange={(e) => onChange('max_value', 'value', e)}
+              onChange={(value) => onChange('max_value', 'value', { target: { value } })}
+              style={{ width: '100%', marginBottom: '4px' }}
             />
-            <input
-              type="text"
-              className="form-control"
+            <Input
               defaultValue={element.max_label}
               onBlur={onBlur}
               onChange={(e) => onChange('max_label', 'value', e)}
