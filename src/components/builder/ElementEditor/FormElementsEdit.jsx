@@ -617,10 +617,10 @@ const FormElementsEdit = (props) => {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '30px',
+          margin: 0,
         }}
       >
-        <h4 style={{ margin: 0 }}>{props.element.text}</h4>
+        <h2 style={{ margin: 0 }}>{props.element.text}</h2>
         <button
           type="button"
           className="dismiss-edit"
