@@ -36,7 +36,6 @@ const LabelEditor = ({
             onChange={(es) => onEditorStateChange('label', es)}
             stripPastedStyles={false}
           />
-          <br />
         </>
       )}
 
