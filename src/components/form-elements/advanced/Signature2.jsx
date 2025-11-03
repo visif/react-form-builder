@@ -124,16 +124,16 @@ const Signature2 = (props) => {
         <div
           style={{
             textAlign: 'center',
-            marginTop: 8,
-            marginBottom: 8,
+            marginTop: 4,
+            marginBottom: 4,
             color: isError ? 'red' : 'black',
           }}
         >
           {isError ? 'You have no permission to sign' : '__________________'}
         </div>
-        <h6 style={{ textAlign: 'center', minHeight: 20 }}>{isSigned && `(${signedPerson})`}</h6>
-        <h6 style={{ textAlign: 'center' }}>{props.data.position || 'Placeholder Text'}</h6>
-        {signedDateTime && <h6 style={{ textAlign: 'center' }}>{formatDate(signedDateTime)}</h6>}
+        <h6 style={{ textAlign: 'center', minHeight: 20, margin: '4px 0' }}>{isSigned && `(${signedPerson})`}</h6>
+        <h6 style={{ textAlign: 'center', margin: '4px 0' }}>{props.data.position || 'Placeholder Text'}</h6>
+        {signedDateTime && <h6 style={{ textAlign: 'center', margin: '4px 0' }}>{formatDate(signedDateTime)}</h6>}
       </div>
     </div>
   )
