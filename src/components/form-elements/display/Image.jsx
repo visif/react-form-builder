@@ -1,4 +1,5 @@
 import React from 'react'
+import { Image as AntImage, Empty } from 'antd'
 
 import ComponentHeader from '../shared/ComponentHeader'
 
@@ -13,15 +14,28 @@ const Image = (props) => {
   return (
     <div className={baseClasses} style={style}>
       <ComponentHeader {...props} />
-      {props.data.src && (
-        <img
-          style={{ maxWidth: '100%', height: 'auto' }}
+      {props.data.src ? (
+        <AntImage
           src={props.data.src}
           width={props.data.width}
           height={props.data.height}
+          style={{ maxWidth: '100%', height: 'auto' }}
+          preview={{
+            mask: 'Click to preview',
+          }}
+        />
+      ) : (
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description="No Image"
+          style={{
+            margin: '8px 0',
+            padding: '8px',
+            border: '1px solid #d9d9d9',
+            borderRadius: '4px',
+          }}
         />
       )}
-      {!props.data.src && <div className="no-image">No Image</div>}
     </div>
   )
 }
