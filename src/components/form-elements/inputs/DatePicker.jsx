@@ -180,7 +180,6 @@ const DatePicker = (props) => {
 
   const inputProps = {
     type: 'date',
-    className: 'form-control',
     name: props.data.field_name,
   }
 
@@ -211,7 +210,7 @@ const DatePicker = (props) => {
               placeholder={placeholder}
               value={value ? formatDate(value, formatMask) : ''}
               disabled={!isSameEditor}
-              className="form-control"
+              style={{ width: '100%' }}
             />
           ) : !showTimeSelectOnly ? (
             <AntDatePicker
@@ -219,12 +218,11 @@ const DatePicker = (props) => {
               ref={inputProps.ref}
               onChange={handleChange}
               value={value ? dayjs(value).utc(true) : null}
-              className="form-control bold-date-picker"
               format={(val) => formatDate(val, formatMask)}
               showTime={showTimeSelect ? { format: 'HH:mm', showSecond: false } : null}
               disabled={!isSameEditor || loading}
               placeholder={placeholder}
-              style={{ display: 'inline-block', width: 'auto' }}
+              style={{ width: '100%' }}
             />
           ) : (
             <AntTimePicker
@@ -232,10 +230,9 @@ const DatePicker = (props) => {
               ref={inputProps.ref}
               onChange={handleTimeChange}
               value={value ? dayjs(value).utc(true) : null}
-              className="form-control bold-time-picker"
               disabled={!isSameEditor || loading}
               placeholder={placeholder}
-              style={{ display: 'inline-block', width: 'auto' }}
+              style={{ width: '100%' }}
               format="HH:mm"
               minuteStep={1}
             />
