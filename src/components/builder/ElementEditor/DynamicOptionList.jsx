@@ -2,6 +2,8 @@
  * <DynamicOptionList />
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { Input, Checkbox, Button, Space } from 'antd'
+import { PlusOutlined, MinusOutlined } from '@ant-design/icons'
 
 import PropTypes from 'prop-types'
 
@@ -280,25 +282,12 @@ const DynamicOptionList = ({
     <div className="dynamic-option-list">
       <ul>
         <li>
-          <div className="row">
-            <div className="col-sm-5">
-              <b>Options</b>
-            </div>
-            {canHaveOptionValue && (
-              <div className="col-sm-2">
-                <b>Value</b>
-              </div>
-            )}
-            {shouldShowInfo && (
-              <div className="col-sm-1">
-                <b>Info</b>
-              </div>
-            )}
-            {shouldShowCorrect && (
-              <div className="col-sm-1">
-                <b>Correct</b>
-              </div>
-            )}
+          <div style={{ display: 'grid', gridTemplateColumns: canHaveOptionValue ? (shouldShowInfo || shouldShowCorrect ? '1fr 120px 60px 60px 120px' : '1fr 120px 120px') : '1fr 120px', gap: '8px', alignItems: 'center', padding: '4px 0' }}>
+            <Input value="Options" disabled />
+            {canHaveOptionValue && <Input value="Value" disabled />}
+            {shouldShowInfo && <Input value="Info" disabled style={{ textAlign: 'center' }} />}
+            {shouldShowCorrect && <Input value="Correct" disabled style={{ textAlign: 'center' }} />}
+            <div></div>
           </div>
         </li>
         {element.options.map((option, index) => {
@@ -306,81 +295,57 @@ const DynamicOptionList = ({
           const val = option.value || ''
           return (
             <li className="clearfix" key={itemKey}>
-              <div className="row">
-                <div className="col-sm-5">
-                  <input
-                    type="text"
-                    className="form-control"
-                    style={{ width: '100%' }}
-                    value={option.text}
-                    onChange={(e) => {
-                      const newElement = { ...element }
-                      newElement.options[index].text = e.target.value
-                      setElement(newElement)
-                      setDirty(true)
-                      handleOptionChangeThrottled(index, e)
-                    }}
+              <div style={{ display: 'grid', gridTemplateColumns: canHaveOptionValue ? (canHaveInfo || canHaveOptionCorrect ? '1fr 120px 60px 60px 120px' : '1fr 120px 120px') : '1fr 120px', gap: '8px', alignItems: 'center', padding: '4px 0' }}>
+                <Input
+                  value={option.text}
+                  onChange={(e) => {
+                    const newElement = { ...element }
+                    newElement.options[index].text = e.target.value
+                    setElement(newElement)
+                    setDirty(true)
+                    handleOptionChangeThrottled(index, e)
+                  }}
+                  onBlur={updateOption}
+                />
+                {canHaveOptionValue && (
+                  <Input
+                    value={val}
+                    onChange={(e) => handleValueChangeThrottled(index, e)}
                     onBlur={updateOption}
                   />
-                </div>
-                {canHaveOptionValue && (
-                  <div className="col-sm-2">
-                    <input
-                      type="text"
-                      className="form-control"
-                      style={{ width: '100%' }}
-                      value={val}
-                      onChange={(e) => handleValueChangeThrottled(index, e)}
-                      onBlur={updateOption}
-                    />
-                  </div>
                 )}
 
                 {canHaveOptionValue && canHaveInfo && (
-                  <div className="col-sm-1">
-                    <input
-                      className="form-control"
-                      type="checkbox"
-                      value="1"
-                      checked={Object.prototype.hasOwnProperty.call(option, 'info') && option.info}
-                      onChange={() => handleOptionInfo(index)}
-                    />
-                  </div>
+                  <Checkbox
+                    checked={Object.prototype.hasOwnProperty.call(option, 'info') && option.info}
+                    onChange={() => handleOptionInfo(index)}
+                  />
                 )}
                 {canHaveOptionValue && canHaveOptionCorrect && (
-                  <div className="col-sm-1">
-                    <input
-                      className="form-control"
-                      type="checkbox"
-                      value="1"
-                      checked={
-                        Object.prototype.hasOwnProperty.call(option, 'correct') && option.correct
-                      }
-                      onChange={() => handleOptionCorrect(index)}
-                    />
-                  </div>
+                  <Checkbox
+                    checked={
+                      Object.prototype.hasOwnProperty.call(option, 'correct') && option.correct
+                    }
+                    onChange={() => handleOptionCorrect(index)}
+                  />
                 )}
 
-                <div className="col-sm-3">
-                  <div className="dynamic-options-actions-buttons">
-                    <button
-                      onClick={() => addOption(index)}
-                      type="button"
-                      className="btn btn-success"
-                    >
-                      <i className="fas fa-plus-circle" />
-                    </button>
-                    {index > 0 && (
-                      <button
-                        onClick={() => removeOption(index)}
-                        type="button"
-                        className="btn btn-danger"
-                      >
-                        <i className="fas fa-minus-circle" />
-                      </button>
-                    )}
-                  </div>
-                </div>
+                <Space size="small">
+                  <Button
+                    onClick={() => addOption(index)}
+                    type="primary"
+                    size="small"
+                    icon={<PlusOutlined />}
+                  />
+                  {index > 0 && (
+                    <Button
+                      onClick={() => removeOption(index)}
+                      danger
+                      size="small"
+                      icon={<MinusOutlined />}
+                    />
+                  )}
+                </Space>
               </div>
             </li>
           )

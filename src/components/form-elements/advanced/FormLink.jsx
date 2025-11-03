@@ -1,4 +1,5 @@
 import React from 'react'
+import { Button } from 'antd'
 
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
@@ -274,10 +275,9 @@ const FormLink = (props) => {
               ) : (
                 <div>
                   <div className="form-link-preview" style={{ padding: '6px 0' }}>
-                    <a
+                    <Button
                       href="#"
                       style={{ marginTop: 6 }}
-                      className="btn btn-secondary"
                       onClick={(e) => {
                         e.preventDefault()
                         if (typeof props.onSelectChildForm === 'function') {
@@ -286,7 +286,7 @@ const FormLink = (props) => {
                       }}
                     >
                       {formInfo ? formInfo.Name : 'Please select a form'}
-                    </a>
+                    </Button>
                   </div>
                 </div>
               )}
