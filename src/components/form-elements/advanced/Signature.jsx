@@ -1,4 +1,6 @@
 import React from 'react'
+import { Button, Image } from 'antd'
+import { CloseOutlined } from '@ant-design/icons'
 
 import SignaturePad from 'react-signature-canvas'
 
@@ -111,12 +113,21 @@ const Signature = (props) => {
       <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
         <ComponentLabel {...props} />
         {props.read_only === true || !isSameEditor || !!sourceDataURL ? (
-          <img src={sourceDataURL} />
+          <Image src={sourceDataURL} style={{ maxWidth: '100%' }} />
         ) : (
           <SignaturePad {...pad_props} />
         )}
         {canClear && (
-          <i className="fas fa-times clear-signature" onClick={clear} title="Clear Signature" />
+          <Button
+            type="text"
+            danger
+            icon={<CloseOutlined />}
+            onClick={clear}
+            title="Clear Signature"
+            style={{ marginTop: '8px' }}
+          >
+            Clear
+          </Button>
         )}
         <input {...inputProps} />
       </div>
