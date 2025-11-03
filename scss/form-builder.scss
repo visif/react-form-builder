@@ -82,10 +82,25 @@
       textarea {
         width: 100%;
       }
+      
+      .custom-control {
+        margin-top: 16px;
+        margin-bottom: 16px;
+      }
+      
       .form-group {
+        margin-top: 16px;
+        margin-bottom: 16px;
+
+        .control-label {
+          margin-bottom: 8px;
+          display: block;
+        }
+
         .form-group-range {
           label {
             display: block;
+            margin-bottom: 4px;
           }
           input {
             display: inline-block;
@@ -103,7 +118,7 @@
         }
       }
       .dynamic-option-list {
-        margin-bottom: 15px;
+        margin-bottom: 8px;
         ul {
           list-style-type: none;
           margin: 0;
@@ -256,8 +271,15 @@
       text-align: center;
     }
     .form-group {
-      padding: 10px;
-      border: 1px dashed #ddd;
+      padding: 0;
+      margin-top: 16px;
+      margin-bottom: 16px;
+      border: none;
+
+      .control-label {
+        margin-bottom: 8px;
+        display: block;
+      }
     }
     ul {
       padding: 0;

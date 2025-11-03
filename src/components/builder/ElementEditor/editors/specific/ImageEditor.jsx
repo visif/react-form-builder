@@ -46,30 +46,32 @@ const ImageEditor = ({ element, onUploadFile, onChange, onBlur }) => {
         onChange={(e) => onChange('center', 'checked', e)}
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-        <div>
-          <label className="control-label" htmlFor="elementWidth">
-            Width:
-          </label>
-          <Input
-            id="elementWidth"
-            value={element.width}
-            defaultValue={element.width}
-            onBlur={onBlur}
-            onChange={(e) => onChange('width', 'value', e)}
-          />
-        </div>
-        <div>
-          <label className="control-label" htmlFor="elementHeight">
-            Height:
-          </label>
-          <Input
-            id="elementHeight"
-            value={element.height}
-            defaultValue={element.height}
-            onBlur={onBlur}
-            onChange={(e) => onChange('height', 'value', e)}
-          />
+      <div className="form-group">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+          <div>
+            <label className="control-label" htmlFor="elementWidth">
+              Width:
+            </label>
+            <Input
+              id="elementWidth"
+              value={element.width}
+              defaultValue={element.width}
+              onBlur={onBlur}
+              onChange={(e) => onChange('width', 'value', e)}
+            />
+          </div>
+          <div>
+            <label className="control-label" htmlFor="elementHeight">
+              Height:
+            </label>
+            <Input
+              id="elementHeight"
+              value={element.height}
+              defaultValue={element.height}
+              onBlur={onBlur}
+              onChange={(e) => onChange('height', 'value', e)}
+            />
+          </div>
         </div>
       </div>
     </div>
