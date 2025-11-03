@@ -611,7 +611,7 @@ const FormElementsEdit = (props) => {
   ]
 
   return (
-    <div>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div
         style={{
           display: 'flex',
@@ -629,6 +629,7 @@ const FormElementsEdit = (props) => {
             border: 'none',
             background: 'none',
             padding: '5px',
+            paddingRight: '24px',
             cursor: 'pointer',
             fontSize: '125%',
             color: '#333',
@@ -637,12 +638,13 @@ const FormElementsEdit = (props) => {
           <i className="fas fa-times" />
         </button>
       </div>
-
-      {fieldConfigs.map((config, index) => {
-        if (!config.condition()) return null
-        const Component = config.component
-        return <Component key={index} {...config.props} />
-      })}
+      <div style={{ flex: 1, overflowY: 'auto', paddingRight: '30px' }}>
+        {fieldConfigs.map((config, index) => {
+          if (!config.condition()) return null
+          const Component = config.component
+          return <Component key={index} {...config.props} />
+        })}
+      </div>
     </div>
   )
 }
