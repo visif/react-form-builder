@@ -5,9 +5,7 @@ import { Select } from 'antd'
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
 
-const Tags = React.forwardRef((props, ref) => {
-  const inputField = React.useRef(null)
-
+const Tags = (props) => {
   const getDefaultValue = React.useCallback((defaultValue, options) => {
     if (defaultValue) {
       if (typeof defaultValue === 'string') {
@@ -21,18 +19,52 @@ const Tags = React.forwardRef((props, ref) => {
 
   const [value, setValue] = React.useState(getDefaultValue(props.defaultValue, props.data.options))
 
-  // Expose inputField ref to parent component
-  React.useImperativeHandle(ref, () => ({
-    inputField: {
-      current: {
-        state: { value }
-      }
+  // Initialize form context with default value on mount
+  React.useEffect(() => {
+    const { data, handleChange: onFormularChange } = props
+    const { formularKey, field_name } = data
+    const initialValue = getDefaultValue(props.defaultValue, props.data.options)
+
+    // Always initialize in context, even if empty
+    if (onFormularChange) {
+      onFormularChange(formularKey || field_name, initialValue)
     }
-  }), [value])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Empty deps - only run on mount
 
   const handleChange = React.useCallback((selectedValues) => {
-    setValue(selectedValues || [])
-  }, [])
+    const newValue = selectedValues || []
+    setValue(newValue)
+
+    const { data, handleChange: onFormularChange } = props
+    const { formularKey, field_name } = data
+
+    // Always call handleChange to update the form context
+    if (onFormularChange) {
+      // Use formularKey if it exists, otherwise use field_name
+      onFormularChange(formularKey || field_name, newValue)
+    }
+
+    // If onElementChange is provided, call it to synchronize changes across the column
+    if (props.onElementChange) {
+      // Create updated data object with the new value
+      const updatedData = {
+        ...props.data,
+        value: newValue,
+      }
+
+      // Send it for synchronization across columns
+      props.onElementChange(updatedData)
+
+      // Immediately apply changes to this component's data
+      if (props.data.dirty === undefined || props.data.dirty) {
+        updatedData.dirty = true
+        if (props.updateElement) {
+          props.updateElement(updatedData)
+        }
+      }
+    }
+  }, [props])
 
   const options = props.data.options.map((option) => ({
     value: option.value,
@@ -79,6 +111,6 @@ const Tags = React.forwardRef((props, ref) => {
       </div>
     </div>
   )
-})
+}
 
 export default Tags

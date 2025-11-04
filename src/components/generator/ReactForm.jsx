@@ -489,21 +489,34 @@ const ReactForm = (props) => {
       const contextValue = formContext.getValue(item.field_name)
       const ref = inputsRef.current[item.field_name]
 
-      console.log(`Collecting ${item.field_name}:`, {
-        hasContextValue: contextValue !== undefined,
-        hasRef: !!ref,
-        element: item.element,
-        contextValue,
-        allRefs: Object.keys(inputsRef.current),
-      })
-
       const activeUser = props.getActiveUserProperties ? props.getActiveUserProperties() : null
       const oldEditor = getEditor(item)
 
       // If we have a context value, use it (this is the new path)
       if (contextValue !== undefined) {
         itemData.value = contextValue
-        itemData.editor = oldEditor ? oldEditor : contextValue ? activeUser : null
+
+        // Determine editor based on element type and value
+        let hasValue = false
+        if (item.element === 'Tags') {
+          hasValue = Array.isArray(contextValue) && contextValue.length > 0
+        } else if (item.element === 'FileUpload') {
+          hasValue = contextValue?.fileList && contextValue.fileList.length > 0
+        } else if (item.element === 'ImageUpload') {
+          hasValue = !!contextValue?.filePath
+        } else if (item.element === 'Signature2') {
+          hasValue = !!contextValue?.isSigned
+        } else if (item.element === 'DataSource') {
+          hasValue = !!contextValue?.value
+        } else if (item.element === 'Table') {
+          hasValue = Array.isArray(contextValue) && contextValue.some((row) => row.some((val) => !!val))
+        } else if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
+          hasValue = Array.isArray(contextValue) && contextValue.length > 0
+        } else {
+          hasValue = !!contextValue
+        }
+
+        itemData.editor = oldEditor ? oldEditor : hasValue ? activeUser : null
         return itemData
       }
 
@@ -590,7 +603,7 @@ const ReactForm = (props) => {
       return itemData
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [props, getEditor, getItemValue]
+    [props, getEditor, getItemValue, formContext]
   )
 
   // Collect all form data
@@ -604,7 +617,6 @@ const ReactForm = (props) => {
         }
       })
 
-      console.log('Collected Form Data:', formData)
       return formData
     },
     [collect]
@@ -832,7 +844,6 @@ const ReactForm = (props) => {
         <Input
           handleChange={handleChange}
           ref={(c) => {
-            console.log(`Setting ref for ${item.field_name} (${item.element}):`, c)
             inputsRef.current[item.field_name] = c
           }}
           mutable={true}
