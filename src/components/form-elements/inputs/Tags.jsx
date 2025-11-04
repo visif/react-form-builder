@@ -5,7 +5,7 @@ import { Select } from 'antd'
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
 
-const Tags = (props) => {
+const Tags = React.forwardRef((props, ref) => {
   const inputField = React.useRef(null)
 
   const getDefaultValue = React.useCallback((defaultValue, options) => {
@@ -20,6 +20,15 @@ const Tags = (props) => {
   }, [])
 
   const [value, setValue] = React.useState(getDefaultValue(props.defaultValue, props.data.options))
+
+  // Expose inputField ref to parent component
+  React.useImperativeHandle(ref, () => ({
+    inputField: {
+      current: {
+        state: { value }
+      }
+    }
+  }), [value])
 
   const handleChange = React.useCallback((selectedValues) => {
     setValue(selectedValues || [])
@@ -70,6 +79,6 @@ const Tags = (props) => {
       </div>
     </div>
   )
-}
+})
 
 export default Tags

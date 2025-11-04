@@ -537,6 +537,8 @@ const ReactForm = (props) => {
           // This ensures all form fields are present in submission data
           if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
             itemData.value = []
+          } else if (item.element === 'Tags') {
+            itemData.value = []
           } else if (item.element === 'FileUpload') {
             itemData.value = { fileList: [] }
           } else if (item.element === 'ImageUpload') {
@@ -558,6 +560,12 @@ const ReactForm = (props) => {
         itemData.editor = oldEditor ? oldEditor : valueItem.value ? activeUser : null
         if (item.element === 'Signature2') {
           itemData.editor = oldEditor ? oldEditor : valueItem.value.isSigned ? activeUser : null
+        } else if (item.element === 'Tags') {
+          itemData.editor = oldEditor
+            ? oldEditor
+            : Array.isArray(valueItem.value) && valueItem.value.length > 0
+              ? activeUser
+              : null
         } else if (item.element === 'DataSource' && ref.state.searchText) {
           itemData.editor = oldEditor ? oldEditor : valueItem.value.value ? activeUser : null
         } else if (item.element === 'FileUpload') {
