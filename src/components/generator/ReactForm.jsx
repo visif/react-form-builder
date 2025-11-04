@@ -463,6 +463,23 @@ const ReactForm = (props) => {
   // Collect data from single form element
   const collect = useCallback(
     (item) => {
+      // Skip display-only elements that don't have field values
+      const displayOnlyElements = [
+        'Header',
+        'HeaderBar',
+        'Label',
+        'Paragraph',
+        'LineBreak',
+        'HyperLink',
+        'Section',
+        'Download',
+        'Image',
+      ]
+
+      if (displayOnlyElements.includes(item.element)) {
+        return null
+      }
+
       const itemData = {
         name: item.field_name,
         custom_name: item.custom_name || item.field_name,
@@ -516,7 +533,23 @@ const ReactForm = (props) => {
         itemData.editor = oldEditor ? oldEditor : checked_options.length > 0 ? activeUser : null
       } else {
         if (!ref) {
-          return null
+          // If no ref exists, still include the field with empty/default value
+          // This ensures all form fields are present in submission data
+          if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
+            itemData.value = []
+          } else if (item.element === 'FileUpload') {
+            itemData.value = { fileList: [] }
+          } else if (item.element === 'ImageUpload') {
+            itemData.value = { filePath: '' }
+          } else if (item.element === 'Signature' || item.element === 'Signature2') {
+            itemData.value = { isSigned: false }
+          } else if (item.element === 'Table') {
+            itemData.value = []
+          } else {
+            itemData.value = ''
+          }
+          itemData.editor = oldEditor || null
+          return itemData
         }
 
         const valueItem = getItemValue(item, ref)
