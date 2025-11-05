@@ -1,12 +1,12 @@
 /**
- * Main entry point for react-form-builder2 library
+ * Main entry point for visiforge-form-builder library
  *
  * Exports:
  * - ReactFormBuilder: Drag-and-drop form builder component
  * - ReactFormGenerator: Form renderer/display component
  */
 import ReactFormBuilder from './components/builder/ReactFormBuilder'
-import ReactFormGenerator from './components/generator/ReactForm'
+import ReactFormGenerator from './components/generator/ReactFormGenerator'
 
 const FormBuilders = {}
 FormBuilders.ReactFormBuilder = ReactFormBuilder

@@ -59,8 +59,8 @@ import PropTypes from 'prop-types'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 
-import Preview from './builder/Preview/Preview'
-import Toolbar from './builder/Toolbar/Toolbar'
+import Preview from './Preview/Preview'
+import Toolbar from './Toolbar/Toolbar'
 
 const ReactFormBuilder = (props) => {
   const [editMode, setEditMode] = React.useState(false)
