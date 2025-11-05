@@ -3,7 +3,20 @@
   "version": "1.0.0",
   "description": "A complete React form builder with drag-and-drop - modernized for React 18, Vite, and hooks",
   "main": "lib/index.js",
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./lib/index.js",
+      "require": "./lib/index.js"
+    },
+    "./dist/app.css": "./dist/app.css"
+  },
   "license": "MIT",
+  "sideEffects": [
+    "*.css",
+    "*.scss"
+  ],
   "files": [
     "lib",
     "dist",

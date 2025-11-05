@@ -62,9 +62,6 @@ import { HTML5Backend } from 'react-dnd-html5-backend'
 import Preview from './components/builder/Preview/Preview'
 import Toolbar from './components/builder/Toolbar/Toolbar'
 import ReactFormGenerator from './components/generator/ReactForm'
-import store from './contexts/FormBuilderContext'
-import { FormBuilderProvider, useFormBuilderStore } from './contexts/FormBuilderContext'
-import Registry from './utils/registry'
 
 const ReactFormBuilder = (props) => {
   const [editMode, setEditMode] = React.useState(false)
@@ -194,16 +191,7 @@ ReactFormBuilder.propTypes = {
 const FormBuilders = {}
 FormBuilders.ReactFormBuilder = ReactFormBuilder
 FormBuilders.ReactFormGenerator = ReactFormGenerator
-FormBuilders.ElementStore = store
-FormBuilders.Registry = Registry
 
 export default FormBuilders
 
-export {
-  ReactFormBuilder,
-  ReactFormGenerator,
-  store as ElementStore,
-  Registry,
-  FormBuilderProvider,
-  useFormBuilderStore,
-}
+export { ReactFormBuilder, ReactFormGenerator }
