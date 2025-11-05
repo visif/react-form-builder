@@ -52,9 +52,5 @@ jspm_packages
 dist/
 lib/
 
-# Dev files (for local testing only)
-index.html
-src/dev.jsx
-
 # bundles
 bundle.js
