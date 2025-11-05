@@ -50,14 +50,19 @@ const Table = (props) => {
   )
   const [rowsAdded, setRowsAdded] = React.useState(initialRowsAdded)
 
+  // Initialize form context with initial table data
   React.useEffect(() => {
-    console.log('Table useEffect - columns/rows check')
+    if (props.handleChange && inputs.length > 0) {
+      props.handleChange(props.data.field_name, inputs)
+    }
+  }, []) // Only on mount
+
+  React.useEffect(() => {
     if (
       Number(props.data.rows) !== Number(rows) ||
       JSON.stringify(props.data.columns) !== JSON.stringify(columns) ||
       JSON.stringify(rowLabels) !== JSON.stringify(props.data.rowLabels)
     ) {
-      console.log('Table default columns/rows changed')
       setRows(Number(props.data.rows))
       setColumns(props.data.columns)
       setRowLabels(props.data.rowLabels)
@@ -83,9 +88,7 @@ const Table = (props) => {
   ])
 
   React.useEffect(() => {
-    console.log('Table useEffect - defaultValue check')
     if (JSON.stringify(defaultValue) !== JSON.stringify(props.defaultValue)) {
-      console.log('Table default prop changed', defaultValue, props.defaultValue)
       const newRowsAdded =
         (props.defaultValue ? props.defaultValue.length : Number(props.data.rows)) -
         Number(props.data.rows)
@@ -109,14 +112,26 @@ const Table = (props) => {
   const addRow = React.useCallback(() => {
     const newRowsAdded = rowsAdded + 1
     setRowsAdded(newRowsAdded)
-    setInputs(getInputValues(inputs, columns, rows, newRowsAdded))
-  }, [rowsAdded, inputs, columns, rows])
+    const newInputs = getInputValues(inputs, columns, rows, newRowsAdded)
+    setInputs(newInputs)
+
+    // Update form context with new table data
+    if (props.handleChange) {
+      props.handleChange(props.data.field_name, newInputs)
+    }
+  }, [rowsAdded, inputs, columns, rows, props])
 
   const removeRow = React.useCallback(() => {
     const newRowsAdded = rowsAdded - 1
     setRowsAdded(newRowsAdded)
-    setInputs(getInputValues(inputs, columns, rows, newRowsAdded))
-  }, [rowsAdded, inputs, columns, rows])
+    const newInputs = getInputValues(inputs, columns, rows, newRowsAdded)
+    setInputs(newInputs)
+
+    // Update form context with new table data
+    if (props.handleChange) {
+      props.handleChange(props.data.field_name, newInputs)
+    }
+  }, [rowsAdded, inputs, columns, rows, props])
 
   const handleInputChange = React.useCallback((rowIndex, colIndex, value) => {
     setInputs((prevInputs) => {
@@ -125,9 +140,15 @@ const Table = (props) => {
         newInputs[rowIndex] = []
       }
       newInputs[rowIndex][colIndex] = value
+
+      // Update form context with new table data
+      if (props.handleChange) {
+        props.handleChange(props.data.field_name, newInputs)
+      }
+
       return newInputs
     })
-  }, [])
+  }, [props])
 
   const getColumnWidth = React.useCallback((totalWidthCount, width) => {
     const currentWidth = parseInt(width) ? Number(width) : 1

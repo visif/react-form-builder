@@ -133,6 +133,7 @@ const MultiColumnRow = (props) => {
                         paddingRight: '8px',
                         width: `${columnWidth}%`,
                         maxWidth: `${columnWidth}%`,
+                        verticalAlign: 'top',
                         // minWidth: `${columnWidth}%`,
                         boxSizing: 'border-box',
                         // overflow: 'hidden',

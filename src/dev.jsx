@@ -21,7 +21,13 @@ function DevApp() {
       {/* Toggle Preview Button */}
       <div style={{ marginBottom: '20px' }}>
         <button
-          onClick={() => setShowPreview(!showPreview)}
+          onClick={() => {
+            setShowPreview(!showPreview);
+            // Clear submitted data when switching views
+            if (showPreview) {
+              setSubmittedData(null);
+            }
+          }}
           style={{
             padding: '10px 20px',
             fontSize: '16px',
@@ -64,6 +70,7 @@ function DevApp() {
           ) : (
             <>
               <ReactFormGenerator
+                key={showPreview ? 'preview' : 'hidden'}
                 data={formData}
                 onSubmit={handleFormSubmit}
               />
