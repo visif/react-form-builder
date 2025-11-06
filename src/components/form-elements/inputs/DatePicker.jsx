@@ -147,15 +147,35 @@ const DatePicker = (props) => {
       const isoDate = date ? date.toISOString() : null
       setValue(isoDate)
       setPlaceholder(formatMask.toLowerCase())
+      
+      // Update form context
+      if (props.handleChange) {
+        props.handleChange(props.data.field_name, isoDate)
+      }
     },
-    [formatMask]
+    [formatMask, props]
   )
 
-  const handleTimeChange = React.useCallback((time) => {
-    const isoTime = time ? time.toISOString() : null
-    setValue(isoTime)
-    setPlaceholder('HH:MM')
-  }, [])
+  const handleTimeChange = React.useCallback(
+    (time) => {
+      const isoTime = time ? time.toISOString() : null
+      setValue(isoTime)
+      setPlaceholder('HH:MM')
+      
+      // Update form context
+      if (props.handleChange) {
+        props.handleChange(props.data.field_name, isoTime)
+      }
+    },
+    [props]
+  )
+
+  // Initialize form context with initial value
+  React.useEffect(() => {
+    if (props.handleChange && value !== undefined) {
+      props.handleChange(props.data.field_name, value)
+    }
+  }, []) // Only on mount
 
   const formatDate = React.useCallback((date, mask) => {
     if (!date) return ''
