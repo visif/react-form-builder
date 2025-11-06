@@ -13,10 +13,30 @@ const Range = (props) => {
       : parseInt(props.data.default_value, 10)
   )
 
-  const changeValue = React.useCallback((e) => {
-    const { target } = e
-    setValue(target.value)
-  }, [])
+  // Initialize form context with initial value
+  React.useEffect(() => {
+    if (props.handleChange) {
+      const initialValue =
+        props.defaultValue !== undefined
+          ? parseInt(props.defaultValue, 10)
+          : parseInt(props.data.default_value, 10)
+      props.handleChange(props.data.field_name, initialValue)
+    }
+  }, []) // Only on mount
+
+  const changeValue = React.useCallback(
+    (e) => {
+      const { target } = e
+      const newValue = parseInt(target.value, 10)
+      setValue(newValue)
+
+      // Update form context
+      if (props.handleChange) {
+        props.handleChange(props.data.field_name, newValue)
+      }
+    },
+    [props]
+  )
 
   const rangeProps = {}
   const name = props.data.field_name
@@ -83,6 +103,12 @@ const Range = (props) => {
             value={rangeProps.value}
             onChange={(newValue) => {
               setValue(newValue)
+
+              // Update form context
+              if (props.handleChange) {
+                props.handleChange(props.data.field_name, newValue)
+              }
+
               if (rangeProps.change) {
                 rangeProps.change({ target: { value: newValue } })
               }

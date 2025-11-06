@@ -21,6 +21,18 @@ const Signature2 = (props) => {
   )
   const [isError, setIsError] = React.useState(false)
 
+  // Initialize form context with initial value
+  React.useEffect(() => {
+    if (props.handleChange && props.defaultValue && props.defaultValue.isSigned) {
+      props.handleChange(props.data.field_name, {
+        isSigned: props.defaultValue.isSigned,
+        signedPerson: props.defaultValue.signedPerson,
+        signedPersonId: props.defaultValue.signedPersonId,
+        signedDateTime: props.defaultValue.signedDateTime,
+      })
+    }
+  }, []) // Only on mount
+
   React.useEffect(() => {
     // If this is in a DynamicColumnRow and we have onElementChange,
     // notify parent that this component is now initialized
@@ -39,7 +51,6 @@ const Signature2 = (props) => {
   }, [props])
 
   React.useEffect(() => {
-    console.log('Signature getDerivedStateFromProps')
     if (props.defaultValue && props.defaultValue.isSigned !== isSigned) {
       setIsSigned(props.defaultValue && props.defaultValue.isSigned)
       setSignedPerson(props.defaultValue.signedPerson)
@@ -63,15 +74,45 @@ const Signature2 = (props) => {
       props.data.specificRole === 'specific' &&
       roleLists.find((item) => `${item}`.toLocaleLowerCase().trim() === position)
     ) {
-      setIsSigned((current) => !current)
-      setSignedPerson((current) => (!current ? userProperties.name : ''))
-      setSignedPersonId((current) => (!current ? userProperties.userId : ''))
-      setSignedDateTime((current) => (!current ? dayjs().utc(true) : null))
+      const newIsSigned = !isSigned
+      const newSignedPerson = !isSigned ? userProperties.name : ''
+      const newSignedPersonId = !isSigned ? userProperties.userId : ''
+      const newSignedDateTime = !isSigned ? dayjs().utc(true) : null
+
+      setIsSigned(newIsSigned)
+      setSignedPerson(newSignedPerson)
+      setSignedPersonId(newSignedPersonId)
+      setSignedDateTime(newSignedDateTime)
+
+      // Update form context
+      if (props.handleChange) {
+        props.handleChange(props.data.field_name, {
+          isSigned: newIsSigned,
+          signedPerson: newSignedPerson,
+          signedPersonId: newSignedPersonId,
+          signedDateTime: newSignedDateTime,
+        })
+      }
     } else if (props.data.specificRole === 'notSpecific') {
-      setIsSigned((current) => !current)
-      setSignedPerson((current) => (!current ? userProperties.name : ''))
-      setSignedPersonId((current) => (!current ? userProperties.userId : ''))
-      setSignedDateTime((current) => (!current ? dayjs().utc(true) : null))
+      const newIsSigned = !isSigned
+      const newSignedPerson = !isSigned ? userProperties.name : ''
+      const newSignedPersonId = !isSigned ? userProperties.userId : ''
+      const newSignedDateTime = !isSigned ? dayjs().utc(true) : null
+
+      setIsSigned(newIsSigned)
+      setSignedPerson(newSignedPerson)
+      setSignedPersonId(newSignedPersonId)
+      setSignedDateTime(newSignedDateTime)
+
+      // Update form context
+      if (props.handleChange) {
+        props.handleChange(props.data.field_name, {
+          isSigned: newIsSigned,
+          signedPerson: newSignedPerson,
+          signedPersonId: newSignedPersonId,
+          signedDateTime: newSignedDateTime,
+        })
+      }
     } else {
       if (!isError) {
         setIsError(true)
@@ -81,7 +122,7 @@ const Signature2 = (props) => {
       }
       console.log('role annd name does not match')
     }
-  }, [props, isError])
+  }, [props, isError, isSigned])
 
   const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()
 

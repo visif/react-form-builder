@@ -39,7 +39,7 @@ const Signature = (props) => {
       }
     } else if (canvas.current) {
       canvas.current.clear()
-      
+
       // Update form context when clearing canvas
       if (props.handleChange) {
         props.handleChange(props.data.field_name, '')

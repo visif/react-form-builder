@@ -11,12 +11,15 @@ const HyperLink = (props) => {
     baseClasses += ' alwaysbreak'
   }
 
+  const href = props.data.href || 'http://www.example.com'
+  const content = props.data.content || 'Link'
+
   return (
     <div className={baseClasses}>
       <ComponentHeader {...props} />
       <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
-        <Link target="_blank" href={props.data.href}>
-          {props.data.content}
+        <Link href={href} target="_blank" rel="noopener noreferrer">
+          {content}
         </Link>
       </div>
     </div>

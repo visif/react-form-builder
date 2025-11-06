@@ -653,6 +653,8 @@ const ReactForm = (props) => {
   // Extract signature canvas data
   const getSignatureImg = useCallback((item) => {
     const ref = inputsRef.current[item.field_name]
+    if (!ref || !ref.canvas) return // Skip if ref or canvas doesn't exist
+
     const $canvas_sig = ref.canvas.current
     if ($canvas_sig) {
       const base64 = $canvas_sig.toDataURL().replace('data:image/png;base64,', '')
@@ -1003,6 +1005,7 @@ const ReactForm = (props) => {
               defaultValue={getDefaultValue(item)}
               getActiveUserProperties={props.getActiveUserProperties}
               editor={getEditor(item)}
+              handleChange={handleChange}
             />
           )
         case 'Checkboxes':
