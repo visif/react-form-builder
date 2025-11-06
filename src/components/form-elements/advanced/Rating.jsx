@@ -19,9 +19,24 @@ const Rating = (props) => {
       userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
-  const handleChange = React.useCallback((newValue) => {
-    setValue(newValue)
-  }, [])
+  const handleChange = React.useCallback(
+    (newValue) => {
+      setValue(newValue)
+
+      // Update form context
+      if (props.handleChange) {
+        props.handleChange(props.data.field_name, newValue)
+      }
+    },
+    [props]
+  )
+
+  // Initialize form context with initial value
+  React.useEffect(() => {
+    if (props.handleChange && value !== undefined) {
+      props.handleChange(props.data.field_name, value)
+    }
+  }, []) // Only on mount
 
   let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
   if (props.data.pageBreakBefore) {
