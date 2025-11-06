@@ -476,7 +476,15 @@ const ReactForm = (props) => {
         'Image',
       ]
 
-      if (displayOnlyElements.includes(item.element)) {
+      // Skip container/layout elements that don't have form values
+      const containerElements = [
+        'TwoColumnRow',
+        'ThreeColumnRow',
+        'FourColumnRow',
+        'DynamicColumnRow',
+      ]
+
+      if (displayOnlyElements.includes(item.element) || containerElements.includes(item.element)) {
         return null
       }
 
