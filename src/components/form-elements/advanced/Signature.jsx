@@ -16,6 +16,11 @@ const Signature = (props) => {
     if (defaultValue) {
       setDefaultValue('')
 
+      // Update form context
+      if (props.handleChange) {
+        props.handleChange(props.data.field_name, '')
+      }
+
       // Immediately apply changes to this component's data when clearing signature
       if (props.onElementChange) {
         const updatedData = {
@@ -34,6 +39,11 @@ const Signature = (props) => {
       }
     } else if (canvas.current) {
       canvas.current.clear()
+      
+      // Update form context when clearing canvas
+      if (props.handleChange) {
+        props.handleChange(props.data.field_name, '')
+      }
     }
   }, [defaultValue, props])
 
@@ -44,6 +54,11 @@ const Signature = (props) => {
 
     // Get the signature data
     const signatureData = canvas.current.toDataURL().split(',')[1]
+
+    // Update form context
+    if (props.handleChange) {
+      props.handleChange(props.data.field_name, signatureData)
+    }
 
     // If onElementChange is provided, call it to synchronize changes across columns
     if (props.onElementChange) {
@@ -65,6 +80,13 @@ const Signature = (props) => {
 
     setDefaultValue(signatureData)
   }, [props])
+
+  // Initialize form context with initial value
+  React.useEffect(() => {
+    if (props.handleChange && defaultValue) {
+      props.handleChange(props.data.field_name, defaultValue)
+    }
+  }, []) // Only on mount
 
   const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()
 

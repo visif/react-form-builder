@@ -147,7 +147,7 @@ const DatePicker = (props) => {
       const isoDate = date ? date.toISOString() : null
       setValue(isoDate)
       setPlaceholder(formatMask.toLowerCase())
-      
+
       // Update form context
       if (props.handleChange) {
         props.handleChange(props.data.field_name, isoDate)
@@ -161,7 +161,7 @@ const DatePicker = (props) => {
       const isoTime = time ? time.toISOString() : null
       setValue(isoTime)
       setPlaceholder('HH:MM')
-      
+
       // Update form context
       if (props.handleChange) {
         props.handleChange(props.data.field_name, isoTime)
