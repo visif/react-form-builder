@@ -2,11 +2,15 @@ import React from 'react'
 import ReactQuill, { Quill } from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 
-// Register custom font sizes
+// Register custom font sizes and alignment
 if (typeof window !== 'undefined') {
   const Size = Quill.import('attributors/style/size')
   Size.whitelist = ['10px', '12px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px', '48px', '64px']
   Quill.register(Size, true)
+
+  // Register alignment as style attributor for proper alignment
+  const AlignStyle = Quill.import('attributors/style/align')
+  Quill.register(AlignStyle, true)
 }
 
 /**
