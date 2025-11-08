@@ -1,7 +1,7 @@
 import React from 'react'
 
 import CheckboxFieldEditor from './CheckboxFieldEditor'
-import WysiwygEditor from './WysiwygEditor'
+import ReactQuillEditor from './ReactQuillEditor'
 
 /**
  * Label and requirement settings editor
@@ -9,11 +9,8 @@ import WysiwygEditor from './WysiwygEditor'
  */
 const LabelEditor = ({
   element,
-  labelEditorState,
-  editorStates,
-  toolbar,
   onChange,
-  onEditorStateChange,
+  onContentChange,
   onBlur,
   canHaveDisplayHorizontal = false,
 }) => {
@@ -28,13 +25,10 @@ const LabelEditor = ({
       {element.element !== 'Signature2' && (
         <>
           <label>Display Label</label>
-          <WysiwygEditor
-            toolbar={toolbar}
-            defaultEditorState={labelEditorState}
-            editorState={editorStates.label || labelEditorState}
+          <ReactQuillEditor
+            value={element.label || ''}
+            onChange={(html) => onContentChange('label', html)}
             onBlur={onBlur}
-            onChange={(es) => onEditorStateChange('label', es)}
-            stripPastedStyles={false}
           />
         </>
       )}
