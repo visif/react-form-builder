@@ -96,6 +96,9 @@ const FormElementsEdit = (props) => {
       const this_element = { ...element }
       this_element[elemProperty] = e.target[targProperty]
 
+      // Update props.element directly for immediate parent sync
+      props.element[elemProperty] = e.target[targProperty]
+
       if (elemProperty === 'formSource' && formDataSource) {
         const activeFormItem = formDataSource.find((item) => item.id == this_element[elemProperty])
 
@@ -113,17 +116,18 @@ const FormElementsEdit = (props) => {
       setElement(this_element)
       setDirty(true)
 
+      // Update immediately for checked properties, debounced for others
       if (targProperty === 'checked') {
-        // Need to call updateElement immediately for checked properties
-        setTimeout(() => {
-          if (dirty || targProperty === 'checked') {
-            props.updateElement.call(props.preview, this_element)
-            setDirty(false)
-          }
-        }, 0)
+        props.updateElement.call(props.preview, this_element)
+        setDirty(false)
+      } else {
+        // Call debounced push for text inputs
+        if (debouncedPushRef.current) {
+          debouncedPushRef.current()
+        }
       }
     },
-    [element, formDataSource, props, dirty]
+    [element, formDataSource, props]
   )
 
   // useEffect for componentDidMount logic
@@ -157,35 +161,37 @@ const FormElementsEdit = (props) => {
       const updatedElement = { ...element }
       updatedElement[property] = html
 
+      // Update props.element directly for immediate parent sync
+      props.element[property] = html
+
       setElement(updatedElement)
       setDirty(true)
 
-      // Call debounced push
+      // Call debounced push to update parent component
       if (debouncedPushRef.current) {
         debouncedPushRef.current()
       }
     },
-    [element]
+    [element, props.element]
   )
   const updateElement = useCallback(() => {
-    // to prevent ajax calls with no change
-    if (dirty) {
-      props.updateElement.call(props.preview, element)
-      setDirty(false)
-    }
+    // Get the current element state and update parent
+    const currentElement = element
+    props.updateElement.call(props.preview, currentElement)
+    setDirty(false)
 
     // If this is a Signature2 element in a DynamicColumnRow, we need to sync changes
     if (
-      element.element === 'Signature2' &&
-      element.parentId &&
-      element.row !== undefined &&
-      element.col !== undefined &&
+      currentElement.element === 'Signature2' &&
+      currentElement.parentId &&
+      currentElement.row !== undefined &&
+      currentElement.col !== undefined &&
       props.preview &&
       props.preview.syncRowChanges
     ) {
-      props.preview.syncRowChanges(element)
+      props.preview.syncRowChanges(currentElement)
     }
-  }, [dirty, props, element])
+  }, [element, props])
 
   const addOptions = useCallback(() => {
     const optionsApiUrl = document.getElementById('optionsApiUrl')?.value

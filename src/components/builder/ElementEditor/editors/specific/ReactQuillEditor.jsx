@@ -23,17 +23,23 @@ const ReactQuillEditor = ({
 }) => {
   const [editorValue, setEditorValue] = React.useState(defaultValue || value || '')
 
-  // Sync with external value changes
+  // Sync with external value changes (only when different from current editor value)
   React.useEffect(() => {
     if (value !== undefined && value !== editorValue) {
       setEditorValue(value)
     }
-  }, [value])
+  }, [value, editorValue])
 
   const handleChange = (content) => {
     setEditorValue(content)
     if (onChange) {
       onChange(content)
+    }
+  }
+
+  const handleBlur = () => {
+    if (onBlur) {
+      onBlur()
     }
   }
 
@@ -140,7 +146,7 @@ const ReactQuillEditor = ({
         theme="snow"
         value={editorValue}
         onChange={handleChange}
-        onBlur={onBlur}
+        onBlur={handleBlur}
         modules={modules}
         formats={formats}
         placeholder={placeholder}

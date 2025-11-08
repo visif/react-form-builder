@@ -33,6 +33,10 @@ const ComponentLabel = (props) => {
     props.data.hasOwnProperty('required') && props.data.required === true && !props.read_only
 
   let labelText = myxss.process(props.data.label)
+
+  // Remove wrapping <p> tags from Quill editor output to prevent block-level elements
+  labelText = labelText.replace(/^<p>/i, '').replace(/<\/p>$/i, '')
+
   if (props.data.formularKey && props.preview) {
     labelText = `${labelText} (${props.data.formularKey})`
   }
