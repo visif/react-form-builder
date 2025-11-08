@@ -45,7 +45,6 @@ const ReactQuillEditor = ({
 
   const modules = {
     toolbar: [
-      [{ header: [1, 2, 3, 4, 5, 6, false] }],
       [{ size: ['10px', '12px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px', '48px', '64px'] }],
       [{ font: [] }],
       ['bold', 'italic', 'underline', 'strike'],
@@ -60,7 +59,6 @@ const ReactQuillEditor = ({
   }
 
   const formats = [
-    'header',
     'size',
     'font',
     'bold',
