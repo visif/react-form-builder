@@ -200,8 +200,14 @@ export function getStoreInstance() {
             saveUrl = newSaveUrl
 
             if (onLoad) {
-              onLoad().then((loadedData) => {
+              // Ensure onLoad returns a Promise
+              Promise.resolve(onLoad()).then((loadedData) => {
                 currentState = { payload: { data: loadedData, action: payload.action } }
+                subscribers.forEach((cb) => cb(currentState))
+              }).catch((error) => {
+                console.error('Error loading data:', error)
+                // Fallback to provided data on error
+                currentState = { payload: { data, action: payload.action } }
                 subscribers.forEach((cb) => cb(currentState))
               })
             } else if (loadUrl) {
@@ -231,7 +237,8 @@ export function getStoreInstance() {
             currentState = { ...currentState }
             subscribers.forEach((cb) => cb(currentState))
             if (onPost) {
-              onPost({ task_data: currentState.payload.data })
+              Promise.resolve(onPost({ task_data: currentState.payload.data }))
+                .catch((error) => console.error('Error posting data:', error))
             } else if (saveUrl) {
               post(saveUrl, { task_data: currentState.payload.data })
             }
@@ -245,7 +252,8 @@ export function getStoreInstance() {
               currentState = { ...currentState }
               subscribers.forEach((cb) => cb(currentState))
               if (onPost) {
-                onPost({ task_data: currentState.payload.data })
+                Promise.resolve(onPost({ task_data: currentState.payload.data }))
+                  .catch((error) => console.error('Error posting data:', error))
               } else if (saveUrl) {
                 post(saveUrl, { task_data: currentState.payload.data })
               }
@@ -259,7 +267,8 @@ export function getStoreInstance() {
             currentState = { payload: { data: newData, action: undefined } }
             subscribers.forEach((cb) => cb(currentState))
             if (onPost) {
-              onPost({ task_data: newData })
+              Promise.resolve(onPost({ task_data: newData }))
+                .catch((error) => console.error('Error posting data:', error))
             } else if (saveUrl) {
               post(saveUrl, { task_data: newData })
             }
