@@ -2,8 +2,7 @@
  * <FormValidator />
  */
 import React from 'react'
-import { Alert, Button } from 'antd'
-import { ExclamationCircleOutlined } from '@ant-design/icons'
+import { ExclamationCircleOutlined, CloseOutlined } from '@ant-design/icons'
 
 import xss from 'xss'
 
@@ -32,32 +31,88 @@ const FormValidator = () => {
   const formContext = useFormContext()
   const errors = formContext.validationErrors
 
-  const dismissModal = React.useCallback(() => {
+  const handleClose = () => {
     formContext.setErrors([])
-  }, [formContext])
+  }
 
-  const errorItems = errors.map((error, index) => (
-    <li key={`error_${index}`} dangerouslySetInnerHTML={{ __html: myxss.process(error) }} />
-  ))
+  if (errors.length === 0) {
+    return null
+  }
 
   return (
-    <div>
-      {errors.length > 0 && (
-        <Alert
-          message={
+    <div
+      style={{
+        position: 'fixed',
+        top: 20,
+        right: 20,
+        width: 400,
+        backgroundColor: '#ffebee',
+        border: '1px solid #ffcdd2',
+        borderRadius: '8px',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+        padding: '16px',
+        zIndex: 1000,
+        animation: 'slideInRight 0.3s ease-out',
+      }}
+    >
+      <style>
+        {`
+          @keyframes slideInRight {
+            from {
+              transform: translateX(100%);
+              opacity: 0;
+            }
+            to {
+              transform: translateX(0);
+              opacity: 1;
+            }
+          }
+        `}
+      </style>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '8px', color: '#d32f2f' }}>
+            <ExclamationCircleOutlined style={{ marginRight: 8 }} />
+            Validation Error
+          </div>
+
+          {errors.length === 1 ? (
+            <div
+              style={{ color: '#5f2120' }}
+              dangerouslySetInnerHTML={{ __html: myxss.process(errors[0]) }}
+            />
+          ) : (
             <div>
-              <ExclamationCircleOutlined style={{ marginRight: 8 }} />
-              <ul style={{ display: 'inline-block', margin: 0, paddingLeft: 20 }}>
-                {errorItems}
+              <div style={{ marginBottom: '8px', fontWeight: 'bold', color: '#5f2120' }}>
+                {errors.length} required fields are missing:
+              </div>
+              <ul style={{ margin: 0, paddingLeft: '20px', color: '#5f2120' }}>
+                {errors.map((error, idx) => (
+                  <li key={idx} dangerouslySetInnerHTML={{ __html: myxss.process(error) }} />
+                ))}
               </ul>
             </div>
-          }
-          type="error"
-          closable
-          onClose={dismissModal}
-          style={{ marginBottom: 16 }}
-        />
-      )}
+          )}
+        </div>
+
+        <button
+          onClick={handleClose}
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '4px',
+            marginLeft: '8px',
+            fontSize: '14px',
+            color: '#d32f2f',
+            lineHeight: 1,
+          }}
+          aria-label="Close"
+        >
+          <CloseOutlined />
+        </button>
+      </div>
     </div>
   )
 }

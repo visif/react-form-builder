@@ -8,7 +8,8 @@ const SAMPLE_FORM_DATA = [
   {
     id: 'sample-header',
     element: 'Header',
-    text: '<h2>Sample Registration Form</h2>',
+    text: 'Header',
+    content: '<h2 style="color: #333;">Sample Registration Form</h2>',
     static: true,
     bold: false,
     italic: false,
@@ -16,7 +17,8 @@ const SAMPLE_FORM_DATA = [
   {
     id: 'sample-paragraph',
     element: 'Paragraph',
-    text: '<p>Please fill out all required fields marked with <span style="color: red;">*</span></p>',
+    text: 'Paragraph',
+    content: '<p style="color: #333;">Please fill out all required fields marked with <span style="color: red;">*</span></p>',
     static: true,
   },
   {
@@ -96,13 +98,36 @@ function DevApp() {
   const [logs, setLogs] = React.useState([]);
   const [builderKey, setBuilderKey] = React.useState(0); // Key to force remount
   const [generatorKey, setGeneratorKey] = React.useState(0); // Key to force generator remount
+  const [isLogExpanded, setIsLogExpanded] = React.useState(true); // Event log collapse state
 
-  // Add log entry
+  // Mock files configuration for file uploads
+  const mockFiles = React.useMemo(() => [
+    {
+      id: 'file1',
+      file_name: 'sample-document.pdf',
+      file_path: 'https://example.com/files/sample-document.pdf',
+    },
+    {
+      id: 'file2',
+      file_name: 'sample-image.jpg',
+      file_path: 'https://example.com/files/sample-image.jpg',
+    },
+  ], []);
+
+  // Add log entry with throttling to prevent performance issues
   const addLog = React.useCallback((type, message, data = null) => {
     const timestamp = new Date().toLocaleTimeString();
-    setLogs(prev => [...prev, { type, message, data, timestamp }]);
+    setLogs(prev => {
+      // Limit log size to prevent memory issues
+      const newLogs = [...prev, { type, message, data, timestamp }];
+      return newLogs.length > 100 ? newLogs.slice(-100) : newLogs;
+    });
     console.log(`[${type}] ${message}`, data || '');
   }, []);
+
+  // Debounce timer ref
+  const changeTimeoutRef = React.useRef(null);
+  const userPropertiesLoggedRef = React.useRef(false);
 
   // Mock callbacks
   const handleLoad = React.useCallback((data) => {
@@ -110,8 +135,15 @@ function DevApp() {
   }, [addLog]);
 
   const handleChange = React.useCallback((data) => {
-    addLog('onChange', 'Form data changed', { elementCount: data.length });
+    // Update form data immediately
     setFormData(data);
+    // Debounced logging to prevent performance issues
+    if (changeTimeoutRef.current) {
+      clearTimeout(changeTimeoutRef.current);
+    }
+    changeTimeoutRef.current = setTimeout(() => {
+      addLog('onChange', 'Form data changed', { elementCount: data.length });
+    }, 300);
   }, [addLog]);
 
   const handlePost = React.useCallback((data) => {
@@ -133,6 +165,99 @@ function DevApp() {
 
   const handleUpdate = React.useCallback((data) => {
     addLog('onUpdate', 'Form field updated', data);
+  }, [addLog]);
+
+  // Mock file upload callbacks
+  const handleImageUpload = React.useCallback((file) => {
+    addLog('onImageUpload', 'Image upload requested', { fileName: file?.name, size: file?.size });
+    // Simulate async upload
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const mockUrl = `https://example.com/uploads/${file?.name || 'image.jpg'}`;
+        addLog('onImageUpload', 'Image upload completed', { url: mockUrl });
+        resolve(mockUrl);
+      }, 1000);
+    });
+  }, [addLog]);
+
+  const handleUploadFile = React.useCallback((file) => {
+    addLog('onUploadFile', 'File upload requested', { fileName: file?.name, size: file?.size });
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const mockUrl = `https://example.com/uploads/${file?.name || 'file.pdf'}`;
+        addLog('onUploadFile', 'File upload completed', { url: mockUrl });
+        resolve(mockUrl);
+      }, 1000);
+    });
+  }, [addLog]);
+
+  const handleUploadImage = React.useCallback((file) => {
+    addLog('onUploadImage', 'Image upload (alt) requested', { fileName: file?.name, size: file?.size });
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const mockUrl = `https://example.com/uploads/${file?.name || 'image.png'}`;
+        addLog('onUploadImage', 'Image upload (alt) completed', { url: mockUrl });
+        resolve(mockUrl);
+      }, 1000);
+    });
+  }, [addLog]);
+
+  const handleDownloadFile = React.useCallback((fileUrl) => {
+    addLog('onDownloadFile', 'File download requested', { url: fileUrl });
+    // Simulate download
+    window.open(fileUrl, '_blank');
+  }, [addLog]);
+
+  // Mock data source callbacks
+  const handleGetDataSource = React.useCallback((dataSourceId) => {
+    addLog('getDataSource', 'Data source requested', { id: dataSourceId });
+    // Return mock data
+    const mockData = [
+      { value: 'option1', text: 'Option 1' },
+      { value: 'option2', text: 'Option 2' },
+      { value: 'option3', text: 'Option 3' },
+    ];
+    return Promise.resolve(mockData);
+  }, [addLog]);
+
+  const handleGetFormSource = React.useCallback((formId) => {
+    addLog('getFormSource', 'Form source requested', { formId });
+    // Return mock form data
+    const mockForm = {
+      id: formId,
+      name: 'Sample Form',
+      fields: [
+        { id: 'field1', type: 'text', label: 'Field 1' },
+        { id: 'field2', type: 'email', label: 'Field 2' },
+      ],
+    };
+    return Promise.resolve(mockForm);
+  }, [addLog]);
+
+  const handleGetFormContent = React.useCallback((formId) => {
+    addLog('getFormContent', 'Form content requested', { formId });
+    // Return mock form content
+    const mockContent = [
+      { id: '1', element: 'TextInput', label: 'Name', field_name: 'name' },
+      { id: '2', element: 'TextInput', label: 'Email', field_name: 'email' },
+    ];
+    return Promise.resolve(mockContent);
+  }, [addLog]);
+
+  const handleGetActiveUserProperties = React.useCallback(() => {
+    // Only log once to prevent infinite loop (this function is called on every render)
+    if (!userPropertiesLoggedRef.current) {
+      addLog('getActiveUserProperties', 'Active user properties requested');
+      userPropertiesLoggedRef.current = true;
+    }
+    // Return mock user properties directly (not a Promise)
+    return {
+      userId: 'user123',
+      name: 'John Doe',
+      email: 'john.doe@example.com',
+      role: 'admin',
+      hasDCCRole: true,
+    };
   }, [addLog]);
 
   // Clear logs
@@ -273,6 +398,28 @@ function DevApp() {
           </button>
         </div>
 
+        {/* Mock Functions Info */}
+        <div style={{
+          backgroundColor: 'white',
+          padding: '10px',
+          borderRadius: '4px',
+          border: '1px solid #dee2e6',
+          marginBottom: '15px'
+        }}>
+          <h4 style={{ marginTop: 0, fontSize: '14px', color: '#6c757d' }}>
+            📋 Mocked Functions Available
+          </h4>
+          <div style={{ fontSize: '12px', color: '#6c757d', lineHeight: '1.6' }}>
+            <strong>Form Callbacks:</strong> onChange, onLoad, onPost, onSubmit, onUpdate
+            <br />
+            <strong>File Operations:</strong> onImageUpload, onUploadFile, onUploadImage, onDownloadFile
+            <br />
+            <strong>Data Sources:</strong> getDataSource, getFormSource, getFormContent, getActiveUserProperties
+            <br />
+            <em style={{ color: '#28a745' }}>All events are logged in the Event Log sidebar →</em>
+          </div>
+        </div>
+
         {/* Preview Options */}
         {showPreview && (
           <div style={{
@@ -386,6 +533,18 @@ function DevApp() {
                   onPost={handlePost}
                   onSubmit={handleFormSubmit}
                   show_description={true}
+                  // File configuration
+                  files={mockFiles}
+                  uploadUrl="https://example.com/upload"
+                  onImageUpload={handleImageUpload}
+                  onUploadFile={handleUploadFile}
+                  onUploadImage={handleUploadImage}
+                  onDownloadFile={handleDownloadFile}
+                  // Data source callbacks
+                  getDataSource={handleGetDataSource}
+                  getFormSource={handleGetFormSource}
+                  getFormContent={handleGetFormContent}
+                  getActiveUserProperties={handleGetActiveUserProperties}
                 />
               </div>
 
@@ -471,82 +630,111 @@ function DevApp() {
 
         {/* Event Log Sidebar */}
         <div style={{
-          width: '400px',
+          width: isLogExpanded ? '400px' : '50px',
           backgroundColor: '#f8f9fa',
           borderRadius: '8px',
           border: '1px solid #dee2e6',
-          padding: '15px',
+          padding: isLogExpanded ? '15px' : '10px',
           maxHeight: 'calc(100vh - 200px)',
-          overflow: 'auto'
+          overflow: 'auto',
+          transition: 'width 0.3s ease, padding 0.3s ease'
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-            <h3 style={{ margin: 0 }}>Event Log</h3>
-            <button
-              onClick={clearLogs}
-              style={{
-                padding: '5px 10px',
-                fontSize: '12px',
-                backgroundColor: '#dc3545',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
-            >
-              Clear
-            </button>
-          </div>
-
-          {logs.length === 0 ? (
-            <p style={{ color: '#6c757d', fontStyle: 'italic' }}>No events yet...</p>
-          ) : (
-            <div>
-              {logs.map((log, index) => (
-                <div
-                  key={index}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: isLogExpanded ? '10px' : '0'
+          }}>
+            {isLogExpanded && <h3 style={{ margin: 0 }}>Event Log</h3>}
+            <div style={{ display: 'flex', gap: '5px' }}>
+              <button
+                onClick={() => setIsLogExpanded(!isLogExpanded)}
+                title={isLogExpanded ? 'Collapse' : 'Expand'}
+                style={{
+                  padding: '5px 10px',
+                  fontSize: '12px',
+                  backgroundColor: '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                {isLogExpanded ? '◀' : '▶'}
+              </button>
+              {isLogExpanded && (
+                <button
+                  onClick={clearLogs}
                   style={{
-                    backgroundColor: 'white',
-                    padding: '8px',
-                    borderRadius: '4px',
-                    marginBottom: '8px',
+                    padding: '5px 10px',
                     fontSize: '12px',
-                    border: '1px solid #dee2e6'
+                    backgroundColor: '#dc3545',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
                   }}
                 >
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    marginBottom: '4px'
-                  }}>
-                    <span style={{
-                      fontWeight: 'bold',
-                      color: log.type === 'onSubmit' ? '#28a745' :
-                             log.type === 'onChange' ? '#007bff' :
-                             log.type === 'info' ? '#6c757d' : '#17a2b8'
-                    }}>
-                      {log.type}
-                    </span>
-                    <span style={{ color: '#6c757d', fontSize: '11px' }}>
-                      {log.timestamp}
-                    </span>
-                  </div>
-                  <div style={{ color: '#495057' }}>{log.message}</div>
-                  {log.data && (
-                    <pre style={{
-                      marginTop: '4px',
-                      fontSize: '10px',
-                      backgroundColor: '#f8f9fa',
-                      padding: '4px',
-                      borderRadius: '2px',
-                      overflow: 'auto',
-                      maxHeight: '100px'
-                    }}>
-                      {JSON.stringify(log.data, null, 2)}
-                    </pre>
-                  )}
-                </div>
-              ))}
+                  Clear
+                </button>
+              )}
             </div>
+          </div>
+
+          {isLogExpanded && (
+            <>
+              {logs.length === 0 ? (
+                <p style={{ color: '#6c757d', fontStyle: 'italic' }}>No events yet...</p>
+              ) : (
+                <div>
+                  {logs.map((log, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        backgroundColor: 'white',
+                        padding: '8px',
+                        borderRadius: '4px',
+                        marginBottom: '8px',
+                        fontSize: '12px',
+                        border: '1px solid #dee2e6'
+                      }}
+                    >
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        marginBottom: '4px'
+                      }}>
+                        <span style={{
+                          fontWeight: 'bold',
+                          color: log.type === 'onSubmit' ? '#28a745' :
+                                 log.type === 'onChange' ? '#007bff' :
+                                 log.type === 'info' ? '#6c757d' : '#17a2b8'
+                        }}>
+                          {log.type}
+                        </span>
+                        <span style={{ color: '#6c757d', fontSize: '11px' }}>
+                          {log.timestamp}
+                        </span>
+                      </div>
+                      <div style={{ color: '#495057' }}>{log.message}</div>
+                      {log.data && (
+                        <pre style={{
+                          marginTop: '4px',
+                          fontSize: '10px',
+                          backgroundColor: '#f8f9fa',
+                          padding: '4px',
+                          borderRadius: '2px',
+                          overflow: 'auto',
+                          maxHeight: '100px'
+                        }}>
+                          {JSON.stringify(log.data, null, 2)}
+                        </pre>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
