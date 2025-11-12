@@ -98,7 +98,7 @@ function DevApp() {
   const [logs, setLogs] = React.useState([]);
   const [builderKey, setBuilderKey] = React.useState(0); // Key to force remount
   const [generatorKey, setGeneratorKey] = React.useState(0); // Key to force generator remount
-  const [isLogExpanded, setIsLogExpanded] = React.useState(true); // Event log collapse state
+  const [isLogExpanded, setIsLogExpanded] = React.useState(false); // Event log collapse state
 
   // Mock files configuration for file uploads
   const mockFiles = React.useMemo(() => [
