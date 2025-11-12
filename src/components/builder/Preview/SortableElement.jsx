@@ -15,7 +15,7 @@ const cardStyle = {
 
 const withDragAndDrop = (ComposedComponent) => {
   const Card = (props) => {
-    const { id, index, moveCard, insertCard, data, onCreate, seq = -1 } = props
+  const { id, index, moveCard, insertCard, data, onCreate, seq = -1 } = props
     const ref = useRef(null)
 
     const [{ isDragging }, drag] = useDrag(
@@ -40,7 +40,7 @@ const withDragAndDrop = (ComposedComponent) => {
           if (!ref.current) return
           const dragIndex = item.index
           const hoverIndex = index
-          if (data.isContainer || item.itemType === ItemTypes.CARD) {
+          if ((data && data.isContainer) || item.itemType === ItemTypes.CARD) {
             return
           }
           if (item.data && typeof item.setAsChild === 'function' && dragIndex === -1) {
@@ -62,8 +62,24 @@ const withDragAndDrop = (ComposedComponent) => {
             if (data && data.isContainer) {
               return
             }
+            // Only create and insert if we haven't already processed this item
+            if (item.isProcessed) {
+              return
+            }
+            const createHandler = typeof item.onCreate === 'function' ? item.onCreate : onCreate
+            if (typeof createHandler !== 'function') {
+              console.warn('SortableElement: missing onCreate handler for new item drop', item)
+              return
+            }
+            const newItem = createHandler(item.data)
+            if (!newItem) {
+              console.warn('SortableElement: onCreate handler returned no element', item)
+              return
+            }
             item.index = hoverIndex
-            insertCard(onCreate(item.data), hoverIndex)
+            item.isProcessed = true // Mark as processed to prevent duplicate insertions
+            insertCard(newItem, hoverIndex)
+            return // Exit early for new items
           }
 
           const hoverBoundingRect = ref.current.getBoundingClientRect()

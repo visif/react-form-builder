@@ -6,11 +6,9 @@ const PLACE_HOLDER = 'form-place-holder'
 
 const PlaceHolder = ({ text = 'Dropzone', show = false }) => {
   return (
-    show && (
-      <div className={PLACE_HOLDER}>
-        <div>{text}</div>
-      </div>
-    )
+    <div className={PLACE_HOLDER} style={{ minHeight: show ? '100px' : '20px', opacity: show ? 1 : 0.3 }}>
+      {show && <div>{text}</div>}
+    </div>
   )
 }
 

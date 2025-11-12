@@ -443,8 +443,8 @@ const Preview = (props) => {
       const newData = update(data, {
         $splice: [[hoverIndex, 0, item]],
       })
-      saveData(item, hoverIndex, hoverIndex)
       setData(newData)
+      store.dispatch('updateOrder', newData)
     }
   }
 
@@ -877,6 +877,7 @@ const Preview = (props) => {
         index={items.length}
         moveCard={cardPlaceHolder}
         insertCard={insertCard}
+        data={{}}
       />
     </div>
   )
