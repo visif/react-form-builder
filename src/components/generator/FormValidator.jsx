@@ -31,6 +31,13 @@ const FormValidator = () => {
   const formContext = useFormContext()
   const errors = formContext.validationErrors
 
+  // Debug: Log errors when they change
+  React.useEffect(() => {
+    if (errors.length > 0) {
+      console.log('FormValidator - Current errors:', errors)
+    }
+  }, [errors])
+
   const handleClose = () => {
     formContext.setErrors([])
   }
@@ -39,8 +46,12 @@ const FormValidator = () => {
     return null
   }
 
+  // Create a unique key based on error content to force re-render when errors change
+  const errorKey = errors.join('|')
+
   return (
     <div
+      key={errorKey}
       style={{
         position: 'fixed',
         top: 20,

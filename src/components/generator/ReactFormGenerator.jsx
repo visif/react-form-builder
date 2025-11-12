@@ -424,40 +424,44 @@ const ReactForm = (props) => {
     (item) => {
       let invalid = false
       if (item.required === true) {
-        const ref = inputsRef.current[item.field_name]
+        // Get value from FormContext - single source of truth
+        const value = formContext.getValue(item.field_name)
+
+        console.log(`Validating ${item.label}:`, { value, element: item.element, field_name: item.field_name })
+
         if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
-          let checked_options = 0
-          item.options.forEach((option) => {
-            const $option = ReactDOM.findDOMNode(ref.options[`child_ref_${option.key}`])
-            if ($option.checked) {
-              checked_options += 1
-            }
-          })
-          if (checked_options < 1) {
-            // errors.push(item.label + ' is required!');
+          // Check if array has any checked items
+          if (!Array.isArray(value) || value.length < 1) {
+            invalid = true
+          }
+        } else if (item.element === 'Rating') {
+          if (value === 0 || value === undefined || value === null) {
+            invalid = true
+          }
+        } else if (item.element === 'FileUpload') {
+          if (!value || !value.fileList || value.fileList.length <= 0) {
+            invalid = true
+          }
+        } else if (item.element === 'ImageUpload') {
+          if (!value || !value.filePath) {
+            invalid = true
+          }
+        } else if (item.element === 'Tags') {
+          if (!Array.isArray(value) || value.length < 1) {
             invalid = true
           }
         } else {
-          const $item = getItemValue(item, ref)
-          if (item.element === 'Rating') {
-            if ($item.value === 0) {
-              invalid = true
-            }
-          } else if (
-            $item.element === 'FileUpload' &&
-            (!$item.value.fileList || $item.value.fileList.length <= 0)
-          ) {
+          // For all other elements (TextInput, NumberInput, TextArea, Dropdown, DatePicker, etc.)
+          if (value === undefined || value === null || value === '') {
             invalid = true
-          } else if (item.element === 'ImageUpload' && !item.value.filePath) {
-            invalid = true
-          } else if ($item.value === undefined || $item.value === null || $item.value.length < 1) {
+          } else if (typeof value === 'string' && value.trim().length < 1) {
             invalid = true
           }
         }
       }
       return invalid
     },
-    [getItemValue]
+    [formContext]
   )
 
   // Collect data from single form element
