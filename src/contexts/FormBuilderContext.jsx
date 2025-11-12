@@ -233,6 +233,10 @@ export function getStoreInstance() {
           }
 
           case 'create': {
+            // Safety check: ensure data array exists
+            if (!currentState.payload.data) {
+              currentState.payload.data = []
+            }
             currentState.payload.data.push(payload)
             currentState = { ...currentState }
             subscribers.forEach((cb) => cb(currentState))
@@ -246,6 +250,10 @@ export function getStoreInstance() {
           }
 
           case 'delete': {
+            // Safety check: ensure data array exists
+            if (!currentState.payload.data) {
+              currentState.payload.data = []
+            }
             const index = currentState.payload.data.indexOf(payload)
             if (index > -1) {
               currentState.payload.data.splice(index, 1)

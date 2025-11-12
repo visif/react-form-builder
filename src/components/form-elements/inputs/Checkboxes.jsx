@@ -102,25 +102,28 @@ const Checkboxes = (props) => {
                     props.handleChange(props.data.field_name, newValue)
                   }
 
-                  // Always update the local element state for immediate visual feedback
-                  if (props.updateElement) {
-                    const updatedData = {
-                      ...props.data,
-                      dirty: true,
-                      value: newValue,
-                      options: props.data.options.map((opt) => ({
-                        ...opt,
-                        checked: opt.key === option.key ? checked : getActiveValue(newValue, opt.key)?.value || false,
-                      })),
+                  // Defer state updates to avoid setState during render
+                  setTimeout(() => {
+                    // Always update the local element state for immediate visual feedback
+                    if (props.updateElement) {
+                      const updatedData = {
+                        ...props.data,
+                        dirty: true,
+                        value: newValue,
+                        options: props.data.options.map((opt) => ({
+                          ...opt,
+                          checked: opt.key === option.key ? checked : getActiveValue(newValue, opt.key)?.value || false,
+                        })),
+                      }
+                      props.updateElement(updatedData)
                     }
-                    props.updateElement(updatedData)
-                  }
 
-                  // If onElementChange is provided for column sync
-                  const isInDynamicColumn = props.data.parentId && props.data.row !== undefined
-                  if (props.onElementChange && isInDynamicColumn) {
-                    props.onElementChange({ ...props.data, _selectionChangeOnly: true })
-                  }
+                    // If onElementChange is provided for column sync
+                    const isInDynamicColumn = props.data.parentId && props.data.row !== undefined
+                    if (props.onElementChange && isInDynamicColumn) {
+                      props.onElementChange({ ...props.data, _selectionChangeOnly: true })
+                    }
+                  }, 0)
                 }}
               >
                 <span style={{ fontSize: '13px', color: '#262626' }}>{option.text}</span>
