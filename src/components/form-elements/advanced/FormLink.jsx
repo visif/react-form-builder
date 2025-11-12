@@ -7,6 +7,7 @@ import ComponentLabel from '../shared/ComponentLabel'
 const FormLink = (props) => {
   const inputField = React.useRef(null)
   const mounted = React.useRef(false)
+  const hasLoadedFormSource = React.useRef(false)
 
   const defaultValue = props.defaultValue || {}
 
@@ -43,10 +44,16 @@ const FormLink = (props) => {
   )
 
   const loadFormSource = React.useCallback(async () => {
+    if (hasLoadedFormSource.current) {
+      return // Already loaded, skip
+    }
+
     if (typeof props.getFormSource === 'function') {
       try {
         const forms = await props.getFormSource(props.data)
         if (mounted.current) {
+          hasLoadedFormSource.current = true
+
           // If we have a formSource set from the editor, find the matching form
           if (props.data.formSource) {
             const selectedForm = forms.find((form) => form.id == props.data.formSource)
@@ -70,7 +77,7 @@ const FormLink = (props) => {
         }
       }
     }
-  }, [props])
+  }, [props.getFormSource, props.data.formSource])
 
   React.useEffect(() => {
     mounted.current = true
@@ -99,7 +106,8 @@ const FormLink = (props) => {
     return () => {
       mounted.current = false
     }
-  }, [loadFormSource, checkForValue, props])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Only run on mount - loadFormSource has internal guard
 
   React.useEffect(() => {
     if (
@@ -149,7 +157,7 @@ const FormLink = (props) => {
         }
       }
     },
-    [formList, props]
+    [formList, props.onElementChange, props.updateElement, props.data]
   )
 
   const handleOnChange = React.useCallback(
@@ -188,7 +196,7 @@ const FormLink = (props) => {
         }
       }
     },
-    [props]
+    [props.onElementChange, props.updateElement, props.data]
   )
 
   const openLinkedForm = React.useCallback(() => {
@@ -196,7 +204,7 @@ const FormLink = (props) => {
     if (selectedFormId && typeof props.openLinkedForm === 'function') {
       props.openLinkedForm(selectedFormId)
     }
-  }, [selectedFormId, props])
+  }, [selectedFormId, props.openLinkedForm])
 
   const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()
 
@@ -220,6 +228,42 @@ const FormLink = (props) => {
       <ComponentHeader {...props} />
       <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
         <ComponentLabel {...props} style={{ display: 'block' }} />
+                  {props.mutable && isShowingList && matchedList.length > 0 && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: 0,
+                        width: '100%',
+                        background: '#fff',
+                        border: '1px solid #ced4da',
+                        borderRadius: '.25rem',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                        zIndex: 10,
+                        maxHeight: 200,
+                        overflowY: 'auto',
+                      }}
+                      onMouseLeave={handleInputBlur}
+                    >
+                      {matchedList.map((form) => (
+                        <div
+                          key={form.id}
+                          style={{
+                            padding: '8px 12px',
+                            cursor: 'pointer',
+                            background: selectedFormId && selectedFormId.id === form.id ? '#e6f7ff' : '#fff',
+                            borderBottom: '1px solid #f0f0f0',
+                          }}
+                          onClick={() => handleFormSelect(form)}
+                        >
+                          {form.title}
+                        </div>
+                      ))}
+                      {matchedList.length === 0 && (
+                        <div style={{ padding: '8px 12px', color: '#999' }}>No forms found</div>
+                      )}
+                    </div>
+                  )}
         <div
           style={{
             position: 'relative',

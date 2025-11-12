@@ -222,16 +222,37 @@ function DevApp() {
 
   const handleGetFormSource = React.useCallback((formId) => {
     addLog('getFormSource', 'Form source requested', { formId });
-    // Return mock form data
-    const mockForm = {
-      id: formId,
-      name: 'Sample Form',
-      fields: [
-        { id: 'field1', type: 'text', label: 'Field 1' },
-        { id: 'field2', type: 'email', label: 'Field 2' },
-      ],
-    };
-    return Promise.resolve(mockForm);
+    // Return mock array of forms for FormLink dropdown
+    const mockForms = [
+      {
+        id: 'form-1',
+        title: 'Customer Registration Form',
+        name: 'Customer Registration Form',
+        fields: [
+          { id: 'field1', type: 'text', label: 'Full Name' },
+          { id: 'field2', type: 'email', label: 'Email Address' },
+        ],
+      },
+      {
+        id: 'form-2',
+        title: 'Product Inquiry Form',
+        name: 'Product Inquiry Form',
+        fields: [
+          { id: 'field1', type: 'text', label: 'Product Name' },
+          { id: 'field2', type: 'textarea', label: 'Questions' },
+        ],
+      },
+      {
+        id: 'form-3',
+        title: 'Feedback Form',
+        name: 'Feedback Form',
+        fields: [
+          { id: 'field1', type: 'rating', label: 'Rating' },
+          { id: 'field2', type: 'textarea', label: 'Comments' },
+        ],
+      },
+    ];
+    return Promise.resolve(mockForms);
   }, [addLog]);
 
   const handleGetFormContent = React.useCallback((formId) => {
