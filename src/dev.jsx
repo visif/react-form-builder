@@ -220,9 +220,10 @@ function DevApp() {
     return Promise.resolve(mockData);
   }, [addLog]);
 
-  const handleGetFormSource = React.useCallback((formId) => {
-    addLog('getFormSource', 'Form source requested', { formId });
+  const handleGetFormSource = React.useCallback((data) => {
+    addLog('getFormSource', 'Form source requested', { data });
     // Return mock array of forms for FormLink dropdown
+    // The 'data' parameter is the element data object from FormLink
     const mockForms = [
       {
         id: 'form-1',
