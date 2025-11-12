@@ -97,9 +97,16 @@ const Preview = (props) => {
 
   const _onChange = (payload) => {
     const { data, action } = payload
+    
+    // Safety check: ensure data is an array
+    if (!data || !Array.isArray(data)) {
+      console.warn('_onChange received invalid data:', data)
+      return
+    }
+    
     const answerData = {}
     data.forEach((item) => {
-      if (item && item.readOnly && props.variables[item.variableKey]) {
+      if (item && item.readOnly && item.variableKey && props.variables && props.variables[item.variableKey]) {
         answerData[item.field_name] = props.variables[item.variableKey]
       }
     })

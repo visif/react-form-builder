@@ -61,239 +61,48 @@
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from 'antd'
-
 import ReactDOM from 'react-dom'
 
-import { Parser } from 'hot-formula-parser'
-
 import { FormProvider, useFormContext } from '../../contexts/FormContext'
-import Registry from '../../utils/registry'
-import FormElements from '../form-elements/index'
-import {
-  DynamicColumnRow,
-  FourColumnRow,
-  ThreeColumnRow,
-  TwoColumnRow,
-} from '../form-elements/layout'
-import CustomElement from '../form-elements/shared/CustomElement'
 import FormValidator from './FormValidator'
 
-const {
-  Image,
-  Checkboxes,
-  Signature,
-  Signature2,
-  FileUpload,
-  ImageUpload,
-  Download,
-  Camera,
-  DataSource,
-  FormLink,
-} = FormElements
+// Hooks
+import { useFormValidation } from './hooks/useFormValidation'
+import { useFormDataCollection } from './hooks/useFormDataCollection'
+import { useFormulaVariables } from './hooks/useFormulaVariables'
 
-const convert = (answers) => {
-  if (Array.isArray(answers)) {
-    const result = {}
-    answers.forEach((x) => {
-      if (x.name && x.name.indexOf('tags_') > -1) {
-        result[x.name] = x.value.map((y) => y.value)
-      } else {
-        result[x.name] = x.value
-      }
-    })
-    return result
-  }
-  return answers || {}
-}
+// Utils
+import { convertAnswerData, getVariableValueHelper, getItemValue } from './utils/formHelpers'
+import { renderFormElement } from './utils/formElementRenderer'
 
 const ReactForm = (props) => {
-  // Refs (replacing class properties)
+  // Refs
   const formRef = useRef(null)
   const inputsRef = useRef({})
 
   // Get form context
   const formContext = useFormContext()
 
-  // State (replacing this.state)
-  const [answerData, setAnswerData] = useState(() => convert(props.answer_data))
+  // State
+  const [answerData, setAnswerData] = useState(() => convertAnswerData(props.answer_data))
 
   // Initialize variables in context
   useEffect(() => {
-    const ansData = convert(props.answer_data)
+    const ansData = convertAnswerData(props.answer_data)
     const initialVariables = getVariableValueHelper(ansData, props.data)
     formContext.setAllVariables(initialVariables)
   }, []) // Only on mount
 
-  // Helper function to extract formula variables from answer data
-  function getVariableValueHelper(ansData, items) {
-    // Safety check: ensure items is an array
-    if (!Array.isArray(items)) {
-      return {}
-    }
-
-    const formularItems = items.filter((item) => !!item.formularKey)
-    const variables = {}
-
-    formularItems.forEach((item) => {
-      let value = ansData[item.field_name]
-      if (value !== undefined) {
-        // Check if the value is an object and has a value property
-        if (Array.isArray(value) && value.length > 0) {
-          // If value is an array, get the first item and check if it has a value property
-          const firstItem = value[0]
-          if (
-            typeof firstItem === 'object' &&
-            firstItem !== null &&
-            firstItem.hasOwnProperty('value') &&
-            typeof firstItem.value === 'boolean'
-          ) {
-            // Find the item in the items array that matches the field_name
-            const matchedItem = items.find((target) => target.field_name === item.field_name)
-            if (matchedItem && matchedItem.options) {
-              // Find the option where the key matches the firstItem value
-              const matchedOption = matchedItem.options.find(
-                (option) => option.key === firstItem.key
-              )
-              if (matchedOption) {
-                value = matchedOption.value || matchedOption.text || firstItem.value
-              } else {
-                value = firstItem.value
-              }
-            } else {
-              value = firstItem.value
-            }
-          } else {
-            value = firstItem.value
-          }
-        } else if (typeof value === 'object' && value !== null && value.hasOwnProperty('value')) {
-          value = value.value
-        }
-
-        variables[item.formularKey] = value
-      }
-    })
-
-    return variables
-  }
-
-  // Update state when props change (replaces getDerivedStateFromProps)
+  // Update state when props change
   useEffect(() => {
-    const ansData = convert(props.answer_data)
+    const ansData = convertAnswerData(props.answer_data)
     setAnswerData(ansData)
     const newVariables = getVariableValueHelper(ansData, props.data)
     formContext.setAllVariables(newVariables)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.answer_data, props.data])
 
-  // Handle input changes and update variables via context
-  const handleChange = useCallback(
-    (propKey, value) => {
-      // Update the form context with the new value
-      formContext.updateValue(propKey, value)
-      // Update variable if this field has a formularKey
-      const item = props.data.find((d) => d.field_name === propKey)
-      if (item?.formularKey) {
-        formContext.updateVariable(item.formularKey, value)
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [props.data]
-  )
-
-  // Variable change handler with cascading formula updates
-  const handleVariableChange = useCallback(
-    (params) => {
-      const allVariables = formContext.getAllVariables()
-      const newVariables = {
-        ...allVariables,
-        [params.propKey]: params.value,
-      }
-
-      setAnswerData((prevAnswerData) => {
-        const newAnswerData = { ...prevAnswerData }
-
-        // Get all formula fields for cascading updates
-        const allFormulaFields = props.data.filter(
-          (item) => item.element === 'FormulaInput' && item.formula
-        )
-
-        // Keep track of which variables have been updated to detect cascading changes
-        const updatedVariables = new Set([params.propKey])
-        let hasChanges = true
-
-        // Continue recalculating until no more changes occur (cascading updates)
-        while (hasChanges) {
-          hasChanges = false
-
-          // Find formula fields that depend on any recently updated variables
-          const affectedFields = allFormulaFields.filter((formulaField) => {
-            return Array.from(updatedVariables).some((varKey) =>
-              formulaField.formula.includes(varKey)
-            )
-          })
-
-          // Clear the updated variables set for this iteration
-          updatedVariables.clear()
-
-          affectedFields.forEach((formulaField) => {
-            try {
-              // Use same formula parsing logic as FormulaInput component
-              const parser = new Parser()
-
-              // Set all current variables in parser
-              Object.entries(newVariables).forEach(([key, value]) => {
-                const parsedValue = parseFloat(value)
-                if (!Number.isNaN(parsedValue)) {
-                  parser.setVariable(key, parsedValue)
-                }
-              })
-
-              // Calculate new formula result
-              const parseResult = parser.parse(formulaField.formula)
-              const newValue = parseResult?.result || 0
-
-              // Update the answer data for this formula field
-              newAnswerData[formulaField.field_name] = {
-                formula: formulaField.formula,
-                value: newValue,
-                variables: newVariables,
-              }
-
-              // If this formula field has a formularKey, update variables with its new value
-              if (formulaField.formularKey) {
-                const oldValue = newVariables[formulaField.formularKey]
-                const valueChanged = Math.abs((oldValue || 0) - newValue) > 0.0001
-
-                if (valueChanged) {
-                  newVariables[formulaField.formularKey] = newValue
-                  updatedVariables.add(formulaField.formularKey)
-                  hasChanges = true
-                }
-              }
-            } catch (error) {
-              console.warn(`Error calculating formula for ${formulaField.field_name}:`, error)
-            }
-          })
-        }
-
-        // Update context with all new variables
-        formContext.setAllVariables(newVariables)
-
-        return newAnswerData
-      })
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [props.data]
-  )
-
-  // Subscribe to variable changes via context
-  useEffect(() => {
-    const unsubscribe = formContext.addVariableListener(handleVariableChange)
-    return unsubscribe
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [handleVariableChange])
-
-  // Helper: Get default value for a field
+  // Helper functions
   const getDefaultValue = useCallback(
     (item) => {
       return answerData[item.field_name]
@@ -301,7 +110,6 @@ const ReactForm = (props) => {
     [answerData]
   )
 
-  // Helper: Get editor info from answer data
   const getEditor = useCallback(
     (item) => {
       if (!props.answer_data || !Array.isArray(props.answer_data)) {
@@ -313,7 +121,6 @@ const ReactForm = (props) => {
     [props.answer_data]
   )
 
-  // Helper: Get default values for checkbox/radio options
   const optionsDefaultValue = useCallback(
     (item) => {
       const defaultValue = getDefaultValue(item)
@@ -332,345 +139,46 @@ const ReactForm = (props) => {
     [answerData, getDefaultValue]
   )
 
-  // Helper: Extract value from input element
-  const getItemValue = useCallback((item, ref) => {
-    let $item = {
-      element: item.element,
-      value: '',
-    }
-    if (item.element === 'Rating') {
-      $item.value = ref.inputField.current.state.rating
-    } else if (item.element === 'Tags') {
-      $item.value = ref.inputField.current.state.value
-    } else if (item.element === 'DatePicker') {
-      $item.value = ref.state.value
-    } else if (item.element === 'Camera') {
-      $item.value = ref.state.img ? ref.state.img.replace('data:image/png;base64,', '') : ''
-    } else if (item.element === 'Table') {
-      $item.value = ref.state.inputs
-    } else if (item.element === 'Signature2' && ref.state.isSigned) {
-      $item.value = {
-        isSigned: ref.state.isSigned,
-        signedPerson: ref.state.signedPerson,
-        signedPersonId: ref.state.signedPersonId,
-        signedDateTime: ref.state.signedDateTime,
-      }
-    } else if (item.element === 'DataSource' && ref.state.searchText) {
-      $item.value = {
-        type: ref.props.data.sourceType,
-        value: ref.state.searchText,
-        selectedItem: ref.state.selectedItem,
-      }
-    } else if (item.element === 'FileUpload') {
-      $item.value = {
-        fileList: ref.state.fileList,
-      }
-    } else if (item.element === 'ImageUpload') {
-      $item.value = {
-        filePath: ref.state.filePath,
-        fileName: ref.state.fileName,
-        blobUrl: ref.state.blobUrl,
-      }
-    } else if (item.element === 'FormulaInput') {
-      $item.value = {
-        formula: ref.state.formula,
-        value: ref.state.value,
-        variables: ref.state.variables,
-      }
-    } else if (ref && ref.inputField && ref.inputField.current) {
-      $item = ReactDOM.findDOMNode(ref.inputField.current)
-      if ($item && typeof $item.value === 'string') {
-        $item.value = $item.value.trim()
-      }
-    }
-
-    return $item
-  }, [])
-
-  // Validation: Check if answer is incorrect
-  const isIncorrect = useCallback(
-    (item) => {
-      let incorrect = false
-      if (item.canHaveAnswer) {
-        const ref = inputsRef.current[item.field_name]
-        if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
-          item.options.forEach((option) => {
-            const $option = ReactDOM.findDOMNode(ref.options[`child_ref_${option.key}`])
-            if (
-              (option.hasOwnProperty('correct') && !$option.checked) ||
-              (!option.hasOwnProperty('correct') && $option.checked)
-            ) {
-              incorrect = true
-            }
-          })
-        } else {
-          const $item = getItemValue(item, ref)
-          if (item.element === 'Rating') {
-            if ($item.value.toString() !== item.correct) {
-              incorrect = true
-            }
-          } else if ($item.value.toLowerCase() !== item.correct.trim().toLowerCase()) {
-            incorrect = true
-          }
-        }
-      }
-      return incorrect
+  const getDataById = useCallback(
+    (id) => {
+      const { data } = props
+      const item = data.find((x) => x.id === id)
+      return item
     },
-    [getItemValue]
+    [props]
   )
 
-  // Validation: Check if required field is invalid
-  const isInvalid = useCallback(
-    (item) => {
-      let invalid = false
-      if (item.required === true) {
-        // Get value from FormContext - single source of truth
-        const value = formContext.getValue(item.field_name)
-
-        console.log(`Validating ${item.label}:`, { value, element: item.element, field_name: item.field_name })
-
-        if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
-          // Check if array has any checked items
-          if (!Array.isArray(value) || value.length < 1) {
-            invalid = true
-          }
-        } else if (item.element === 'Rating') {
-          if (value === 0 || value === undefined || value === null) {
-            invalid = true
-          }
-        } else if (item.element === 'FileUpload') {
-          if (!value || !value.fileList || value.fileList.length <= 0) {
-            invalid = true
-          }
-        } else if (item.element === 'ImageUpload') {
-          if (!value || !value.filePath) {
-            invalid = true
-          }
-        } else if (item.element === 'Tags') {
-          if (!Array.isArray(value) || value.length < 1) {
-            invalid = true
-          }
-        } else {
-          // For all other elements (TextInput, NumberInput, TextArea, Dropdown, DatePicker, etc.)
-          if (value === undefined || value === null || value === '') {
-            invalid = true
-          } else if (typeof value === 'string' && value.trim().length < 1) {
-            invalid = true
-          }
-        }
+  // Handle input changes and update variables via context
+  const handleChange = useCallback(
+    (propKey, value) => {
+      // Update the form context with the new value
+      formContext.updateValue(propKey, value)
+      // Update variable if this field has a formularKey
+      const item = props.data.find((d) => d.field_name === propKey)
+      if (item?.formularKey) {
+        formContext.updateVariable(item.formularKey, value)
       }
-      return invalid
-    },
-    [formContext]
-  )
-
-  // Collect data from single form element
-  const collect = useCallback(
-    (item) => {
-      // Skip display-only elements that don't have field values
-      const displayOnlyElements = [
-        'Header',
-        'HeaderBar',
-        'Label',
-        'Paragraph',
-        'LineBreak',
-        'HyperLink',
-        'Section',
-        'Download',
-        'Image',
-      ]
-
-      // Skip container/layout elements that don't have form values
-      const containerElements = [
-        'TwoColumnRow',
-        'ThreeColumnRow',
-        'FourColumnRow',
-        'DynamicColumnRow',
-      ]
-
-      if (displayOnlyElements.includes(item.element) || containerElements.includes(item.element)) {
-        return null
-      }
-
-      const itemData = {
-        name: item.field_name,
-        custom_name: item.custom_name || item.field_name,
-      }
-
-      // Try to get value from context first
-      const contextValue = formContext.getValue(item.field_name)
-      const ref = inputsRef.current[item.field_name]
-
-      const activeUser = props.getActiveUserProperties ? props.getActiveUserProperties() : null
-      const oldEditor = getEditor(item)
-
-      // If we have a context value, use it (this is the new path)
-      if (contextValue !== undefined) {
-        itemData.value = contextValue
-
-        // Determine editor based on element type and value
-        let hasValue = false
-        if (item.element === 'Tags') {
-          hasValue = Array.isArray(contextValue) && contextValue.length > 0
-        } else if (item.element === 'FileUpload') {
-          hasValue = contextValue?.fileList && contextValue.fileList.length > 0
-        } else if (item.element === 'ImageUpload') {
-          hasValue = !!contextValue?.filePath
-        } else if (item.element === 'Signature2') {
-          hasValue = !!contextValue?.isSigned
-        } else if (item.element === 'DataSource') {
-          hasValue = !!contextValue?.value
-        } else if (item.element === 'Table') {
-          hasValue = Array.isArray(contextValue) && contextValue.some((row) => row.some((val) => !!val))
-        } else if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
-          hasValue = Array.isArray(contextValue) && contextValue.length > 0
-        } else {
-          hasValue = !!contextValue
-        }
-
-        itemData.editor = oldEditor ? oldEditor : hasValue ? activeUser : null
-        return itemData
-      }
-
-      // Otherwise fall back to ref-based collection (legacy path)
-      if ((item.element === 'Checkboxes' || item.element === 'RadioButtons') && !!ref) {
-        const checked_options = []
-
-        item.options.forEach((option) => {
-          const $option = ReactDOM.findDOMNode(ref.options[`child_ref_${option.key}`])
-          if ($option?.checked) {
-            let info = ''
-
-            if (option.info) {
-              const $info = ReactDOM.findDOMNode(ref.infos[`child_ref_${option.key}_info`])
-              info = $info?.value ?? ''
-            }
-
-            checked_options.push({
-              key: option.key,
-              value: option.value,
-              info: info,
-            })
-          }
-        })
-
-        itemData.value = checked_options
-        itemData.editor = oldEditor ? oldEditor : checked_options.length > 0 ? activeUser : null
-      } else {
-        if (!ref) {
-          // If no ref exists, still include the field with empty/default value
-          // This ensures all form fields are present in submission data
-          if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
-            itemData.value = []
-          } else if (item.element === 'Tags') {
-            itemData.value = []
-          } else if (item.element === 'FileUpload') {
-            itemData.value = { fileList: [] }
-          } else if (item.element === 'ImageUpload') {
-            itemData.value = { filePath: '' }
-          } else if (item.element === 'Signature' || item.element === 'Signature2') {
-            itemData.value = { isSigned: false }
-          } else if (item.element === 'Table') {
-            itemData.value = []
-          } else {
-            itemData.value = ''
-          }
-          itemData.editor = oldEditor || null
-          return itemData
-        }
-
-        const valueItem = getItemValue(item, ref)
-
-        itemData.value = valueItem.value
-        itemData.editor = oldEditor ? oldEditor : valueItem.value ? activeUser : null
-        if (item.element === 'Signature2') {
-          itemData.editor = oldEditor ? oldEditor : valueItem.value.isSigned ? activeUser : null
-        } else if (item.element === 'Tags') {
-          itemData.editor = oldEditor
-            ? oldEditor
-            : Array.isArray(valueItem.value) && valueItem.value.length > 0
-              ? activeUser
-              : null
-        } else if (item.element === 'DataSource' && ref.state.searchText) {
-          itemData.editor = oldEditor ? oldEditor : valueItem.value.value ? activeUser : null
-        } else if (item.element === 'FileUpload') {
-          itemData.editor = oldEditor
-            ? oldEditor
-            : valueItem.value.fileList && valueItem.value.fileList.length > 0
-              ? activeUser
-              : null
-        } else if (item.element === 'ImageUpload') {
-          itemData.editor = oldEditor ? oldEditor : valueItem.value.filePath ? activeUser : null
-        } else if (item.element === 'Table') {
-          itemData.editor = oldEditor
-            ? oldEditor
-            : valueItem.value.find((itemRow) => {
-                  return itemRow.find((val) => !!val)
-                })
-              ? activeUser
-              : null
-        }
-      }
-
-      return itemData
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [props, getEditor, getItemValue, formContext]
+    [props.data]
   )
 
-  // Collect all form data
-  const collectFormData = useCallback(
-    (data) => {
-      const formData = []
-      data.forEach((item) => {
-        const item_data = collect(item)
-        if (item_data) {
-          formData.push(item_data)
-        }
-      })
-
-      return formData
-    },
-    [collect]
+  // Custom hooks for specific functionality
+  const { collectFormData, collectFormItems } = useFormDataCollection(
+    props,
+    inputsRef,
+    getItemValue,
+    getEditor
   )
 
-  // Collect form items with values
-  const collectFormItems = useCallback(
-    (data) => {
-      const formData = []
-      data.forEach((item) => {
-        const itemValue = collect(item)
-        const itemData = {
-          id: item.id,
-          element: item.element,
-          value: itemValue && itemValue.value,
-        }
-
-        formData.push(itemData)
-      })
-
-      return formData
-    },
-    [collect]
+  const { validateForm } = useFormValidation(
+    props,
+    inputsRef,
+    getItemValue,
+    collectFormItems
   )
 
-  // Extract signature canvas data
-  const getSignatureImg = useCallback((item) => {
-    const ref = inputsRef.current[item.field_name]
-    if (!ref || !ref.canvas) return // Skip if ref or canvas doesn't exist
-
-    const $canvas_sig = ref.canvas.current
-    if ($canvas_sig) {
-      const base64 = $canvas_sig.toDataURL().replace('data:image/png;base64,', '')
-      const isEmpty = $canvas_sig.isEmpty()
-      const $input_sig = ReactDOM.findDOMNode(ref.inputField.current)
-      if (isEmpty) {
-        $input_sig.value = ''
-      } else {
-        $input_sig.value = base64
-      }
-    }
-  }, [])
+  useFormulaVariables(props, setAnswerData)
 
   // Form submission handler
   const handleSubmit = useCallback(
@@ -712,198 +220,8 @@ const ReactForm = (props) => {
       // }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [props, collectFormData]
+    [props, collectFormData, validateForm]
   )
-
-  // Form validation with section logic
-  const validateForm = useCallback(() => {
-    const errors = []
-    let data_items = props.data
-
-    // re-order items to avoid items inside
-    let orderedItems = []
-    props.data.forEach((item) => {
-      const childItems = props.data.filter((child) => child.parentId === item.id)
-      if (childItems?.length > 0) {
-        orderedItems = orderedItems.concat(childItems)
-      } else if (!item.parentId) {
-        orderedItems.push(item)
-      }
-    })
-
-    // get all input items
-    const formItems = collectFormItems(orderedItems)
-    const sectionItems = formItems.filter((item) => item.element === 'Section')
-
-    // Validate with special condition when there is any section
-    if (sectionItems.length > 0) {
-      // split items into groups by section
-      const firstItem = formItems[0]
-      let activeSectionKey = firstItem.element === 'Section' ? firstItem.id : ''
-      const sectionGroup = {}
-      sectionGroup[activeSectionKey] = []
-
-      // group items by section separator
-      formItems.forEach((item) => {
-        if (item.element === 'Section') {
-          activeSectionKey = item.id
-          sectionGroup[activeSectionKey] = []
-        } else {
-          sectionGroup[activeSectionKey].push(item)
-        }
-      })
-
-      let activeItems = []
-
-      // find only active section => there is any item with value input
-      const reverseKeys = sectionItems.map((item) => item.id).reverse()
-      reverseKeys.push('')
-      let activeSectionFound = false
-
-      reverseKeys.forEach((key) => {
-        const items = sectionGroup[key]
-        let fillingItems = items
-
-        // incase of section separator
-        if (key && !activeSectionFound) {
-          fillingItems = items.find(
-            (item) =>
-              item.element !== 'Table' &&
-              item.element !== 'Dropdown' &&
-              item.element !== 'Range' &&
-              ((Array.isArray(item.value) && item.value.length > 0) ||
-                (typeof item.value !== 'object' && !Array.isArray(item.value) && !!item.value) ||
-                (item.element === 'FileUpload' &&
-                  item.value.fileList &&
-                  item.value.fileList.length > 0) ||
-                (item.element === 'ImageUpload' && !!item.value.filePath))
-          )
-
-          activeSectionFound = !!fillingItems
-        }
-
-        if (fillingItems) {
-          activeItems = activeItems.concat(items)
-        }
-      })
-
-      const itemIds = activeItems.map((item) => item.id)
-      data_items = props.data.filter((item) => itemIds.includes(item.id))
-    }
-
-    data_items.forEach((item) => {
-      if (item.element === 'Signature') {
-        getSignatureImg(item)
-      }
-
-      if (isInvalid(item)) {
-        errors.push(`${item.label || item.position} is required!`)
-      }
-
-      if (props.validateForCorrectness && isIncorrect(item)) {
-        errors.push(`${item.label} was answered incorrectly!`)
-      }
-    })
-
-    return errors
-  }, [props, collectFormItems, getSignatureImg, isInvalid, isIncorrect])
-
-  const getDataById = useCallback(
-    (id) => {
-      const { data } = props
-      const item = data.find((x) => x.id === id)
-      return item
-    },
-    [props]
-  )
-
-  // handleChange and handleVariableChange are already defined above in the functional component
-  // Removing duplicate class method definitions
-
-  const getCustomElement = useCallback(
-    (item) => {
-      if (!item.component || typeof item.component !== 'function') {
-        item.component = Registry.get(item.key)
-        if (!item.component) {
-          console.error(`${item.element} was not registered`)
-        }
-      }
-
-      const inputProps = item.forwardRef && {
-        handleChange: handleChange,
-        defaultValue: getDefaultValue(item),
-        ref: (c) => (inputsRef.current[item.field_name] = c),
-      }
-
-      return (
-        <CustomElement
-          mutable={true}
-          read_only={props.read_only}
-          key={`form_${item.id}`}
-          data={item}
-          {...inputProps}
-        />
-      )
-    },
-    [props, handleChange, getDefaultValue]
-  )
-
-  const getInputElement = useCallback(
-    (item) => {
-      if (item.custom) {
-        return getCustomElement(item)
-      }
-      const Input = FormElements[item.element]
-      return (
-        <Input
-          handleChange={handleChange}
-          ref={(c) => {
-            inputsRef.current[item.field_name] = c
-          }}
-          mutable={true}
-          key={`form_${item.id}`}
-          data={item}
-          read_only={props.read_only}
-          defaultValue={getDefaultValue(item)}
-          editor={getEditor(item)}
-          getActiveUserProperties={props.getActiveUserProperties}
-          getDataSource={props.getDataSource}
-          onUploadFile={props.onUploadFile}
-          onDownloadFile={props.onDownloadFile}
-          onUploadImage={props.onUploadImage}
-          getFormSource={props.getFormSource}
-          broadcastChange={props.broadcastChange}
-          variables={formContext.getAllVariables()}
-        />
-      )
-    },
-    [props, handleChange, getDefaultValue, getEditor, formContext, getCustomElement]
-  )
-
-  const getContainerElement = useCallback(
-    (item, Element) => {
-      const controls = Array.isArray(item.childItems[0])
-        ? item.childItems.map((row) => {
-            return row.map((x) => {
-              const currentItem = getDataById(x)
-              return x && currentItem ? getInputElement(currentItem) : <div>&nbsp;</div>
-            })
-          })
-        : [
-            item.childItems.map((x) => {
-              const currentItem = getDataById(x)
-              return x && currentItem ? getInputElement(currentItem) : <div>&nbsp;</div>
-            }),
-          ]
-      return <Element mutable={true} key={`form_${item.id}`} data={item} controls={controls} />
-    },
-    [getDataById, getInputElement]
-  )
-
-  const getSimpleElement = useCallback((item) => {
-    const Element = FormElements[item.element]
-    return <Element mutable={true} key={`form_${item.id}`} data={item} />
-  }, [])
 
   const handleRenderSubmit = useCallback(() => {
     const { actionName = 'Submit', submitButton = false } = props
@@ -941,178 +259,23 @@ const ReactForm = (props) => {
     }
   })
 
+  // Prepare helpers for rendering
+  const renderHelpers = {
+    handleChange,
+    getDefaultValue,
+    getEditor,
+    optionsDefaultValue,
+    getDataById,
+    formContext,
+  }
+
+  const renderRefs = {
+    inputsRef,
+  }
+
   const items = data_items
     .filter((x) => !x.parentId)
-    .map((item) => {
-      if (!item) return null
-      switch (item.element) {
-        case 'TextInput':
-        case 'NumberInput':
-        case 'TextArea':
-        case 'Table':
-        case 'Dropdown':
-        case 'DatePicker':
-        case 'RadioButtons':
-        case 'Rating':
-        case 'Tags':
-        case 'FormulaInput':
-        case 'Range':
-          return getInputElement(item)
-        case 'DataSource':
-          return (
-            <DataSource
-              handleChange={handleChange}
-              ref={(c) => {
-                inputsRef.current[item.field_name] = c
-              }}
-              mutable={true}
-              key={`form_${item.id}`}
-              data={item}
-              read_only={props.read_only}
-              defaultValue={getDefaultValue(item)}
-              editor={getEditor(item)}
-              getDataSource={props.getDataSource}
-              getActiveUserProperties={props.getActiveUserProperties}
-            />
-          )
-        case 'CustomElement':
-          return getCustomElement(item)
-        case 'FourColumnRow':
-          return getContainerElement(item, FourColumnRow)
-        case 'ThreeColumnRow':
-          return getContainerElement(item, ThreeColumnRow)
-        case 'TwoColumnRow':
-          return getContainerElement(item, TwoColumnRow)
-        case 'DynamicColumnRow':
-          return getContainerElement(item, DynamicColumnRow)
-        case 'Signature':
-          return (
-            <Signature
-              ref={(c) => (inputsRef.current[item.field_name] = c)}
-              read_only={props.read_only || item.readOnly}
-              mutable={true}
-              key={`form_${item.id}`}
-              data={item}
-              defaultValue={getDefaultValue(item)}
-              editor={getEditor(item)}
-              getActiveUserProperties={props.getActiveUserProperties}
-            />
-          )
-        case 'Signature2':
-          return (
-            <Signature2
-              ref={(c) => (inputsRef.current[item.field_name] = c)}
-              read_only={props.read_only || item.readOnly}
-              mutable={true}
-              key={`form_${item.id}`}
-              data={item}
-              defaultValue={getDefaultValue(item)}
-              getActiveUserProperties={props.getActiveUserProperties}
-              editor={getEditor(item)}
-              handleChange={handleChange}
-            />
-          )
-        case 'Checkboxes':
-          return (
-            <Checkboxes
-              ref={(c) => (inputsRef.current[item.field_name] = c)}
-              read_only={props.read_only}
-              handleChange={handleChange}
-              mutable={true}
-              key={`form_${item.id}`}
-              data={item}
-              defaultValue={optionsDefaultValue(item)}
-              getActiveUserProperties={props.getActiveUserProperties}
-              editor={getEditor(item)}
-            />
-          )
-        case 'Image':
-          return (
-            <Image
-              ref={(c) => (inputsRef.current[item.field_name] = c)}
-              handleChange={handleChange}
-              mutable={true}
-              key={`form_${item.id}`}
-              data={item}
-              defaultValue={getDefaultValue(item)}
-              getActiveUserProperties={props.getActiveUserProperties}
-              editor={getEditor(item)}
-            />
-          )
-        case 'Download':
-          return (
-            <Download
-              download_path={props.download_path}
-              mutable={true}
-              key={`form_${item.id}`}
-              data={item}
-              editor={getEditor(item)}
-              getActiveUserProperties={props.getActiveUserProperties}
-            />
-          )
-        case 'Camera':
-          return (
-            <Camera
-              ref={(c) => (inputsRef.current[item.field_name] = c)}
-              read_only={props.read_only || item.readOnly}
-              mutable={true}
-              key={`form_${item.id}`}
-              data={item}
-              defaultValue={getDefaultValue(item)}
-              editor={getEditor(item)}
-            />
-          )
-        case 'FileUpload':
-          return (
-            <FileUpload
-              ref={(c) => (inputsRef.current[item.field_name] = c)}
-              read_only={props.read_only || item.readOnly}
-              mutable={true}
-              key={`form_${item.id}`}
-              data={item}
-              defaultValue={getDefaultValue(item)}
-              onUploadFile={props.onUploadFile}
-              onDownloadFile={props.onDownloadFile}
-              editor={getEditor(item)}
-              getActiveUserProperties={props.getActiveUserProperties}
-            />
-          )
-        case 'FormLink':
-          return (
-            <FormLink
-              ref={(c) => (inputsRef.current[item.field_name] = c)}
-              read_only={props.read_only || item.readOnly}
-              mutable={true}
-              key={`form_${item.id}`}
-              data={item}
-              defaultValue={getDefaultValue(item)}
-              onUploadFile={props.onUploadFile}
-              onSelectChildForm={props.onSelectChildForm}
-              getFormInfo={props.getFormInfo}
-              onDownloadFile={props.onDownloadFile}
-              editor={getEditor(item)}
-              getActiveUserProperties={props.getActiveUserProperties}
-              parentElementId={props.parentElementId}
-            />
-          )
-        case 'ImageUpload':
-          return (
-            <ImageUpload
-              ref={(c) => (inputsRef.current[item.field_name] = c)}
-              read_only={props.read_only || item.readOnly}
-              mutable={true}
-              key={`form_${item.id}`}
-              data={item}
-              defaultValue={getDefaultValue(item)}
-              onUploadImage={props.onUploadImage}
-              editor={getEditor(item)}
-              getActiveUserProperties={props.getActiveUserProperties}
-            />
-          )
-        default:
-          return getSimpleElement(item)
-      }
-    })
+    .map((item) => renderFormElement(item, props, {}, renderHelpers, renderRefs))
 
   const formTokenStyle = {
     display: 'none',
