@@ -139,23 +139,26 @@ const FormLink = (props) => {
       setSearchText(value)
       setMatchedList(matchData)
 
-      // If onElementChange is provided, call it to synchronize changes across the column
-      if (props.onElementChange) {
-        const updatedData = {
-          ...props.data,
-          value,
-        }
+      // Defer state updates to avoid setState during render
+      setTimeout(() => {
+        // If onElementChange is provided, call it to synchronize changes across the column
+        if (props.onElementChange) {
+          const updatedData = {
+            ...props.data,
+            value,
+          }
 
-        props.onElementChange(updatedData)
+          props.onElementChange(updatedData)
 
-        // Immediately apply changes to this component's data
-        if (props.data.dirty === undefined || props.data.dirty) {
-          updatedData.dirty = true
-          if (props.updateElement) {
-            props.updateElement(updatedData)
+          // Immediately apply changes to this component's data
+          if (props.data.dirty === undefined || props.data.dirty) {
+            updatedData.dirty = true
+            if (props.updateElement) {
+              props.updateElement(updatedData)
+            }
           }
         }
-      }
+      }, 0)
     },
     [formList, props.onElementChange, props.updateElement, props.data]
   )
@@ -176,25 +179,28 @@ const FormLink = (props) => {
       setSearchText(form.title)
       setIsShowingList(false)
 
-      // If onElementChange is provided, call it to synchronize changes across the column
-      if (props.onElementChange) {
-        const updatedData = {
-          ...props.data,
-          value: form.title,
-          selectedFormId: form,
-          formSource: form.id, // Save the form ID as formSource
-        }
+      // Defer state updates to avoid setState during render
+      setTimeout(() => {
+        // If onElementChange is provided, call it to synchronize changes across the column
+        if (props.onElementChange) {
+          const updatedData = {
+            ...props.data,
+            value: form.title,
+            selectedFormId: form,
+            formSource: form.id, // Save the form ID as formSource
+          }
 
-        props.onElementChange(updatedData)
+          props.onElementChange(updatedData)
 
-        // Immediately apply changes to this component's data
-        if (props.data.dirty === undefined || props.data.dirty) {
-          updatedData.dirty = true
-          if (props.updateElement) {
-            props.updateElement(updatedData)
+          // Immediately apply changes to this component's data
+          if (props.data.dirty === undefined || props.data.dirty) {
+            updatedData.dirty = true
+            if (props.updateElement) {
+              props.updateElement(updatedData)
+            }
           }
         }
-      }
+      }, 0)
     },
     [props.onElementChange, props.updateElement, props.data]
   )
