@@ -99,6 +99,50 @@ const ReactForm = (props) => {
     setAnswerData(ansData)
     const newVariables = getVariableValueHelper(ansData, props.data)
     formContext.setAllVariables(newVariables)
+
+    // Also update FormContext values with answer data
+    // Need to convert checkbox/radio values to proper format
+    Object.keys(ansData).forEach(key => {
+      const item = props.data.find(d => d.field_name === key)
+      let value = ansData[key]
+      
+      // Convert simple arrays to checkbox/radio format
+      if (item && (item.element === 'Checkboxes' || item.element === 'RadioButtons')) {
+        if (Array.isArray(value) && value.length > 0) {
+          // If already in correct format, use as-is
+          if (typeof value[0] === 'object' && value[0].key !== undefined) {
+            formContext.updateValue(key, value)
+          } else {
+            // Convert simple array to object format
+            const convertedValue = value.map(val => {
+              const matchingOption = item.options?.find(opt => 
+                opt.value === val || opt.key === val || opt.text === val
+              )
+              return {
+                key: matchingOption?.key || val,
+                value: val,
+                info: ''
+              }
+            })
+            formContext.updateValue(key, convertedValue)
+          }
+        } else if (typeof value === 'string' || typeof value === 'number') {
+          // Single value for radio button
+          const matchingOption = item.options?.find(opt => 
+            opt.value === value || opt.key === value
+          )
+          formContext.updateValue(key, [{
+            key: matchingOption?.key || value,
+            value: value,
+            info: ''
+          }])
+        } else {
+          formContext.updateValue(key, value)
+        }
+      } else {
+        formContext.updateValue(key, value)
+      }
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.answer_data, props.data])
 
@@ -124,12 +168,48 @@ const ReactForm = (props) => {
   const optionsDefaultValue = useCallback(
     (item) => {
       const defaultValue = getDefaultValue(item)
+      
+      // For Checkboxes and RadioButtons, convert array values to proper format
+      if (defaultValue && (item.element === 'Checkboxes' || item.element === 'RadioButtons')) {
+        // If defaultValue is already in the correct format [{key, value}], use it
+        if (Array.isArray(defaultValue) && defaultValue.length > 0 && typeof defaultValue[0] === 'object') {
+          return defaultValue
+        }
+        
+        // If defaultValue is a simple array like ['tech', 'music'], convert it
+        if (Array.isArray(defaultValue)) {
+          return defaultValue.map(val => {
+            // Find the matching option to get the key
+            const matchingOption = item.options?.find(opt => 
+              opt.value === val || opt.key === val || opt.text === val
+            )
+            return {
+              key: matchingOption?.key || val,
+              value: val,
+              info: ''
+            }
+          })
+        }
+        
+        // If defaultValue is a single value, wrap it in array
+        if (typeof defaultValue === 'string' || typeof defaultValue === 'number') {
+          const matchingOption = item.options?.find(opt => 
+            opt.value === defaultValue || opt.key === defaultValue
+          )
+          return [{
+            key: matchingOption?.key || defaultValue,
+            value: defaultValue,
+            info: ''
+          }]
+        }
+      }
+      
       if (defaultValue) {
         return defaultValue
       }
 
       const defaultChecked = []
-      item.options.forEach((option) => {
+      item.options?.forEach((option) => {
         if (answerData[`option_${option.key}`]) {
           defaultChecked.push(option.key)
         }
@@ -325,7 +405,9 @@ ReactForm.defaultProps = {
 // Wrapper component that provides FormContext
 const ReactFormWithContext = (props) => {
   // Convert answer_data to initial values for context
-  const initialValues = props.answer_data || {}
+  // answer_data can be in array format [{name: 'field_name', value: 'value'}]
+  // or object format {field_name: 'value'}
+  const initialValues = convertAnswerData(props.answer_data)
 
   return (
     <FormProvider initialValues={initialValues}>
