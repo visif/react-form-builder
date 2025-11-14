@@ -6,7 +6,7 @@ import SelectFieldEditor from './SelectFieldEditor'
 /**
  * DataSource element editor
  * Handles sourceType selection and form field mapping
- * 
+ *
  * @param {Object} element - The DataSource element being edited
  * @param {Array} formDataSource - Available forms to select from when sourceType is 'form'
  * @param {Object} activeForm - The currently selected form's structure and columns
