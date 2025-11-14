@@ -137,8 +137,8 @@ const FormElementsEdit = (props) => {
         (props.element.element === 'DataSource' || props.element.element === 'FormLink') &&
         props.getFormSource
       ) {
-        // call api to get form data
-        const formData = (await props.getFormSource()) || []
+        // call api to get form data - pass element data as parameter
+        const formData = (await props.getFormSource(props.element)) || []
         if (formData) {
           const activeFormItem = formData.find((item) => item.id == props.element.formSource)
 

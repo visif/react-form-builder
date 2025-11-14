@@ -105,7 +105,7 @@ const ReactForm = (props) => {
     Object.keys(ansData).forEach(key => {
       const item = props.data.find(d => d.field_name === key)
       let value = ansData[key]
-      
+
       // Convert simple arrays to checkbox/radio format
       if (item && (item.element === 'Checkboxes' || item.element === 'RadioButtons')) {
         if (Array.isArray(value) && value.length > 0) {
@@ -115,7 +115,7 @@ const ReactForm = (props) => {
           } else {
             // Convert simple array to object format
             const convertedValue = value.map(val => {
-              const matchingOption = item.options?.find(opt => 
+              const matchingOption = item.options?.find(opt =>
                 opt.value === val || opt.key === val || opt.text === val
               )
               return {
@@ -128,7 +128,7 @@ const ReactForm = (props) => {
           }
         } else if (typeof value === 'string' || typeof value === 'number') {
           // Single value for radio button
-          const matchingOption = item.options?.find(opt => 
+          const matchingOption = item.options?.find(opt =>
             opt.value === value || opt.key === value
           )
           formContext.updateValue(key, [{
@@ -168,19 +168,19 @@ const ReactForm = (props) => {
   const optionsDefaultValue = useCallback(
     (item) => {
       const defaultValue = getDefaultValue(item)
-      
+
       // For Checkboxes and RadioButtons, convert array values to proper format
       if (defaultValue && (item.element === 'Checkboxes' || item.element === 'RadioButtons')) {
         // If defaultValue is already in the correct format [{key, value}], use it
         if (Array.isArray(defaultValue) && defaultValue.length > 0 && typeof defaultValue[0] === 'object') {
           return defaultValue
         }
-        
+
         // If defaultValue is a simple array like ['tech', 'music'], convert it
         if (Array.isArray(defaultValue)) {
           return defaultValue.map(val => {
             // Find the matching option to get the key
-            const matchingOption = item.options?.find(opt => 
+            const matchingOption = item.options?.find(opt =>
               opt.value === val || opt.key === val || opt.text === val
             )
             return {
@@ -190,10 +190,10 @@ const ReactForm = (props) => {
             }
           })
         }
-        
+
         // If defaultValue is a single value, wrap it in array
         if (typeof defaultValue === 'string' || typeof defaultValue === 'number') {
-          const matchingOption = item.options?.find(opt => 
+          const matchingOption = item.options?.find(opt =>
             opt.value === defaultValue || opt.key === defaultValue
           )
           return [{
@@ -203,7 +203,7 @@ const ReactForm = (props) => {
           }]
         }
       }
-      
+
       if (defaultValue) {
         return defaultValue
       }

@@ -14,7 +14,7 @@ const DataSourceEditor = ({ element, formDataSource, activeForm, onChange, onBlu
         <SelectFieldEditor
           id="sourceType"
           label="Source Type"
-          value={element.sourceType}
+          value={element.sourceType || 'name'}
           options={[
             { value: 'name', label: 'Name', key: 'name' },
             { value: 'department', label: 'Department', key: 'department' },
@@ -32,7 +32,7 @@ const DataSourceEditor = ({ element, formDataSource, activeForm, onChange, onBlu
             <SelectFieldEditor
               id="formSource"
               label="Form Source"
-              value={element.formSource}
+              value={element.formSource || -1}
               options={[
                 { value: -1, label: 'Please select', key: -1 },
                 ...(formDataSource || []).map((item) => ({
