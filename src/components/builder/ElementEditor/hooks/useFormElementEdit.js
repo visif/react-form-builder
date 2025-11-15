@@ -68,9 +68,12 @@ export const useFormElementEdit = (props) => {
         let activeFormContent = {}
 
         if (activeFormItem && props.getFormContent) {
+          console.log('Fetching form content for:', activeFormItem)
           activeFormContent = (await props.getFormContent(activeFormItem)) || {}
+          console.log('Received form content:', activeFormContent)
         }
 
+        console.log('Setting activeForm to:', activeFormContent)
         setActiveForm(activeFormContent)
       }
 
@@ -117,15 +120,19 @@ export const useFormElementEdit = (props) => {
         (props.element.element === 'DataSource' || props.element.element === 'FormLink') &&
         props.getFormSource
       ) {
+        console.log('Loading form sources...')
         // Fetch available forms
         const formData = (await props.getFormSource(props.element)) || []
+        console.log('Received form sources:', formData)
 
         if (formData) {
           const activeFormItem = formData.find((item) => item.id == props.element.formSource)
 
           // Load active form content if a form is already selected
           if (activeFormItem && props.getFormContent) {
+            console.log('Loading initial form content for:', activeFormItem)
             const activeFormContent = (await props.getFormContent(activeFormItem)) || {}
+            console.log('Received initial form content:', activeFormContent)
             setActiveForm(activeFormContent)
           }
         }

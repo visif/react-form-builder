@@ -14,6 +14,11 @@ import SelectFieldEditor from './SelectFieldEditor'
  * @param {Function} onBlur - Handler for field blur events
  */
 const DataSourceEditor = ({ element, formDataSource, activeForm, onChange, onBlur }) => {
+  // Debug: Log the current state
+  console.log('DataSourceEditor - element:', element)
+  console.log('DataSourceEditor - formDataSource:', formDataSource)
+  console.log('DataSourceEditor - activeForm:', activeForm)
+
   return (
     <div>
       {/* sourceType: Determines the data source type (name, department, role, or form)

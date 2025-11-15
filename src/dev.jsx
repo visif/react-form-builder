@@ -222,48 +222,71 @@ function DevApp() {
 
   const handleGetFormSource = React.useCallback((data) => {
     addLog('getFormSource', 'Form source requested', { data });
-    // Return mock array of forms for FormLink dropdown
-    // The 'data' parameter is the element data object from FormLink
+    // Return mock array of forms for DataSource/FormLink dropdown
+    // The 'data' parameter is the element data object
     const mockForms = [
       {
-        id: 'form-1',
-        title: 'Customer Registration Form',
-        name: 'Customer Registration Form',
-        fields: [
-          { id: 'field1', type: 'text', label: 'Full Name' },
-          { id: 'field2', type: 'email', label: 'Email Address' },
-        ],
+        id: 1,
+        title: 'Employee Registration Form',
+        name: 'Employee Registration Form',
       },
       {
-        id: 'form-2',
-        title: 'Product Inquiry Form',
-        name: 'Product Inquiry Form',
-        fields: [
-          { id: 'field1', type: 'text', label: 'Product Name' },
-          { id: 'field2', type: 'textarea', label: 'Questions' },
-        ],
+        id: 2,
+        title: 'Customer Feedback Form',
+        name: 'Customer Feedback Form',
       },
       {
-        id: 'form-3',
-        title: 'Feedback Form',
-        name: 'Feedback Form',
-        fields: [
-          { id: 'field1', type: 'rating', label: 'Rating' },
-          { id: 'field2', type: 'textarea', label: 'Comments' },
-        ],
+        id: 3,
+        title: 'Event Registration Form',
+        name: 'Event Registration Form',
       },
     ];
     return Promise.resolve(mockForms);
   }, [addLog]);
 
-  const handleGetFormContent = React.useCallback((formId) => {
-    addLog('getFormContent', 'Form content requested', { formId });
-    // Return mock form content
-    const mockContent = [
-      { id: '1', element: 'TextInput', label: 'Name', field_name: 'name' },
-      { id: '2', element: 'TextInput', label: 'Email', field_name: 'email' },
-    ];
-    return Promise.resolve(mockContent);
+  const handleGetFormContent = React.useCallback((formItem) => {
+    // Extract the ID from the form object (formItem can be the entire form object or just an ID)
+    const formId = typeof formItem === 'object' ? formItem.id : formItem;
+    addLog('getFormContent', 'Form content requested', { formItem, extractedId: formId });
+
+    // Mock form content with realistic field structures
+    // Note: DataSourceEditor expects an object with a 'columns' property
+    const mockFormContents = {
+      1: { // Employee Registration Form
+        columns: [
+          { id: 'emp_id', field_name: 'employee_id', label: 'Employee ID' },
+          { id: 'emp_name', field_name: 'full_name', label: 'Full Name' },
+          { id: 'emp_email', field_name: 'email', label: 'Email Address' },
+          { id: 'emp_dept', field_name: 'department', label: 'Department' },
+          { id: 'emp_pos', field_name: 'position', label: 'Position' },
+        ]
+      },
+      2: { // Customer Feedback Form
+        columns: [
+          { id: 'cust_name', field_name: 'customer_name', label: 'Customer Name' },
+          { id: 'cust_email', field_name: 'email', label: 'Email' },
+          { id: 'cust_rating', field_name: 'rating', label: 'Satisfaction Rating' },
+          { id: 'cust_feedback', field_name: 'feedback', label: 'Feedback Comments' },
+        ]
+      },
+      3: { // Event Registration Form
+        columns: [
+          { id: 'evt_name', field_name: 'attendee_name', label: 'Attendee Name' },
+          { id: 'evt_email', field_name: 'email', label: 'Email Address' },
+          { id: 'evt_phone', field_name: 'phone', label: 'Phone Number' },
+          { id: 'evt_ticket', field_name: 'ticket_type', label: 'Ticket Type' },
+          { id: 'evt_diet', field_name: 'dietary_requirements', label: 'Dietary Requirements' },
+        ]
+      },
+    };
+
+    const content = mockFormContents[formId] || { columns: [] };
+    addLog('getFormContent', 'Returning form content', {
+      formId,
+      fieldCount: content.columns?.length || 0,
+      structure: content
+    });
+    return Promise.resolve(content);
   }, [addLog]);
 
   const handleGetActiveUserProperties = React.useCallback(() => {
