@@ -14,6 +14,12 @@ export const useFormElementEdit = (props) => {
 
   // Refs for debounced update
   const debouncedPushRef = useRef(null)
+  const elementRef = useRef(element)
+
+  // Sync ref with state
+  useEffect(() => {
+    elementRef.current = element
+  }, [element])
 
   // Debounce utility
   const debounce = useCallback((fn, ms) => {
@@ -26,7 +32,7 @@ export const useFormElementEdit = (props) => {
 
   // Update element in parent component
   const updateElement = useCallback(() => {
-    const currentElement = element
+    const currentElement = elementRef.current
     props.updateElement.call(props.preview, currentElement)
     setDirty(false)
 
@@ -41,7 +47,7 @@ export const useFormElementEdit = (props) => {
     ) {
       props.preview.syncRowChanges(currentElement)
     }
-  }, [element, props])
+  }, [props])
 
   // Initialize debounced push on mount
   if (!debouncedPushRef.current) {
@@ -78,6 +84,7 @@ export const useFormElementEdit = (props) => {
       }
 
       setElement(this_element)
+      elementRef.current = this_element
       setDirty(true)
 
       // Update immediately for checked properties, debounced for others
@@ -103,6 +110,7 @@ export const useFormElementEdit = (props) => {
       props.element[property] = html
 
       setElement(updatedElement)
+      elementRef.current = updatedElement
       setDirty(true)
 
       // Call debounced push to update parent component
