@@ -33,6 +33,12 @@ const DataSource = (props) => {
         value: searchText,
         isInitialSync: true, // Flag to indicate this is initial synchronization
       })
+    } else if (props.handleChange && !loading) {
+      props.handleChange(props.data.field_name, {
+        type: props.data.sourceType,
+        value: searchText,
+        selectedItem: selectedItem,
+      })
     }
   }, [props, loading, selectedItem, searchText])
 
@@ -94,7 +100,8 @@ const DataSource = (props) => {
     return () => {
       mounted.current = false
     }
-  }, [loadDataSource, checkForValue])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   React.useEffect(() => {
     // Handle sync updates from other DataSource components in the same column
@@ -181,6 +188,12 @@ const DataSource = (props) => {
           value: item.name,
           isUserSelection: true, // Flag to indicate this is a user selection
           timestamp: currentTime, // Add timestamp to track changes
+        })
+      } else if (props.handleChange) {
+        props.handleChange(props.data.field_name, {
+          type: props.data.sourceType,
+          value: item.name,
+          selectedItem: item,
         })
       }
     },

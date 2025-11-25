@@ -209,15 +209,46 @@ function DevApp() {
   }, [addLog]);
 
   // Mock data source callbacks
-  const handleGetDataSource = React.useCallback((dataSourceId) => {
-    addLog('getDataSource', 'Data source requested', { id: dataSourceId });
-    // Return mock data
-    const mockData = [
-      { value: 'option1', text: 'Option 1' },
-      { value: 'option2', text: 'Option 2' },
-      { value: 'option3', text: 'Option 3' },
-    ];
-    return Promise.resolve(mockData);
+  const handleGetDataSource = React.useCallback((data) => {
+    addLog('getDataSource', 'Data source requested', data);
+
+    // Return mock data based on sourceType
+    switch (data.sourceType) {
+      case 'name':
+        return Promise.resolve([
+          { id: 'user_1', name: 'John Doe' },
+          { id: 'user_2', name: 'Jane Smith' },
+          { id: 'user_3', name: 'Bob Johnson' },
+        ]);
+      case 'department':
+        return Promise.resolve([
+          { id: 'dept_1', name: 'Engineering' },
+          { id: 'dept_2', name: 'Sales' },
+          { id: 'dept_3', name: 'Marketing' },
+          { id: 'dept_4', name: 'HR' },
+        ]);
+      case 'role':
+        return Promise.resolve([
+          { id: 'role_1', name: 'Admin' },
+          { id: 'role_2', name: 'Manager' },
+          { id: 'role_3', name: 'Employee' },
+        ]);
+      case 'form':
+        // If it's a form source, we might want to return data from that form
+        // For now, return generic form data
+        return Promise.resolve([
+          { id: 'form_item_1', name: 'Form Item 1' },
+          { id: 'form_item_2', name: 'Form Item 2' },
+          { id: 'form_item_3', name: 'Form Item 3' },
+        ]);
+      default:
+        // Default mock data
+        return Promise.resolve([
+          { id: 'option1', name: 'Option 1' },
+          { id: 'option2', name: 'Option 2' },
+          { id: 'option3', name: 'Option 3' },
+        ]);
+    }
   }, [addLog]);
 
   const handleGetFormSource = React.useCallback((data) => {
@@ -651,6 +682,10 @@ function DevApp() {
                     hide_actions={hideActions}
                     action_name="Submit Form"
                     back_name="Reset"
+                    getDataSource={handleGetDataSource}
+                    getFormSource={handleGetFormSource}
+                    getFormContent={handleGetFormContent}
+                    getActiveUserProperties={handleGetActiveUserProperties}
                   />
 
                   {submittedData && (

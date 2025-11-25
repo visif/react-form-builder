@@ -33,8 +33,39 @@ import store from '../../../contexts/FormBuilderContext'
 import useUndoRedo, { ACTION } from '../../../hooks/useUndoRedo'
 import FormElementsEdit from '../ElementEditor/FormElementsEdit'
 import SortableFormElements from './SortableFormElements'
+import PlaceHolder from './FormPlaceHolder'
 
-const { PlaceHolder } = SortableFormElements
+const defaultGetDataSource = (data) => {
+  if (data.sourceType === 'name') {
+    return [
+      { id: 1, name: 'NameA lastNameA' },
+      { id: 2, name: 'NameB lastNameB' },
+    ]
+  }
+  if (data.sourceType === 'department') {
+    return [
+      { id: 1, name: 'departmentA' },
+      { id: 2, name: 'departmentB' },
+    ]
+  }
+  if (data.sourceType === 'role') {
+    return [
+      { id: 1, name: 'roleA' },
+      { id: 2, name: 'roleB' },
+    ]
+  }
+  if (data.sourceType === 'form') {
+    return [
+      { id: 1, name: 'formA' },
+      { id: 2, name: 'formB' },
+    ]
+  }
+  return []
+}
+
+const defaultOnUploadFile = (file) => `${file.name}-${Math.random() * 10000000}`
+const defaultOnUploadImage = (file) => `path/${file.name}-${Math.random() * 10000000}`
+const defaultOnDownloadFile = (file) => `download_${file.name}-${Math.random() * 10000000}`
 
 const Preview = (props) => {
   const [data, setData] = useState([])
@@ -761,38 +792,12 @@ const Preview = (props) => {
         getActiveUserProperties={props.getActiveUserProperties}
         onElementChange={syncRowChanges} // Add callback for syncing changes in preview
         updateElement={updateElement} // Pass updateElement for state changes
-        getDataSource={(data) => {
-          if (data.sourceType === 'name') {
-            return [
-              { id: 1, name: 'NameA lastNameA' },
-              { id: 2, name: 'NameB lastNameB' },
-            ]
-          }
-          if (data.sourceType === 'department') {
-            return [
-              { id: 1, name: 'departmentA' },
-              { id: 2, name: 'departmentB' },
-            ]
-          }
-          if (data.sourceType === 'role') {
-            return [
-              { id: 1, name: 'roleA' },
-              { id: 2, name: 'roleB' },
-            ]
-          }
-          if (data.sourceType === 'form') {
-            return [
-              { id: 1, name: 'formA' },
-              { id: 2, name: 'formB' },
-            ]
-          }
-          return []
-        }}
+        getDataSource={props.getDataSource || defaultGetDataSource}
         getFormSource={props.getFormSource}
         getFormContent={props.getFormContent}
-        onUploadFile={(file) => `${file.name}-${Math.random() * 10000000}`}
-        onUploadImage={(file) => `path/${file.name}-${Math.random() * 10000000}`}
-        onDownloadFile={(file) => `download_${file.name}-${Math.random() * 10000000}`}
+        onUploadFile={props.onUploadFile || defaultOnUploadFile}
+        onUploadImage={props.onUploadImage || defaultOnUploadImage}
+        onDownloadFile={props.onDownloadFile || defaultOnDownloadFile}
       />
     )
   }
