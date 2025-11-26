@@ -276,12 +276,6 @@ const FixedRowList = ({ element: propsElement, preview = null, updateElement }) 
   return (
     <div className="dynamic-option-list">
       <ul key="row-labels">
-        <li>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px', gap: '8px', alignItems: 'center', padding: '4px 0' }}>
-            <Input value="Rows" disabled />
-            <div></div>
-          </div>
-        </li>
         <li className="clearfix" key="li_label_x">
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px', gap: '8px', alignItems: 'center', padding: '4px 0' }}>
             <Input value="Row Label" disabled />

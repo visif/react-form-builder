@@ -12,12 +12,18 @@ const { TextArea } = Input
 const getInputValues = (defaultValue = [], columns, rows, addingRows, rowLabels) => {
   const result = []
   const isFixedRow = rowLabels?.length > 0
-  const activeRows = isFixedRow ? rowLabels?.length : rows + addingRows
-  Array.from(Array(Number(activeRows)).keys()).map((i) => {
+  const calculatedRows = Number(rows) + Number(addingRows)
+  const activeRows = isFixedRow ? rowLabels?.length : Math.max(0, calculatedRows || 0)
+
+  Array.from(Array(activeRows).keys()).map((i) => {
     const current = []
     columns.map((j, jIndex) => {
-      let value = defaultValue[i] ? (defaultValue[i][jIndex] ?? '') : ''
-      if (isFixedRow && jIndex === 0) {
+      let value = ''
+      if (defaultValue && defaultValue[i]) {
+        value = defaultValue[i][jIndex] ?? ''
+      }
+
+      if (isFixedRow && jIndex === 0 && rowLabels && rowLabels[i]) {
         value = rowLabels[i].text
       }
       current.push(value)
@@ -76,16 +82,7 @@ const Table = (props) => {
         )
       )
     }
-  }, [
-    props.data.rows,
-    props.data.columns,
-    props.data.rowLabels,
-    rows,
-    columns,
-    rowLabels,
-    rowsAdded,
-    inputs,
-  ])
+  }, [props.data.rows, props.data.columns, props.data.rowLabels])
 
   React.useEffect(() => {
     if (JSON.stringify(defaultValue) !== JSON.stringify(props.defaultValue)) {
@@ -107,7 +104,7 @@ const Table = (props) => {
       )
       setRowsAdded(newRowsAdded)
     }
-  }, [props.defaultValue, props.data.rows, props.data.columns, props.data.rowLabels, defaultValue])
+  }, [props.defaultValue, props.data.rows, props.data.columns, props.data.rowLabels])
 
   const addRow = React.useCallback(() => {
     const newRowsAdded = rowsAdded + 1
@@ -166,11 +163,12 @@ const Table = (props) => {
     }
 
     const isFixedRow = rowLabels?.length > 0
-    const activeRows = isFixedRow ? rowLabels?.length : rows + rowsAdded
+    const calculatedRows = Number(rows) + Number(rowsAdded)
+    const activeRows = isFixedRow ? rowLabels?.length : Math.max(0, calculatedRows || 0)
 
     return (
       <tbody>
-        {Array.from(Array(Number(activeRows)).keys()).map((i) => (
+        {Array.from(Array(activeRows).keys()).map((i) => (
           <tr key={'row' + i}>
             {props.data?.columns?.map((j, jIndex) => {
               const isLabel = isFixedRow && jIndex === 0
