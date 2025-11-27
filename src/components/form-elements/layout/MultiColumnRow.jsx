@@ -54,7 +54,12 @@ const MultiColumnRow = (props) => {
         <ComponentLabel {...props} />
         <table
           className="table table-bordered"
-          style={{ borderCollapse: 'collapse', tableLayout: 'fixed', width: '100%' }}
+          style={{
+            borderCollapse: 'collapse',
+            tableLayout: 'fixed',
+            width: '100%',
+            overflow: 'hidden',
+          }}
         >
           {data.columns && (
             <thead>
@@ -67,6 +72,9 @@ const MultiColumnRow = (props) => {
                       width: 'var(--rfb-table-row-header-width, 150px)',
                       fontWeight: 'var(--rfb-table-header-font-weight, bold)',
                       fontFamily: 'var(--rfb-table-header-font-family, inherit)',
+                      backgroundColor: '#eaecf0',
+                      borderBottom: '1px solid #d0d5dd',
+                      borderRight: '1px solid #d0d5dd',
                     }}
                   />
                 )}
@@ -84,6 +92,8 @@ const MultiColumnRow = (props) => {
                       minWidth: `${columnWidths[columnIndex]}%`,
                       boxSizing: 'border-box',
                       overflow: 'hidden',
+                      backgroundColor: '#eaecf0',
+                      border: '1px solid #d0d5dd',
                     }}
                   >
                     {column.text}
@@ -101,10 +111,11 @@ const MultiColumnRow = (props) => {
                     className="row-label rfb-table-row-label"
                     style={{
                       textAlign: 'right',
-                      paddingRight: '10px',
-                      backgroundColor: '#f5f5f5',
+                      padding: '4px 8px',
+                      backgroundColor: '#f9fafb',
                       fontWeight: 'var(--rfb-table-row-font-weight, bold)',
                       fontFamily: 'var(--rfb-table-row-font-family, inherit)',
+                      border: '1px solid #d0d5dd',
                     }}
                   >
                     {data.rowLabels[rowIndex] ? data.rowLabels[rowIndex].text : ''}
@@ -128,16 +139,16 @@ const MultiColumnRow = (props) => {
                   return (
                     <td
                       key={`${rowIndex}_${columnIndex}_${item || '_'}`}
-                      style={{
-                        paddingLeft: '8px',
-                        paddingRight: '8px',
-                        width: `${columnWidth}%`,
-                        maxWidth: `${columnWidth}%`,
-                        verticalAlign: 'top',
-                        // minWidth: `${columnWidth}%`,
-                        boxSizing: 'border-box',
-                        // overflow: 'hidden',
-                      }}
+                    style={{
+                      padding: '4px 8px',
+                      width: `${columnWidth}%`,
+                      maxWidth: `${columnWidth}%`,
+                      verticalAlign: 'top',
+                      // minWidth: `${columnWidth}%`,
+                      boxSizing: 'border-box',
+                      // overflow: 'hidden',
+                      border: '1px solid #d0d5dd',
+                    }}
                     >
                       {controls ? (
                         controls[rowIndex]?.[columnIndex]
