@@ -191,7 +191,9 @@ export function getStoreInstance() {
     let onLoad = null
 
     storeInstance = {
-      state: currentState,
+      get state() {
+        return currentState
+      },
 
       dispatch(action, payload) {
         switch (action) {

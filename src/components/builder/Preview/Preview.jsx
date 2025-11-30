@@ -33,7 +33,7 @@ import store from '../../../contexts/FormBuilderContext'
 import useUndoRedo, { ACTION } from '../../../hooks/useUndoRedo'
 import FormElementsEdit from '../ElementEditor/FormElementsEdit'
 import SortableFormElements from './SortableFormElements'
-import PlaceHolder from './FormPlaceHolder'
+
 
 const defaultGetDataSource = (data) => {
   if (data.sourceType === 'name') {
@@ -468,20 +468,63 @@ const Preview = (props) => {
   }
 
   const insertCard = (item, hoverIndex, id) => {
+    // Validate inputs
+    if (!item) {
+      console.warn('insertCard: item is null or undefined')
+      return
+    }
+
+    if (typeof hoverIndex !== 'number' || hoverIndex < 0) {
+      console.warn('insertCard: invalid hoverIndex', hoverIndex)
+      return
+    }
+
     if (id) {
       restoreCard(item, id)
     } else {
-      const newData = update(data, {
-        $splice: [[hoverIndex, 0, item]],
+      // Ensure we have a valid data array
+      const currentData = store.state.payload.data || []
+
+      // Clamp hoverIndex to valid range
+      const validIndex = Math.min(hoverIndex, currentData.length)
+
+      // Create new data array with the item inserted
+      const newData = update(currentData, {
+        $splice: [[validIndex, 0, item]],
       })
-      setData(newData)
-      store.dispatch('updateOrder', newData)
+
+      // Validate the new data before updating state
+      if (Array.isArray(newData) && newData.length > 0) {
+        setData(newData)
+        store.dispatch('updateOrder', newData)
+      } else {
+        console.warn('insertCard: failed to create valid newData', { item, hoverIndex, newData })
+      }
     }
   }
 
-  const moveCard = (dragIndex, hoverIndex) => {
-    const dragCard = data[dragIndex]
-    saveData(dragCard, dragIndex, hoverIndex)
+  const moveCard = (dragIndex, hoverIndex, dragId) => {
+    // Use ID-based lookup to ensure we get the correct element
+    // even if the data array has changed since drag started
+    const currentData = store.state.payload.data || []
+
+    // Find the actual element by ID to avoid stale references
+    const dragCard = dragId ? currentData.find(item => item && item.id === dragId) : currentData[dragIndex]
+
+    if (!dragCard) {
+      console.warn('moveCard: Could not find drag element', { dragIndex, dragId, currentData })
+      return
+    }
+
+    // Find the actual current index of the drag card in case it has moved
+    const actualDragIndex = currentData.indexOf(dragCard)
+
+    if (actualDragIndex === -1) {
+      console.warn('moveCard: Drag element not found in current data', { dragCard, currentData })
+      return
+    }
+
+    saveData(dragCard, actualDragIndex, hoverIndex)
   }
 
   const cardPlaceHolder = (dragIndex, hoverIndex) => {
@@ -489,7 +532,26 @@ const Preview = (props) => {
   }
 
   const saveData = (dragCard, dragIndex, hoverIndex) => {
-    const newData = update(data, {
+    const currentData = store.state.payload.data || []
+
+    // Double-check that we have the right element at dragIndex
+    if (currentData[dragIndex] !== dragCard) {
+      console.warn('saveData: Element mismatch detected', {
+        expected: dragCard,
+        actual: currentData[dragIndex],
+        dragIndex,
+        hoverIndex
+      })
+      // Find the correct index
+      const correctIndex = currentData.indexOf(dragCard)
+      if (correctIndex === -1) {
+        console.error('saveData: Could not find drag element in current data')
+        return
+      }
+      dragIndex = correctIndex
+    }
+
+    const newData = update(currentData, {
       $splice: [
         [dragIndex, 1],
         [hoverIndex, 0, dragCard],
@@ -876,11 +938,11 @@ const Preview = (props) => {
         {props.editElement !== null && showEditForm()}
       </div>
       <div className="Sortable">{items}</div>
-      <PlaceHolder
+      <SortableFormElements.PlaceHolder
         id="form-place-holder"
         show={items.length === 0}
         index={items.length}
-        moveCard={cardPlaceHolder}
+        moveCard={moveCard}
         insertCard={insertCard}
         data={{}}
       />

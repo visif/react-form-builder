@@ -29,6 +29,16 @@ const withDragAndDrop = (ComposedComponent) => {
         collect: (monitor) => ({
           isDragging: monitor.isDragging(),
         }),
+        end: (item, monitor) => {
+          // Reset the isProcessed flag when drag ends to allow subsequent drags
+          if (item) {
+            delete item.isProcessed
+            // Reset index for toolbar items to allow re-dragging
+            if (item.index === -1 || item.onCreate) {
+              item.index = -1
+            }
+          }
+        },
       }),
       [id, index]
     )
@@ -40,6 +50,8 @@ const withDragAndDrop = (ComposedComponent) => {
           if (!ref.current) return
           const dragIndex = item.index
           const hoverIndex = index
+          console.log('SortableElement: drop', { dragIndex, hoverIndex, item, data })
+
           if ((data && data.isContainer) || item.itemType === ItemTypes.CARD) {
             return
           }
@@ -51,6 +63,8 @@ const withDragAndDrop = (ComposedComponent) => {
           if (!ref.current) return
           const dragIndex = item.index
           const hoverIndex = index
+
+          // console.log('SortableElement: hover', { dragIndex, hoverIndex, item })
 
           if (item.data && typeof item.setAsChild === 'function') {
             return
@@ -76,9 +90,18 @@ const withDragAndDrop = (ComposedComponent) => {
               console.warn('SortableElement: onCreate handler returned no element', item)
               return
             }
+            // Mark as processed BEFORE inserting to prevent race conditions
+            item.isProcessed = true
             item.index = hoverIndex
-            item.isProcessed = true // Mark as processed to prevent duplicate insertions
-            insertCard(newItem, hoverIndex)
+
+            console.log('SortableElement: inserting new item', { newItem, hoverIndex })
+
+            // Insert the new item
+            if (typeof insertCard === 'function') {
+              insertCard(newItem, hoverIndex)
+            } else {
+              console.warn('SortableElement: insertCard is not a function')
+            }
             return // Exit early for new items
           }
 
@@ -94,7 +117,8 @@ const withDragAndDrop = (ComposedComponent) => {
             return
           }
 
-          moveCard(dragIndex, hoverIndex)
+          // Pass the element ID along with indices for ID-based tracking
+          moveCard(dragIndex, hoverIndex, item.id)
           item.index = hoverIndex
         },
       }),
