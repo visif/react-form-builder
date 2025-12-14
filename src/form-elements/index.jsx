@@ -185,7 +185,8 @@ class TextInput extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
+      isSameEditor =
+        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
     const props = {}
@@ -280,7 +281,8 @@ class NumberInput extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
+      isSameEditor =
+        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
     const props = {}
@@ -365,7 +367,8 @@ class TextArea extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
+      isSameEditor =
+        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
     const props = {}
@@ -461,7 +464,8 @@ class Dropdown extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
+      isSameEditor =
+        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
     const props = {}
@@ -579,7 +583,8 @@ class Signature extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
+      isSameEditor =
+        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
     const { defaultValue } = this.state
@@ -685,7 +690,8 @@ class Tags extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
+      isSameEditor =
+        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
     if (this.props.mutable) {
@@ -742,7 +748,8 @@ class Checkboxes extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
+      isSameEditor =
+        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
     // Add debugging
@@ -752,8 +759,8 @@ class Checkboxes extends React.Component {
       isSameEditor,
       hasDCCRole: userProperties?.hasDCCRole,
       readOnly: this.props.read_only,
-      finalDisabled: this.props.read_only || !isSameEditor
-    });
+      finalDisabled: this.props.read_only || !isSameEditor,
+    })
 
     const self = this
     let classNames = 'custom-control custom-checkbox'
@@ -949,20 +956,22 @@ class RadioButtons extends React.Component {
       this.props.getActiveUserProperties && this.props.getActiveUserProperties()
 
     const savedEditor = this.props.editor
+
+    // Check if radio button has any value (any option selected)
+    const hasValue =
+      this.state.defaultValue &&
+      Array.isArray(this.state.defaultValue) &&
+      this.state.defaultValue.length > 0
+
     let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
+    if (savedEditor && savedEditor.userId && hasValue && !!userProperties) {
+      isSameEditor =
+        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
-    // Add debugging for RadioButtons
-    console.log('RadioButtons Debug:', {
-      userProperties,
-      savedEditor,
-      isSameEditor,
-      hasDCCRole: userProperties?.hasDCCRole,
-      readOnly: this.props.read_only,
-      finalDisabled: this.props.read_only || !isSameEditor
-    });
+    // Create tooltip text for editor name
+    const tooltipText =
+      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
 
     const self = this
     let classNames = 'custom-control custom-radio'
@@ -991,7 +1000,10 @@ class RadioButtons extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
+        <div
+          className={this.props.data.isShowLabel !== false ? 'form-group' : ''}
+          title={tooltipText}
+        >
           <ComponentLabel className="form-label" {...this.props} />
           {this.props.data.options.map((option) => {
             const this_key = `preview_${option.key}`
@@ -1174,7 +1186,8 @@ class Rating extends React.Component {
     const savedEditor = this.props.editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
+      isSameEditor =
+        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
     const props = {}
