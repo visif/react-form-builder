@@ -219,11 +219,18 @@ class FormLink extends React.Component {
       this.props.getActiveUserProperties && this.props.getActiveUserProperties()
 
     const savedEditor = this.props.editor
+    const hasValue = this.state.selectedFormId !== null
+
+    // Allow editing if no value exists OR if user is the same editor
     let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
+    if (savedEditor && savedEditor.userId && hasValue && !!userProperties) {
       isSameEditor =
         userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
+
+    // Create tooltip text showing editor name
+    const tooltipText =
+      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
 
     let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
@@ -236,7 +243,7 @@ class FormLink extends React.Component {
     const isFormSelected = !!this.state.selectedFormId
 
     return (
-      <section className={baseClasses}>
+      <section className={baseClasses} title={tooltipText}>
         <ComponentHeader {...this.props} />
         <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} style={{ display: 'block' }} />

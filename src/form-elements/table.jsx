@@ -124,10 +124,26 @@ export default class Table extends React.Component {
       this.props.getActiveUserProperties && this.props.getActiveUserProperties()
 
     const savedEditor = this.props.editor
+    const hasValue =
+      this.state.inputs &&
+      Object.keys(this.state.inputs).some(
+        (key) =>
+          this.state.inputs[key] &&
+          Object.values(this.state.inputs[key]).some(
+            (val) => val && val.toString().trim() !== ''
+          )
+      )
+
+    // Allow editing if no value exists OR if user is the same editor
     let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
+    if (savedEditor && savedEditor.userId && hasValue && !!userProperties) {
+      isSameEditor =
+        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
+
+    // Create tooltip text showing editor name
+    const tooltipText =
+      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
 
     const isFixedRow = this.state.rowLabels?.length > 0
     const activeRows = isFixedRow
@@ -162,6 +178,7 @@ export default class Table extends React.Component {
                     type="text"
                     value={value}
                     rows={1}
+                    title={tooltipText}
                     onChange={(event) => {
                       const value = event.target.value
                       const array = this.state.inputs
@@ -190,10 +207,26 @@ export default class Table extends React.Component {
       this.props.getActiveUserProperties && this.props.getActiveUserProperties()
 
     const savedEditor = this.props.editor
+    const hasValue =
+      this.state.inputs &&
+      Object.keys(this.state.inputs).some(
+        (key) =>
+          this.state.inputs[key] &&
+          Object.values(this.state.inputs[key]).some(
+            (val) => val && val.toString().trim() !== ''
+          )
+      )
+
+    // Allow editing if no value exists OR if user is the same editor
     let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
+    if (savedEditor && savedEditor.userId && hasValue && !!userProperties) {
+      isSameEditor =
+        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
+
+    // Create tooltip text showing editor name
+    const tooltipText =
+      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
 
     let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props?.data?.pageBreakBefore) {
@@ -203,9 +236,12 @@ export default class Table extends React.Component {
       return previous + (parseInt(current.width) ? Number(current.width) : 1)
     }, 0)
     const isFixedRow = this.state.rowLabels?.length > 0
-
     return (
-      <div className={baseClasses} key={`table-container-${this.props.id}`}>
+      <div
+        className={baseClasses}
+        key={`table-container-${this.props.id}`}
+        title={tooltipText}
+      >
         <ComponentHeader {...this.props} />
         <div className="form-group">
           <ComponentLabel {...this.props} />

@@ -94,10 +94,18 @@ class ImageUpload extends React.Component {
       this.props.getActiveUserProperties && this.props.getActiveUserProperties()
 
     const savedEditor = this.props.editor
+    const hasValue = this.state.filePath || this.state.blobUrl
+
+    // Allow editing if no value exists OR if user is the same editor
     let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
-      isSameEditor = userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true;
+    if (savedEditor && savedEditor.userId && hasValue && !!userProperties) {
+      isSameEditor =
+        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
+
+    // Create tooltip text showing editor name
+    const tooltipText =
+      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
 
     return (
       <div
@@ -105,6 +113,7 @@ class ImageUpload extends React.Component {
         className={`SortableItem rfb-item${
           this.props.data.pageBreakBefore ? ' alwaysbreak' : ''
         }`}
+        title={tooltipText}
       >
         <ComponentHeader {...this.props} />
         <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>

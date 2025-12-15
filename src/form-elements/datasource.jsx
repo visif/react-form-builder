@@ -42,15 +42,18 @@ class DataSource extends React.Component {
     if (!this.state.selectedItem && defaultValue?.selectedItem) {
       setTimeout(() => {
         if (this.mounted && !this.state.selectedItem) {
-          this.setState({
-            searchText: defaultValue.value,
-            selectedItem: defaultValue.selectedItem,
-            defaultSelectedItem: defaultValue.selectedItem,
-            loading: false,
-          }, () => {
-            // Only notify parent after data is fully loaded and state is set
-            this.notifyParentOfInitialization()
-          })
+          this.setState(
+            {
+              searchText: defaultValue.value,
+              selectedItem: defaultValue.selectedItem,
+              defaultSelectedItem: defaultValue.selectedItem,
+              loading: false,
+            },
+            () => {
+              // Only notify parent after data is fully loaded and state is set
+              this.notifyParentOfInitialization()
+            }
+          )
           if (!this.state.selectedItem && attempt < maxRetries) {
             this.checkForValue(attempt + 1)
           }
@@ -66,7 +69,12 @@ class DataSource extends React.Component {
 
   notifyParentOfInitialization = () => {
     // Only notify parent once the component is fully initialized and not during sync operations
-    if (this.props.data.parentId && this.props.onElementChange && !this.state.loading && !this.syncInProgress) {
+    if (
+      this.props.data.parentId &&
+      this.props.onElementChange &&
+      !this.state.loading &&
+      !this.syncInProgress
+    ) {
       this.props.onElementChange({
         ...this.props.data,
         element: 'DataSource',
@@ -104,8 +112,11 @@ class DataSource extends React.Component {
 
   static getDerivedStateFromProps(props, state) {
     // Handle sync updates from other DataSource components in the same column
-    if (props.data.isSyncUpdate && props.data.selectedItem &&
-        JSON.stringify(props.data.selectedItem) !== JSON.stringify(state.selectedItem)) {
+    if (
+      props.data.isSyncUpdate &&
+      props.data.selectedItem &&
+      JSON.stringify(props.data.selectedItem) !== JSON.stringify(state.selectedItem)
+    ) {
       return {
         searchText: props.data.value || props.data.selectedItem.name || '',
         selectedItem: props.data.selectedItem,
@@ -130,7 +141,10 @@ class DataSource extends React.Component {
 
   componentDidUpdate(prevProps) {
     // Clear the sync flag after processing
-    if (this.props.data.isSyncUpdate && prevProps.data.isSyncUpdate !== this.props.data.isSyncUpdate) {
+    if (
+      this.props.data.isSyncUpdate &&
+      prevProps.data.isSyncUpdate !== this.props.data.isSyncUpdate
+    ) {
       // Clear the flag to prevent further processing
       const updatedData = { ...this.props.data }
       delete updatedData.isSyncUpdate
@@ -155,7 +169,9 @@ class DataSource extends React.Component {
   }
 
   debounceOnChange = (value) => {
-    const matchData = this.state.sourceList.filter((item) => `${item.name}`.toLocaleLowerCase().includes(`${value}`.toLocaleLowerCase()))
+    const matchData = this.state.sourceList.filter((item) =>
+      `${item.name}`.toLocaleLowerCase().includes(`${value}`.toLocaleLowerCase())
+    )
     this.setState({
       searchText: value,
       matchedList: matchData,
@@ -207,16 +223,19 @@ class DataSource extends React.Component {
     this.syncInProgress = true
 
     if (syncData.selectedItem && syncData.selectedItem !== this.state.selectedItem) {
-      this.setState({
-        selectedItem: syncData.selectedItem,
-        searchText: syncData.selectedItem.name || syncData.value || '',
-        isShowingList: false,
-      }, () => {
-        // Reset sync flag after state update
-        setTimeout(() => {
-          this.syncInProgress = false
-        }, 100)
-      })
+      this.setState(
+        {
+          selectedItem: syncData.selectedItem,
+          searchText: syncData.selectedItem.name || syncData.value || '',
+          isShowingList: false,
+        },
+        () => {
+          // Reset sync flag after state update
+          setTimeout(() => {
+            this.syncInProgress = false
+          }, 100)
+        }
+      )
     } else {
       this.syncInProgress = false
     }
@@ -227,19 +246,28 @@ class DataSource extends React.Component {
       this.props.getActiveUserProperties && this.props.getActiveUserProperties()
 
     const savedEditor = this.props.editor
+    const hasValue =
+      this.state.searchText && this.state.searchText.toString().trim() !== ''
+
+    // Allow editing if no value exists OR if user is the same editor
     let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
+    if (savedEditor && savedEditor.userId && hasValue && !!userProperties) {
       isSameEditor =
         userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
-    // Add debugging
+    // Create tooltip text showing editor name
+    const tooltipText =
+      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
 
     const props = {
       type: 'text',
       className: 'form-control',
       name: this.props.data.field_name,
       value: this.state.searchText,
+    }
+    if (tooltipText) {
+      props.title = tooltipText
     }
 
     if (this.props.mutable) {
