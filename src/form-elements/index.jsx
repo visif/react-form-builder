@@ -1382,6 +1382,25 @@ class Camera extends React.Component {
   }
 
   render() {
+    const userProperties =
+      this.props.getActiveUserProperties && this.props.getActiveUserProperties()
+
+    const savedEditor = this.props.editor
+
+    // Check if camera has any value (image captured or default value)
+    const hasValue =
+      this.state.img || (this.props.defaultValue && this.props.defaultValue.length > 0)
+
+    let isSameEditor = true
+    if (savedEditor && savedEditor.userId && hasValue && !!userProperties) {
+      isSameEditor =
+        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
+    }
+
+    // Create tooltip text for editor name
+    const tooltipText =
+      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
+
     let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
@@ -1389,9 +1408,6 @@ class Camera extends React.Component {
 
     const name = this.props.data.field_name
     const fileInputStyle = this.state.img ? { display: 'none' } : null
-    if (this.props.data.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
-    }
     let sourceDataURL
     if (
       this.props.read_only === true &&
@@ -1408,7 +1424,10 @@ class Camera extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
+        <div
+          className={this.props.data.isShowLabel !== false ? 'form-group' : ''}
+          title={tooltipText}
+        >
           <ComponentLabel {...this.props} />
           {this.props.read_only === true &&
           this.props.defaultValue &&
@@ -1426,6 +1445,7 @@ class Camera extends React.Component {
                   capture="camera"
                   className="image-upload"
                   onChange={this.displayImage}
+                  disabled={this.props.read_only || !isSameEditor}
                 />
                 <div className="image-upload-control">
                   <div className="btn btn-default">
@@ -1476,6 +1496,26 @@ class Range extends React.Component {
   }
 
   render() {
+    const userProperties =
+      this.props.getActiveUserProperties && this.props.getActiveUserProperties()
+
+    const savedEditor = this.props.editor
+
+    // Check if range has any value (different from default)
+    const defaultVal = parseInt(this.props.data.default_value, 10)
+    const currentVal = this.state.value
+    const hasValue = currentVal !== defaultVal && currentVal !== undefined
+
+    let isSameEditor = true
+    if (savedEditor && savedEditor.userId && hasValue && !!userProperties) {
+      isSameEditor =
+        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
+    }
+
+    // Create tooltip text for editor name
+    const tooltipText =
+      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
+
     const props = {}
     const name = this.props.data.field_name
 
@@ -1487,6 +1527,7 @@ class Range extends React.Component {
 
     props.value = this.state.value
     props.change = this.changeValue
+    props.disabled = !!(this.props.read_only || !isSameEditor)
 
     if (this.props.mutable) {
       props.ref = this.inputField
@@ -1529,7 +1570,10 @@ class Range extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
+        <div
+          className={this.props.data.isShowLabel !== false ? 'form-group' : ''}
+          title={tooltipText}
+        >
           <ComponentLabel {...this.props} />
           <div className="range">
             <div className="clearfix">
