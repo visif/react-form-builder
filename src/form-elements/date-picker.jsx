@@ -204,7 +204,7 @@ class DatePicker extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className="form-group">
+        <div className="form-group" title={tooltipText}>
           <ComponentLabel {...this.props} />
           <div>
             {readOnly ? (
