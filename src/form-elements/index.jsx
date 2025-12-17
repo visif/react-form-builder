@@ -821,10 +821,7 @@ class Checkboxes extends React.Component {
 
     // Check if any checkbox is selected
     const hasValue =
-      this.state.value &&
-      Array.isArray(this.state.value) &&
-      this.state.value.length > 0 &&
-      this.state.value.some((item) => item.value === true)
+      this.state.value && Array.isArray(this.state.value) && this.state.value.length > 0
 
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && hasValue && !!userProperties) {
