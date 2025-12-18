@@ -64,12 +64,18 @@ export default class ReactForm extends React.Component {
   componentDidMount() {
     // Listen to variable changes to update the form's variables state
     if (this.emitter && typeof this.emitter.addListener === 'function') {
-      this.variableSubscription = this.emitter.addListener('variableChange', this.handleVariableChange)
+      this.variableSubscription = this.emitter.addListener(
+        'variableChange',
+        this.handleVariableChange
+      )
     }
   }
 
   componentWillUnmount() {
-    if (this.variableSubscription && typeof this.variableSubscription.remove === 'function') {
+    if (
+      this.variableSubscription &&
+      typeof this.variableSubscription.remove === 'function'
+    ) {
       this.variableSubscription.remove()
     }
   }
@@ -94,31 +100,36 @@ export default class ReactForm extends React.Component {
     formularItems.forEach((item) => {
       let value = ansData[item.field_name]
       if (value !== undefined) {
-
         // Check if the value is an object and has a value property
         if (Array.isArray(value) && value.length > 0) {
           // If value is an array, get the first item and check if it has a value property
           const firstItem = value[0]
-          if (typeof firstItem === 'object' &&
+          if (
+            typeof firstItem === 'object' &&
             firstItem !== null &&
             firstItem.hasOwnProperty('value') &&
-            typeof firstItem.value === 'boolean') {
-              // Find the item in the items array that matches the field_name
-              const matchedItem = items.find(target => target.field_name === item.field_name)
-              if (matchedItem && matchedItem.options) {
-                // Find the option where the key matches the firstItem value
-                const matchedOption = matchedItem.options.find(option => option.key === firstItem.key)
-                if (matchedOption) {
-                  value = matchedOption.value || matchedOption.text || firstItem.value
-                } else {
-                  value = firstItem.value
-                }
+            typeof firstItem.value === 'boolean'
+          ) {
+            // Find the item in the items array that matches the field_name
+            const matchedItem = items.find(
+              (target) => target.field_name === item.field_name
+            )
+            if (matchedItem && matchedItem.options) {
+              // Find the option where the key matches the firstItem value
+              const matchedOption = matchedItem.options.find(
+                (option) => option.key === firstItem.key
+              )
+              if (matchedOption) {
+                value = matchedOption.value || matchedOption.text || firstItem.value
               } else {
                 value = firstItem.value
               }
             } else {
               value = firstItem.value
             }
+          } else {
+            value = firstItem.value
+          }
         } else if (
           typeof value === 'object' &&
           value !== null &&
@@ -317,11 +328,8 @@ export default class ReactForm extends React.Component {
       })
 
       itemData.value = checked_options
-      itemData.editor = oldEditor
-        ? oldEditor
-        : checked_options.length > 0
-          ? activeUser
-          : null
+      itemData.editor =
+        checked_options?.length <= 0 ? null : oldEditor ? oldEditor : activeUser || null
     } else {
       if (!ref) {
         return null
@@ -557,16 +565,16 @@ export default class ReactForm extends React.Component {
 
   handleVariableChange = (params) => {
     // Update the form's variables state when any variable changes
-    this.setState(prevState => {
+    this.setState((prevState) => {
       const newVariables = {
         ...prevState.variables,
-        [params.propKey]: params.value
+        [params.propKey]: params.value,
       }
       const newAnswerData = { ...prevState.answerData }
 
       // Get all formula fields for cascading updates
-      const allFormulaFields = this.props.data.filter(item =>
-        item.element === 'FormulaInput' && item.formula
+      const allFormulaFields = this.props.data.filter(
+        (item) => item.element === 'FormulaInput' && item.formula
       )
 
       // Keep track of which variables have been updated to detect cascading changes
@@ -578,8 +586,8 @@ export default class ReactForm extends React.Component {
         hasChanges = false
 
         // Find formula fields that depend on any recently updated variables
-        const affectedFields = allFormulaFields.filter(formulaField => {
-          return Array.from(updatedVariables).some(varKey =>
+        const affectedFields = allFormulaFields.filter((formulaField) => {
+          return Array.from(updatedVariables).some((varKey) =>
             formulaField.formula.includes(varKey)
           )
         })
@@ -587,7 +595,7 @@ export default class ReactForm extends React.Component {
         // Clear the updated variables set for this iteration
         updatedVariables.clear()
 
-        affectedFields.forEach(formulaField => {
+        affectedFields.forEach((formulaField) => {
           try {
             // Use same formula parsing logic as FormulaInput component
             const parser = new Parser()
@@ -608,7 +616,7 @@ export default class ReactForm extends React.Component {
             newAnswerData[formulaField.field_name] = {
               formula: formulaField.formula,
               value: newValue,
-              variables: newVariables
+              variables: newVariables,
             }
 
             // If this formula field has a formularKey, update variables with its new value
@@ -623,14 +631,17 @@ export default class ReactForm extends React.Component {
               }
             }
           } catch (error) {
-            console.warn(`Error calculating formula for ${formulaField.field_name}:`, error)
+            console.warn(
+              `Error calculating formula for ${formulaField.field_name}:`,
+              error
+            )
           }
         })
       }
 
       return {
         variables: newVariables,
-        answerData: newAnswerData
+        answerData: newAnswerData,
       }
     })
   }

@@ -183,11 +183,19 @@ class TextInput extends React.Component {
       this.props.getActiveUserProperties && this.props.getActiveUserProperties()
 
     const savedEditor = this.props.editor
+
+    // Check if text input has any value
+    const hasValue = this.state.value && this.state.value.toString().trim() !== ''
+
     let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
+    if (savedEditor && savedEditor.userId && hasValue && !!userProperties) {
       isSameEditor =
         userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
+
+    // Create tooltip text for editor name
+    const tooltipText =
+      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
 
     const props = {}
     props.type = 'text'
@@ -195,6 +203,10 @@ class TextInput extends React.Component {
     props.name = this.props.data.field_name
     props.onChange = this.handleChange
     props.value = this.state.value
+
+    if (tooltipText) {
+      props.title = tooltipText
+    }
 
     if (this.props.mutable) {
       props.defaultValue = this.props.defaultValue
@@ -279,11 +291,19 @@ class NumberInput extends React.Component {
       this.props.getActiveUserProperties && this.props.getActiveUserProperties()
 
     const savedEditor = this.props.editor
+
+    // Check if number input has any value
+    const hasValue = this.state.value && this.state.value.toString().trim() !== ''
+
     let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
+    if (savedEditor && savedEditor.userId && hasValue && !!userProperties) {
       isSameEditor =
         userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
+
+    // Create tooltip text for editor name
+    const tooltipText =
+      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
 
     const props = {}
     props.type = 'number'
@@ -292,6 +312,10 @@ class NumberInput extends React.Component {
     props.onChange = this.handleChange
     props.onKeyPress = this.handleKeyPress
     props.value = this.state.value
+
+    if (tooltipText) {
+      props.title = tooltipText
+    }
 
     if (this.props.mutable) {
       props.defaultValue = this.props.defaultValue
@@ -365,11 +389,19 @@ class TextArea extends React.Component {
       this.props.getActiveUserProperties && this.props.getActiveUserProperties()
 
     const savedEditor = this.props.editor
+
+    // Check if textarea has any value
+    const hasValue = this.state.value && this.state.value.toString().trim() !== ''
+
     let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
+    if (savedEditor && savedEditor.userId && hasValue && !!userProperties) {
       isSameEditor =
         userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
+
+    // Create tooltip text for editor name
+    const tooltipText =
+      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
 
     const props = {}
     props.className = 'form-control'
@@ -377,6 +409,10 @@ class TextArea extends React.Component {
     props.minRows = 3
     props.onChange = this.handleChange
     props.value = this.state.value
+
+    if (tooltipText) {
+      props.title = tooltipText
+    }
 
     if (this.props.read_only || !isSameEditor) {
       props.disabled = 'disabled'
@@ -462,17 +498,29 @@ class Dropdown extends React.Component {
       this.props.getActiveUserProperties && this.props.getActiveUserProperties()
 
     const savedEditor = this.props.editor
+
+    // Check if dropdown has any value (not empty string)
+    const hasValue = this.state.value && this.state.value.toString().trim() !== ''
+
     let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
+    if (savedEditor && savedEditor.userId && hasValue && !!userProperties) {
       isSameEditor =
         userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
+
+    // Create tooltip text for editor name
+    const tooltipText =
+      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
 
     const props = {}
     props.className = 'form-control'
     props.name = this.props.data.field_name
     props.value = this.state.value
     props.onChange = this.handleChange
+
+    if (tooltipText) {
+      props.title = tooltipText
+    }
 
     if (this.props.mutable) {
       props.defaultValue = this.state.value
@@ -581,13 +629,22 @@ class Signature extends React.Component {
       this.props.getActiveUserProperties && this.props.getActiveUserProperties()
 
     const savedEditor = this.props.editor
+
+    const { defaultValue } = this.state
+
+    // Check if signature has any value
+    const hasValue = defaultValue && defaultValue.length > 0
+
     let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
+    if (savedEditor && savedEditor.userId && hasValue && !!userProperties) {
       isSameEditor =
         userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
-    const { defaultValue } = this.state
+    // Create tooltip text for editor name
+    const tooltipText =
+      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
+
     let canClear = !!defaultValue
     const props = {}
     props.type = 'hidden'
@@ -623,7 +680,10 @@ class Signature extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
+        <div
+          className={this.props.data.isShowLabel !== false ? 'form-group' : ''}
+          title={tooltipText}
+        >
           <ComponentLabel {...this.props} />
           {this.props.read_only === true || !isSameEditor || !!sourceDataURL ? (
             <img src={sourceDataURL} />
@@ -688,11 +748,20 @@ class Tags extends React.Component {
       this.props.getActiveUserProperties && this.props.getActiveUserProperties()
 
     const savedEditor = this.props.editor
+
+    // Check if tags has any value (selected items)
+    const hasValue =
+      this.state.value && Array.isArray(this.state.value) && this.state.value.length > 0
+
     let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
+    if (savedEditor && savedEditor.userId && hasValue && !!userProperties) {
       isSameEditor =
         userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
+
+    // Create tooltip text for editor name
+    const tooltipText =
+      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
 
     if (this.props.mutable) {
       // props.isDisabled = this.props.read_only;
@@ -709,7 +778,10 @@ class Tags extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
+        <div
+          className={this.props.data.isShowLabel !== false ? 'form-group' : ''}
+          title={tooltipText}
+        >
           <ComponentLabel {...this.props} />
           <Select {...props} />
         </div>
@@ -746,21 +818,20 @@ class Checkboxes extends React.Component {
       this.props.getActiveUserProperties && this.props.getActiveUserProperties()
 
     const savedEditor = this.props.editor
+
+    // Check if any checkbox is selected
+    const hasValue =
+      this.state.value && Array.isArray(this.state.value) && this.state.value.length > 0
+
     let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
+    if (savedEditor && savedEditor.userId && hasValue && !!userProperties) {
       isSameEditor =
         userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
-    // Add debugging
-    console.log('Checkboxes Debug:', {
-      userProperties,
-      savedEditor,
-      isSameEditor,
-      hasDCCRole: userProperties?.hasDCCRole,
-      readOnly: this.props.read_only,
-      finalDisabled: this.props.read_only || !isSameEditor,
-    })
+    // Create tooltip text for editor name
+    const tooltipText =
+      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
 
     const self = this
     let classNames = 'custom-control custom-checkbox'
@@ -776,7 +847,10 @@ class Checkboxes extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
+        <div
+          className={this.props.data.isShowLabel !== false ? 'form-group' : ''}
+          title={tooltipText}
+        >
           <ComponentLabel className="form-label" {...this.props} />
           {this.props.data.options.map((option) => {
             const this_key = `preview_${option.key}`
@@ -1184,21 +1258,28 @@ class Rating extends React.Component {
       this.props.getActiveUserProperties && this.props.getActiveUserProperties()
 
     const savedEditor = this.props.editor
+
+    // Check if rating has any value (greater than 0)
+    const currentRating =
+      this.props.defaultValue !== undefined ? parseFloat(this.props.defaultValue, 10) : 0
+    const hasValue = currentRating > 0
+
     let isSameEditor = true
-    if (savedEditor && savedEditor.userId && !!userProperties) {
+    if (savedEditor && savedEditor.userId && hasValue && !!userProperties) {
       isSameEditor =
         userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
+
+    // Create tooltip text for editor name
+    const tooltipText =
+      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
 
     const props = {}
     props.name = this.props.data.field_name
     props.ratingAmount = 5
 
     if (this.props.mutable) {
-      props.rating =
-        this.props.defaultValue !== undefined
-          ? parseFloat(this.props.defaultValue, 10)
-          : 0
+      props.rating = currentRating
       props.editing = true
       // props.disabled = this.props.read_only ||;
       props.disabled = !!(this.props.read_only || !isSameEditor)
@@ -1213,7 +1294,10 @@ class Rating extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
+        <div
+          className={this.props.data.isShowLabel !== false ? 'form-group' : ''}
+          title={tooltipText}
+        >
           <ComponentLabel {...this.props} />
           <StarRating {...props} />
         </div>
@@ -1295,6 +1379,25 @@ class Camera extends React.Component {
   }
 
   render() {
+    const userProperties =
+      this.props.getActiveUserProperties && this.props.getActiveUserProperties()
+
+    const savedEditor = this.props.editor
+
+    // Check if camera has any value (image captured or default value)
+    const hasValue =
+      this.state.img || (this.props.defaultValue && this.props.defaultValue.length > 0)
+
+    let isSameEditor = true
+    if (savedEditor && savedEditor.userId && hasValue && !!userProperties) {
+      isSameEditor =
+        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
+    }
+
+    // Create tooltip text for editor name
+    const tooltipText =
+      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
+
     let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
@@ -1302,9 +1405,6 @@ class Camera extends React.Component {
 
     const name = this.props.data.field_name
     const fileInputStyle = this.state.img ? { display: 'none' } : null
-    if (this.props.data.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
-    }
     let sourceDataURL
     if (
       this.props.read_only === true &&
@@ -1321,7 +1421,10 @@ class Camera extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
+        <div
+          className={this.props.data.isShowLabel !== false ? 'form-group' : ''}
+          title={tooltipText}
+        >
           <ComponentLabel {...this.props} />
           {this.props.read_only === true &&
           this.props.defaultValue &&
@@ -1339,6 +1442,7 @@ class Camera extends React.Component {
                   capture="camera"
                   className="image-upload"
                   onChange={this.displayImage}
+                  disabled={this.props.read_only || !isSameEditor}
                 />
                 <div className="image-upload-control">
                   <div className="btn btn-default">
@@ -1389,6 +1493,26 @@ class Range extends React.Component {
   }
 
   render() {
+    const userProperties =
+      this.props.getActiveUserProperties && this.props.getActiveUserProperties()
+
+    const savedEditor = this.props.editor
+
+    // Check if range has any value (different from default)
+    const defaultVal = parseInt(this.props.data.default_value, 10)
+    const currentVal = this.state.value
+    const hasValue = currentVal !== defaultVal && currentVal !== undefined
+
+    let isSameEditor = true
+    if (savedEditor && savedEditor.userId && hasValue && !!userProperties) {
+      isSameEditor =
+        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
+    }
+
+    // Create tooltip text for editor name
+    const tooltipText =
+      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
+
     const props = {}
     const name = this.props.data.field_name
 
@@ -1400,6 +1524,7 @@ class Range extends React.Component {
 
     props.value = this.state.value
     props.change = this.changeValue
+    props.disabled = !!(this.props.read_only || !isSameEditor)
 
     if (this.props.mutable) {
       props.ref = this.inputField
@@ -1442,7 +1567,10 @@ class Range extends React.Component {
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
-        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
+        <div
+          className={this.props.data.isShowLabel !== false ? 'form-group' : ''}
+          title={tooltipText}
+        >
           <ComponentLabel {...this.props} />
           <div className="range">
             <div className="clearfix">
