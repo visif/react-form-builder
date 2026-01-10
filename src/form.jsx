@@ -355,11 +355,7 @@ export default class ReactForm extends React.Component {
         value: valueItem.value,
         info: info,
       }
-      itemData.editor = oldEditor
-        ? oldEditor
-        : valueItem.value
-        ? activeUser
-        : null
+      itemData.editor = oldEditor ? oldEditor : valueItem.value ? activeUser : null
     } else {
       if (!ref) {
         return null
