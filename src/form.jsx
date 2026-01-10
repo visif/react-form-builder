@@ -330,6 +330,36 @@ export default class ReactForm extends React.Component {
       itemData.value = checked_options
       itemData.editor =
         checked_options?.length <= 0 ? null : oldEditor ? oldEditor : activeUser || null
+    } else if (item.element === 'Dropdown') {
+      if (!ref) {
+        return null
+      }
+
+      const valueItem = this._getItemValue(item, ref)
+      const selectedOption = item.options.find(
+        (option) => option.value === valueItem.value
+      )
+
+      let info = ''
+      if (
+        selectedOption &&
+        selectedOption.info &&
+        ref.infoField &&
+        ref.infoField.current
+      ) {
+        const $info = ReactDOM.findDOMNode(ref.infoField.current)
+        info = $info?.value ?? ''
+      }
+
+      itemData.value = {
+        value: valueItem.value,
+        info: info,
+      }
+      itemData.editor = oldEditor
+        ? oldEditor
+        : valueItem.value
+        ? activeUser
+        : null
     } else {
       if (!ref) {
         return null
