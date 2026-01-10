@@ -20,7 +20,7 @@ function buildItems(items, defaultItems) {
     let found;
     if (isDefaultItem(x)) {
       found = defaultItems.find(
-        (y) => (x.element || x.key) === (y.element || y.key)
+        (y) => (x.element || x.key) === (y.element || y.key),
       );
     }
     return found || x;
@@ -165,6 +165,7 @@ export default class Toolbar extends React.Component {
         label: "Placeholder Label",
         field_name: "dropdown_",
         options: [],
+        canHaveInfo: true,
       },
       {
         key: "Tags",
@@ -485,7 +486,7 @@ export default class Toolbar extends React.Component {
         elementOptions.options = item.options;
       } else {
         elementOptions.options = Toolbar._defaultItemOptions(
-          elementOptions.element
+          elementOptions.element,
         );
       }
     }

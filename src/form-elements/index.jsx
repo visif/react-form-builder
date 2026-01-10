@@ -198,10 +198,6 @@ class NumberInput extends React.Component {
       props.ref = this.inputField;
     }
 
-    //if (this.props.read_only) {
-    //  props.disabled = "disabled";
-    //}
-
     if (this.props.read_only || !isSameEditor) {
       props.disabled = "disabled";
     }
@@ -277,10 +273,22 @@ class Dropdown extends React.Component {
   constructor(props) {
     super(props);
     this.inputField = React.createRef();
+    this.infoField = React.createRef();
+
+    const defaultValue = props.defaultValue;
+    const value =
+      defaultValue && typeof defaultValue === "object"
+        ? defaultValue.value
+        : defaultValue || "";
+    const info =
+      defaultValue && typeof defaultValue === "object"
+        ? defaultValue.info || ""
+        : "";
 
     this.state = {
       defaultValue: props.defaultValue,
-      value: props.defaultValue,
+      value: value,
+      info: info,
     };
   }
 
@@ -294,9 +302,19 @@ class Dropdown extends React.Component {
         state.defaultValue,
         props.defaultValue
       );
+      const defaultValue = props.defaultValue;
+      const value =
+        defaultValue && typeof defaultValue === "object"
+          ? defaultValue.value
+          : defaultValue || "";
+      const info =
+        defaultValue && typeof defaultValue === "object"
+          ? defaultValue.info || ""
+          : "";
       return {
         defaultValue: props.defaultValue,
-        value: props.defaultValue,
+        value: value,
+        info: info,
       };
     }
     return state;
@@ -304,6 +322,10 @@ class Dropdown extends React.Component {
 
   handleChange = (e) => {
     this.setState({ value: e.target.value });
+  };
+
+  handleInfoChange = (e) => {
+    this.setState({ info: e.target.value });
   };
 
   render() {
@@ -337,6 +359,11 @@ class Dropdown extends React.Component {
       baseClasses += " alwaysbreak";
     }
 
+    const selectedOption = this.props.data.options.find(
+      (option) => option.value === this.state.value
+    );
+    const showInfo = selectedOption && selectedOption.info;
+
     return (
       <div className={baseClasses}>
         {!this.props.hideHeader && <ComponentHeader {...this.props} />}
@@ -355,6 +382,20 @@ class Dropdown extends React.Component {
               );
             })}
           </select>
+          {showInfo && (
+            <input
+              type="text"
+              className="form-control"
+              style={{
+                marginTop: "8px",
+              }}
+              placeholder="Additional information"
+              value={this.state.info}
+              onChange={this.handleInfoChange}
+              disabled={this.props.read_only || !isSameEditor}
+              ref={this.infoField}
+            />
+          )}
         </div>
       </div>
     );
