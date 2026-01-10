@@ -165,6 +165,7 @@ export default class Toolbar extends React.Component {
         field_name: 'dropdown_',
         options: [],
         formularKey: '',
+        canHaveInfo: true,
       },
       {
         key: 'Tags',
