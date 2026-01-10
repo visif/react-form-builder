@@ -446,38 +446,34 @@ class Dropdown extends React.Component {
     this.inputField = React.createRef()
     this.infoField = React.createRef()
 
-    const defaultValue = props.defaultValue
+    const { defaultValue } = props
     const value =
       defaultValue && typeof defaultValue === 'object'
         ? defaultValue.value
         : defaultValue || ''
     const info =
-      defaultValue && typeof defaultValue === 'object'
-        ? defaultValue.info || ''
-        : ''
+      defaultValue && typeof defaultValue === 'object' ? defaultValue.info || '' : ''
 
     this.state = {
       defaultValue: props.defaultValue,
-      value: value,
-      info: info,
+      value,
+      info,
     }
   }
 
   static getDerivedStateFromProps(props, state) {
     if (JSON.stringify(state.defaultValue) !== JSON.stringify(props.defaultValue)) {
-      const defaultValue = props.defaultValue
+      const { defaultValue } = props
       const value =
         defaultValue && typeof defaultValue === 'object'
           ? defaultValue.value
           : defaultValue || ''
       const info =
-        defaultValue && typeof defaultValue === 'object'
-          ? defaultValue.info || ''
-          : ''
+        defaultValue && typeof defaultValue === 'object' ? defaultValue.info || '' : ''
       return {
         defaultValue: props.defaultValue,
-        value: value,
-        info: info,
+        value,
+        info,
       }
     }
     return state
@@ -516,8 +512,8 @@ class Dropdown extends React.Component {
   }
 
   handleInfoChange = (e) => {
-    this.setState({ info: e.target.value });
-  };
+    this.setState({ info: e.target.value })
+  }
 
   render() {
     const userProperties =
@@ -564,8 +560,8 @@ class Dropdown extends React.Component {
 
     const selectedOption = this.props.data.options.find(
       (option) => option.value === this.state.value
-    );
-    const showInfo = selectedOption && selectedOption.info;
+    )
+    const showInfo = selectedOption && selectedOption.info
 
     return (
       <div className={baseClasses}>
@@ -590,7 +586,7 @@ class Dropdown extends React.Component {
               type="text"
               className="form-control"
               style={{
-                marginTop: "8px",
+                marginTop: '8px',
               }}
               placeholder="Additional information"
               value={this.state.info}
