@@ -86,28 +86,17 @@ export default class DynamicOptionList extends React.Component {
 
     // If we have dirty changes, check if props now match our state (meaning parent synced)
     if (dirty) {
-      // Check if the options we sent have been synced back - compare all properties
+      // Check if the options we sent have been synced back
       const optionsMatch =
         this.props.element?.options?.length === element.options.length &&
-        this.props.element?.options?.every((opt, idx) => {
-          const localOpt = element.options[idx]
-          return (
-            opt.text === localOpt?.text &&
-            opt.value === localOpt?.value &&
-            opt.key === localOpt?.key &&
-            opt.correct === localOpt?.correct &&
-            opt.info === localOpt?.info
-          )
-        })
+        this.props.element?.options?.every(
+          (opt, idx) =>
+            opt.text === element.options[idx]?.text &&
+            opt.value === element.options[idx]?.value
+        )
 
-      // Also check if other properties match
-      const propertiesMatch =
-        this.props.element?.label === element.label &&
-        this.props.element?.labelRaw === element.labelRaw &&
-        this.props.element?.required === element.required
-
-      // If both options and properties match, parent has synced our changes
-      if (optionsMatch && propertiesMatch) {
+      // If props match our dirty state, clear the dirty flag
+      if (optionsMatch) {
         this.setState({ dirty: false })
       }
     } else {
@@ -181,6 +170,13 @@ export default class DynamicOptionList extends React.Component {
       () => {
         const { updateElement, preview } = this.props
         const { element } = this.state
+        if (typeof console !== 'undefined') {
+          console.log('[DynamicOptionList] handleOptionCorrect - calling updateElement', {
+            id: element?.id,
+            label: element?.label?.slice?.(0, 200),
+            options: element?.options?.map?.((o) => ({ text: o.text, value: o.value })),
+          })
+        }
         updateElement.call(preview, element)
         this.syncOptionsWithSameColumnElements(element.options)
       }
@@ -207,6 +203,13 @@ export default class DynamicOptionList extends React.Component {
       () => {
         const { updateElement, preview } = this.props
         const { element } = this.state
+        if (typeof console !== 'undefined') {
+          console.log('[DynamicOptionList] handleOptionInfo - calling updateElement', {
+            id: element?.id,
+            label: element?.label?.slice?.(0, 200),
+            options: element?.options?.map?.((o) => ({ text: o.text, value: o.value })),
+          })
+        }
         updateElement.call(preview, element)
         this.syncOptionsWithSameColumnElements(element.options)
       }
@@ -218,6 +221,14 @@ export default class DynamicOptionList extends React.Component {
     const { element, dirty } = this.state
 
     if (dirty) {
+      // Debug: what child is passing when updateOption triggers
+      if (typeof console !== 'undefined') {
+        console.log('[DynamicOptionList] updateOption - calling updateElement', {
+          id: element?.id,
+          label: element?.label?.slice?.(0, 200),
+          options: element?.options?.map?.((o) => ({ text: o.text, value: o.value })),
+        })
+      }
       // Use the current state element (which has the latest changes)
       // instead of merging with props that might be stale
       updateElement.call(preview, element)
@@ -307,10 +318,9 @@ export default class DynamicOptionList extends React.Component {
       return
     }
 
-    const updateElement =
-      typeof preview.updateElement === 'function'
-        ? preview.updateElement
-        : propsUpdateElement
+    // Prefer the parent-provided updateElement (e.g., updateElementWithFlush)
+    // so that we flush and merge label changes correctly. Fall back to preview.updateElement.
+    const updateElement = propsUpdateElement || (typeof preview.updateElement === 'function' ? preview.updateElement : null)
 
     if (!updateElement) {
       return
@@ -352,6 +362,7 @@ export default class DynamicOptionList extends React.Component {
       const updatedElement = {
         ...elementData,
         options: newOptions,
+        dirty: true,
       }
 
       updateElement(updatedElement)
@@ -499,3 +510,4 @@ export default class DynamicOptionList extends React.Component {
     )
   }
 }
+

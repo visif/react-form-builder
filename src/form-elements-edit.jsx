@@ -77,6 +77,9 @@ export default class FormElementsEdit extends React.Component {
       // keep ephemeral editor states if you want fully controlled editors
       editorStates: {},
     }
+
+    // Synchronously track the latest element edits to avoid setState race conditions
+    this.latestElement = this.props.element
   }
 
   debounce(fn, ms) {
@@ -173,12 +176,27 @@ export default class FormElementsEdit extends React.Component {
   componentDidUpdate(prevProps) {
     // Update state when element prop changes (e.g., when reopening the edit modal)
     if (prevProps.element !== this.props.element) {
-      this.setState({
-        element: this.props.element,
-        data: this.props.data,
-        dirty: false,
-        editorStates: {}, // Reset editor states to use new content
-      })
+      // Keep synchronous copy updated too
+      this.latestElement = this.props.element
+
+      // If a different element was selected (different id), reset editorStates
+      const prevId = prevProps.element && prevProps.element.id
+      const newId = this.props.element && this.props.element.id
+      if (prevId !== newId) {
+        this.setState({
+          element: this.props.element,
+          data: this.props.data,
+          dirty: false,
+          editorStates: {}, // Reset editor states to use new content
+        })
+      } else {
+        // Same element updated (e.g., save returned), preserve editorStates to avoid cursor jump
+        this.setState({
+          element: this.props.element,
+          data: this.props.data,
+          dirty: false,
+        })
+      }
     }
   }
 
@@ -207,6 +225,7 @@ export default class FormElementsEdit extends React.Component {
       }))
     }
 
+    this.latestElement = this_element
     this.setState(
       {
         element: this_element,
@@ -247,6 +266,17 @@ export default class FormElementsEdit extends React.Component {
     const element = { ...this.state.element }
     element[property] = html
     element[`${property}Raw`] = JSON.stringify(raw)
+
+    // Keep synchronous copy to avoid losing edits if user quickly edits options
+    this.latestElement = element
+
+    // Debug: log label updates
+    if (property === 'label' && typeof console !== 'undefined') {
+      console.log('[FormElementsEdit] onEditorStateChange - label (preview)', {
+        id: element?.id,
+        label: element?.label?.slice?.(0, 200),
+      })
+    }
 
     this.setState(
       {
@@ -335,7 +365,15 @@ export default class FormElementsEdit extends React.Component {
   }
 
   updateElement = () => {
-    const this_element = this.state.element
+    const this_element = this.latestElement || this.state.element
+    // Debug: show what is being saved from parent
+    if (typeof console !== 'undefined') {
+      console.log('[FormElementsEdit] updateElement - saving element', {
+        id: this_element?.id,
+        label: this_element?.label?.slice?.(0, 200),
+        options: this_element?.options?.map?.((o) => ({ text: o.text, value: o.value })),
+      })
+    }
     // to prevent ajax calls with no change
     if (this.state.dirty) {
       this.props.updateElement.call(this.props.preview, this_element)
@@ -353,6 +391,39 @@ export default class FormElementsEdit extends React.Component {
     ) {
       this.props.preview.syncRowChanges(this_element)
     }
+  }
+
+  // Wrapper for child components to ensure pending label/content updates are saved first
+  updateElementWithFlush = (childElement) => {
+    // Cancel any pending debounced updates (avoid double-save races)
+    if (this.debouncedPush && this.debouncedPush.cancel) {
+      this.debouncedPush.cancel()
+    }
+
+    // Use latestElement to get synchronously updated values
+    const currentElement = this.latestElement || this.state.element
+
+    // Merge: preserve parent's label/content but accept child's options/columns/rows
+    const mergedElement = {
+      ...childElement,
+      label: currentElement.label,
+      labelRaw: currentElement.labelRaw,
+      content: currentElement.content,
+      contentRaw: currentElement.contentRaw,
+      dirty: true,
+    }
+
+    if (typeof console !== 'undefined' && console.debug) {
+      console.debug('[FormElementsEdit] updateElementWithFlush - mergedElement', {
+        id: mergedElement?.id,
+        label: mergedElement?.label?.slice?.(0, 200),
+        options: mergedElement?.options?.map?.((o) => ({ text: o.text, value: o.value })),
+      })
+    }
+
+    // Clear dirty flag since we're saving now
+    this.setState({ dirty: false })
+    this.props.updateElement.call(this.props.preview, mergedElement)
   }
 
   onEditorBlur = () => {
@@ -900,7 +971,7 @@ export default class FormElementsEdit extends React.Component {
             canHaveOptionValue={canHaveOptionValue}
             canHaveInfo={canHaveInfo}
             data={this.props.preview?.state?.data}
-            updateElement={this.props.updateElement}
+            updateElement={this.updateElementWithFlush}
             preview={this.props.preview}
             element={this.state.element}
             key={`option-${this.state.element.options.length}`}
@@ -926,9 +997,9 @@ export default class FormElementsEdit extends React.Component {
         {this.props.element.hasOwnProperty('rowLabels') && (
           <FixedRowList
             data={this.props.preview?.state?.data}
-            updateElement={this.props.updateElement}
+            updateElement={this.updateElementWithFlush}
             preview={this.props.preview}
-            element={this.props.element}
+            element={this.state.element}
             key="table-row-labels"
           />
         )}
@@ -936,9 +1007,9 @@ export default class FormElementsEdit extends React.Component {
         {this.props.element.hasOwnProperty('columns') && (
           <DynamicColumnList
             data={this.props.preview?.state?.data}
-            updateElement={this.props.updateElement}
+            updateElement={this.updateElementWithFlush}
             preview={this.props.preview}
-            element={this.props.element}
+            element={this.state.element}
             key="table-columns"
           />
         )}

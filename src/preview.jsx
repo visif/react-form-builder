@@ -52,6 +52,15 @@ const Preview = (props) => {
   }
 
   const updateElement = (element) => {
+    // Debug: log incoming element updates from editor/child components
+    if (typeof console !== 'undefined') {
+      console.log('[Preview] updateElement called with', {
+        id: element?.id,
+        label: element?.label?.slice?.(0, 200),
+        options: element?.options?.map?.((o) => ({ text: o.text, value: o.value })),
+      })
+    }
+
     let found = false
     for (let i = 0, len = data.length; i < len; i++) {
       if (element.id === data[i].id) {
@@ -63,6 +72,15 @@ const Preview = (props) => {
     if (found) {
       seq = seq > 100000 ? 0 : seq + 1
       store.dispatch('updateOrder', data)
+
+      // If the app-level editElement is open for this element, keep it in sync
+      try {
+        if (props.editElement && props.editElement.id === element.id && props.parent && typeof props.parent.setState === 'function') {
+          props.parent.setState({ editElement: element })
+        }
+      } catch (e) {
+        // ignore errors updating parent state
+      }
     }
   }
 
