@@ -1,16 +1,22 @@
 import React from 'react'
 import { Editor } from 'react-draft-wysiwyg'
+import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css'
 import TextAreaAutosize from 'react-textarea-autosize'
-import { ContentState, convertFromHTML, convertToRaw, EditorState, convertFromRaw } from 'draft-js'
+import {
+  ContentState,
+  convertFromHTML,
+  convertFromRaw,
+  convertToRaw,
+  EditorState,
+} from 'draft-js'
 import draftToHtml from 'draftjs-to-html'
 // eslint-disable-next-line import/no-cycle
 import DynamicColumnList from './dynamic-column-list'
 import DynamicOptionList from './dynamic-option-list'
 import FixedRowList from './fixed-row-list'
 import { get } from './stores/requests'
-import ID from './UUID'
 import './styles/draft-align.css'
-import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css'
+import ID from './UUID'
 
 const toolbar = {
   options: ['inline', 'list', 'textAlign', 'fontSize', 'link', 'colorPicker', 'history'],
@@ -20,19 +26,41 @@ const toolbar = {
     options: ['bold', 'italic', 'underline', 'superscript', 'subscript'],
   },
   link: {
-    popupClassName: 'link-popup-left',  // Add this to position the link popup to the left
+    popupClassName: 'link-popup-left', // Add this to position the link popup to the left
   },
   colorPicker: {
-    className: 'rainbow-color-picker',  // Add this custom class
+    className: 'rainbow-color-picker', // Add this custom class
     component: undefined,
-    popupClassName: 'color-picker-popup-left',  // Add this to position the popup to the left
-    colors: ['rgb(97,189,109)', 'rgb(26,188,156)', 'rgb(84,172,210)', 'rgb(44,130,201)',
-             'rgb(147,101,184)', 'rgb(71,85,119)', 'rgb(204,204,204)', 'rgb(65,168,95)',
-             'rgb(0,168,133)', 'rgb(61,142,185)', 'rgb(41,105,176)', 'rgb(85,57,130)',
-             'rgb(40,50,78)', 'rgb(0,0,0)', 'rgb(247,218,100)', 'rgb(251,160,38)',
-             'rgb(235,107,86)', 'rgb(226,80,65)', 'rgb(163,143,132)', 'rgb(239,239,239)',
-             'rgb(255,255,255)', 'rgb(250,197,28)', 'rgb(243,121,52)', 'rgb(209,72,65)',
-             'rgb(184,49,47)', 'rgb(124,112,107)', 'rgb(209,213,216)'],
+    popupClassName: 'color-picker-popup-left', // Add this to position the popup to the left
+    colors: [
+      'rgb(97,189,109)',
+      'rgb(26,188,156)',
+      'rgb(84,172,210)',
+      'rgb(44,130,201)',
+      'rgb(147,101,184)',
+      'rgb(71,85,119)',
+      'rgb(204,204,204)',
+      'rgb(65,168,95)',
+      'rgb(0,168,133)',
+      'rgb(61,142,185)',
+      'rgb(41,105,176)',
+      'rgb(85,57,130)',
+      'rgb(40,50,78)',
+      'rgb(0,0,0)',
+      'rgb(247,218,100)',
+      'rgb(251,160,38)',
+      'rgb(235,107,86)',
+      'rgb(226,80,65)',
+      'rgb(163,143,132)',
+      'rgb(239,239,239)',
+      'rgb(255,255,255)',
+      'rgb(250,197,28)',
+      'rgb(243,121,52)',
+      'rgb(209,72,65)',
+      'rgb(184,49,47)',
+      'rgb(124,112,107)',
+      'rgb(209,213,216)',
+    ],
   },
 }
 
@@ -47,16 +75,24 @@ export default class FormElementsEdit extends React.Component {
       formDataSource: [],
       activeForm: null,
       // keep ephemeral editor states if you want fully controlled editors
-      editorStates: {}
+      editorStates: {},
     }
   }
 
   debounce(fn, ms) {
     let t
-    return (...a) => {
+    const debounced = (...a) => {
       clearTimeout(t)
       t = setTimeout(() => fn(...a), ms)
     }
+    debounced.flush = () => {
+      clearTimeout(t)
+      fn()
+    }
+    debounced.cancel = () => {
+      clearTimeout(t)
+    }
+    return debounced
   }
 
   async onUploadFile(event) {
@@ -131,6 +167,18 @@ export default class FormElementsEdit extends React.Component {
         formDataSource,
         activeForm: activeFormContent,
       }))
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    // Update state when element prop changes (e.g., when reopening the edit modal)
+    if (prevProps.element !== this.props.element) {
+      this.setState({
+        element: this.props.element,
+        data: this.props.data,
+        dirty: false,
+        editorStates: {}, // Reset editor states to use new content
+      })
     }
   }
 
@@ -224,7 +272,22 @@ export default class FormElementsEdit extends React.Component {
       const collect = (node) => {
         if (node.nodeType !== 1) return
         const tag = node.tagName.toLowerCase()
-        if (['p','h1','h2','h3','h4','h5','h6','blockquote','pre','li','figure','div'].includes(tag)) {
+        if (
+          [
+            'p',
+            'h1',
+            'h2',
+            'h3',
+            'h4',
+            'h5',
+            'h6',
+            'blockquote',
+            'pre',
+            'li',
+            'figure',
+            'div',
+          ].includes(tag)
+        ) {
           // figure/div can appear for atomic/custom blocks
           blockEls.push(node)
         }
@@ -239,14 +302,11 @@ export default class FormElementsEdit extends React.Component {
         if (!el) return
         const data = block.data || {}
         const align =
-          data['text-align'] ||
-          data.textAlign ||
-          data.textAlignment ||
-          data.alignment
+          data['text-align'] || data.textAlign || data.textAlignment || data.alignment
         if (!align) return
 
         // Normalize alignment value
-        const a = ['left','right','center','justify'].includes(align) ? align : 'left'
+        const a = ['left', 'right', 'center', 'justify'].includes(align) ? align : 'left'
 
         // Apply inline style (if not stripped later)
         const prev = el.getAttribute('style') || ''
@@ -259,12 +319,12 @@ export default class FormElementsEdit extends React.Component {
 
         // If list item, also align parent list container
         if (el.tagName.toLowerCase() === 'li' && el.parentElement) {
-            const listParent = el.parentElement
-            const parentPrev = listParent.getAttribute('style') || ''
-            if (!parentPrev.includes('text-align')) {
-              listParent.setAttribute('style', `text-align:${a};${parentPrev}`)
-            }
-            listParent.classList.add(`draft-align-${a}`)
+          const listParent = el.parentElement
+          const parentPrev = listParent.getAttribute('style') || ''
+          if (!parentPrev.includes('text-align')) {
+            listParent.setAttribute('style', `text-align:${a};${parentPrev}`)
+          }
+          listParent.classList.add(`draft-align-${a}`)
         }
       })
 
@@ -292,6 +352,13 @@ export default class FormElementsEdit extends React.Component {
       this.props.preview.syncRowChanges
     ) {
       this.props.preview.syncRowChanges(this_element)
+    }
+  }
+
+  onEditorBlur = () => {
+    // Flush any pending debounced updates immediately when editor loses focus
+    if (this.debouncedPush && this.debouncedPush.flush) {
+      this.debouncedPush.flush()
     }
   }
 
@@ -416,7 +483,7 @@ export default class FormElementsEdit extends React.Component {
               toolbar={toolbar}
               defaultEditorState={contentEditorState}
               editorState={this.state.editorStates.content || contentEditorState}
-              onBlur={this.updateElement.bind(this)}
+              onBlur={this.onEditorBlur}
               onEditorStateChange={(es) => this.onEditorStateChange('content', es)}
               stripPastedStyles={false}
             />
@@ -529,13 +596,12 @@ export default class FormElementsEdit extends React.Component {
           <div className="form-group">
             {this.props.element.element !== 'Signature2' && (
               <>
-                {/* Always show label editing section regardless of container type */}
                 <label>Display Label</label>
                 <Editor
                   toolbar={toolbar}
                   defaultEditorState={labelEditorState}
                   editorState={this.state.editorStates.label || labelEditorState}
-                  onBlur={this.updateElement.bind(this)}
+                  onBlur={this.onEditorBlur}
                   onEditorStateChange={(es) => this.onEditorStateChange('label', es)}
                   stripPastedStyles={false}
                 />
@@ -556,24 +622,6 @@ export default class FormElementsEdit extends React.Component {
                 Required
               </label>
             </div>
-
-            {/* "Display label in column" option removed as it's no longer needed */}
-
-            {/*this.props.element.hasOwnProperty('defaultToday') && (
-              <div className="custom-control custom-checkbox">
-                <input
-                  id="is-default-to-today"
-                  className="custom-control-input"
-                  type="checkbox"
-                  checked={this_default_today}
-                  value
-                  onChange={this.editElementProp.bind(this, 'defaultToday', 'checked')}
-                />
-                <label className="custom-control-label" htmlFor="is-default-to-today">
-                  Default to Today?
-                </label>
-              </div>
-            )*/}
 
             {this.props.element.hasOwnProperty('showTimeSelect') && (
               <div className="custom-control custom-checkbox">
@@ -741,6 +789,7 @@ export default class FormElementsEdit extends React.Component {
             </div>
           </div>
         )}
+
         {this.props.element.hasOwnProperty('default_value') && (
           <div className="form-group">
             <div className="form-group-range">
@@ -758,37 +807,7 @@ export default class FormElementsEdit extends React.Component {
             </div>
           </div>
         )}
-        {/*this.props.element.hasOwnProperty('static') && this.props.element.static && (
-          <div className="form-group">
-            <label className="control-label">Text Style</label>
-            <div className="custom-control custom-checkbox">
-              <input
-                id="do-bold"
-                className="custom-control-input"
-                type="checkbox"
-                checked={this_checked_bold}
-                value
-                onChange={this.editElementProp.bind(this, 'bold', 'checked')}
-              />
-              <label className="custom-control-label" htmlFor="do-bold">
-                Bold
-              </label>
-            </div>
-            <div className="custom-control custom-checkbox">
-              <input
-                id="do-italic"
-                className="custom-control-input"
-                type="checkbox"
-                checked={this_checked_italic}
-                value
-                onChange={this.editElementProp.bind(this, 'italic', 'checked')}
-              />
-              <label className="custom-control-label" htmlFor="do-italic">
-                Italic
-              </label>
-            </div>
-          </div>
-        )*/}
+
         {this.props.element.showDescription && (
           <div className="form-group">
             <label className="control-label" htmlFor="questionDescription">
@@ -804,6 +823,7 @@ export default class FormElementsEdit extends React.Component {
             />
           </div>
         )}
+
         {this.props.showCorrectColumn &&
           this.props.element.canHaveAnswer &&
           !this.props.element.hasOwnProperty('options') && (
@@ -882,8 +902,8 @@ export default class FormElementsEdit extends React.Component {
             data={this.props.preview?.state?.data}
             updateElement={this.props.updateElement}
             preview={this.props.preview}
-            element={this.props.element}
-            key={`option-${this.props.element.options.length}`}
+            element={this.state.element}
+            key={`option-${this.state.element.options.length}`}
           />
         )}
 
