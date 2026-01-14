@@ -547,7 +547,7 @@ export default class FormElementsEdit extends React.Component {
             onClick={this.props.manualEditModeOff}
           />
         </div>
-        {this.props.element.hasOwnProperty('content') && (
+        {this.props.element.hasOwnProperty('content') && !['RadioButtons', 'Checkboxes', 'Dropdown'].includes(this.props.element.element) && (
           <div className="form-group">
             <label className="control-label">Text to display:</label>
             <Editor
