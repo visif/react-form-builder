@@ -86,17 +86,28 @@ export default class DynamicOptionList extends React.Component {
 
     // If we have dirty changes, check if props now match our state (meaning parent synced)
     if (dirty) {
-      // Check if the options we sent have been synced back
+      // Check if the options we sent have been synced back - compare all properties
       const optionsMatch =
         this.props.element?.options?.length === element.options.length &&
-        this.props.element?.options?.every(
-          (opt, idx) =>
-            opt.text === element.options[idx]?.text &&
-            opt.value === element.options[idx]?.value
-        )
+        this.props.element?.options?.every((opt, idx) => {
+          const localOpt = element.options[idx]
+          return (
+            opt.text === localOpt?.text &&
+            opt.value === localOpt?.value &&
+            opt.key === localOpt?.key &&
+            opt.correct === localOpt?.correct &&
+            opt.info === localOpt?.info
+          )
+        })
 
-      // If props match our dirty state, clear the dirty flag
-      if (optionsMatch) {
+      // Also check if other properties match
+      const propertiesMatch =
+        this.props.element?.label === element.label &&
+        this.props.element?.labelRaw === element.labelRaw &&
+        this.props.element?.required === element.required
+
+      // If both options and properties match, parent has synced our changes
+      if (optionsMatch && propertiesMatch) {
         this.setState({ dirty: false })
       }
     } else {
@@ -341,7 +352,6 @@ export default class DynamicOptionList extends React.Component {
       const updatedElement = {
         ...elementData,
         options: newOptions,
-        dirty: true,
       }
 
       updateElement(updatedElement)
