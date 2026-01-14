@@ -447,7 +447,7 @@ export default class Toolbar extends React.Component {
       elementOptions.defaultToday = false
     }
 
-    if (item.content) {
+    if (item.content && !['RadioButtons', 'Checkboxes', 'Dropdown'].includes(item.key)) {
       elementOptions.content = item.content
     }
 
