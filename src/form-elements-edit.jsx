@@ -547,19 +547,20 @@ export default class FormElementsEdit extends React.Component {
             onClick={this.props.manualEditModeOff}
           />
         </div>
-        {this.props.element.hasOwnProperty('content') && (
-          <div className="form-group">
-            <label className="control-label">Text to display:</label>
-            <Editor
-              toolbar={toolbar}
-              defaultEditorState={contentEditorState}
-              editorState={this.state.editorStates.content || contentEditorState}
-              onBlur={this.onEditorBlur}
-              onEditorStateChange={(es) => this.onEditorStateChange('content', es)}
-              stripPastedStyles={false}
-            />
-          </div>
-        )}
+        {this.props.element.hasOwnProperty('content') &&
+          this.props.element.content != null && (
+            <div className="form-group">
+              <label className="control-label">Text to display:</label>
+              <Editor
+                toolbar={toolbar}
+                defaultEditorState={contentEditorState}
+                editorState={this.state.editorStates.content || contentEditorState}
+                onBlur={this.onEditorBlur}
+                onEditorStateChange={(es) => this.onEditorStateChange('content', es)}
+                stripPastedStyles={false}
+              />
+            </div>
+          )}
         {this.props.element.hasOwnProperty('file_path') && (
           <div className="form-group">
             <label className="control-label" htmlFor="fileSelect">
