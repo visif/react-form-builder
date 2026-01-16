@@ -320,7 +320,9 @@ export default class DynamicOptionList extends React.Component {
 
     // Prefer the parent-provided updateElement (e.g., updateElementWithFlush)
     // so that we flush and merge label changes correctly. Fall back to preview.updateElement.
-    const updateElement = propsUpdateElement || (typeof preview.updateElement === 'function' ? preview.updateElement : null)
+    const updateElement =
+      propsUpdateElement ||
+      (typeof preview.updateElement === 'function' ? preview.updateElement : null)
 
     if (!updateElement) {
       return
@@ -371,25 +373,7 @@ export default class DynamicOptionList extends React.Component {
 
   render() {
     const { element, dirty } = this.state
-    const {
-      canHaveOptionValue,
-      canHaveInfo,
-      canHaveOptionCorrect,
-      element: propsElement,
-    } = this.props
-
-    const isInDynamicColumn = !!(
-      propsElement?.parentId &&
-      propsElement?.col !== undefined &&
-      propsElement?.row !== undefined
-    )
-
-    const shouldShowInfo =
-      canHaveInfo || (isInDynamicColumn && propsElement?.element === 'Checkboxes')
-
-    const shouldShowCorrect =
-      canHaveOptionCorrect ||
-      (isInDynamicColumn && propsElement?.element === 'Checkboxes')
+    const { canHaveOptionValue } = this.props
 
     return (
       <div className="dynamic-option-list">
@@ -404,16 +388,12 @@ export default class DynamicOptionList extends React.Component {
                   <b>Value</b>
                 </div>
               )}
-              {shouldShowInfo && (
-                <div className="col-sm-1">
-                  <b>Info</b>
-                </div>
-              )}
-              {shouldShowCorrect && (
-                <div className="col-sm-1">
-                  <b>Correct</b>
-                </div>
-              )}
+              <div className="col-sm-1">
+                <b>Info</b>
+              </div>
+              <div className="col-sm-1">
+                <b>Correct</b>
+              </div>
             </div>
           </li>
           {element.options.map((option, index) => {
@@ -451,7 +431,7 @@ export default class DynamicOptionList extends React.Component {
                     </div>
                   )}
 
-                  {canHaveOptionValue && canHaveInfo && (
+                  {canHaveOptionValue && (
                     <div className="col-sm-1">
                       <input
                         className="form-control"
@@ -465,7 +445,7 @@ export default class DynamicOptionList extends React.Component {
                       />
                     </div>
                   )}
-                  {canHaveOptionValue && canHaveOptionCorrect && (
+                  {canHaveOptionValue && (
                     <div className="col-sm-1">
                       <input
                         className="form-control"
@@ -510,4 +490,3 @@ export default class DynamicOptionList extends React.Component {
     )
   }
 }
-

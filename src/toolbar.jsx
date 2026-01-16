@@ -159,13 +159,13 @@ export default class Toolbar extends React.Component {
       {
         key: 'Dropdown',
         canHaveAnswer: true,
+        canHaveInfo: true,
         name: 'Dropdown',
         icon: 'far fa-caret-square-down',
         label: 'Placeholder Label',
         field_name: 'dropdown_',
         options: [],
         formularKey: '',
-        canHaveInfo: true,
       },
       {
         key: 'Tags',
