@@ -262,6 +262,7 @@ export default class DynamicOptionList extends React.Component {
       },
       () => {
         const { element } = this.state
+        this.updateOption()
         this.syncOptionsWithSameColumnElements(element.options)
       }
     )
@@ -279,6 +280,7 @@ export default class DynamicOptionList extends React.Component {
       },
       () => {
         const { element } = this.state
+        this.updateOption()
         this.syncOptionsWithSameColumnElements(element.options)
       }
     )
