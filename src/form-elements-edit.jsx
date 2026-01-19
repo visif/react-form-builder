@@ -663,7 +663,8 @@ export default class FormElementsEdit extends React.Component {
           </div>
         )}
 
-        {(this.props.element.hasOwnProperty('label') ||
+        {((this.props.element.hasOwnProperty('label') &&
+          this.props.element.element.label != null) ||
           this.props.element.element === 'Signature2') && (
           <div className="form-group">
             {this.props.element.element !== 'Signature2' && (
