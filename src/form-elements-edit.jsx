@@ -663,8 +663,7 @@ export default class FormElementsEdit extends React.Component {
           </div>
         )}
 
-        {((this.props.element.hasOwnProperty('label') &&
-          this.props.element.element.label != null) ||
+        {(this.props.element?.label != null ||
           this.props.element.element === 'Signature2') && (
           <div className="form-group">
             {this.props.element.element !== 'Signature2' && (
@@ -976,7 +975,6 @@ export default class FormElementsEdit extends React.Component {
             updateElement={this.updateElementWithFlush}
             preview={this.props.preview}
             element={this.state.element}
-            key={`option-${this.state.element.options.length}`}
           />
         )}
 
