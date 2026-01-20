@@ -12,6 +12,19 @@ const cardStyle = {
   cursor: 'move',
 }
 
+const MULTI_COLUMN_ELEMENTS = new Set([
+  'TwoColumnRow',
+  'ThreeColumnRow',
+  'FourColumnRow',
+  'DynamicColumnRow',
+])
+
+const shouldUseDragHandle = (props) => {
+  const element = props?.data?.element || props?.data?.key
+  if (MULTI_COLUMN_ELEMENTS.has(element)) return true
+  return false
+}
+
 // Drag source specification
 const cardSource = {
   beginDrag(props) {
@@ -30,7 +43,7 @@ const cardTarget = {
     const item = monitor.getItem()
     const dragIndex = item.index
     const hoverIndex = props.index
-    if (props.data.isContainer || item.itemType === ItemTypes.CARD) {
+    if (item.itemType === ItemTypes.CARD) {
       return
     }
     if (item.data && typeof item.setAsChild === 'function' && dragIndex === -1) {
@@ -48,9 +61,6 @@ const cardTarget = {
       return
     }
     if (dragIndex === -1) {
-      if (props.data && props.data.isContainer) {
-        return
-      }
       item.index = hoverIndex
       props.insertCard(item.onCreate(item.data), hoverIndex)
     }
@@ -88,14 +98,16 @@ const withDragAndDrop = (ComposedComponent) => {
     render() {
       const { isDragging, connectDragSource, connectDropTarget } = this.props
       const opacity = isDragging ? 0 : 1
-
-      return connectDragSource(
-        connectDropTarget(
-          <div>
-            <ComposedComponent {...this.props} style={{ ...cardStyle, opacity }} />
-          </div>
-        )
+      const useDragHandle = this.props.useDragHandle || shouldUseDragHandle(this.props)
+      const content = (
+        <div>
+          <ComposedComponent {...this.props} style={{ ...cardStyle, opacity }} />
+        </div>
       )
+
+      return useDragHandle
+        ? connectDropTarget(content)
+        : connectDragSource(connectDropTarget(content))
     }
   }
 

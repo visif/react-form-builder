@@ -2,9 +2,9 @@
 import React from 'react'
 import ComponentHeader from '../form-elements/component-header'
 import ComponentLabel from '../form-elements/component-label'
+import useSyncColumnChanges from '../hooks/useSyncColumnChanges'
 import ItemTypes from '../ItemTypes'
 import Dustbin from './dustbin'
-import useSyncColumnChanges from '../hooks/useSyncColumnChanges'
 
 const accepts = [ItemTypes.BOX, ItemTypes.CARD]
 
@@ -19,6 +19,7 @@ const MultiColumnRow = (props) => {
     seq,
     index,
     updateElement,
+    connectDragSource,
   } = props
 
   const { childItems = [], pageBreakBefore } = data
@@ -31,25 +32,39 @@ const MultiColumnRow = (props) => {
   const syncColumnChanges = useSyncColumnChanges(childItems, getDataById, updateElement)
 
   // Calculate column widths once for the entire component
-  const columnWidths = data.columns ? (() => {
-    const totalWidth = data.columns.reduce((sum, col) => {
-      const width = Number(col.width) || 1
-      return sum + width
-    }, 0)
-    const widths = data.columns.map(column => {
-      const width = Number(column.width) || 1
-      return (width / totalWidth) * 100
-    })
+  const columnWidths = data.columns
+    ? (() => {
+        const totalWidth = data.columns.reduce((sum, col) => {
+          const width = Number(col.width) || 1
+          return sum + width
+        }, 0)
+        const widths = data.columns.map((column) => {
+          const width = Number(column.width) || 1
+          return (width / totalWidth) * 100
+        })
 
-    return widths
-  })() : []
+        return widths
+      })()
+    : []
+
+  const header = <ComponentHeader {...props} />
+  const headerWithHandle = connectDragSource
+    ? connectDragSource(
+        <div className="rfb-drag-handle" style={{ cursor: 'move' }}>
+          {header}
+        </div>
+      )
+    : header
 
   return (
     <div className={baseClasses}>
-      <ComponentHeader {...props} />
+      {headerWithHandle}
       <div>
         <ComponentLabel {...props} />
-        <table className="table table-bordered" style={{ borderCollapse: 'collapse', tableLayout: 'fixed', width: '100%' }}>
+        <table
+          className="table table-bordered"
+          style={{ borderCollapse: 'collapse', tableLayout: 'fixed', width: '100%' }}
+        >
           {data.columns && (
             <thead>
               <tr>
@@ -112,7 +127,11 @@ const MultiColumnRow = (props) => {
                   // Get column width with proper fallback handling
                   let columnWidth = 100 / row.length // Default: equal distribution
 
-                  if (data.columns && columnWidths.length > 0 && columnIndex < columnWidths.length) {
+                  if (
+                    data.columns &&
+                    columnWidths.length > 0 &&
+                    columnIndex < columnWidths.length
+                  ) {
                     const calculatedWidth = columnWidths[columnIndex]
                     if (!Number.isNaN(calculatedWidth) && calculatedWidth > 0) {
                       columnWidth = calculatedWidth
@@ -136,7 +155,11 @@ const MultiColumnRow = (props) => {
                         controls[rowIndex]?.[columnIndex]
                       ) : (
                         <Dustbin
-                          style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}
+                          style={{
+                            width: '100%',
+                            maxWidth: '100%',
+                            boxSizing: 'border-box',
+                          }}
                           data={data}
                           accepts={accepts}
                           items={childItems[rowIndex]}
@@ -179,7 +202,8 @@ const MultiColumnRow = (props) => {
  * - Applies the provided `class_name` or falls back to `defaultClassName`.
  */
 const createColumnRow =
-  (defaultClassName, numberOfColumns, numberOfRows = 1) => ({ data = {}, class_name, ...rest }) => {
+  (defaultClassName, numberOfColumns, numberOfRows = 1) =>
+  ({ data = {}, class_name, ...rest }) => {
     const className = `${class_name || defaultClassName} mb-2`
     const rows = data.rows || numberOfRows
 
@@ -201,7 +225,8 @@ const createColumnRow =
  * Uses the same pattern as createColumnRow for consistency.
  */
 const createDynamicColumnRow =
-  () => ({ data = {}, class_name, ...rest }) => {
+  () =>
+  ({ data = {}, class_name, ...rest }) => {
     const rows = Number(data.rows) || 1
     const columns = data.columns?.length || 2
     const defaultClassName = `col-md-${Math.floor(12 / columns)}`
