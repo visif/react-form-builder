@@ -40,13 +40,61 @@ const cardSource = {
 const cardTarget = {
   drop(props, monitor, component) {
     if (!component) return
+
+    // If the drop was already handled by a nested target (e.g., multi-column), don't process it again
+    if (monitor.didDrop()) {
+      return
+    }
+
     const item = monitor.getItem()
     const dragIndex = item.index
     const hoverIndex = props.index
+    const originalIndex = item.originalIndex !== undefined ? item.originalIndex : dragIndex
+
     if (item.itemType === ItemTypes.CARD) {
       return
     }
-    if (item.data && typeof item.setAsChild === 'function' && dragIndex === -1) {
+
+    // Handle dropping items that were in a multi-column (have setAsChild and parentId)
+    if (item.data && item.data.parentId && typeof item.setAsChild === 'function') {
+      // This item is being moved out of a multi-column container
+      const parent = item.getDataById(item.data.parentId)
+      if (parent && parent.childItems) {
+        // Clear the child reference from the parent
+        const row = item.data.row
+        const col = item.data.col
+        if (row !== undefined && col !== undefined && parent.childItems[row]) {
+          parent.childItems[row][col] = null
+        }
+      }
+
+      // Clean up the child-specific properties
+      delete item.data.parentId
+      delete item.data.parentIndex
+      delete item.data.row
+      delete item.data.col
+      delete item.data.hideLabel
+
+      // Insert the item into the main form at the drop position
+      props.insertCard(item.data, hoverIndex)
+      return
+    }
+
+    // Handle dropping items from toolbar (originalIndex === -1 means from toolbar)
+    if (originalIndex === -1 && item.data && !item.isInserted) {
+      let newItem
+      if (item && typeof item.onCreate === 'function') {
+        newItem = item.onCreate(item.data)
+      } else if (item.data) {
+        newItem = item.data
+      } else {
+        newItem = item
+      }
+      props.insertCard(newItem, hoverIndex)
+      // Mark as inserted to prevent double insertion
+      item.isInserted = true
+    }
+    if (item.data && typeof item.setAsChild === 'function' && originalIndex === -1) {
       props.insertCard(item, hoverIndex, item.id)
     }
   },
@@ -55,23 +103,29 @@ const cardTarget = {
     const item = monitor.getItem()
     const dragIndex = item.index
     const hoverIndex = props.index
+
+    // Only prevent hover for container elements (multi-column rows) themselves, not their children
     if (item.data && typeof item.setAsChild === 'function') {
-      return
+      // Check if this is a child element being dragged out (has parentId) vs a container
+      const isChildElement = item.data.parentId !== undefined
+      const isContainerElement = MULTI_COLUMN_ELEMENTS.has(item.data.element)
+
+      // Allow children to be dragged out, but prevent containers from being nested
+      if (isContainerElement && !isChildElement) {
+        return
+      }
+      // If it's a child element, allow the hover to continue for repositioning
     }
+
     if (dragIndex === hoverIndex) {
       return
     }
+    // Only update visual position during hover for items from toolbar, don't insert yet
     if (dragIndex === -1) {
+      // Store the original index so we know it came from toolbar
+      item.originalIndex = -1
       item.index = hoverIndex
-      let newItem
-      if (item && typeof item.onCreate === 'function') {
-        newItem = item.onCreate(item.data)
-      } else if (item && item.data) {
-        newItem = item.data
-      } else {
-        newItem = item
-      }
-      props.insertCard(newItem, hoverIndex)
+      return
     }
     let node
     try {
