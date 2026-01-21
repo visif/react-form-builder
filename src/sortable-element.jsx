@@ -63,7 +63,15 @@ const cardTarget = {
     }
     if (dragIndex === -1) {
       item.index = hoverIndex
-      props.insertCard(item.onCreate(item.data), hoverIndex)
+      let newItem
+      if (item && typeof item.onCreate === 'function') {
+        newItem = item.onCreate(item.data)
+      } else if (item && item.data) {
+        newItem = item.data
+      } else {
+        newItem = item
+      }
+      props.insertCard(newItem, hoverIndex)
     }
     let node
     try {
