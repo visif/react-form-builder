@@ -862,7 +862,7 @@ const Preview = (props) => {
   }
 
   return (
-    <div className={classes} style={{ height: '100%', scrollbarWidth: 'none' }}>
+    <div className={classes} style={{ scrollbarWidth: 'none' }}>
       <div className="preview-toolbar">
         <span
           style={{
@@ -906,7 +906,7 @@ const Preview = (props) => {
       <div className="Sortable">{items}</div>
       <PlaceHolder
         id="form-place-holder"
-        show={true}
+        show
         index={items.length}
         moveCard={cardPlaceHolder}
         insertCard={insertCard}
