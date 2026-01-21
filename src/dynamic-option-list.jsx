@@ -50,7 +50,10 @@ export default class DynamicOptionList extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      element: this.props.element,
+      element: {
+        ...this.props.element,
+        options: this.props.element.options || [],
+      },
       data: this.props.data,
       dirty: false,
     }
@@ -87,12 +90,14 @@ export default class DynamicOptionList extends React.Component {
     // If we have dirty changes, check if props now match our state (meaning parent synced)
     if (dirty) {
       // Check if the options we sent have been synced back
+      const propsOptions = this.props.element?.options || []
+      const elementOptions = element.options || []
       const optionsMatch =
-        this.props.element?.options?.length === element.options.length &&
-        this.props.element?.options?.every(
+        propsOptions.length === elementOptions.length &&
+        propsOptions.every(
           (opt, idx) =>
-            opt.text === element.options[idx]?.text &&
-            opt.value === element.options[idx]?.value
+            opt.text === elementOptions[idx]?.text &&
+            opt.value === elementOptions[idx]?.value
         )
 
       // If props match our dirty state, clear the dirty flag
@@ -108,7 +113,12 @@ export default class DynamicOptionList extends React.Component {
         prevProps.element?.options?.length !== this.props.element?.options?.length
 
       if (propsChanged) {
-        this.setState({ element: this.props.element })
+        this.setState({
+          element: {
+            ...this.props.element,
+            options: this.props.element.options || [],
+          }
+        })
       }
     }
   }
@@ -376,6 +386,11 @@ export default class DynamicOptionList extends React.Component {
   render() {
     const { element, dirty } = this.state
     const { canHaveOptionValue } = this.props
+
+    // Safety check: ensure options array exists
+    if (!element.options || !Array.isArray(element.options)) {
+      return null
+    }
 
     return (
       <div className="dynamic-option-list">
