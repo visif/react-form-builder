@@ -51,6 +51,7 @@ const cardTarget = {
     }
   },
   hover(props, monitor, component) {
+    if (!component) return
     const item = monitor.getItem()
     const dragIndex = item.index
     const hoverIndex = props.index
@@ -64,7 +65,14 @@ const cardTarget = {
       item.index = hoverIndex
       props.insertCard(item.onCreate(item.data), hoverIndex)
     }
-    const hoverBoundingRect = findDOMNode(component).getBoundingClientRect()
+    let node
+    try {
+      node = findDOMNode(component)
+    } catch (err) {
+      return
+    }
+    if (!node) return
+    const hoverBoundingRect = node.getBoundingClientRect()
     const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2
     const clientOffset = monitor.getClientOffset()
     const hoverClientY = clientOffset.y - hoverBoundingRect.top
