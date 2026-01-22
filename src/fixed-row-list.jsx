@@ -15,6 +15,14 @@ class FixedRowList extends React.Component {
     }
   }
 
+  componentDidUpdate(prevProps) {
+    const { element } = this.props
+    if (prevProps.element !== element) {
+      // eslint-disable-next-line react/no-did-update-set-state
+      this.setState({ element })
+    }
+  }
+
   _setValue(text) {
     return `${text || ''}`.replace(/[^A-Z0-9]+/gi, '_').toLowerCase()
   }
