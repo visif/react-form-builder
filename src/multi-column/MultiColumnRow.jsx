@@ -51,21 +51,14 @@ const MultiColumnRow = (props) => {
   const header = <ComponentHeader {...props} />
   const headerWithHandle = connectDragSource
     ? connectDragSource(
-        <div
-          className="rfb-drag-handle"
-          style={{
-            cursor: 'move',
-            minHeight: '20px',
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        >
+        <div className="rfb-drag-handle" style={{ cursor: 'move' }}>
           {header || (
             <div className="toolbar-header" style={{ padding: '4px 0' }}>
+              <span className="badge badge-secondary">{data?.text || 'Row'}</span>
               <div className="toolbar-header-buttons">
-                <span className="btn is-isolated" aria-label="Drag row" title="Drag row">
+                <div className="btn is-isolated" aria-label="Drag row" title="Drag row">
                   <i className="is-isolated fas fa-grip-vertical" />
-                </span>
+                </div>
               </div>
             </div>
           )}
