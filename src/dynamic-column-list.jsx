@@ -19,6 +19,14 @@ export default class DynamicColumnList extends React.Component {
     }
   }
 
+  componentDidUpdate(prevProps) {
+    const { element } = this.props
+    if (prevProps.element !== element) {
+      // eslint-disable-next-line react/no-did-update-set-state
+      this.setState({ element })
+    }
+  }
+
   handleEditModalClose = () => {
     this.setState({
       showEditModal: false,
