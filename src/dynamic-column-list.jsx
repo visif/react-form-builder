@@ -62,6 +62,9 @@ export default class DynamicColumnList extends React.Component {
   addColumn = (index) => {
     const { element } = this.state
     const { updateElement, preview } = this.props
+    if (!element.columns) {
+      element.columns = []
+    }
     element.columns.splice(index + 1, 0, {
       value: '',
       text: '',
@@ -121,6 +124,21 @@ export default class DynamicColumnList extends React.Component {
                 <div className="col-sm-3" />
               </div>
             </li>
+            {(!element.columns || element.columns.length === 0) && (
+              <li className="clearfix">
+                <div className="row">
+                  <div className="col-sm-12">
+                    <button
+                      type="button"
+                      onClick={() => this.addColumn(-1)}
+                      className="btn btn-success"
+                    >
+                      <i className="fas fa-plus-circle" /> Add Column
+                    </button>
+                  </div>
+                </div>
+              </li>
+            )}
             {(element.columns || []).map((option, index) => {
               const editKey = `edit_${option.key}`
               return (
