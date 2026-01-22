@@ -121,7 +121,7 @@ export default class DynamicColumnList extends React.Component {
                 <div className="col-sm-3" />
               </div>
             </li>
-            {element.columns.map((option, index) => {
+            {(element.columns || []).map((option, index) => {
               const editKey = `edit_${option.key}`
               return (
                 <li className="clearfix" key={editKey}>
