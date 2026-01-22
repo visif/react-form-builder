@@ -292,7 +292,7 @@ class FixedRowList extends React.Component {
             </div>
           </li>
 
-          {element.rowLabels.map((option, index) => {
+          {(element.rowLabels || []).map((option, index) => {
             const key = `edit_${option.key}`
             return (
               <li className="clearfix" key={`li_label_${key}`}>
