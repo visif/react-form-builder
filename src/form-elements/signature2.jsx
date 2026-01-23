@@ -37,17 +37,32 @@ class Signature2 extends React.Component {
 
   static getDerivedStateFromProps = (props, state) => {
     console.log('Signature getDerivedStateFromProps')
-    if (props.defaultValue && props.defaultValue.isSigned !== state.defaultValue) {
-      return {
-        defaultValue: props.defaultValue && props.defaultValue.isSigned,
-        isSigned: props.defaultValue && props.defaultValue.isSigned,
-        isError: false,
-        signedPerson: props.defaultValue.signedPerson,
-        signedPersonId: props.defaultValue && props.defaultValue.signedPersonId,
+    if (props.defaultValue) {
+      const propsIsSigned = props.defaultValue.isSigned
+      const propsSignedPerson = props.defaultValue.signedPerson
+      const propsSignedPersonId = props.defaultValue.signedPersonId
+      const propsSignedDateTime = props.defaultValue.signedDateTime
+
+      // Check if any signed data has changed
+      const hasChanges =
+        propsIsSigned !== state.defaultValue ||
+        propsSignedPerson !== state.signedPerson ||
+        propsSignedPersonId !== state.signedPersonId ||
+        propsSignedDateTime !== state.signedDateTime
+
+      if (hasChanges) {
+        return {
+          defaultValue: propsIsSigned,
+          isSigned: propsIsSigned,
+          isError: false,
+          signedPerson: propsSignedPerson,
+          signedPersonId: propsSignedPersonId,
+          signedDateTime: propsSignedDateTime,
+        }
       }
     }
 
-    return state
+    return null
   }
 
   clickToSign = () => {
