@@ -254,37 +254,17 @@ export default class FormElementsEdit extends React.Component {
   }
 
   onEditorStateChange(property, editorState) {
-    const contentState = editorState.getCurrentContent()
-    const raw = convertToRaw(contentState)
-
-    // Build HTML (original)
-    let html = draftToHtml(raw)
-
-    // Patch in alignment styles for blocks (p, li, headers) when present in raw
-    html = this.applyBlockAlignmentStyles(raw, html)
-
-    const element = { ...this.state.element }
-    element[property] = html
-    element[`${property}Raw`] = JSON.stringify(raw)
-
-    // Keep synchronous copy to avoid losing edits if user quickly edits options
-    this.latestElement = element
-
-    // Debug: log label updates
-    if (property === 'label' && typeof console !== 'undefined') {
-      console.log('[FormElementsEdit] onEditorStateChange - label (preview)', {
-        id: element?.id,
-        label: element?.label?.slice?.(0, 200),
-      })
-    }
-
+    // Only update editorState immediately for responsive typing
+    // Defer expensive HTML conversion until debounced save
     this.setState(
       {
-        element,
         dirty: true,
         editorStates: { ...this.state.editorStates, [property]: editorState },
       },
-      this.debouncedPush
+      () => {
+        // Schedule the debounced update which will handle HTML conversion
+        this.debouncedPush()
+      }
     )
   }
 
@@ -365,7 +345,34 @@ export default class FormElementsEdit extends React.Component {
   }
 
   updateElement = () => {
-    const this_element = this.latestElement || this.state.element
+    let this_element = this.latestElement || this.state.element
+
+    // Convert any pending editor states to HTML before saving
+    const editorStatesKeys = Object.keys(this.state.editorStates)
+    if (editorStatesKeys.length > 0) {
+      this_element = { ...this_element }
+
+      editorStatesKeys.forEach((property) => {
+        const editorState = this.state.editorStates[property]
+        if (editorState) {
+          const contentState = editorState.getCurrentContent()
+          const raw = convertToRaw(contentState)
+
+          // Build HTML
+          let html = draftToHtml(raw)
+
+          // Patch in alignment styles
+          html = this.applyBlockAlignmentStyles(raw, html)
+
+          this_element[property] = html
+          this_element[`${property}Raw`] = JSON.stringify(raw)
+        }
+      })
+
+      // Update latestElement with converted values
+      this.latestElement = this_element
+    }
+
     // Debug: show what is being saved from parent
     if (typeof console !== 'undefined') {
       console.log('[FormElementsEdit] updateElement - saving element', {
