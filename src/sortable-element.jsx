@@ -32,6 +32,12 @@ const cardSource = {
       itemType: ItemTypes.CARD,
       id: props.id,
       index: props.index,
+      // Include data and methods needed for dropping into multi-column cells
+      data: props.data,
+      // For already-dropped items, onCreate should just return the item itself
+      onCreate: props.onCreate || ((item) => item),
+      setAsChild: props.setAsChild,
+      getDataById: props.getDataById,
     }
   },
 }
@@ -49,7 +55,8 @@ const cardTarget = {
     const item = monitor.getItem()
     const dragIndex = item.index
     const hoverIndex = props.index
-    const originalIndex = item.originalIndex !== undefined ? item.originalIndex : dragIndex
+    const originalIndex =
+      item.originalIndex !== undefined ? item.originalIndex : dragIndex
 
     if (item.itemType === ItemTypes.CARD) {
       return
@@ -61,8 +68,8 @@ const cardTarget = {
       const parent = item.getDataById(item.data.parentId)
       if (parent && parent.childItems) {
         // Clear the child reference from the parent
-        const row = item.data.row
-        const col = item.data.col
+        const { row } = item.data
+        const { col } = item.data
         if (row !== undefined && col !== undefined && parent.childItems[row]) {
           parent.childItems[row][col] = null
         }
