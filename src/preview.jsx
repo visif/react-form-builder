@@ -104,7 +104,6 @@ const Preview = (props) => {
     }
 
     if (action !== ACTION.UNDO && action !== ACTION.REDO) {
-      console.log('history index before: ', historyIndex)
       updateState(data, historyIndex)
     }
   }

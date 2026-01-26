@@ -14,14 +14,11 @@ const useUndoRedo = () => {
   const updateState = (newState, historyIndex) => {
     let currentStateIndex = history.length
     setHistory((currentHistory) => {
-      console.log('history index: ', historyIndex)
-      const newHistory = currentHistory //.slice(historyIndex + 1);
+      const newHistory = currentHistory
       currentStateIndex = newHistory.length
       return [...newHistory, [...newState]]
     })
-    setIndex(() => {
-      return currentStateIndex
-    })
+    setIndex(() => currentStateIndex)
     setCurrentState(newState)
   }
 
