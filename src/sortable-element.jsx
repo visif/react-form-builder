@@ -111,14 +111,12 @@ const cardTarget = {
     const dragIndex = item.index
     const hoverIndex = props.index
 
-    // Only prevent hover for container elements (multi-column rows) themselves, not their children
-    if (item.data && typeof item.setAsChild === 'function') {
-      // Check if this is a child element being dragged out (has parentId) vs a container
-      const isChildElement = item.data.parentId !== undefined
-      const isContainerElement = MULTI_COLUMN_ELEMENTS.has(item.data.element)
+    const isContainerElement = item.data && MULTI_COLUMN_ELEMENTS.has(item.data.element)
+    const isChildElement = item.data && item.data.parentId !== undefined
 
-      // Allow children to be dragged out, but prevent containers from being nested
-      if (isContainerElement && !isChildElement) {
+    // Allow container rows to reorder at root level, but prevent nesting them into other containers
+    if (item.data && typeof item.setAsChild === 'function') {
+      if (isContainerElement && !isChildElement && dragIndex < 0) {
         return
       }
       // If it's a child element, allow the hover to continue for repositioning
