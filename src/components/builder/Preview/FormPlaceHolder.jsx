@@ -22,6 +22,12 @@ const PlaceHolder = ({
       const dragIndex = item.index
       const hoverIndex = index
 
+      // Restore items dragged out of a multi-column cell into the main container
+      if (item.data && item.data.parentId && typeof insertCard === 'function') {
+        insertCard(item, hoverIndex, item.id)
+        return
+      }
+
       // Treat toolbar items as new regardless of dragIndex (it may be updated during hover)
       if (typeof item.onCreate === 'function') {
         const newItem = item.onCreate(item.data)

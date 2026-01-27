@@ -22,6 +22,7 @@ const withDragAndDrop = (ComposedComponent) => {
           itemType: ItemTypes.CARD,
           id,
           index,
+          data,
         },
         collect: (monitor) => ({
           isDragging: monitor.isDragging(),
@@ -60,6 +61,12 @@ const withDragAndDrop = (ComposedComponent) => {
           ) {
             return
           }
+          // Restore items dragged out of a multi-column cell into the main container
+          if (item.data && item.data.parentId && typeof insertCard === 'function') {
+            insertCard(item, hoverIndex, item.id)
+            return
+          }
+
           // Handle child insertion from toolbar (special case)
           if (item.data && typeof item.setAsChild === 'function' && dragIndex === -1) {
             insertCard(item, hoverIndex, item.id)
@@ -106,6 +113,9 @@ const withDragAndDrop = (ComposedComponent) => {
             return
           }
           if (dragIndex === hoverIndex) {
+            return
+          }
+          if (dragIndex === undefined || dragIndex === null) {
             return
           }
           if (dragIndex === -1) {

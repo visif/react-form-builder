@@ -463,8 +463,19 @@ const Preview = (props) => {
     if (parent && oldItem) {
       const newIndex = data.indexOf(oldItem)
       const newData = [...data]
-      parent.childItems[oldItem.col] = null
+      if (Array.isArray(parent.childItems)) {
+        if (Array.isArray(parent.childItems[0])) {
+          if (oldItem.row !== undefined && oldItem.col !== undefined) {
+            parent.childItems[oldItem.row][oldItem.col] = null
+          }
+        } else if (oldItem.col !== undefined) {
+          parent.childItems[oldItem.col] = null
+        }
+      }
       delete oldItem.parentId
+      delete oldItem.parentIndex
+      delete oldItem.row
+      delete oldItem.col
       delete item.setAsChild
       delete item.parentIndex
       item.index = newIndex
