@@ -443,6 +443,49 @@ const Preview = (props) => {
     saveData(dragCard, dragIndex, hoverIndex)
   }
 
+  const moveCardFromCell = (dragIdOrIndex, hoverIndex, parentId, row, col) => {
+    // Get the parent and clear the child reference
+    const parent = getDataById(parentId)
+    if (parent && parent.childItems && parent.childItems[row]) {
+      parent.childItems[row][col] = null
+    }
+
+    // Resolve dragIndex whether we received an id or an index
+    const dragIndex =
+      typeof dragIdOrIndex === 'number'
+        ? dragIdOrIndex
+        : data.findIndex((x) => x && x.id === dragIdOrIndex)
+
+    // If we couldn't find the item, abort
+    if (dragIndex === -1 || dragIndex === undefined) {
+      return
+    }
+
+    // Get the item being moved
+    const dragCard = data[dragIndex]
+
+    // Create a NEW object with the cleaned properties to ensure React sees the change
+    const newDragCard = { ...dragCard }
+    delete newDragCard.parentId
+    delete newDragCard.parentIndex
+    delete newDragCard.row
+    delete newDragCard.col
+    delete newDragCard.hideLabel
+
+    // Create new data array with the item moved to the new position
+    const newData = update(data, {
+      $splice: [
+        [dragIndex, 1],
+        [hoverIndex, 0, newDragCard],
+      ],
+    })
+
+    // Update sequence and dispatch
+    seq = seq > 100000 ? 0 : seq + 1
+    setData(newData)
+    store.dispatch('updateOrder', newData)
+  }
+
   const cardPlaceHolder = (dragIndex, hoverIndex) => {
     // Dummy
   }
@@ -475,6 +518,7 @@ const Preview = (props) => {
         seq={seq}
         index={index}
         moveCard={moveCard}
+        moveCardFromCell={moveCardFromCell}
         insertCard={insertCard}
         mutable // Set to true to make inputs interactive
         preview // Add preview prop to identify preview mode
@@ -907,8 +951,10 @@ const Preview = (props) => {
         id="form-place-holder"
         show
         index={items.length}
-        moveCard={cardPlaceHolder}
+        moveCard={moveCard}
+        moveCardFromCell={moveCardFromCell}
         insertCard={insertCard}
+        getDataById={getDataById}
       />
     </div>
   )

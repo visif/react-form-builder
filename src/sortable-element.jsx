@@ -62,33 +62,26 @@ const cardTarget = {
       return
     }
 
-    // Handle dropping items that were in a multi-column (have setAsChild and parentId)
-    if (item.data && item.data.parentId && typeof item.setAsChild === 'function') {
-      // This item is being moved out of a multi-column container
-      const parent = item.getDataById(item.data.parentId)
-      if (parent && parent.childItems) {
-        // Clear the child reference from the parent
-        const { row } = item.data
-        const { col } = item.data
-        if (row !== undefined && col !== undefined && parent.childItems[row]) {
-          parent.childItems[row][col] = null
-        }
+    // Handle dropping items that were in a multi-column (have parentId)
+    if (item.data && item.data.parentId) {
+      if (props.moveCardFromCell) {
+        // Use the data.id as the source identifier to avoid relying on props.index,
+        // which can be the parent row index when rendering child elements.
+        const dragId = item.data.id
+        props.moveCardFromCell(
+          dragId,
+          hoverIndex,
+          item.data.parentId,
+          item.data.row,
+          item.data.col
+        )
       }
-
-      // Clean up the child-specific properties
-      delete item.data.parentId
-      delete item.data.parentIndex
-      delete item.data.row
-      delete item.data.col
-      delete item.data.hideLabel
-
-      // Insert the item into the main form at the drop position
-      props.insertCard(item.data, hoverIndex)
       return
     }
 
     // Handle dropping items from toolbar (originalIndex === -1 means from toolbar)
-    if (originalIndex === -1 && item.data && !item.isInserted) {
+    // IMPORTANT: Only process if item doesn't have parentId (not from a cell)
+    if (originalIndex === -1 && item.data && !item.isInserted && !item.data.parentId) {
       let newItem
       if (item && typeof item.onCreate === 'function') {
         newItem = item.onCreate(item.data)
@@ -163,6 +156,7 @@ const withDragAndDrop = (ComposedComponent) => {
       isDragging: PropTypes.bool,
       id: PropTypes.any.isRequired,
       moveCard: PropTypes.func.isRequired,
+      moveCardFromCell: PropTypes.func,
       seq: PropTypes.number,
     }
 
