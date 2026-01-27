@@ -24,16 +24,13 @@
  * @requires useUndoRedo hook for undo/redo state management
  */
 import React, { useEffect, useRef, useState } from 'react'
+import { RedoOutlined, UndoOutlined } from '@ant-design/icons'
 import { Button } from 'antd'
-import { UndoOutlined, RedoOutlined } from '@ant-design/icons'
-
 import update from 'immutability-helper'
-
 import store from '../../../contexts/FormBuilderContext'
 import useUndoRedo, { ACTION } from '../../../hooks/useUndoRedo'
 import FormElementsEdit from '../ElementEditor/FormElementsEdit'
 import SortableFormElements from './SortableFormElements'
-
 
 const defaultGetDataSource = (data) => {
   if (data.sourceType === 'name') {
@@ -62,10 +59,10 @@ const defaultGetDataSource = (data) => {
   }
   return []
 }
-
 const defaultOnUploadFile = (file) => `${file.name}-${Math.random() * 10000000}`
 const defaultOnUploadImage = (file) => `path/${file.name}-${Math.random() * 10000000}`
-const defaultOnDownloadFile = (file) => `download_${file.name}-${Math.random() * 10000000}`
+const defaultOnDownloadFile = (file) =>
+  `download_${file.name}-${Math.random() * 10000000}`
 
 const Preview = (props) => {
   const [data, setData] = useState([])
@@ -137,7 +134,13 @@ const Preview = (props) => {
 
     const answerData = {}
     data.forEach((item) => {
-      if (item && item.readOnly && item.variableKey && props.variables && props.variables[item.variableKey]) {
+      if (
+        item &&
+        item.readOnly &&
+        item.variableKey &&
+        props.variables &&
+        props.variables[item.variableKey]
+      ) {
         answerData[item.field_name] = props.variables[item.variableKey]
       }
     })
@@ -171,7 +174,11 @@ const Preview = (props) => {
   }
 
   const swapChildren = (item, child, row, col) => {
-    if (child.row !== undefined && child.col !== undefined && item.id !== child.parentId) {
+    if (
+      child.row !== undefined &&
+      child.col !== undefined &&
+      item.id !== child.parentId
+    ) {
       return false
     }
 
@@ -498,7 +505,11 @@ const Preview = (props) => {
         setData(newData)
         store.dispatch('updateOrder', newData)
       } else {
-        console.warn('insertCard: failed to create valid newData', { item, hoverIndex, newData })
+        console.warn('insertCard: failed to create valid newData', {
+          item,
+          hoverIndex,
+          newData,
+        })
       }
     }
   }
@@ -509,10 +520,16 @@ const Preview = (props) => {
     const currentData = store.state.payload.data || []
 
     // Find the actual element by ID to avoid stale references
-    const dragCard = dragId ? currentData.find(item => item && item.id === dragId) : currentData[dragIndex]
+    const dragCard = dragId
+      ? currentData.find((item) => item && item.id === dragId)
+      : currentData[dragIndex]
 
     if (!dragCard) {
-      console.warn('moveCard: Could not find drag element', { dragIndex, dragId, currentData })
+      console.warn('moveCard: Could not find drag element', {
+        dragIndex,
+        dragId,
+        currentData,
+      })
       return
     }
 
@@ -520,7 +537,10 @@ const Preview = (props) => {
     const actualDragIndex = currentData.indexOf(dragCard)
 
     if (actualDragIndex === -1) {
-      console.warn('moveCard: Drag element not found in current data', { dragCard, currentData })
+      console.warn('moveCard: Drag element not found in current data', {
+        dragCard,
+        currentData,
+      })
       return
     }
 
@@ -540,7 +560,7 @@ const Preview = (props) => {
         expected: dragCard,
         actual: currentData[dragIndex],
         dragIndex,
-        hoverIndex
+        hoverIndex,
       })
       // Find the correct index
       const correctIndex = currentData.indexOf(dragCard)
@@ -606,7 +626,8 @@ const Preview = (props) => {
       // Check if this is a user selection change (not structure change)
       // For RadioButtons and Checkboxes, we don't want to sync the checked/selected states
       const isSelectionChange =
-        (changedElement.element === 'RadioButtons' || changedElement.element === 'Checkboxes') &&
+        (changedElement.element === 'RadioButtons' ||
+          changedElement.element === 'Checkboxes') &&
         changedElement.options &&
         changedElement.options.some((opt) => opt.checked)
 
@@ -645,7 +666,10 @@ const Preview = (props) => {
         ]
 
         commonProps.forEach((prop) => {
-          if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
+          if (
+            changedElement[prop] !== undefined &&
+            changedElement[prop] !== itemData[prop]
+          ) {
             updatedItem[prop] = changedElement[prop]
             changed = true
           }
@@ -705,12 +729,17 @@ const Preview = (props) => {
             }
 
             // Sync capability flags but don't sync individual option selections
-            ;['canHaveOptionCorrect', 'canHaveOptionValue', 'canHaveInfo'].forEach((prop) => {
-              if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
-                updatedItem[prop] = changedElement[prop]
-                changed = true
+            ;['canHaveOptionCorrect', 'canHaveOptionValue', 'canHaveInfo'].forEach(
+              (prop) => {
+                if (
+                  changedElement[prop] !== undefined &&
+                  changedElement[prop] !== itemData[prop]
+                ) {
+                  updatedItem[prop] = changedElement[prop]
+                  changed = true
+                }
               }
-            })
+            )
             break
           case 'TextInput':
           case 'NumberInput':
@@ -727,7 +756,10 @@ const Preview = (props) => {
           case 'DatePicker':
             // Sync date-specific properties
             ;['showTimeSelect', 'showTimeSelectOnly', 'defaultToday'].forEach((prop) => {
-              if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
+              if (
+                changedElement[prop] !== undefined &&
+                changedElement[prop] !== itemData[prop]
+              ) {
                 updatedItem[prop] = changedElement[prop]
                 changed = true
               }
@@ -736,14 +768,22 @@ const Preview = (props) => {
 
           case 'Range':
             // Sync range-specific properties
-            ;['min_value', 'max_value', 'step', 'default_value', 'min_label', 'max_label'].forEach(
-              (prop) => {
-                if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
-                  updatedItem[prop] = changedElement[prop]
-                  changed = true
-                }
+            ;[
+              'min_value',
+              'max_value',
+              'step',
+              'default_value',
+              'min_label',
+              'max_label',
+            ].forEach((prop) => {
+              if (
+                changedElement[prop] !== undefined &&
+                changedElement[prop] !== itemData[prop]
+              ) {
+                updatedItem[prop] = changedElement[prop]
+                changed = true
               }
-            )
+            })
             break
 
           case 'Signature':
@@ -755,7 +795,10 @@ const Preview = (props) => {
             break
           case 'Image':
             ;['center', 'width', 'height'].forEach((prop) => {
-              if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
+              if (
+                changedElement[prop] !== undefined &&
+                changedElement[prop] !== itemData[prop]
+              ) {
                 updatedItem[prop] = changedElement[prop]
                 changed = true
               }
@@ -766,7 +809,10 @@ const Preview = (props) => {
           case 'Header':
             // Sync text styling properties
             ;['bold', 'italic', 'content'].forEach((prop) => {
-              if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
+              if (
+                changedElement[prop] !== undefined &&
+                changedElement[prop] !== itemData[prop]
+              ) {
                 updatedItem[prop] = changedElement[prop]
                 changed = true
               }
@@ -776,7 +822,10 @@ const Preview = (props) => {
           case 'FormulaInput':
             // Sync formula properties
             ;['formula', 'formularKey'].forEach((prop) => {
-              if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
+              if (
+                changedElement[prop] !== undefined &&
+                changedElement[prop] !== itemData[prop]
+              ) {
                 updatedItem[prop] = changedElement[prop]
                 changed = true
               }
@@ -796,7 +845,10 @@ const Preview = (props) => {
             } else {
               // Sync structural properties like sourceType, formSource, etc.
               ;['sourceType', 'formSource'].forEach((prop) => {
-                if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
+                if (
+                  changedElement[prop] !== undefined &&
+                  changedElement[prop] !== itemData[prop]
+                ) {
                   updatedItem[prop] = changedElement[prop]
                   changed = true
                 }
@@ -906,9 +958,21 @@ const Preview = (props) => {
     .filter((item) => !!item && !item.parentId)
     .map((item, index) => getElement(item, index))
 
+  console.log('Current Items: ')
+  console.log(data)
+
   return (
     <div className={classes} style={{ height: '100%', scrollbarWidth: 'none' }}>
-      <div className="preview-toolbar" style={{ display: 'flex', gap: '8px', padding: '12px', backgroundColor: '#fafafa', borderBottom: '1px solid #d9d9d9' }}>
+      <div
+        className="preview-toolbar"
+        style={{
+          display: 'flex',
+          gap: '8px',
+          padding: '12px',
+          backgroundColor: '#fafafa',
+          borderBottom: '1px solid #d9d9d9',
+        }}
+      >
         <Button
           icon={<UndoOutlined />}
           onClick={() => {

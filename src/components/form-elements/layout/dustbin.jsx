@@ -1,7 +1,5 @@
 import React, { useImperativeHandle } from 'react'
-
 import { useDrop } from 'react-dnd'
-
 import ItemTypes from '../../../constants/itemTypes'
 import Registry from '../../../utils/registry'
 import FormElements from '../index.jsx'
@@ -40,9 +38,14 @@ const renderElement = (item, props) => {
 
   // Check if this is a syncable element type
   if (
-    ['Checkboxes', 'RadioButtons', 'Dropdown', 'DataSource', 'Signature2', 'FormLink'].includes(
-      item.element
-    ) &&
+    [
+      'Checkboxes',
+      'RadioButtons',
+      'Dropdown',
+      'DataSource',
+      'Signature2',
+      'FormLink',
+    ].includes(item.element) &&
     props.syncColumnChanges &&
     props.editModeOn
   ) {
@@ -96,10 +99,13 @@ const Dustbin = React.forwardRef(
           if (!isContainerItem(droppedItem)) {
             if (droppedItem.data && typeof setAsChild === 'function') {
               const isNew = !droppedItem.data.id
-              const data = isNew ? droppedItem.onCreate(droppedItem.data) : droppedItem.data
+              const data = isNew
+                ? droppedItem.onCreate(droppedItem.data)
+                : droppedItem.data
               setAsChild(rest.data, data, row, col)
             }
           }
+          return { handled: true }
         },
         collect: (monitor) => ({
           isOver: monitor.isOver(),
@@ -126,7 +132,8 @@ const Dustbin = React.forwardRef(
     )
 
     // Determine background color based on drag state
-    const backgroundColor = isOverCurrent || (isOver && greedy) ? 'darkgreen' : 'rgba(0, 0, 0, .03)'
+    const backgroundColor =
+      isOverCurrent || (isOver && greedy) ? 'darkgreen' : 'rgba(0, 0, 0, .03)'
 
     const element = renderElement(item, {
       ...rest,

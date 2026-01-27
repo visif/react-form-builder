@@ -1,26 +1,39 @@
 import React from 'react'
-
-import PropTypes from 'prop-types'
-
 import { useDrop } from 'react-dnd'
+import PropTypes from 'prop-types'
 import ItemTypes from '../../../constants/itemTypes'
 
 const PLACE_HOLDER = 'form-place-holder'
 
-const PlaceHolder = ({ text = 'Dropzone', show = false, index, moveCard, insertCard, id }) => {
+const PlaceHolder = ({
+  text = 'Dropzone',
+  show = false,
+  index,
+  moveCard,
+  insertCard,
+  id,
+}) => {
   const [{ isOver }, drop] = useDrop({
     accept: [ItemTypes.CARD, ItemTypes.BOX],
     drop: (item, monitor) => {
+      if (monitor.didDrop()) {
+        return
+      }
       const dragIndex = item.index
       const hoverIndex = index
 
-      if (dragIndex === -1) {
-        if (item.onCreate) {
-          const newItem = item.onCreate(item.data)
+      // Treat toolbar items as new regardless of dragIndex (it may be updated during hover)
+      if (typeof item.onCreate === 'function') {
+        const newItem = item.onCreate(item.data)
+        if (newItem) {
           insertCard(newItem, hoverIndex)
         }
-      } else {
-        moveCard(dragIndex, hoverIndex)
+        return
+      }
+
+      // Move existing items; pass ID for safer lookup
+      if (typeof moveCard === 'function') {
+        moveCard(dragIndex, hoverIndex, item.id)
       }
     },
     collect: (monitor) => ({

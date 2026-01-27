@@ -1,9 +1,6 @@
 import React, { useRef } from 'react'
-
-import PropTypes from 'prop-types'
-
 import { useDrag, useDrop } from 'react-dnd'
-
+import PropTypes from 'prop-types'
 import ItemTypes from '../../../constants/itemTypes'
 
 const cardStyle = {
@@ -15,7 +12,7 @@ const cardStyle = {
 
 const withDragAndDrop = (ComposedComponent) => {
   const Card = (props) => {
-  const { id, index, moveCard, insertCard, data, onCreate, seq = -1 } = props
+    const { id, index, moveCard, insertCard, data, onCreate, seq = -1 } = props
     const ref = useRef(null)
 
     const [{ isDragging }, drag] = useDrag(
@@ -48,15 +45,54 @@ const withDragAndDrop = (ComposedComponent) => {
         accept: [ItemTypes.CARD, ItemTypes.BOX],
         drop: (item, monitor) => {
           if (!ref.current) return
+          if (monitor.didDrop()) return
           const dragIndex = item.index
           const hoverIndex = index
           console.log('SortableElement: drop', { dragIndex, hoverIndex, item, data })
 
-          if ((data && data.isContainer) || item.itemType === ItemTypes.CARD) {
+          // Allow toolbar-created items (dragIndex === -1) to be dropped onto containers.
+          // Only short-circuit for moving existing cards over container elements to avoid unexpected nesting.
+          if (
+            item.itemType === ItemTypes.CARD &&
+            dragIndex !== -1 &&
+            data &&
+            data.isContainer
+          ) {
             return
           }
+          // Handle child insertion from toolbar (special case)
           if (item.data && typeof item.setAsChild === 'function' && dragIndex === -1) {
             insertCard(item, hoverIndex, item.id)
+            return
+          }
+
+          // If this is a new item dragged from the toolbar, only create/insert on drop
+          if (dragIndex === -1 && item.data) {
+            // Prevent double-processing
+            if (item.isProcessed) return
+            const createHandler =
+              typeof item.onCreate === 'function' ? item.onCreate : onCreate
+            if (typeof createHandler !== 'function') {
+              console.warn(
+                'SortableElement: missing onCreate handler for new item drop',
+                item
+              )
+              return
+            }
+            const newItem = createHandler(item.data)
+            if (!newItem) {
+              console.warn('SortableElement: onCreate handler returned no element', item)
+              return
+            }
+            // Mark processed and set index before insert to avoid races
+            item.isProcessed = true
+            item.index = hoverIndex
+            if (typeof insertCard === 'function') {
+              insertCard(newItem, hoverIndex)
+            } else {
+              console.warn('SortableElement: insertCard is not a function')
+            }
+            return
           }
         },
         hover: (item, monitor) => {
@@ -76,33 +112,9 @@ const withDragAndDrop = (ComposedComponent) => {
             if (data && data.isContainer) {
               return
             }
-            // Only create and insert if we haven't already processed this item
-            if (item.isProcessed) {
-              return
-            }
-            const createHandler = typeof item.onCreate === 'function' ? item.onCreate : onCreate
-            if (typeof createHandler !== 'function') {
-              console.warn('SortableElement: missing onCreate handler for new item drop', item)
-              return
-            }
-            const newItem = createHandler(item.data)
-            if (!newItem) {
-              console.warn('SortableElement: onCreate handler returned no element', item)
-              return
-            }
-            // Mark as processed BEFORE inserting to prevent race conditions
-            item.isProcessed = true
+            // Don't create items on hover — only update the intended drop index for placeholder positioning
             item.index = hoverIndex
-
-            console.log('SortableElement: inserting new item', { newItem, hoverIndex })
-
-            // Insert the new item
-            if (typeof insertCard === 'function') {
-              insertCard(newItem, hoverIndex)
-            } else {
-              console.warn('SortableElement: insertCard is not a function')
-            }
-            return // Exit early for new items
+            return
           }
 
           const hoverBoundingRect = ref.current.getBoundingClientRect()
