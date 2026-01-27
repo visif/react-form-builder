@@ -64,10 +64,10 @@ const renderElement = (item, props) => {
 }
 
 const isContainerItem = (item) => {
-  if (item.itemType !== ItemTypes.CARD) {
-    const { data } = item
-    if (data) {
-      return data.isContainer || (data.field_name && data.field_name.includes('_col_row'))
+  const { data } = item || {}
+  if (data) {
+    if (data.isContainer || (data.field_name && data.field_name.includes('_col_row'))) {
+      return true
     }
   }
   return false
@@ -113,6 +113,14 @@ const Dustbin = React.forwardRef(
       () => ({
         accept: accepts,
         drop: (droppedItem, monitor) => {
+          if (
+            droppedItem?.data?.id &&
+            item?.id === droppedItem.data.id &&
+            item?.row === row &&
+            item?.col === col
+          ) {
+            return { handled: true }
+          }
           if (!isContainerItem(droppedItem)) {
             if (droppedItem.data && typeof setAsChild === 'function') {
               const isNew = !droppedItem.data.id

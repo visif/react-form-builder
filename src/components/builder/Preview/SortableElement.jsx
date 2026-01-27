@@ -50,6 +50,9 @@ const withDragAndDrop = (ComposedComponent) => {
           if (monitor.didDrop()) return
           const dragIndex = item.index
           const hoverIndex = index
+          if (item.id === id || dragIndex === hoverIndex) {
+            return
+          }
           console.log('SortableElement: drop', { dragIndex, hoverIndex, item, data })
 
           // Allow toolbar-created items (dragIndex === -1) to be dropped onto containers.
