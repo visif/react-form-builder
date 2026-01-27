@@ -1,5 +1,5 @@
 import React, { useImperativeHandle } from 'react'
-import { useDrop } from 'react-dnd'
+import { useDrag, useDrop } from 'react-dnd'
 import ItemTypes from '../../../constants/itemTypes'
 import Registry from '../../../utils/registry'
 import FormElements from '../index.jsx'
@@ -92,6 +92,23 @@ const Dustbin = React.forwardRef(
   ) => {
     const item = getDataById(items[col])
 
+    const [{ isDragging }, drag] = useDrag(
+      () => ({
+        type: ItemTypes.CARD,
+        canDrag: Boolean(item),
+        item: {
+          itemType: ItemTypes.CARD,
+          id: item?.id,
+          index: -1,
+          data: item,
+        },
+        collect: (monitor) => ({
+          isDragging: monitor.isDragging(),
+        }),
+      }),
+      [item]
+    )
+
     const [{ isOver, isOverCurrent, canDrop }, drop] = useDrop(
       () => ({
         accept: accepts,
@@ -143,9 +160,23 @@ const Dustbin = React.forwardRef(
       updateElement,
     })
 
+    const draggableElement = item ? (
+      <div
+        ref={drag}
+        style={{
+          cursor: 'move',
+          opacity: isDragging ? 0.5 : 1,
+        }}
+      >
+        {element}
+      </div>
+    ) : (
+      element
+    )
+
     return (
       <div ref={drop} style={dustbinStyles(backgroundColor)}>
-        {element}
+        {draggableElement}
       </div>
     )
   }

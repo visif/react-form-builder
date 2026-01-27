@@ -1,5 +1,4 @@
 import React from 'react'
-
 import HeaderBar from '../display/HeaderBar'
 
 const ComponentHeader = (props) => {
@@ -8,7 +7,7 @@ const ComponentHeader = (props) => {
     return null
   }
   return (
-    <div>
+    <div ref={props.dragHandleRef}>
       {props.data.pageBreakBefore && <div className="preview-page-break">Page Break</div>}
       <HeaderBar
         parent={props.parent}

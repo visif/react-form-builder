@@ -14,8 +14,9 @@ const withDragAndDrop = (ComposedComponent) => {
   const Card = (props) => {
     const { id, index, moveCard, insertCard, data, onCreate, seq = -1 } = props
     const ref = useRef(null)
+    const dragHandleRef = useRef(null)
 
-    const [{ isDragging }, drag] = useDrag(
+    const [{ isDragging }, drag, dragPreview] = useDrag(
       () => ({
         type: ItemTypes.CARD,
         item: {
@@ -38,7 +39,7 @@ const withDragAndDrop = (ComposedComponent) => {
           }
         },
       }),
-      [id, index]
+      [id, index, data]
     )
 
     const [, drop] = useDrop(
@@ -148,13 +149,28 @@ const withDragAndDrop = (ComposedComponent) => {
     )
 
     // Combine drag and drop refs
-    drag(drop(ref))
+    if (data?.isContainer) {
+      drop(ref)
+      dragPreview(ref)
+      if (dragHandleRef.current) {
+        drag(dragHandleRef)
+      } else {
+        drag(ref)
+      }
+    } else {
+      dragPreview(drop(ref))
+      drag(ref)
+    }
 
     const opacity = isDragging ? 0 : 1
 
     return (
       <div ref={ref}>
-        <ComposedComponent {...props} style={{ ...cardStyle, opacity }} />
+        <ComposedComponent
+          {...props}
+          dragHandleRef={dragHandleRef}
+          style={{ ...cardStyle, opacity }}
+        />
       </div>
     )
   }
