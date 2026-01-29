@@ -1,314 +1,238 @@
-import React from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import ComponentHeader from './component-header'
 import ComponentLabel from './component-label'
 
-class FormLink extends React.Component {
-  constructor(props) {
-    super(props)
-    this.inputField = React.createRef()
-    this.mounted = false
+// Inline styles extracted as constants for better readability
+const STYLES = {
+  container: {
+    position: 'relative',
+    display: 'inline-block',
+    width: '100%',
+  },
+  linkContainer: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  selectBox: (isSelected) => ({
+    flex: 1,
+    border: '1px solid #ced4da',
+    borderRadius: '.25rem',
+    padding: '6px 12px',
+    cursor: 'pointer',
+    backgroundColor: isSelected ? '#fff' : '#f8f9fa',
+    minHeight: '38px',
+    display: 'flex',
+    alignItems: 'center',
+  }),
+  previewContainer: {
+    padding: '6px 0',
+  },
+  previewButton: {
+    marginTop: 6,
+  },
+}
 
-    const defaultValue = props.defaultValue || {}
+// Custom hook for loading and managing form data
+const useFormData = (data, getFormSource, getFormInfo) => {
+  const [formList, setFormList] = useState([])
+  const [formInfo, setFormInfo] = useState(null)
+  const [selectedForm, setSelectedForm] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const isMounted = useRef(true)
 
-    this.state = {
-      formList: [],
-      matchedList: [],
-      formInfo: null,
-      searchText: defaultValue.value || '',
-      selectedFormId: defaultValue.selectedFormId,
-      defaultSelectedForm: defaultValue.selectedForm,
-      isShowingList: false,
-      getFormSource: props.getFormSource,
-      loading: true,
-      parentElementId: 0,
+  useEffect(() => {
+    isMounted.current = true
+    return () => {
+      isMounted.current = false
     }
-  }
+  }, [])
 
-  async componentDidMount() {
-    this.mounted = true
-    await this.loadFormSource()
-    this.checkForValue()
-
-    if (typeof this.props.getFormInfo === 'function' && this.props.data.formSource) {
-      try {
-        const formInfo = await this.props.getFormInfo(this.props.data.formSource)
-        if (this.mounted) {
-          this.setState({
-            formInfo: formInfo || null,
-          })
-        }
-      } catch (error) {
-        console.warn('Error loading form info:', error)
-        if (this.mounted) {
-          this.setState({
-            formInfo: null,
-          })
-        }
-      }
-    }
-  }
-
-  componentWillUnmount() {
-    this.mounted = false
-  }
-
-  checkForValue = (attempt = 0) => {
-    const { defaultValue } = this.props
-    const maxRetries = 3
-
-    if (!this.state.selectedFormId && defaultValue?.selectedFormId) {
-      setTimeout(() => {
-        if (this.mounted && !this.state.selectedFormId) {
-          this.setState({
-            searchText: defaultValue.value || '',
-            selectedFormId: defaultValue.selectedFormId,
-            defaultSelectedFormId: defaultValue.selectedFormId,
-            loading: false,
-          })
-          if (!this.state.selectedFormId && attempt < maxRetries) {
-            this.checkForValue(attempt + 1)
-          }
-        }
-      }, 500)
-    } else {
-      this.setState({ loading: false })
-    }
-  }
-
-  async loadFormSource() {
-    if (typeof this.props.getFormSource === 'function') {
-      try {
-        const forms = await this.props.getFormSource(this.props.data)
-        if (this.mounted) {
-          // If we have a formSource set from the editor, find the matching form
-          if (this.props.data.formSource) {
-            const selectedFormId = forms.find(
-              (form) => form.id == this.props.data.formSource
-            )
-            if (selectedFormId) {
-              this.setState({
-                formList: forms,
-                matchedList: forms,
-                selectedFormId,
-                searchText: '',
-              })
-              return
-            }
-          }
-
-          this.setState({
-            formList: forms,
-            matchedList: forms,
-          })
-        }
-      } catch (error) {
-        console.warn('Error loading form source:', error)
-        if (this.mounted) {
-          this.setState({
-            formList: [],
-            matchedList: [],
-          })
-        }
-      }
-    }
-  }
-
-  static getDerivedStateFromProps(props, state) {
-    if (
-      props.defaultValue &&
-      JSON.stringify(props.defaultValue.selectedFormId) !==
-        JSON.stringify(state.defaultSelectedFormId)
-    ) {
-      const defaultValue = props.defaultValue || {}
-      return {
-        searchText: defaultValue.value || '',
-        selectedFormId: defaultValue.selectedFormId,
-        defaultSelectedForm: defaultValue.selectedFormId,
-      }
-    }
-    return null
-  }
-
-  handleInputFocus = () => {
-    this.setState({
-      isShowingList: true,
-    })
-  }
-
-  handleInputBlur = () => {
-    setTimeout(() => {
-      this.setState({
-        isShowingList: false,
-      })
-    }, 200)
-  }
-
-  debounceOnChange = (value) => {
-    const matchData = this.state.formList.filter((form) =>
-      `${form.title}`.toLocaleLowerCase().includes(`${value}`.toLocaleLowerCase())
-    )
-    this.setState({
-      searchText: value,
-      matchedList: matchData,
-    })
-
-    // If onElementChange is provided, call it to synchronize changes across the column
-    if (this.props.onElementChange) {
-      const updatedData = {
-        ...this.props.data,
-        value,
-      }
-
-      this.props.onElementChange(updatedData)
-
-      // Immediately apply changes to this component's data
-      if (this.props.data.dirty === undefined || this.props.data.dirty) {
-        updatedData.dirty = true
-        if (this.props.updateElement) {
-          this.props.updateElement(updatedData)
-        }
-      }
-    }
-  }
-
-  handleOnChange = (event) => {
-    if (event.key === 'Enter') {
+  // Load available forms from the source
+  const loadForms = useCallback(async () => {
+    if (typeof getFormSource !== 'function') {
+      setLoading(false)
       return
     }
-    this.debounceOnChange(event.target.value)
-  }
 
-  handleFormSelect = (form) => {
-    this.setState({
-      selectedFormId: form,
-      searchText: form.title,
-      isShowingList: false,
-    })
+    try {
+      const forms = await getFormSource(data)
+      if (!isMounted.current) return
 
-    // If onElementChange is provided, call it to synchronize changes across the column
-    if (this.props.onElementChange) {
-      const updatedData = {
-        ...this.props.data,
-        value: form.title,
-        selectedFormId: form,
-        formSource: form.id, // Save the form ID as formSource
-      }
+      setFormList(forms)
 
-      this.props.onElementChange(updatedData)
-
-      // Immediately apply changes to this component's data
-      if (this.props.data.dirty === undefined || this.props.data.dirty) {
-        updatedData.dirty = true
-        if (this.props.updateElement) {
-          this.props.updateElement(updatedData)
+      // If a formSource is already set, find and select it
+      if (data.formSource) {
+        const preselectedForm = forms.find((form) => form.id == data.formSource)
+        if (preselectedForm) {
+          setSelectedForm(preselectedForm)
         }
       }
+    } catch (error) {
+      console.warn('Error loading form source:', error)
+      if (isMounted.current) {
+        setFormList([])
+      }
+    } finally {
+      if (isMounted.current) {
+        setLoading(false)
+      }
+    }
+  }, [data, getFormSource])
+
+  // Load detailed info about the selected form
+  const loadFormInfo = useCallback(async () => {
+    if (typeof getFormInfo !== 'function' || !data.formSource) {
+      return
+    }
+
+    try {
+      const info = await getFormInfo(data.formSource)
+      if (isMounted.current) {
+        setFormInfo(info || null)
+      }
+    } catch (error) {
+      console.warn('Error loading form info:', error)
+      if (isMounted.current) {
+        setFormInfo(null)
+      }
+    }
+  }, [data.formSource, getFormInfo])
+
+  useEffect(() => {
+    loadForms()
+  }, [loadForms])
+
+  useEffect(() => {
+    loadFormInfo()
+  }, [loadFormInfo])
+
+  return { formList, formInfo, selectedForm, setSelectedForm, loading }
+}
+
+// Custom hook for editor permissions
+const useEditorPermissions = (editor, selectedForm, getActiveUserProperties) => {
+  const userProperties = getActiveUserProperties?.()
+  const hasValue = selectedForm !== null
+
+  // Determine if the current user can edit this field
+  const canEdit = (() => {
+    if (!hasValue) return true
+    if (!editor?.userId || !userProperties) return true
+
+    return userProperties.userId === editor.userId || userProperties.hasDCCRole === true
+  })()
+
+  // Tooltip showing who last edited
+  const tooltipText = editor?.name && hasValue ? `Edited by: ${editor.name}` : ''
+
+  return { canEdit, tooltipText }
+}
+
+// Sub-component for the form selector display
+const FormSelector = ({
+  selectedForm,
+  formInfo,
+  onSelectChildForm,
+  openLinkedForm,
+  data,
+}) => {
+  const isFormSelected = !!selectedForm
+  const displayText = formInfo?.Name || 'Please select a form'
+
+  const handleClick = (e) => {
+    e.preventDefault()
+
+    // If form is selected, open it; otherwise, trigger form selection
+    if (isFormSelected && data.formSource) {
+      if (typeof openLinkedForm === 'function') {
+        openLinkedForm(data.formSource)
+      }
+    } else if (typeof onSelectChildForm === 'function') {
+      onSelectChildForm(data.id, data.formSource)
     }
   }
 
-  openLinkedForm = () => {
-    console.info(`Select form: ${this.state.selectedFormId}`)
-    const { selectedFormId } = this.state.selectedFormId
-    if (selectedFormId && typeof this.props.openLinkedForm === 'function') {
-      this.props.openLinkedForm(selectedFormId)
-    }
-  }
-
-  render() {
-    const userProperties =
-      this.props.getActiveUserProperties && this.props.getActiveUserProperties()
-
-    const savedEditor = this.props.editor
-    const hasValue = this.state.selectedFormId !== null
-
-    // Allow editing if no value exists OR if user is the same editor
-    let isSameEditor = true
-    if (savedEditor && savedEditor.userId && hasValue && !!userProperties) {
-      isSameEditor =
-        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
-    }
-
-    // Create tooltip text showing editor name
-    const tooltipText =
-      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
-
-    let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
-    if (this.props.data.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
-    }
-
-    const formTitle = this.state.selectedFormId
-      ? this.state.selectedFormId.title
-      : 'Select a form'
-    const isFormSelected = !!this.state.selectedFormId
-
-    return (
-      <section className={baseClasses} title={tooltipText}>
-        <ComponentHeader {...this.props} />
-        <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
-          <ComponentLabel {...this.props} style={{ display: 'block' }} />
-          <div
-            style={{
-              position: 'relative',
-              display: 'inline-block',
-              width: '100%',
-            }}
+  return (
+    <div style={STYLES.container}>
+      <div className="form-link-container" style={STYLES.linkContainer}>
+        <div className="form-link-preview" style={STYLES.previewContainer}>
+          <a
+            href="#"
+            style={STYLES.previewButton}
+            className="btn btn-secondary"
+            onClick={handleClick}
           >
-            <div
-              className="form-link-container"
-              style={{ display: 'flex', alignItems: 'center' }}
-            >
-              <div
-                onClick={() => this.setState({ isShowingList: true })}
-                style={{
-                  flex: 1,
-                  border: '1px solid #ced4da',
-                  borderRadius: '.25rem',
-                  padding: '6px 12px',
-                  cursor: 'pointer',
-                  backgroundColor: isFormSelected ? '#fff' : '#f8f9fa',
-                  minHeight: '38px',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
-              >
-                {isFormSelected ? (
-                  <span>
-                    {this.state.formInfo
-                      ? this.state.formInfo.Name
-                      : 'Please select a form'}
-                  </span>
-                ) : (
-                  <div>
-                    <div className="form-link-preview" style={{ padding: '6px 0' }}>
-                      <a
-                        href="#"
-                        style={{ marginTop: 6 }}
-                        className="btn btn-secondary"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          if (typeof this.props.onSelectChildForm === 'function') {
-                            this.props.onSelectChildForm(
-                              this.props.data.id,
-                              this.props.data.formSource
-                            )
-                          }
-                        }}
-                      >
-                        {this.state.formInfo
-                          ? this.state.formInfo.Name
-                          : 'Please select a form'}
-                      </a>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+            {displayText}
+          </a>
         </div>
-      </section>
-    )
+      </div>
+    </div>
+  )
+}
+
+// Main component refactored as a functional component
+const FormLink = (props) => {
+  const {
+    data,
+    defaultValue,
+    editor,
+    getFormSource,
+    getFormInfo,
+    getActiveUserProperties,
+    onElementChange,
+    updateElement,
+    onSelectChildForm,
+    openLinkedForm,
+  } = props
+
+  // Custom hooks for data and permissions
+  const { formList, formInfo, selectedForm, setSelectedForm, loading } = useFormData(
+    data,
+    getFormSource,
+    getFormInfo
+  )
+  const { canEdit, tooltipText } = useEditorPermissions(
+    editor,
+    selectedForm,
+    getActiveUserProperties
+  )
+
+  // Sync with defaultValue prop changes
+  useEffect(() => {
+    if (defaultValue?.selectedFormId && defaultValue.selectedFormId !== selectedForm) {
+      setSelectedForm(defaultValue.selectedFormId)
+    }
+  }, [defaultValue?.selectedFormId, selectedForm, setSelectedForm])
+
+  // Build CSS classes
+  const baseClasses = [
+    data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem',
+    data.pageBreakBefore ? 'alwaysbreak' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
+  const wrapperClass = data.isShowLabel !== false ? 'form-group' : ''
+
+  if (loading) {
+    return <div>Loading...</div>
   }
+
+  return (
+    <section className={baseClasses} title={tooltipText}>
+      <ComponentHeader {...props} />
+      <div className={wrapperClass}>
+        <ComponentLabel {...props} style={{ display: 'block' }} />
+        <FormSelector
+          selectedForm={selectedForm}
+          formInfo={formInfo}
+          onSelectChildForm={onSelectChildForm}
+          openLinkedForm={openLinkedForm}
+          data={data}
+        />
+      </div>
+    </section>
+  )
 }
 
 export default FormLink
