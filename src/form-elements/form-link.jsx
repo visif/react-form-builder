@@ -254,34 +254,6 @@ class FormLink extends React.Component {
               width: '100%',
             }}
           >
-            {/* Display hyperlink in preview mode */}
-            {/* {!this.props.mutable && (
-              <div className="form-link-preview" style={{ padding: '6px 0' }}>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    this.openLinkedForm()
-                  }}
-                  style={{
-                    color: '#007bff',
-                    textDecoration: 'underline',
-                    cursor: 'pointer',
-                    fontWeight: '500',
-                    background: 'none',
-                    border: 'none',
-                    padding: 0,
-                  }}
-                >
-                  {this.state.formInfo
-                    ? this.state.formInfo.Name
-                    : 'Please select a form'}
-                </button>
-              </div>
-            )} */}
-
-            {/* Display form selection in edit mode */}
-            {/* {this.props.mutable && ( */}
             <div
               className="form-link-container"
               style={{ display: 'flex', alignItems: 'center' }}
@@ -332,7 +304,6 @@ class FormLink extends React.Component {
                 )}
               </div>
             </div>
-            {/* )} */}
           </div>
         </div>
       </section>
