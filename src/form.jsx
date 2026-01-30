@@ -725,7 +725,17 @@ export default class ReactForm extends React.Component {
           }),
         ]
     return (
-      <Element mutable={true} key={`form_${item.id}`} data={item} controls={controls} />
+      <Element
+        mutable={true}
+        key={`form_${item.id}`}
+        data={item}
+        controls={controls}
+        getFormInfo={this.props.getFormInfo}
+        getFormSource={this.props.getFormSource}
+        onSelectChildForm={this.props.onSelectChildForm}
+        openLinkedForm={this.props.openLinkedForm}
+        getActiveUserProperties={this.props.getActiveUserProperties}
+      />
     )
   }
 
