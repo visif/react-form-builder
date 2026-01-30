@@ -241,7 +241,7 @@ const FormLink = (props) => {
       <div className={wrapperClass}>
         <ComponentLabel {...props} style={{ display: 'block' }} />
         <FormSelector
-          // selectedForm={selectedForm}
+          selectedForm={selectedForm}
           formInfo={formInfo}
           onSelectChildForm={onSelectChildForm}
           openLinkedForm={openLinkedForm}
