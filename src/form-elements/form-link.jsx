@@ -81,6 +81,7 @@ const useFormData = (data, getFormSource, getFormInfo) => {
 
   // Load detailed info about the selected form
   const loadFormInfo = useCallback(async () => {
+    debugger
     if (typeof getFormInfo !== 'function' || !data.formSource) {
       return
     }

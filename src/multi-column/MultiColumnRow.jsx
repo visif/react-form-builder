@@ -22,6 +22,8 @@ const MultiColumnRow = (props) => {
     connectDragSource,
     onSelectChildForm,
     openLinkedForm,
+    getFormInfo,
+    getFormSource,
   } = props
 
   const { childItems = [], pageBreakBefore } = data
@@ -187,6 +189,8 @@ const MultiColumnRow = (props) => {
                           updateElement={updateElement}
                           onSelectChildForm={onSelectChildForm}
                           openLinkedForm={openLinkedForm}
+                          getFormInfo={getFormInfo}
+                          getFormSource={getFormSource}
                           {...props}
                         />
                       )}
