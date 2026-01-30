@@ -60,9 +60,16 @@ const useFormData = (data, getFormSource, getFormInfo) => {
 
       setFormList(forms)
 
+      console.log('useFormData - loadForms:', {
+        dataFormSource: data.formSource,
+        formsLength: forms.length,
+        forms,
+      })
+
       // If a formSource is already set, find and select it
       if (data.formSource) {
         const preselectedForm = forms.find((form) => form.id == data.formSource)
+        console.log('useFormData - preselectedForm:', preselectedForm)
         if (preselectedForm) {
           setSelectedForm(preselectedForm)
         }
@@ -81,7 +88,6 @@ const useFormData = (data, getFormSource, getFormInfo) => {
 
   // Load detailed info about the selected form
   const loadFormInfo = useCallback(async () => {
-    debugger
     if (typeof getFormInfo !== 'function' || !data.formSource) {
       return
     }
@@ -142,6 +148,16 @@ const FormSelector = ({
 
   const handleClick = (e) => {
     e.preventDefault()
+
+    console.log('FormLink Debug:', {
+      isFormSelected,
+      selectedForm,
+      dataFormSource: data.formSource,
+      dataId: data.id,
+      formInfo,
+      hasOnSelectChildForm: typeof onSelectChildForm === 'function',
+      hasOpenLinkedForm: typeof openLinkedForm === 'function',
+    })
 
     // If form is selected, open it; otherwise, trigger form selection
     if (isFormSelected && data.formSource) {
@@ -225,7 +241,7 @@ const FormLink = (props) => {
       <div className={wrapperClass}>
         <ComponentLabel {...props} style={{ display: 'block' }} />
         <FormSelector
-          selectedForm={selectedForm}
+          // selectedForm={selectedForm}
           formInfo={formInfo}
           onSelectChildForm={onSelectChildForm}
           openLinkedForm={openLinkedForm}
