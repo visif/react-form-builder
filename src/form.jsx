@@ -695,6 +695,9 @@ export default class ReactForm extends React.Component {
         onDownloadFile={this.props.onDownloadFile}
         onUploadImage={this.props.onUploadImage}
         getFormSource={this.props.getFormSource}
+        getFormInfo={this.props.getFormInfo}
+        onSelectChildForm={this.props.onSelectChildForm}
+        openLinkedForm={this.props.openLinkedForm}
         broadcastChange={this.broadcastChange}
         emitter={this.emitter}
         variables={this.state.variables}
