@@ -473,7 +473,7 @@ class Dropdown extends React.Component {
 
       // Check if the selected option has info enabled, and if we don't have stored info,
       // we need to ensure the field is shown but empty (ready for user input)
-      const selectedOption = props.data?.options?.find((option) => option.value === value)
+      const selectedOption = props.data?.options?.find((option) => option.value == value)
       const shouldShowInfo = selectedOption?.info
 
       return {
@@ -489,8 +489,9 @@ class Dropdown extends React.Component {
     const constValue = e.target.value
 
     // Check if the newly selected option has info enabled
+    // Use loose equality to handle type coercion (string vs number)
     const selectedOption = this.props.data.options.find(
-      (option) => option.value === constValue
+      (option) => option.value == constValue
     )
     const shouldShowInfo = selectedOption?.info
 
@@ -576,7 +577,7 @@ class Dropdown extends React.Component {
     }
 
     const selectedOption = this.props.data.options.find(
-      (option) => option.value === this.state.value
+      (option) => option.value == this.state.value
     )
     const showInfo = selectedOption && selectedOption.info
 
