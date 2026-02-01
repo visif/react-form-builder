@@ -470,10 +470,16 @@ class Dropdown extends React.Component {
           : defaultValue || ''
       const info =
         defaultValue && typeof defaultValue === 'object' ? defaultValue.info || '' : ''
+
+      // Check if the selected option has info enabled, and if we don't have stored info,
+      // we need to ensure the field is shown but empty (ready for user input)
+      const selectedOption = props.data?.options?.find((option) => option.value === value)
+      const shouldShowInfo = selectedOption?.info
+
       return {
         defaultValue: props.defaultValue,
         value,
-        info,
+        info: shouldShowInfo ? info : '',
       }
     }
     return state
@@ -481,7 +487,18 @@ class Dropdown extends React.Component {
 
   handleChange = (e) => {
     const constValue = e.target.value
-    this.setState({ value: constValue })
+
+    // Check if the newly selected option has info enabled
+    const selectedOption = this.props.data.options.find(
+      (option) => option.value === constValue
+    )
+    const shouldShowInfo = selectedOption?.info
+
+    // If switching to an option without info, clear the info field
+    // If switching to an option with info, keep any existing info or empty if none
+    const newInfo = shouldShowInfo ? this.state.info : ''
+
+    this.setState({ value: constValue, info: newInfo })
 
     const { data, handleChange } = this.props
     const { formularKey } = data
