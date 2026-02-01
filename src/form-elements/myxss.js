@@ -4,6 +4,7 @@ const myxss = new xss.FilterXSS({
   whiteList: {
     a: ['href', 'title', 'target'],
     u: [],
+    ins: [],
     br: [],
     b: [],
     i: [],
