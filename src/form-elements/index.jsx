@@ -445,13 +445,16 @@ class Dropdown extends React.Component {
     this.inputField = React.createRef()
     this.infoField = React.createRef()
 
-    const { defaultValue } = props
+    const rawDefaultValue =
+      props.defaultValue !== undefined ? props.defaultValue : props.data?.defaultValue
     const value =
-      defaultValue && typeof defaultValue === 'object'
-        ? defaultValue.value
-        : defaultValue || ''
+      rawDefaultValue && typeof rawDefaultValue === 'object'
+        ? rawDefaultValue.value
+        : rawDefaultValue || ''
     const info =
-      defaultValue && typeof defaultValue === 'object' ? defaultValue.info || '' : ''
+      rawDefaultValue && typeof rawDefaultValue === 'object'
+        ? rawDefaultValue.info || ''
+        : ''
 
     this.state = {
       defaultValue: props.defaultValue,
@@ -461,14 +464,17 @@ class Dropdown extends React.Component {
   }
 
   static getDerivedStateFromProps(props, state) {
-    if (JSON.stringify(state.defaultValue) !== JSON.stringify(props.defaultValue)) {
-      const { defaultValue } = props
+    const rawDefaultValue =
+      props.defaultValue !== undefined ? props.defaultValue : props.data?.defaultValue
+    if (JSON.stringify(state.defaultValue) !== JSON.stringify(rawDefaultValue)) {
       const value =
-        defaultValue && typeof defaultValue === 'object'
-          ? defaultValue.value
-          : defaultValue || ''
+        rawDefaultValue && typeof rawDefaultValue === 'object'
+          ? rawDefaultValue.value
+          : rawDefaultValue || ''
       const info =
-        defaultValue && typeof defaultValue === 'object' ? defaultValue.info || '' : ''
+        rawDefaultValue && typeof rawDefaultValue === 'object'
+          ? rawDefaultValue.info || ''
+          : ''
 
       // Check if the selected option has info enabled, and if we don't have stored info,
       // we need to ensure the field is shown but empty (ready for user input)
@@ -476,7 +482,7 @@ class Dropdown extends React.Component {
       const shouldShowInfo = selectedOption?.info
 
       return {
-        defaultValue: props.defaultValue,
+        defaultValue: rawDefaultValue,
         value,
         info: shouldShowInfo ? info : '',
       }
