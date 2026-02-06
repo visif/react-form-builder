@@ -404,7 +404,6 @@ class TextArea extends React.Component {
       savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
 
     const props = {}
-    props.className = 'form-control'
     props.name = this.props.data.field_name
     props.minRows = 3
     props.onChange = this.handleChange
@@ -486,7 +485,7 @@ class Dropdown extends React.Component {
   }
 
   handleChange = (e) => {
-    const constValue = e.target.value
+    const constValue = e && e.target ? e.target.value : e ? e.value : ''
 
     // Check if the newly selected option has info enabled
     // Use loose equality to handle type coercion (string vs number)
@@ -555,20 +554,20 @@ class Dropdown extends React.Component {
     const props = {}
     props.className = 'form-control'
     props.name = this.props.data.field_name
-    props.value = this.state.value
     props.onChange = this.handleChange
+    props.isSearchable = true
+    props.placeholder = 'Please Select'
 
     if (tooltipText) {
       props.title = tooltipText
     }
 
     if (this.props.mutable) {
-      props.defaultValue = this.state.value
       props.ref = this.inputField
     }
 
     if (this.props.read_only || !isSameEditor) {
-      props.disabled = 'disabled'
+      props.isDisabled = true
     }
 
     let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
@@ -576,9 +575,11 @@ class Dropdown extends React.Component {
       baseClasses += ' alwaysbreak'
     }
 
-    const selectedOption = this.props.data.options.find(
-      (option) => option.value == this.state.value
-    )
+    const options = this.props.data.options.map((option) => ({
+      ...option,
+      label: option.text,
+    }))
+    const selectedOption = options.find((option) => option.value == this.state.value)
     const showInfo = selectedOption && selectedOption.info
 
     return (
@@ -586,19 +587,14 @@ class Dropdown extends React.Component {
         <ComponentHeader {...this.props} />
         <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} />
-          <select {...props}>
-            <option value="" key="default-0">
-              Please Select
-            </option>
-            {this.props.data.options.map((option) => {
-              const this_key = `preview_${option.key}`
-              return (
-                <option value={option.value} key={this_key}>
-                  {option.text}
-                </option>
-              )
-            })}
-          </select>
+          <Select
+            {...props}
+            className="react-select-container"
+            classNamePrefix="react-select"
+            options={options}
+            value={selectedOption || null}
+            isClearable
+          />
           {showInfo && (
             <input
               type="text"
