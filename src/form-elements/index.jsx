@@ -485,6 +485,7 @@ class Dropdown extends React.Component {
         defaultValue: rawDefaultValue,
         value,
         info: shouldShowInfo ? info : '',
+        info: shouldShowInfo ? info : '',
       }
     }
     return state

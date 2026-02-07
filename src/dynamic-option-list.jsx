@@ -54,6 +54,10 @@ export default class DynamicOptionList extends React.Component {
         ...this.props.element,
         options: this.props.element.options || [],
       },
+      element: {
+        ...this.props.element,
+        options: this.props.element.options || [],
+      },
       data: this.props.data,
       dirty: false,
     }
@@ -92,10 +96,16 @@ export default class DynamicOptionList extends React.Component {
       // Check if the options we sent have been synced back
       const propsOptions = this.props.element?.options || []
       const elementOptions = element.options || []
+      const propsOptions = this.props.element?.options || []
+      const elementOptions = element.options || []
       const optionsMatch =
         propsOptions.length === elementOptions.length &&
         propsOptions.every(
+        propsOptions.length === elementOptions.length &&
+        propsOptions.every(
           (opt, idx) =>
+            opt.text === elementOptions[idx]?.text &&
+            opt.value === elementOptions[idx]?.value
             opt.text === elementOptions[idx]?.text &&
             opt.value === elementOptions[idx]?.value
         )
