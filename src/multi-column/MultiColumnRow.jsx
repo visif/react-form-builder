@@ -114,6 +114,11 @@ const MultiColumnRow = (props) => {
                     }}
                   >
                     {column.text}
+                    {column.required && (
+                      <span className="label-required badge badge-danger ml-1">
+                        Required
+                      </span>
+                    )}
                   </th>
                 ))}
               </tr>
