@@ -108,7 +108,7 @@ export default class DynamicColumnList extends React.Component {
 
   render() {
     const { element, dirty, showEditModal, editingColumn } = this.state
-    const { preview } = this.props
+    const { preview, allowSync } = this.props
 
     if (dirty) {
       element.dirty = true
@@ -127,11 +127,11 @@ export default class DynamicColumnList extends React.Component {
             </li>
             <li className="clearfix">
               <div className="row">
-                <div className="col-sm-5">Header Text</div>
+                <div className={allowSync ? 'col-sm-5' : 'col-sm-6'}>Header Text</div>
                 <div className="col-sm-2">Width</div>
-                <div className="col-sm-1 text-center">Sync</div>
+                {allowSync && <div className="col-sm-1 text-center">Sync</div>}
                 <div className="col-sm-1 text-center">Required</div>
-                <div className="col-sm-3" />
+                <div className={allowSync ? 'col-sm-3' : 'col-sm-3'} />
               </div>
             </li>
             {(!element.columns || element.columns.length === 0) && (
@@ -154,7 +154,7 @@ export default class DynamicColumnList extends React.Component {
               return (
                 <li className="clearfix" key={editKey}>
                   <div className="row">
-                    <div className="col-sm-5">
+                    <div className={allowSync ? 'col-sm-5' : 'col-sm-6'}>
                       <input
                         tabIndex={index + 1}
                         className="form-control"
@@ -180,21 +180,23 @@ export default class DynamicColumnList extends React.Component {
                         onChange={(e) => this.editColumn(index, 'width', e)}
                       />
                     </div>
-                    <div className="col-sm-1">
-                      <div
-                        className="d-flex justify-content-center align-items-center"
-                        style={{ height: '38px', minWidth: '56px' }}
-                      >
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          id={`sync_${index}`}
-                          checked={option.isSync || false}
-                          onChange={(e) => this.editColumn(index, 'isSync', e)}
-                          onBlur={this.updateColumn}
-                        />
+                    {allowSync && (
+                      <div className="col-sm-1">
+                        <div
+                          className="d-flex justify-content-center align-items-center"
+                          style={{ height: '38px', minWidth: '56px' }}
+                        >
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            id={`sync_${index}`}
+                            checked={option.isSync || false}
+                            onChange={(e) => this.editColumn(index, 'isSync', e)}
+                            onBlur={this.updateColumn}
+                          />
+                        </div>
                       </div>
-                    </div>
+                    )}
                     <div className="col-sm-1">
                       <div
                         className="d-flex justify-content-center align-items-center"
@@ -291,8 +293,10 @@ DynamicColumnList.propTypes = {
   }).isRequired,
   preview: PropTypes.shape({}),
   updateElement: PropTypes.func.isRequired,
+  allowSync: PropTypes.bool,
 }
 
 DynamicColumnList.defaultProps = {
   preview: null,
+  allowSync: true,
 }
