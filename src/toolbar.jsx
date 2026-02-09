@@ -260,6 +260,7 @@ export default class Toolbar extends React.Component {
         columns: [],
         rowLabels: [],
         rows: 3,
+        allowSync: false,
       },
       {
         key: 'TwoColumnRow',
@@ -293,6 +294,7 @@ export default class Toolbar extends React.Component {
         field_name: 'dynamic_col_row_',
         rows: 1,
         columns: [],
+        allowSync: true,
       },
       {
         key: 'Image',
@@ -530,6 +532,7 @@ export default class Toolbar extends React.Component {
         elementOptions.rowLabels = []
       }
       elementOptions.rows = item.rows || 3
+      elementOptions.allowSync = item.allowSync !== undefined ? item.allowSync : true
     }
 
     if (item.key === 'Section') {

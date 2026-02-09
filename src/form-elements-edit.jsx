@@ -1018,6 +1018,7 @@ export default class FormElementsEdit extends React.Component {
             preview={this.props.preview}
             element={this.state.element}
             key="table-columns"
+            allowSync={this.state.element.allowSync !== undefined ? this.state.element.allowSync : true}
           />
         )}
 
