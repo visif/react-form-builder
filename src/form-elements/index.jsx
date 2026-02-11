@@ -404,6 +404,7 @@ class TextArea extends React.Component {
       savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
 
     const props = {}
+    props.className = 'form-control'
     props.name = this.props.data.field_name
     props.minRows = 3
     props.onChange = this.handleChange

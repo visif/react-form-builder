@@ -1,8 +1,13 @@
 import React from 'react'
 import myxss from './myxss'
 
-const convertUnderlineToIns = (html) => {
-  return html.replace(/<u>/g, '<ins>').replace(/<\/u>/g, '</ins>')
+const convertUnderlineToIns = (html) =>
+  html.replace(/<u>/g, '<ins>').replace(/<\/u>/g, '</ins>')
+
+// Strip <p> tags from label text to avoid block elements inside inline <span>/<label>
+const stripPTags = (html) => {
+  if (!html) return html
+  return html.replace(/<p>/gi, '').replace(/<\/p>/gi, '').trim()
 }
 
 const ComponentLabel = (props) => {
@@ -41,6 +46,7 @@ const ComponentLabel = (props) => {
 
   let labelText = myxss.process(props.data.label)
   labelText = convertUnderlineToIns(labelText)
+  labelText = stripPTags(labelText)
   if (props.data.formularKey && props.preview) {
     labelText = `${labelText} (${props.data.formularKey})`
   }
