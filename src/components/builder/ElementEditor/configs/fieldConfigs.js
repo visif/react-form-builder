@@ -1,14 +1,14 @@
+import DynamicColumnList from '../DynamicColumnList'
+import DynamicOptionList from '../DynamicOptionList'
 import DataSourceEditor from '../editors/specific/DataSourceEditor'
 import FormLinkEditor from '../editors/specific/FormLinkEditor'
 import ImageEditor from '../editors/specific/ImageEditor'
 import LabelEditor from '../editors/specific/LabelEditor'
 import RangeEditor from '../editors/specific/RangeEditor'
+import ReactQuillEditor from '../editors/specific/ReactQuillEditor'
 import SelectFieldEditor from '../editors/specific/SelectFieldEditor'
 import SignatureEditor from '../editors/specific/SignatureEditor'
 import TextFieldEditor from '../editors/specific/TextFieldEditor'
-import ReactQuillEditor from '../editors/specific/ReactQuillEditor'
-import DynamicColumnList from '../DynamicColumnList'
-import DynamicOptionList from '../DynamicOptionList'
 import FixedRowList from '../FixedRowList'
 
 /**
@@ -26,12 +26,8 @@ export const buildFieldConfigs = ({
   onContentChange,
   updateElement,
 }) => {
-  const {
-    canHaveDisplayHorizontal,
-    canHaveOptionCorrect,
-    canHaveOptionValue,
-    canHaveInfo,
-  } = props.element
+  const { canHaveDisplayHorizontal, canHaveOptionCorrect, canHaveOptionValue, canHaveInfo } =
+    props.element
 
   return [
     // Rich text content editor (for Paragraph, Header, etc.)
@@ -126,20 +122,6 @@ export const buildFieldConfigs = ({
         element: props.element,
         onChange: editElementProp,
         onBlur: updateElement,
-      },
-    },
-
-    // Question description field
-    {
-      condition: () => props.element.showDescription,
-      component: TextFieldEditor,
-      props: {
-        id: 'questionDescription',
-        label: 'Description',
-        value: props.element.description,
-        onChange: (e) => editElementProp('description', 'value', e),
-        onBlur: updateElement,
-        multiline: true,
       },
     },
 
