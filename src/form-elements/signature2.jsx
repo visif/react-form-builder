@@ -117,11 +117,13 @@ class Signature2 extends React.Component {
     const savedEditor = this.props.editor
     const hasValue = this.state.isSigned
 
-    // Allow editing if no value exists OR if user is the same editor
+    // Allow editing if no value exists OR if user is the same editor/signer
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && hasValue && !!userProperties) {
       isSameEditor =
-        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
+        userProperties.userId === savedEditor.userId ||
+        userProperties.userId === this.state.signedPersonId ||
+        userProperties.hasDCCRole === true
     }
 
     // Create tooltip text showing editor name
