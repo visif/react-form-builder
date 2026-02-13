@@ -83,7 +83,7 @@ const Preview = (props) => {
     setAnswerData({})
     seq = 0
 
-    store.subscribe((state) => {
+    const unsubscribe = store.subscribe((state) => {
       _onChange(state.payload)
     })
 
@@ -99,6 +99,9 @@ const Preview = (props) => {
 
     return () => {
       document.removeEventListener('mousedown', editModeOff)
+      if (typeof unsubscribe === 'function') {
+        unsubscribe()
+      }
     }
   }, [])
 
