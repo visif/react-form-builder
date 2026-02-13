@@ -173,9 +173,10 @@ class Signature2 extends React.Component {
               maxWidth: '100%',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
+              whiteSpace: this.state.isError ? 'normal' : 'nowrap',
               fontSize: 'clamp(12px, 100%, 16px)',
-              letterSpacing: '-2px',
+              letterSpacing: this.state.isError ? 'normal' : '-2px',
+              lineHeight: 1.2,
             }}
           >
             {this.state.isError ? 'You have no permission to sign' : '__________________'}
