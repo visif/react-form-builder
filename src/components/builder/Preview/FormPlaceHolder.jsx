@@ -1,46 +1,46 @@
+/**
+ * PlaceHolder - Drop target shown at the bottom of the preview area.
+ * Acts as a catch-all zone so items can always be appended to the form.
+ */
 import React from 'react'
-import { useDrop } from 'react-dnd'
+
 import PropTypes from 'prop-types'
+
+import { useDrop } from 'react-dnd'
+
 import ItemTypes from '../../../constants/itemTypes'
 
 const PLACE_HOLDER = 'form-place-holder'
 
-const PlaceHolder = ({
-  text = 'Dropzone',
-  show = false,
-  index,
-  moveCard,
-  insertCard,
-  id,
-}) => {
+const PlaceHolder = ({ text = 'Dropzone', show = false, index, moveCard, insertCard }) => {
   const [{ isOver }, drop] = useDrop({
     accept: [ItemTypes.CARD, ItemTypes.BOX],
     drop: (item, monitor) => {
-      if (monitor.didDrop()) {
-        return
-      }
-      const dragIndex = item.index
+      if (monitor.didDrop()) return
+
       const hoverIndex = index
 
-      // Restore items dragged out of a multi-column cell into the main container
-      if (item.data && item.data.parentId && typeof insertCard === 'function') {
+      // Restore child items dragged out of a multi-column cell
+      if (item.data?.parentId && typeof insertCard === 'function') {
         insertCard(item, hoverIndex, item.id)
         return
       }
 
-      // Treat toolbar items as new regardless of dragIndex (it may be updated during hover)
-      if (typeof item.onCreate === 'function') {
+      // New toolbar items — create and insert
+      if (item.isNew || typeof item.onCreate === 'function') {
+        if (item.isProcessed) return
+        if (typeof item.onCreate !== 'function') return
+
         const newItem = item.onCreate(item.data)
         if (newItem) {
+          item.isProcessed = true
           insertCard(newItem, hoverIndex)
         }
         return
       }
 
-      // Move existing items; pass ID for safer lookup
-      if (typeof moveCard === 'function') {
-        moveCard(dragIndex, hoverIndex, item.id)
-      }
+      // Move an existing item to this position
+      moveCard?.(item.index, hoverIndex, item.id)
     },
     collect: (monitor) => ({
       isOver: monitor.isOver(),
@@ -69,7 +69,6 @@ PlaceHolder.propTypes = {
   index: PropTypes.number,
   moveCard: PropTypes.func,
   insertCard: PropTypes.func,
-  id: PropTypes.string,
 }
 
 export default PlaceHolder

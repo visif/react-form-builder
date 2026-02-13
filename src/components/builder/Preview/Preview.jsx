@@ -24,9 +24,13 @@
  * @requires useUndoRedo hook for undo/redo state management
  */
 import React, { useEffect, useRef, useState } from 'react'
+
 import { RedoOutlined, UndoOutlined } from '@ant-design/icons'
 import { Button } from 'antd'
 import update from 'immutability-helper'
+import { useDrop } from 'react-dnd'
+
+import ItemTypes from '../../../constants/itemTypes'
 import store from '../../../contexts/FormBuilderContext'
 import useUndoRedo, { ACTION } from '../../../hooks/useUndoRedo'
 import FormElementsEdit from '../ElementEditor/FormElementsEdit'
@@ -61,8 +65,7 @@ const defaultGetDataSource = (data) => {
 }
 const defaultOnUploadFile = (file) => `${file.name}-${Math.random() * 10000000}`
 const defaultOnUploadImage = (file) => `path/${file.name}-${Math.random() * 10000000}`
-const defaultOnDownloadFile = (file) =>
-  `download_${file.name}-${Math.random() * 10000000}`
+const defaultOnDownloadFile = (file) => `download_${file.name}-${Math.random() * 10000000}`
 
 const Preview = (props) => {
   const [data, setData] = useState([])
@@ -174,11 +177,7 @@ const Preview = (props) => {
   }
 
   const swapChildren = (item, child, row, col) => {
-    if (
-      child.row !== undefined &&
-      child.col !== undefined &&
-      item.id !== child.parentId
-    ) {
+    if (child.row !== undefined && child.col !== undefined && item.id !== child.parentId) {
       return false
     }
 
@@ -463,7 +462,7 @@ const Preview = (props) => {
     if (parent && oldItem) {
       const newIndex = data.indexOf(oldItem)
       const newData = [...data]
-       if (Array.isArray(parent.childItems)) {
+      if (Array.isArray(parent.childItems)) {
         if (Array.isArray(parent.childItems[0])) {
           if (oldItem.row !== undefined && oldItem.col !== undefined) {
             parent.childItems[oldItem.row][oldItem.col] = null
@@ -637,8 +636,7 @@ const Preview = (props) => {
       // Check if this is a user selection change (not structure change)
       // For RadioButtons and Checkboxes, we don't want to sync the checked/selected states
       const isSelectionChange =
-        (changedElement.element === 'RadioButtons' ||
-          changedElement.element === 'Checkboxes') &&
+        (changedElement.element === 'RadioButtons' || changedElement.element === 'Checkboxes') &&
         changedElement.options &&
         changedElement.options.some((opt) => opt.checked)
 
@@ -677,10 +675,7 @@ const Preview = (props) => {
         ]
 
         commonProps.forEach((prop) => {
-          if (
-            changedElement[prop] !== undefined &&
-            changedElement[prop] !== itemData[prop]
-          ) {
+          if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
             updatedItem[prop] = changedElement[prop]
             changed = true
           }
@@ -740,17 +735,12 @@ const Preview = (props) => {
             }
 
             // Sync capability flags but don't sync individual option selections
-            ;['canHaveOptionCorrect', 'canHaveOptionValue', 'canHaveInfo'].forEach(
-              (prop) => {
-                if (
-                  changedElement[prop] !== undefined &&
-                  changedElement[prop] !== itemData[prop]
-                ) {
-                  updatedItem[prop] = changedElement[prop]
-                  changed = true
-                }
+            ;['canHaveOptionCorrect', 'canHaveOptionValue', 'canHaveInfo'].forEach((prop) => {
+              if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
+                updatedItem[prop] = changedElement[prop]
+                changed = true
               }
-            )
+            })
             break
           case 'TextInput':
           case 'NumberInput':
@@ -767,10 +757,7 @@ const Preview = (props) => {
           case 'DatePicker':
             // Sync date-specific properties
             ;['showTimeSelect', 'showTimeSelectOnly', 'defaultToday'].forEach((prop) => {
-              if (
-                changedElement[prop] !== undefined &&
-                changedElement[prop] !== itemData[prop]
-              ) {
+              if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
                 updatedItem[prop] = changedElement[prop]
                 changed = true
               }
@@ -779,22 +766,14 @@ const Preview = (props) => {
 
           case 'Range':
             // Sync range-specific properties
-            ;[
-              'min_value',
-              'max_value',
-              'step',
-              'default_value',
-              'min_label',
-              'max_label',
-            ].forEach((prop) => {
-              if (
-                changedElement[prop] !== undefined &&
-                changedElement[prop] !== itemData[prop]
-              ) {
-                updatedItem[prop] = changedElement[prop]
-                changed = true
+            ;['min_value', 'max_value', 'step', 'default_value', 'min_label', 'max_label'].forEach(
+              (prop) => {
+                if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
+                  updatedItem[prop] = changedElement[prop]
+                  changed = true
+                }
               }
-            })
+            )
             break
 
           case 'Signature':
@@ -806,10 +785,7 @@ const Preview = (props) => {
             break
           case 'Image':
             ;['center', 'width', 'height'].forEach((prop) => {
-              if (
-                changedElement[prop] !== undefined &&
-                changedElement[prop] !== itemData[prop]
-              ) {
+              if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
                 updatedItem[prop] = changedElement[prop]
                 changed = true
               }
@@ -820,10 +796,7 @@ const Preview = (props) => {
           case 'Header':
             // Sync text styling properties
             ;['bold', 'italic', 'content'].forEach((prop) => {
-              if (
-                changedElement[prop] !== undefined &&
-                changedElement[prop] !== itemData[prop]
-              ) {
+              if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
                 updatedItem[prop] = changedElement[prop]
                 changed = true
               }
@@ -833,10 +806,7 @@ const Preview = (props) => {
           case 'FormulaInput':
             // Sync formula properties
             ;['formula', 'formularKey'].forEach((prop) => {
-              if (
-                changedElement[prop] !== undefined &&
-                changedElement[prop] !== itemData[prop]
-              ) {
+              if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
                 updatedItem[prop] = changedElement[prop]
                 changed = true
               }
@@ -856,10 +826,7 @@ const Preview = (props) => {
             } else {
               // Sync structural properties like sourceType, formSource, etc.
               ;['sourceType', 'formSource'].forEach((prop) => {
-                if (
-                  changedElement[prop] !== undefined &&
-                  changedElement[prop] !== itemData[prop]
-                ) {
+                if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
                   updatedItem[prop] = changedElement[prop]
                   changed = true
                 }
@@ -969,8 +936,48 @@ const Preview = (props) => {
     .filter((item) => !!item && !item.parentId)
     .map((item, index) => getElement(item, index))
 
-  console.log('Current Items: ')
-  console.log(data)
+  // The Sortable container is itself a drop target so toolbar items can be dropped
+  // in the gaps between elements (where no child drop target exists).
+  const sortableRef = useRef(null)
+
+  const [{ isOverSortable }, sortableDrop] = useDrop({
+    accept: [ItemTypes.CARD, ItemTypes.BOX],
+    drop: (item, monitor) => {
+      if (monitor.didDrop()) return
+      if (!item.isNew || !item.data || item.isProcessed) return
+      if (typeof item.onCreate !== 'function') return
+
+      const newItem = item.onCreate(item.data)
+      if (!newItem) return
+
+      item.isProcessed = true
+
+      // Walk child elements to find the right insertion index from cursor Y
+      const el = sortableRef.current
+      let insertIndex = items.length
+
+      if (el) {
+        const clientY = monitor.getClientOffset().y
+        for (let i = 0; i < el.children.length; i++) {
+          const rect = el.children[i].getBoundingClientRect()
+          if (clientY < rect.top + rect.height / 2) {
+            insertIndex = i
+            break
+          }
+        }
+      }
+
+      insertCard(newItem, insertIndex)
+    },
+    collect: (monitor) => ({
+      isOverSortable: monitor.isOver({ shallow: true }),
+    }),
+  })
+
+  const combinedSortableRef = (el) => {
+    sortableRef.current = el
+    sortableDrop(el)
+  }
 
   return (
     <div className={classes} style={{ height: '100%', scrollbarWidth: 'none' }}>
@@ -1012,7 +1019,17 @@ const Preview = (props) => {
       <div className="edit-form" ref={editForm}>
         {props.editElement !== null && showEditForm()}
       </div>
-      <div className="Sortable">{items}</div>
+      <div
+        className="Sortable"
+        ref={combinedSortableRef}
+        style={{
+          minHeight: '200px',
+          transition: 'background-color 0.2s',
+          backgroundColor: isOverSortable ? '#f0f8ff' : 'transparent',
+        }}
+      >
+        {items}
+      </div>
       <SortableFormElements.PlaceHolder
         id="form-place-holder"
         show={items.length === 0}

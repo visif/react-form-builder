@@ -1,6 +1,17 @@
+/**
+ * SortableElement - Higher-order component that adds drag-and-drop behavior
+ *
+ * Wraps form elements to make them draggable and droppable within the preview.
+ * Handles both reordering existing elements and inserting new ones from the toolbar.
+ *
+ * @module SortableElement
+ */
 import React, { useRef } from 'react'
-import { useDrag, useDrop } from 'react-dnd'
+
 import PropTypes from 'prop-types'
+
+import { useDrag, useDrop } from 'react-dnd'
+
 import ItemTypes from '../../../constants/itemTypes'
 
 const cardStyle = {
@@ -28,11 +39,9 @@ const withDragAndDrop = (ComposedComponent) => {
         collect: (monitor) => ({
           isDragging: monitor.isDragging(),
         }),
-        end: (item, monitor) => {
-          // Reset the isProcessed flag when drag ends to allow subsequent drags
+        end: (item) => {
           if (item) {
             delete item.isProcessed
-            // Reset index for toolbar items to allow re-dragging
             if (item.index === -1 || item.onCreate) {
               item.index = -1
             }
@@ -48,61 +57,60 @@ const withDragAndDrop = (ComposedComponent) => {
         drop: (item, monitor) => {
           if (!ref.current) return
           if (monitor.didDrop()) return
-          const dragIndex = item.index
-          const hoverIndex = index
-          if (item.id === id || dragIndex === hoverIndex) {
-            return
-          }
-          console.log('SortableElement: drop', { dragIndex, hoverIndex, item, data })
 
-          // Allow toolbar-created items (dragIndex === -1) to be dropped onto containers.
-          // Only short-circuit for moving existing cards over container elements to avoid unexpected nesting.
-          if (
-            item.itemType === ItemTypes.CARD &&
-            dragIndex !== -1 &&
-            data &&
-            data.isContainer
-          ) {
+          const hoverIndex = index
+
+          // Don't drop on itself (same element ID)
+          if (item.id === id) {
             return
           }
-          // Restore items dragged out of a multi-column cell into the main container
+
+          // For NEW toolbar items: always allow the drop
+          if (item.isNew && item.data) {
+            // Prevent double-processing
+            if (item.isProcessed) return
+
+            const createHandler = typeof item.onCreate === 'function' ? item.onCreate : onCreate
+            if (typeof createHandler !== 'function') return
+
+            const newItem = createHandler(item.data)
+            if (!newItem) return
+
+            item.isProcessed = true
+
+            // Determine insertion position based on cursor location
+            const hoverBoundingRect = ref.current.getBoundingClientRect()
+            const clientOffset = monitor.getClientOffset()
+            const hoverClientY = clientOffset.y - hoverBoundingRect.top
+            const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2
+            const insertIndex = hoverClientY < hoverMiddleY ? hoverIndex : hoverIndex + 1
+
+            if (typeof insertCard === 'function') {
+              insertCard(newItem, insertIndex)
+            }
+            return
+          }
+
+          const dragIndex = item.index
+
+          if (dragIndex === hoverIndex) {
+            return
+          }
+
+          // Prevent dropping INTO containers for existing items
+          if (item.itemType === ItemTypes.CARD && dragIndex !== -1 && data && data.isContainer) {
+            return
+          }
+
+          // Restore items dragged out of a multi-column cell
           if (item.data && item.data.parentId && typeof insertCard === 'function') {
             insertCard(item, hoverIndex, item.id)
             return
           }
 
           // Handle child insertion from toolbar (special case)
-          if (item.data && typeof item.setAsChild === 'function' && dragIndex === -1) {
+          if (item.data && typeof item.setAsChild === 'function') {
             insertCard(item, hoverIndex, item.id)
-            return
-          }
-
-          // If this is a new item dragged from the toolbar, only create/insert on drop
-          if (dragIndex === -1 && item.data) {
-            // Prevent double-processing
-            if (item.isProcessed) return
-            const createHandler =
-              typeof item.onCreate === 'function' ? item.onCreate : onCreate
-            if (typeof createHandler !== 'function') {
-              console.warn(
-                'SortableElement: missing onCreate handler for new item drop',
-                item
-              )
-              return
-            }
-            const newItem = createHandler(item.data)
-            if (!newItem) {
-              console.warn('SortableElement: onCreate handler returned no element', item)
-              return
-            }
-            // Mark processed and set index before insert to avoid races
-            item.isProcessed = true
-            item.index = hoverIndex
-            if (typeof insertCard === 'function') {
-              insertCard(newItem, hoverIndex)
-            } else {
-              console.warn('SortableElement: insertCard is not a function')
-            }
             return
           }
         },
@@ -111,23 +119,19 @@ const withDragAndDrop = (ComposedComponent) => {
           const dragIndex = item.index
           const hoverIndex = index
 
-          // console.log('SortableElement: hover', { dragIndex, hoverIndex, item })
-
           if (item.data && typeof item.setAsChild === 'function') {
             return
           }
+
+          // For NEW toolbar items: just track hover position, no early returns
+          if (item.isNew) {
+            return
+          }
+
           if (dragIndex === hoverIndex) {
             return
           }
           if (dragIndex === undefined || dragIndex === null) {
-            return
-          }
-          if (dragIndex === -1) {
-            if (data && data.isContainer) {
-              return
-            }
-            // Don't create items on hover — only update the intended drop index for placeholder positioning
-            item.index = hoverIndex
             return
           }
 
@@ -143,7 +147,6 @@ const withDragAndDrop = (ComposedComponent) => {
             return
           }
 
-          // Pass the element ID along with indices for ID-based tracking
           moveCard(dragIndex, hoverIndex, item.id)
           item.index = hoverIndex
         },

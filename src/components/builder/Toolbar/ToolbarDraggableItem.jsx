@@ -3,8 +3,8 @@
  */
 import React from 'react'
 
-import { useDrag } from 'react-dnd'
 import * as AntIcons from '@ant-design/icons'
+import { useDrag } from 'react-dnd'
 
 import ItemTypes from '../../../constants/itemTypes'
 import ID from '../../../utils/uuid'
@@ -49,6 +49,7 @@ const ToolbarItem = ({ data, onClick, onCreate }) => {
         index: -1,
         data,
         onCreate,
+        isNew: true,
       }),
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),
