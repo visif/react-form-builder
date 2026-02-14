@@ -9,7 +9,12 @@ class Signature2 extends React.Component {
     this.inputField = React.createRef()
 
     this.state = {
-      defaultValue: props.defaultValue && props.defaultValue.isSigned,
+      // Track last-seen prop values to detect external changes only
+      prevPropsIsSigned: props.defaultValue && props.defaultValue.isSigned,
+      prevPropsSignedPerson: props.defaultValue && props.defaultValue.signedPerson,
+      prevPropsSignedPersonId: props.defaultValue && props.defaultValue.signedPersonId,
+      prevPropsSignedDateTime: props.defaultValue && props.defaultValue.signedDateTime,
+      // Actual state values
       isSigned: props.defaultValue && props.defaultValue.isSigned,
       signedPerson: props.defaultValue && props.defaultValue.signedPerson,
       signedPersonId: props.defaultValue && props.defaultValue.signedPersonId,
@@ -43,16 +48,20 @@ class Signature2 extends React.Component {
       const propsSignedPersonId = props.defaultValue.signedPersonId
       const propsSignedDateTime = props.defaultValue.signedDateTime
 
-      // Check if any signed data has changed
-      const hasChanges =
-        propsIsSigned !== state.defaultValue ||
-        propsSignedPerson !== state.signedPerson ||
-        propsSignedPersonId !== state.signedPersonId ||
-        propsSignedDateTime !== state.signedDateTime
+      // Only sync state when the PROPS themselves have changed (external update),
+      // not when local state differs from props (user interaction).
+      const propsChanged =
+        propsIsSigned !== state.prevPropsIsSigned ||
+        propsSignedPerson !== state.prevPropsSignedPerson ||
+        propsSignedPersonId !== state.prevPropsSignedPersonId ||
+        propsSignedDateTime !== state.prevPropsSignedDateTime
 
-      if (hasChanges) {
+      if (propsChanged) {
         return {
-          defaultValue: propsIsSigned,
+          prevPropsIsSigned: propsIsSigned,
+          prevPropsSignedPerson: propsSignedPerson,
+          prevPropsSignedPersonId: propsSignedPersonId,
+          prevPropsSignedDateTime: propsSignedDateTime,
           isSigned: propsIsSigned,
           isError: false,
           signedPerson: propsSignedPerson,
