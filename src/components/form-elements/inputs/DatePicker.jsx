@@ -73,7 +73,7 @@ const DatePicker = (props) => {
           // Use formatMask for parsing if available
           value = dayjs(props.defaultValue, formatMask).isValid()
             ? dayjs(props.defaultValue, formatMask).toISOString()
-            : dayjs(props.defaultValue).utc(true).toISOString()
+            : dayjs(props.defaultValue).toISOString()
         } catch (error) {
           console.warn('Invalid date value:', props.defaultValue)
           value = null
@@ -181,10 +181,10 @@ const DatePicker = (props) => {
     if (!date) return ''
 
     if (getCalendarType() === 'EN') {
-      return dayjs(date).utc(true).format(mask)
+      return dayjs(date).format(mask)
     } else {
       // Convert to Buddhist calendar (add 543 years)
-      return dayjs(date).utc(true).format(mask.replace('YYYY', 'BBBB'))
+      return dayjs(date).format(mask.replace('YYYY', 'BBBB'))
     }
   }, [])
 
@@ -237,7 +237,7 @@ const DatePicker = (props) => {
               name={inputProps.name}
               ref={inputProps.ref}
               onChange={handleChange}
-              value={value ? dayjs(value).utc(true) : null}
+              value={value ? dayjs(value) : null}
               format={(val) => formatDate(val, formatMask)}
               showTime={showTimeSelect ? { format: 'HH:mm', showSecond: false } : null}
               disabled={!isSameEditor || loading}
@@ -249,7 +249,7 @@ const DatePicker = (props) => {
               name={inputProps.name}
               ref={inputProps.ref}
               onChange={handleTimeChange}
-              value={value ? dayjs(value).utc(true) : null}
+              value={value ? dayjs(value) : null}
               disabled={!isSameEditor || loading}
               placeholder={placeholder}
               style={{ width: '100%' }}

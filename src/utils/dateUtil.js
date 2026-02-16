@@ -33,9 +33,9 @@ export const formatDate = (date) => {
   const format = getDateFormat()
 
   if (getCalendarType() === 'EN') {
-    return dayjs(date).utc(true).format(format)
+    return dayjs(date).format(format)
   } else {
     // Use Buddhist Era (BBBB) formatting
-    return dayjs(date).utc(true).format(format.replace('YYYY', 'BBBB'))
+    return dayjs(date).format(format.replace('YYYY', 'BBBB'))
   }
 }
