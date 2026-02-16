@@ -243,8 +243,8 @@ export function getStoreInstance() {
             if (!currentState.payload.data) {
               currentState.payload.data = []
             }
-            currentState.payload.data.push(payload)
-            currentState = { ...currentState }
+            const newData = [...currentState.payload.data, payload]
+            currentState = { payload: { data: newData, action: undefined } }
             subscribers.forEach((cb) => cb(currentState))
             if (onPost) {
               Promise.resolve(onPost({ task_data: currentState.payload.data })).catch((error) =>
@@ -263,8 +263,8 @@ export function getStoreInstance() {
             }
             const index = currentState.payload.data.indexOf(payload)
             if (index > -1) {
-              currentState.payload.data.splice(index, 1)
-              currentState = { ...currentState }
+              const newData = currentState.payload.data.filter((item) => item !== payload)
+              currentState = { payload: { data: newData, action: undefined } }
               subscribers.forEach((cb) => cb(currentState))
               if (onPost) {
                 Promise.resolve(onPost({ task_data: currentState.payload.data })).catch((error) =>

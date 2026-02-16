@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import store from '../contexts/FormBuilderContext'
 
@@ -7,68 +7,94 @@ export const ACTION = {
   REDO: 'redo',
 }
 
-const useUndoRedo = () => {
-  const [currentState, setCurrentState] = useState([])
-  const [history, setHistory] = useState([currentState])
-  const [index, setIndex] = useState(0)
-
-  const updateState = (newState, historyIndex) => {
-    let currentStateIndex = history.length
-    setHistory((currentHistory) => {
-      console.log('history index: ', historyIndex)
-      const newHistory = currentHistory //.slice(historyIndex + 1);
-      currentStateIndex = newHistory.length
-      return [...newHistory, [...newState]]
-    })
-    setIndex(() => {
-      return currentStateIndex
-    })
-    setCurrentState(newState)
+/**
+ * Deep clone an array of state objects so that history entries
+ * are isolated from later in-place mutations.
+ */
+const cloneState = (state) => {
+  try {
+    return JSON.parse(JSON.stringify(state))
+  } catch {
+    return [...state]
   }
+}
 
-  const undo = () => {
-    if (index > 0) {
-      setIndex(index - 1)
-      setCurrentState(history[index - 1])
+const useUndoRedo = () => {
+  // Use refs for history and index so undo/redo always see
+  // the latest values and avoid stale-closure bugs.
+  const historyRef = useRef([[]])
+  const indexRef = useRef(0)
+
+  // A counter used solely to trigger re-renders after ref mutations.
+  const [, setRenderTick] = useState(0)
+  const triggerRender = useCallback(() => setRenderTick((n) => n + 1), [])
+
+  const updateState = useCallback(
+    (newState) => {
+      // Truncate any "future" history beyond the current index,
+      // then append the new state. This is the standard undo/redo
+      // behaviour: making a new change after an undo discards the
+      // redo stack.
+      const truncated = historyRef.current.slice(0, indexRef.current + 1)
+      const cloned = cloneState(newState)
+      historyRef.current = [...truncated, cloned]
+      indexRef.current = historyRef.current.length - 1
+      triggerRender()
+    },
+    [triggerRender]
+  )
+
+  const undo = useCallback(() => {
+    if (indexRef.current > 0) {
+      indexRef.current -= 1
+      const previousState = historyRef.current[indexRef.current] || []
+      triggerRender()
       store.dispatch('update', {
-        data: history[index - 1] || [],
+        data: cloneState(previousState),
         action: ACTION.UNDO,
       })
     }
-  }
+  }, [triggerRender])
 
-  const redo = () => {
-    if (index < history.length - 1) {
-      setIndex(index + 1)
-      setCurrentState(history[index + 1])
+  const redo = useCallback(() => {
+    if (indexRef.current < historyRef.current.length - 1) {
+      indexRef.current += 1
+      const nextState = historyRef.current[indexRef.current] || []
+      triggerRender()
       store.dispatch('update', {
-        data: history[index + 1] || [],
+        data: cloneState(nextState),
         action: ACTION.REDO,
       })
     }
-  }
+  }, [triggerRender])
 
-  // Example: Listen for keyboard events
+  // Keyboard shortcuts (Ctrl/Cmd+Z = undo, Ctrl/Cmd+Shift+Z / Ctrl/Cmd+Y = redo)
   useEffect(() => {
     const handleKeyPress = (event) => {
-      if (event.ctrlKey && event.key === 'z') {
-        undo()
-      } else if (event.ctrlKey && event.key === 'y') {
+      const mod = event.ctrlKey || event.metaKey
+      if (mod && event.key === 'z') {
+        event.preventDefault()
+        if (event.shiftKey) {
+          redo()
+        } else {
+          undo()
+        }
+      } else if (mod && event.key === 'y') {
+        event.preventDefault()
         redo()
       }
     }
 
     document.addEventListener('keydown', handleKeyPress)
-
     return () => {
       document.removeEventListener('keydown', handleKeyPress)
     }
-  }, [index, undo, redo])
+  }, [undo, redo])
 
   return {
-    index,
-    currentState,
-    history,
+    index: indexRef.current,
+    currentState: historyRef.current[indexRef.current] || [],
+    history: historyRef.current,
     updateState,
     undo,
     redo,

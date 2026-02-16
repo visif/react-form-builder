@@ -72,7 +72,11 @@ const Preview = (props) => {
   const [answerData, setAnswerData] = useState({})
   const editForm = useRef(null)
 
-  const { index: historyIndex, updateState } = useUndoRedo()
+  const { updateState, undo, redo } = useUndoRedo()
+
+  // Keep a ref to the latest _onChange so the subscription always calls
+  // the current version, avoiding stale-closure bugs.
+  const onChangeRef = useRef(null)
 
   let seq = 0
 
@@ -84,7 +88,7 @@ const Preview = (props) => {
     seq = 0
 
     const unsubscribe = store.subscribe((state) => {
-      _onChange(state.payload)
+      onChangeRef.current(state.payload)
     })
 
     store.dispatch('load', { loadUrl: url, saveUrl, data: data || [] })
@@ -157,10 +161,12 @@ const Preview = (props) => {
     }
 
     if (action !== ACTION.UNDO && action !== ACTION.REDO) {
-      console.log('history index before: ', historyIndex)
-      updateState(data, historyIndex)
+      updateState(data)
     }
   }
+
+  // Always keep the ref pointing to the latest _onChange
+  onChangeRef.current = _onChange
 
   const _onDestroy = (item) => {
     if (item.childItems) {
@@ -994,28 +1000,10 @@ const Preview = (props) => {
           borderBottom: '1px solid #d9d9d9',
         }}
       >
-        <Button
-          icon={<UndoOutlined />}
-          onClick={() => {
-            const event = new KeyboardEvent('keydown', {
-              key: 'z',
-              ctrlKey: true,
-            })
-            document.dispatchEvent(event)
-          }}
-        >
+        <Button icon={<UndoOutlined />} onClick={undo}>
           Undo
         </Button>
-        <Button
-          icon={<RedoOutlined style={{ transform: 'scaleX(-1)' }} />}
-          onClick={() => {
-            const event = new KeyboardEvent('keydown', {
-              key: 'y',
-              ctrlKey: true,
-            })
-            document.dispatchEvent(event)
-          }}
-        >
+        <Button icon={<RedoOutlined style={{ transform: 'scaleX(-1)' }} />} onClick={redo}>
           Redo
         </Button>
       </div>
