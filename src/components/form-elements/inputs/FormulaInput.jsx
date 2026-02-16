@@ -79,6 +79,40 @@ const FormulaInput = (props) => {
   valueRef.current = value
   isUpdatingRef.current = isUpdating
 
+  /**
+   * Extract the variable names actually referenced in a formula string.
+   * hot-formula-parser variables are bare identifiers like s_1, total, etc.
+   */
+  const getFormulaVarNames = useCallback((formulaStr) => {
+    if (!formulaStr) return []
+    // Match identifiers that are NOT pure numbers and NOT known function names
+    const tokens = formulaStr.match(/[A-Za-z_]\w*/g) || []
+    // Deduplicate
+    return [...new Set(tokens)]
+  }, [])
+
+  /**
+   * Publish the composite { formula, value, variables } to FormContext
+   * using field_name so collectFormData can pick it up on submit.
+   * Only includes variables that the formula actually references.
+   */
+  const publishValue = useCallback(
+    (f, v, vars) => {
+      if (handleChange && data?.field_name) {
+        // Filter variables to only those referenced in the formula
+        const usedNames = getFormulaVarNames(f)
+        const filteredVars = {}
+        usedNames.forEach((name) => {
+          if (vars[name] !== undefined) {
+            filteredVars[name] = vars[name]
+          }
+        })
+        handleChange(data.field_name, { formula: f, value: v, variables: filteredVars })
+      }
+    },
+    [handleChange, data?.field_name, getFormulaVarNames]
+  )
+
   // ---------------------------------------------------------------
   // getDerivedStateFromProps equivalent — sync state from props
   // ---------------------------------------------------------------
@@ -91,9 +125,12 @@ const FormulaInput = (props) => {
       defaultValue.value !== null &&
       defaultValue.value !== undefined
     ) {
-      if (defaultValue.formula) setFormula(defaultValue.formula)
-      if (defaultValue.variables) setVariables(defaultValue.variables)
+      const newFormula = defaultValue.formula || formula
+      const newVars = defaultValue.variables || variables
+      if (defaultValue.formula) setFormula(newFormula)
+      if (defaultValue.variables) setVariables(newVars)
       setValue(defaultValue.value)
+      publishValue(newFormula, defaultValue.value, newVars)
     }
   }, [defaultValue]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -112,8 +149,14 @@ const FormulaInput = (props) => {
       setFormula(data.formula)
       setVariables(merged)
       setValue(newValue)
+      publishValue(data.formula, newValue, merged)
     }
   }, [data?.formula, incomingVars]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 3. Publish initial value on mount
+  useEffect(() => {
+    publishValue(formula, value, variables)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---------------------------------------------------------------
   // processVariableChange (called by debounced emitter handler)
@@ -155,6 +198,9 @@ const FormulaInput = (props) => {
       setVariables(newVariables)
       setValue(newValue)
       setIsUpdating(false)
+
+      // Always publish the composite value for form submission
+      publishValue(currentFormula, newValue, newVariables)
 
       // Propagate change via handleChange if the value actually changed
       const { formularKey } = data

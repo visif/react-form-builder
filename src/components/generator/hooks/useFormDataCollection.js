@@ -73,6 +73,8 @@ export const useFormDataCollection = (props, inputsRef, getItemValue, getEditor)
           hasValue = Array.isArray(contextValue) && contextValue.some((row) => row.some((val) => !!val))
         } else if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
           hasValue = Array.isArray(contextValue) && contextValue.length > 0
+        } else if (item.element === 'FormulaInput') {
+          hasValue = contextValue?.value !== undefined && contextValue?.value !== ''
         } else {
           hasValue = !!contextValue
         }
@@ -121,6 +123,8 @@ export const useFormDataCollection = (props, inputsRef, getItemValue, getEditor)
             itemData.value = { isSigned: false }
           } else if (item.element === 'Table') {
             itemData.value = []
+          } else if (item.element === 'FormulaInput') {
+            itemData.value = { formula: item.formula || '', value: '', variables: {} }
           } else {
             itemData.value = ''
           }

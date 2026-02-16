@@ -241,12 +241,28 @@ const ReactForm = (props) => {
     (propKey, value) => {
       // Find the item — propKey may be either a formularKey or a field_name
       const item = props.data.find((d) => d.field_name === propKey || d.formularKey === propKey)
-
-      // Always store under field_name so collectFormData can find it
       const fieldName = item?.field_name || propKey
-      formContext.updateValue(fieldName, value)
 
-      // Also update the formula variable system if this field participates
+      // Detect composite formula value from FormulaInput's publishValue:
+      // { formula: "...", value: 16, variables: { s_1: 6 } }
+      // Store it for form submission only — do NOT feed it into the variable system.
+      const isCompositeFormula =
+        value !== null && typeof value === 'object' && 'formula' in value && 'variables' in value
+      if (isCompositeFormula) {
+        formContext.updateValue(fieldName, value)
+        return
+      }
+
+      // When a FormulaInput propagates its numeric result for formula-chaining
+      // (called with formularKey, not field_name), only update the variable —
+      // don't overwrite the composite submission value already stored above.
+      if (item?.element === 'FormulaInput' && propKey !== fieldName) {
+        formContext.updateVariable(propKey, value)
+        return
+      }
+
+      // Regular input: store value AND update formula variable
+      formContext.updateValue(fieldName, value)
       const varKey = item?.formularKey || propKey
       formContext.updateVariable(varKey, value)
     },
