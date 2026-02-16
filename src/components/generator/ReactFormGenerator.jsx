@@ -60,20 +60,20 @@
  * @requires hot-formula-parser for formula fields
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Button } from 'antd'
+
 import ReactDOM from 'react-dom'
+
+import { Button } from 'antd'
 
 import { FormProvider, useFormContext } from '../../contexts/FormContext'
 import FormValidator from './FormValidator'
-
-// Hooks
-import { useFormValidation } from './hooks/useFormValidation'
 import { useFormDataCollection } from './hooks/useFormDataCollection'
 import { useFormulaVariables } from './hooks/useFormulaVariables'
-
-// Utils
-import { convertAnswerData, getVariableValueHelper, getItemValue } from './utils/formHelpers'
+// Hooks
+import { useFormValidation } from './hooks/useFormValidation'
 import { renderFormElement } from './utils/formElementRenderer'
+// Utils
+import { convertAnswerData, getItemValue, getVariableValueHelper } from './utils/formHelpers'
 
 const ReactForm = (props) => {
   // Refs
@@ -102,8 +102,8 @@ const ReactForm = (props) => {
 
     // Also update FormContext values with answer data
     // Need to convert checkbox/radio values to proper format
-    Object.keys(ansData).forEach(key => {
-      const item = props.data.find(d => d.field_name === key)
+    Object.keys(ansData).forEach((key) => {
+      const item = props.data.find((d) => d.field_name === key)
       let value = ansData[key]
 
       // Convert simple arrays to checkbox/radio format
@@ -114,28 +114,30 @@ const ReactForm = (props) => {
             formContext.updateValue(key, value)
           } else {
             // Convert simple array to object format
-            const convertedValue = value.map(val => {
-              const matchingOption = item.options?.find(opt =>
-                opt.value === val || opt.key === val || opt.text === val
+            const convertedValue = value.map((val) => {
+              const matchingOption = item.options?.find(
+                (opt) => opt.value === val || opt.key === val || opt.text === val
               )
               return {
                 key: matchingOption?.key || val,
                 value: val,
-                info: ''
+                info: '',
               }
             })
             formContext.updateValue(key, convertedValue)
           }
         } else if (typeof value === 'string' || typeof value === 'number') {
           // Single value for radio button
-          const matchingOption = item.options?.find(opt =>
-            opt.value === value || opt.key === value
+          const matchingOption = item.options?.find(
+            (opt) => opt.value === value || opt.key === value
           )
-          formContext.updateValue(key, [{
-            key: matchingOption?.key || value,
-            value: value,
-            info: ''
-          }])
+          formContext.updateValue(key, [
+            {
+              key: matchingOption?.key || value,
+              value: value,
+              info: '',
+            },
+          ])
         } else {
           formContext.updateValue(key, value)
         }
@@ -172,35 +174,41 @@ const ReactForm = (props) => {
       // For Checkboxes and RadioButtons, convert array values to proper format
       if (defaultValue && (item.element === 'Checkboxes' || item.element === 'RadioButtons')) {
         // If defaultValue is already in the correct format [{key, value}], use it
-        if (Array.isArray(defaultValue) && defaultValue.length > 0 && typeof defaultValue[0] === 'object') {
+        if (
+          Array.isArray(defaultValue) &&
+          defaultValue.length > 0 &&
+          typeof defaultValue[0] === 'object'
+        ) {
           return defaultValue
         }
 
         // If defaultValue is a simple array like ['tech', 'music'], convert it
         if (Array.isArray(defaultValue)) {
-          return defaultValue.map(val => {
+          return defaultValue.map((val) => {
             // Find the matching option to get the key
-            const matchingOption = item.options?.find(opt =>
-              opt.value === val || opt.key === val || opt.text === val
+            const matchingOption = item.options?.find(
+              (opt) => opt.value === val || opt.key === val || opt.text === val
             )
             return {
               key: matchingOption?.key || val,
               value: val,
-              info: ''
+              info: '',
             }
           })
         }
 
         // If defaultValue is a single value, wrap it in array
         if (typeof defaultValue === 'string' || typeof defaultValue === 'number') {
-          const matchingOption = item.options?.find(opt =>
-            opt.value === defaultValue || opt.key === defaultValue
+          const matchingOption = item.options?.find(
+            (opt) => opt.value === defaultValue || opt.key === defaultValue
           )
-          return [{
-            key: matchingOption?.key || defaultValue,
-            value: defaultValue,
-            info: ''
-          }]
+          return [
+            {
+              key: matchingOption?.key || defaultValue,
+              value: defaultValue,
+              info: '',
+            },
+          ]
         }
       }
 
@@ -231,13 +239,16 @@ const ReactForm = (props) => {
   // Handle input changes and update variables via context
   const handleChange = useCallback(
     (propKey, value) => {
-      // Update the form context with the new value
-      formContext.updateValue(propKey, value)
-      // Update variable if this field has a formularKey
-      const item = props.data.find((d) => d.field_name === propKey)
-      if (item?.formularKey) {
-        formContext.updateVariable(item.formularKey, value)
-      }
+      // Find the item — propKey may be either a formularKey or a field_name
+      const item = props.data.find((d) => d.field_name === propKey || d.formularKey === propKey)
+
+      // Always store under field_name so collectFormData can find it
+      const fieldName = item?.field_name || propKey
+      formContext.updateValue(fieldName, value)
+
+      // Also update the formula variable system if this field participates
+      const varKey = item?.formularKey || propKey
+      formContext.updateVariable(varKey, value)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [props.data]
@@ -251,12 +262,7 @@ const ReactForm = (props) => {
     getEditor
   )
 
-  const { validateForm } = useFormValidation(
-    props,
-    inputsRef,
-    getItemValue,
-    collectFormItems
-  )
+  const { validateForm } = useFormValidation(props, inputsRef, getItemValue, collectFormItems)
 
   useFormulaVariables(props, setAnswerData)
 
