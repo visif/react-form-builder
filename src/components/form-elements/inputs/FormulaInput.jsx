@@ -1,229 +1,236 @@
-import React, { Component } from 'react'
-import { Input } from 'antd'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import PropTypes from 'prop-types'
 
+import { Input } from 'antd'
 import { Parser } from 'hot-formula-parser'
 
 import debounce from '../../../utils/debounce'
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
 
-class FormulaInput extends Component {
-  constructor(props) {
-    super(props)
-
-    let newValue = ''
-    if (props.data?.formula && props.variables) {
-      const parser = new Parser()
-      Object.entries(props.variables).forEach(([key, value]) => {
-        const parsedValue = parseFloat(value)
-        if (!Number.isNaN(parsedValue)) {
-          parser.setVariable(key, parsedValue)
-        }
-      })
-      const parseResult = parser.parse(props.data.formula)
-      newValue = parseResult?.result || ''
+/**
+ * Evaluate a formula string against a set of variables.
+ * Returns the computed result, or fallback if parsing fails.
+ */
+const evaluateFormula = (formula, variables, fallback = '') => {
+  const parser = new Parser()
+  Object.entries(variables).forEach(([key, val]) => {
+    const num = parseFloat(val)
+    if (!Number.isNaN(num)) {
+      parser.setVariable(key, num)
     }
+  })
+  const result = parser.parse(formula)
+  return result?.result ?? fallback
+}
 
-    this.state = {
-      error: '',
-      formula: props.data?.formula || '',
-      variables: props.variables || {},
-      value: newValue,
-      isUpdating: false,
-    }
+/**
+ * Shallow-compare two variable objects, treating values as floats.
+ * Returns true when they differ.
+ */
+const variablesHaveChanged = (incoming, previous) => {
+  const inKeys = Object.keys(incoming)
+  const prevKeys = Object.keys(previous)
+  if (inKeys.length !== prevKeys.length) return true
+  return inKeys.some((k) => {
+    const a = parseFloat(incoming[k])
+    const b = parseFloat(previous[k])
+    if (Number.isNaN(a) && Number.isNaN(b)) return false
+    if (Number.isNaN(a) || Number.isNaN(b)) return true
+    return Math.abs(a - b) > 0.0001
+  })
+}
 
-    this.handleVariableChange = this.handleVariableChange.bind(this)
-    this.debouncedUpdate = debounce(this.processVariableChange.bind(this), 100)
+/** Format a number for display with 2 decimal places. */
+const formatNumber = (num) => {
+  if (num === '' || num === null || num === undefined || Number.isNaN(num)) {
+    return '0.00'
   }
+  return parseFloat(num).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+}
 
-  componentDidMount() {
-    const { emitter } = this.props
-    if (emitter && typeof emitter.addListener === 'function') {
-      this.subscription = emitter.addListener('variableChange', this.handleVariableChange)
+const FormulaInput = (props) => {
+  const { data, style, variables: propVariables, emitter, defaultValue, handleChange } = props
+
+  // --- state ---
+  const [error] = useState('')
+  const [formula, setFormula] = useState(data?.formula || '')
+  const [variables, setVariables] = useState(propVariables || {})
+  const [value, setValue] = useState(() => {
+    if (data?.formula && propVariables) {
+      return evaluateFormula(data.formula, propVariables)
     }
-  }
+    return ''
+  })
+  const [isUpdating, setIsUpdating] = useState(false)
 
-  componentWillUnmount() {
-    if (this.subscription && typeof this.subscription.remove === 'function') {
-      this.subscription.remove()
+  // Refs to let the debounced callback always read the latest state
+  const formulaRef = useRef(formula)
+  const variablesRef = useRef(variables)
+  const valueRef = useRef(value)
+  const isUpdatingRef = useRef(isUpdating)
+
+  formulaRef.current = formula
+  variablesRef.current = variables
+  valueRef.current = value
+  isUpdatingRef.current = isUpdating
+
+  // ---------------------------------------------------------------
+  // getDerivedStateFromProps equivalent — sync state from props
+  // ---------------------------------------------------------------
+  // 1. defaultValue override
+  useEffect(() => {
+    if (
+      defaultValue &&
+      defaultValue.value !== value &&
+      defaultValue.value !== '' &&
+      defaultValue.value !== null &&
+      defaultValue.value !== undefined
+    ) {
+      if (defaultValue.formula) setFormula(defaultValue.formula)
+      if (defaultValue.variables) setVariables(defaultValue.variables)
+      setValue(defaultValue.value)
     }
-    if (this.debouncedUpdate && this.debouncedUpdate.cancel) this.debouncedUpdate.cancel()
-  }
+  }, [defaultValue]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  static getDerivedStateFromProps(props, state) {
-    // Check if defaultValue exists and is different from current state
-    if (props.defaultValue && props.defaultValue.value !== state.value) {
-      // If defaultValue has a specific value, use it instead of recalculating
-      if (
-        props.defaultValue.value !== '' &&
-        props.defaultValue.value !== null &&
-        props.defaultValue.value !== undefined
-      ) {
-        return {
-          formula: props.defaultValue.formula || state.formula,
-          variables: props.defaultValue.variables || state.variables,
-          value: props.defaultValue.value,
-        }
-      }
+  // 2. Recalculate when props.variables or props.data.formula change
+  const incomingVars = useMemo(() => propVariables || {}, [propVariables])
+
+  useEffect(() => {
+    if (!data?.formula) return
+
+    const formulaChanged = data.formula !== formulaRef.current
+    const varsChanged = variablesHaveChanged(incomingVars, variablesRef.current)
+
+    if (formulaChanged || varsChanged) {
+      const merged = { ...variablesRef.current, ...incomingVars }
+      const newValue = evaluateFormula(data.formula, merged)
+      setFormula(data.formula)
+      setVariables(merged)
+      setValue(newValue)
     }
+  }, [data?.formula, incomingVars]) // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Guard: no formula provided
-    if (!props?.data?.formula) {
-      return null
-    }
+  // ---------------------------------------------------------------
+  // processVariableChange (called by debounced emitter handler)
+  // ---------------------------------------------------------------
+  const processVariableChange = useCallback(
+    (params) => {
+      const currentFormula = formulaRef.current
+      const currentVars = variablesRef.current
+      const currentValue = valueRef.current
+      if (!currentFormula) return
 
-    // Shallow compare variables to avoid expensive stringify + false positives
-    const incomingVars = props.variables || {}
-    const prevVars = state.variables || {}
-    let variablesChanged = Object.keys(incomingVars).length !== Object.keys(prevVars).length
-    if (!variablesChanged) {
-      variablesChanged = Object.keys(incomingVars).some((k) => {
-        const incomingValue = parseFloat(incomingVars[k])
-        const prevValue = parseFloat(prevVars[k])
-        // Handle NaN comparison properly
-        if (Number.isNaN(incomingValue) && Number.isNaN(prevValue)) {
-          return false
-        }
-        if (Number.isNaN(incomingValue) || Number.isNaN(prevValue)) {
-          return true
-        }
-        return Math.abs(incomingValue - prevValue) > 0.0001
-      })
-    }
+      setIsUpdating(true)
 
-    const formulaChanged = props.data.formula !== state.formula
-
-    if (formulaChanged || variablesChanged) {
-      const parser = new Parser()
-      const newVariables = { ...prevVars, ...incomingVars }
-      Object.entries(newVariables).forEach(([key, value]) => {
-        const parsedValue = parseFloat(value)
-        if (!Number.isNaN(parsedValue)) {
-          parser.setVariable(key, parsedValue)
-        }
-      })
-      const parseResult = parser.parse(props.data.formula)
-      return {
-        formula: props.data.formula,
-        variables: newVariables,
-        value: parseResult?.result || '',
-      }
-    }
-
-    // No state update
-    return null
-  }
-
-  handleVariableChange(params) {
-    const { formula, isUpdating } = this.state
-    if (!formula) {
-      // Invalid / missing formula: nothing to compute
-      return
-    }
-
-    if (isUpdating) {
-      return
-    }
-    this.debouncedUpdate(params)
-  }
-
-  // Format the value for display
-  formatNumber = (num) => {
-    if (num === '' || num === null || num === undefined || Number.isNaN(num)) {
-      return '0.00'
-    }
-
-    const numValue = parseFloat(num)
-    return numValue.toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })
-  }
-
-  processVariableChange(params) {
-    // Reordered below formatNumber to satisfy style rule
-    const { formula, variables: currentVars, value: currentValue } = this.state
-    const { data, handleChange } = this.props
-    if (!formula) return
-
-    this.setState({ isUpdating: true }, () => {
       const parser = new Parser()
       let newVariables = { ...currentVars }
 
       if (params.value === '' || params.value === null || params.value === undefined) {
-        newVariables = { ...currentVars, [params.propKey]: 0 }
+        newVariables[params.propKey] = 0
       } else {
         const processedValue = params.value
         if (typeof processedValue === 'string' && processedValue.trim().endsWith('%')) {
           const numericPart = processedValue.trim().slice(0, -1).replace(/,/g, '')
-          const parsedValue = parseFloat(numericPart)
-          newVariables = {
-            ...currentVars,
-            [params.propKey]: !Number.isNaN(parsedValue) ? parsedValue / 100 : 0,
-          }
+          const parsed = parseFloat(numericPart)
+          newVariables[params.propKey] = !Number.isNaN(parsed) ? parsed / 100 : 0
         } else {
-          const parsedValue = parseFloat(String(processedValue).replace(/,/g, ''))
-          newVariables = {
-            ...currentVars,
-            [params.propKey]: !Number.isNaN(parsedValue) ? parsedValue : 0,
-          }
+          const parsed = parseFloat(String(processedValue).replace(/,/g, ''))
+          newVariables[params.propKey] = !Number.isNaN(parsed) ? parsed : 0
         }
       }
 
-      Object.entries(newVariables).forEach(([key, value]) => {
-        const numValue = parseFloat(value)
+      Object.entries(newVariables).forEach(([key, val]) => {
+        const numValue = parseFloat(val)
         parser.setVariable(key, !Number.isNaN(numValue) ? numValue : 0)
       })
 
-      const parseResult = parser.parse(formula)
+      const parseResult = parser.parse(currentFormula)
       const newValue = parseResult?.result || 0
-      const previousValue = currentValue
 
-      this.setState({ variables: newVariables, value: newValue, isUpdating: false }, () => {
-        const { formularKey } = data
-        const valueChanged = Math.abs(previousValue - newValue) > 0.0001
-        if (formularKey && handleChange && valueChanged && params.propKey !== formularKey) {
-          setTimeout(() => handleChange(formularKey, newValue), 50)
-        }
-      })
-    })
-  }
+      setVariables(newVariables)
+      setValue(newValue)
+      setIsUpdating(false)
 
-  render() {
-    const { error, value } = this.state
-    const { data, style } = this.props
+      // Propagate change via handleChange if the value actually changed
+      const { formularKey } = data
+      const valueChanged = Math.abs(currentValue - newValue) > 0.0001
+      if (formularKey && handleChange && valueChanged && params.propKey !== formularKey) {
+        setTimeout(() => handleChange(formularKey, newValue), 50)
+      }
+    },
+    [data, handleChange]
+  )
 
-    let baseClasses = `${data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
-    if (data.pageBreakBefore) {
-      baseClasses += ' alwaysbreak'
+  // Create the debounced version once and keep it stable
+  const debouncedUpdate = useMemo(
+    () => debounce((params) => processVariableChange(params), 100),
+    [processVariableChange]
+  )
+
+  // Cancel pending debounce on unmount
+  useEffect(() => {
+    return () => {
+      if (debouncedUpdate.cancel) debouncedUpdate.cancel()
+    }
+  }, [debouncedUpdate])
+
+  // ---------------------------------------------------------------
+  // Emitter subscription (variableChange)
+  // ---------------------------------------------------------------
+  useEffect(() => {
+    if (!emitter || typeof emitter.addListener !== 'function') return
+
+    const handler = (params) => {
+      if (!formulaRef.current || isUpdatingRef.current) return
+      debouncedUpdate(params)
     }
 
-    return (
-      <div style={{ ...style }} className={baseClasses}>
-        {/* eslint-disable react/jsx-props-no-spreading */}
-        <ComponentHeader data={data} style={style} {...this.props} />
-        <div className={data.isShowLabel !== false ? 'form-group' : ''}>
-          <ComponentLabel data={data} style={style} {...this.props} />
-          <Input
-            type="text"
-            name={data?.field_name}
-            value={this.formatNumber(value)}
-            disabled={true}
-            status={error ? 'error' : ''}
-            style={{
-              width: '100%',
-              borderStyle: 'solid',
-              cursor: 'not-allowed',
-            }}
-          />
-          {/* eslint-enable react/jsx-props-no-spreading */}
-          {error && <div style={{ color: '#ff4d4f', fontSize: '14px', marginTop: '4px' }}>{error}</div>}
-        </div>
-      </div>
-    )
+    const subscription = emitter.addListener('variableChange', handler)
+    return () => {
+      if (subscription && typeof subscription.remove === 'function') {
+        subscription.remove()
+      }
+    }
+  }, [emitter, debouncedUpdate])
+
+  // ---------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------
+  let baseClasses = `${data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
+  if (data.pageBreakBefore) {
+    baseClasses += ' alwaysbreak'
   }
+
+  return (
+    <div style={{ ...style }} className={baseClasses}>
+      {/* eslint-disable react/jsx-props-no-spreading */}
+      <ComponentHeader data={data} style={style} {...props} />
+      <div className={data.isShowLabel !== false ? 'form-group' : ''}>
+        <ComponentLabel data={data} style={style} {...props} />
+        <Input
+          type="text"
+          name={data?.field_name}
+          value={formatNumber(value)}
+          disabled={true}
+          status={error ? 'error' : ''}
+          style={{
+            width: '100%',
+            borderStyle: 'solid',
+            cursor: 'not-allowed',
+          }}
+        />
+        {/* eslint-enable react/jsx-props-no-spreading */}
+        {error && (
+          <div style={{ color: '#ff4d4f', fontSize: '14px', marginTop: '4px' }}>{error}</div>
+        )}
+      </div>
+    </div>
+  )
 }
 
 FormulaInput.propTypes = {
