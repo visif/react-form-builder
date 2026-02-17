@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { Button } from 'antd'
 
 import ComponentHeader from '../shared/ComponentHeader'
@@ -234,42 +235,42 @@ const FormLink = (props) => {
       <ComponentHeader {...props} />
       <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
         <ComponentLabel {...props} style={{ display: 'block' }} />
-                  {props.mutable && isShowingList && matchedList.length > 0 && (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '100%',
-                        left: 0,
-                        width: '100%',
-                        background: '#fff',
-                        border: '1px solid #ced4da',
-                        borderRadius: '.25rem',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                        zIndex: 10,
-                        maxHeight: 200,
-                        overflowY: 'auto',
-                      }}
-                      onMouseLeave={handleInputBlur}
-                    >
-                      {matchedList.map((form) => (
-                        <div
-                          key={form.id}
-                          style={{
-                            padding: '8px 12px',
-                            cursor: 'pointer',
-                            background: selectedFormId && selectedFormId.id === form.id ? '#e6f7ff' : '#fff',
-                            borderBottom: '1px solid #f0f0f0',
-                          }}
-                          onClick={() => handleFormSelect(form)}
-                        >
-                          {form.title}
-                        </div>
-                      ))}
-                      {matchedList.length === 0 && (
-                        <div style={{ padding: '8px 12px', color: '#999' }}>No forms found</div>
-                      )}
-                    </div>
-                  )}
+        {props.mutable && isShowingList && matchedList.length > 0 && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              width: '100%',
+              background: '#fff',
+              border: '1px solid #ced4da',
+              borderRadius: '.25rem',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+              zIndex: 10,
+              maxHeight: 200,
+              overflowY: 'auto',
+            }}
+            onMouseLeave={handleInputBlur}
+          >
+            {matchedList.map((form) => (
+              <div
+                key={form.id}
+                style={{
+                  padding: '8px 12px',
+                  cursor: 'pointer',
+                  background: selectedFormId && selectedFormId.id === form.id ? '#e6f7ff' : '#fff',
+                  borderBottom: '1px solid #f0f0f0',
+                }}
+                onClick={() => handleFormSelect(form)}
+              >
+                {form.title}
+              </div>
+            ))}
+            {matchedList.length === 0 && (
+              <div style={{ padding: '8px 12px', color: '#999' }}>No forms found</div>
+            )}
+          </div>
+        )}
         <div
           style={{
             position: 'relative',
@@ -277,72 +278,41 @@ const FormLink = (props) => {
             width: '100%',
           }}
         >
-          {/* Display hyperlink in preview mode */}
-          {/* {!props.mutable && (
+          <div className="form-link-container" style={{ display: 'flex', alignItems: 'center' }}>
+            {isFormSelected ? (
+              <div
+                onClick={() => setIsShowingList(true)}
+                style={{
+                  flex: 1,
+                  border: '1px solid #ced4da',
+                  borderRadius: '.25rem',
+                  padding: '6px 12px',
+                  cursor: 'pointer',
+                  backgroundColor: '#fff',
+                  minHeight: '38px',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
+                <span>{formInfo ? formInfo.Name : 'Please select a form'}</span>
+              </div>
+            ) : (
               <div className="form-link-preview" style={{ padding: '6px 0' }}>
-                <button
-                  type="button"
+                <Button
+                  href="#"
+                  style={{ textDecoration: 'unset' }}
                   onClick={(e) => {
                     e.preventDefault()
-                    openLinkedForm()
-                  }}
-                  style={{
-                    color: '#007bff',
-                    textDecoration: 'underline',
-                    cursor: 'pointer',
-                    fontWeight: '500',
-                    background: 'none',
-                    border: 'none',
-                    padding: 0,
+                    if (typeof props.onSelectChildForm === 'function') {
+                      props.onSelectChildForm(props.data.id, props.data.formSource)
+                    }
                   }}
                 >
-                  {formInfo
-                    ? formInfo.Name
-                    : 'Please select a form'}
-                </button>
+                  {formInfo ? formInfo.Name : 'Please select a form'}
+                </Button>
               </div>
-            )} */}
-
-          {/* Display form selection in edit mode */}
-          {/* {props.mutable && ( */}
-          <div className="form-link-container" style={{ display: 'flex', alignItems: 'center' }}>
-            <div
-              onClick={() => setIsShowingList(true)}
-              style={{
-                flex: 1,
-                border: '1px solid #ced4da',
-                borderRadius: '.25rem',
-                padding: '6px 12px',
-                cursor: 'pointer',
-                backgroundColor: isFormSelected ? '#fff' : '#f8f9fa',
-                minHeight: '38px',
-                display: 'flex',
-                alignItems: 'center',
-              }}
-            >
-              {isFormSelected ? (
-                <span>{formInfo ? formInfo.Name : 'Please select a form'}</span>
-              ) : (
-                <div>
-                  <div className="form-link-preview" style={{ padding: '6px 0' }}>
-                    <Button
-                      href="#"
-                      style={{ marginTop: 6 }}
-                      onClick={(e) => {
-                        e.preventDefault()
-                        if (typeof props.onSelectChildForm === 'function') {
-                          props.onSelectChildForm(props.data.id, props.data.formSource)
-                        }
-                      }}
-                    >
-                      {formInfo ? formInfo.Name : 'Please select a form'}
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
+            )}
           </div>
-          {/* )} */}
         </div>
       </div>
     </section>

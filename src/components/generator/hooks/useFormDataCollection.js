@@ -7,7 +7,9 @@
  * - Collecting form items with values for validation
  */
 import { useCallback } from 'react'
+
 import ReactDOM from 'react-dom'
+
 import { useFormContext } from '../../../contexts/FormContext'
 
 export const useFormDataCollection = (props, inputsRef, getItemValue, getEditor) => {
@@ -27,6 +29,7 @@ export const useFormDataCollection = (props, inputsRef, getItemValue, getEditor)
         'Section',
         'Download',
         'Image',
+        'FormLink',
       ]
 
       // Skip container/layout elements that don't have form values
@@ -70,7 +73,8 @@ export const useFormDataCollection = (props, inputsRef, getItemValue, getEditor)
         } else if (item.element === 'DataSource') {
           hasValue = !!contextValue?.value
         } else if (item.element === 'Table') {
-          hasValue = Array.isArray(contextValue) && contextValue.some((row) => row.some((val) => !!val))
+          hasValue =
+            Array.isArray(contextValue) && contextValue.some((row) => row.some((val) => !!val))
         } else if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
           hasValue = Array.isArray(contextValue) && contextValue.length > 0
         } else if (item.element === 'FormulaInput') {
