@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { Radio, Input } from 'antd'
+import { Input, Radio } from 'antd'
 
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
@@ -63,11 +63,11 @@ const RadioButtons = (props) => {
     : props.data.field_name
 
   const radioStyle = props.data.inline
-    ? { display: 'inline-block', marginRight: '16px', marginBottom: '4px' }
+    ? { display: 'block', marginRight: '16px', marginBottom: '4px' }
     : { display: 'block', marginBottom: '4px' }
 
   // Find the currently selected option
-  const selectedOption = value?.find(item => item.value)
+  const selectedOption = value?.find((item) => item.value)
 
   return (
     <div className={baseClasses}>
@@ -80,13 +80,15 @@ const RadioButtons = (props) => {
           disabled={props.read_only || !isSameEditor}
           onChange={(e) => {
             const selectedKey = e.target.value
-            const option = props.data.options.find(opt => opt.key === selectedKey)
+            const option = props.data.options.find((opt) => opt.key === selectedKey)
 
-            const newValue = [{
-              key: option.key,
-              value: option.value,
-              info: '',
-            }]
+            const newValue = [
+              {
+                key: option.key,
+                value: option.value,
+                info: '',
+              },
+            ]
 
             setValue(newValue)
 
@@ -124,21 +126,35 @@ const RadioButtons = (props) => {
 
             return (
               <div key={this_key} style={radioStyle}>
-                <Radio value={option.key}>
-                  <span style={{ fontSize: '13px', color: '#262626' }}>{option.text}</span>
-                </Radio>
-                {isChecked && option.info && (
-                  <TextArea
-                    rows={2}
-                    style={{ width: '100%', marginTop: '8px' }}
-                    defaultValue={answerItem?.info ?? ''}
-                    ref={(c) => {
-                      if (c && props.mutable) {
-                        infosRef.current[`child_ref_${option.key}_info`] = c
-                      }
-                    }}
-                  />
-                )}
+                <div
+                  style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', width: '100%' }}
+                >
+                  <Radio value={option.key}>
+                    <span style={{ fontSize: '13px', color: '#262626' }}>{option.text}</span>
+                  </Radio>
+                  {isChecked && option.info && (
+                    <TextArea
+                      rows={2}
+                      style={{ flex: 1, minWidth: '150px' }}
+                      defaultValue={answerItem?.info ?? ''}
+                      onChange={(e) => {
+                        const infoValue = e.target.value
+                        const newValue = (value || []).map((item) =>
+                          item.key === option.key ? { ...item, info: infoValue } : item
+                        )
+                        setValue(newValue)
+                        if (handleChange) {
+                          handleChange(formularKey || props.data.field_name, newValue)
+                        }
+                      }}
+                      ref={(c) => {
+                        if (c && props.mutable) {
+                          infosRef.current[`child_ref_${option.key}_info`] = c
+                        }
+                      }}
+                    />
+                  )}
+                </div>
               </div>
             )
           })}

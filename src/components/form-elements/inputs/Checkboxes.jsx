@@ -53,7 +53,7 @@ const Checkboxes = (props) => {
   }
 
   const checkboxStyle = props.data.inline
-    ? { display: 'inline-block', marginRight: '16px', marginBottom: '4px' }
+    ? { display: 'block', marginRight: '16px', marginBottom: '4px' }
     : { display: 'block', marginBottom: '4px' }
 
   return (
@@ -76,7 +76,7 @@ const Checkboxes = (props) => {
 
           return (
             <div key={this_key} style={checkboxStyle}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', width: '100%' }}>
                 <Checkbox
                   {...checkboxProps}
                   onChange={(e) => {
@@ -140,6 +140,16 @@ const Checkboxes = (props) => {
                     rows={2}
                     style={{ flex: 1, minWidth: '150px' }}
                     defaultValue={answerItem?.info ?? ''}
+                    onChange={(e) => {
+                      const infoValue = e.target.value
+                      const newValue = (value || []).map((item) =>
+                        item.key === option.key ? { ...item, info: infoValue } : item
+                      )
+                      setValue(newValue)
+                      if (props.handleChange) {
+                        props.handleChange(props.data.field_name, newValue)
+                      }
+                    }}
                     ref={(c) => {
                       if (c && props.mutable) {
                         infosRef.current[`child_ref_${option.key}_info`] = c
