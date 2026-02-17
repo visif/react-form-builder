@@ -76,70 +76,78 @@ const Checkboxes = (props) => {
 
           return (
             <div key={this_key} style={checkboxStyle}>
-              <Checkbox
-                {...checkboxProps}
-                onChange={(e) => {
-                  const checked = e.target.checked
-                  console.log('Checkbox clicked!', option.key, 'Checked:', checked)
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                <Checkbox
+                  {...checkboxProps}
+                  onChange={(e) => {
+                    const checked = e.target.checked
+                    console.log('Checkbox clicked!', option.key, 'Checked:', checked)
 
-                  // Build new value array
-                  const newValue = checked
-                    ? [...(value || []).filter((item) => item.key !== option.key), {
-                        key: option.key,
-                        value: option.value,
-                        info: '',
-                      }]
-                    : (value || []).filter((item) => item.key !== option.key)
+                    // Build new value array
+                    const newValue = checked
+                      ? [
+                          ...(value || []).filter((item) => item.key !== option.key),
+                          {
+                            key: option.key,
+                            value: option.value,
+                            info: '',
+                          },
+                        ]
+                      : (value || []).filter((item) => item.key !== option.key)
 
-                  console.log('New value:', newValue)
+                    console.log('New value:', newValue)
 
-                  // Update local state
-                  setValue(newValue)
+                    // Update local state
+                    setValue(newValue)
 
-                  // Call parent handleChange to update form context
-                  if (props.handleChange) {
-                    console.log('Calling handleChange with:', props.data.field_name, newValue)
-                    props.handleChange(props.data.field_name, newValue)
-                  }
+                    // Call parent handleChange to update form context
+                    if (props.handleChange) {
+                      console.log('Calling handleChange with:', props.data.field_name, newValue)
+                      props.handleChange(props.data.field_name, newValue)
+                    }
 
-                  // Defer state updates to avoid setState during render
-                  setTimeout(() => {
-                    // Always update the local element state for immediate visual feedback
-                    if (props.updateElement) {
-                      const updatedData = {
-                        ...props.data,
-                        dirty: true,
-                        value: newValue,
-                        options: props.data.options.map((opt) => ({
-                          ...opt,
-                          checked: opt.key === option.key ? checked : getActiveValue(newValue, opt.key)?.value || false,
-                        })),
+                    // Defer state updates to avoid setState during render
+                    setTimeout(() => {
+                      // Always update the local element state for immediate visual feedback
+                      if (props.updateElement) {
+                        const updatedData = {
+                          ...props.data,
+                          dirty: true,
+                          value: newValue,
+                          options: props.data.options.map((opt) => ({
+                            ...opt,
+                            checked:
+                              opt.key === option.key
+                                ? checked
+                                : getActiveValue(newValue, opt.key)?.value || false,
+                          })),
+                        }
+                        props.updateElement(updatedData)
                       }
-                      props.updateElement(updatedData)
-                    }
 
-                    // If onElementChange is provided for column sync
-                    const isInDynamicColumn = props.data.parentId && props.data.row !== undefined
-                    if (props.onElementChange && isInDynamicColumn) {
-                      props.onElementChange({ ...props.data, _selectionChangeOnly: true })
-                    }
-                  }, 0)
-                }}
-              >
-                <span style={{ fontSize: '13px', color: '#262626' }}>{option.text}</span>
-              </Checkbox>
-              {isChecked && option.info && (
-                <TextArea
-                  rows={2}
-                  style={{ width: '100%', marginTop: '8px' }}
-                  defaultValue={answerItem?.info ?? ''}
-                  ref={(c) => {
-                    if (c && props.mutable) {
-                      infosRef.current[`child_ref_${option.key}_info`] = c
-                    }
+                      // If onElementChange is provided for column sync
+                      const isInDynamicColumn = props.data.parentId && props.data.row !== undefined
+                      if (props.onElementChange && isInDynamicColumn) {
+                        props.onElementChange({ ...props.data, _selectionChangeOnly: true })
+                      }
+                    }, 0)
                   }}
-                />
-              )}
+                >
+                  <span style={{ fontSize: '13px', color: '#262626' }}>{option.text}</span>
+                </Checkbox>
+                {isChecked && option.info && (
+                  <TextArea
+                    rows={2}
+                    style={{ flex: 1, minWidth: '150px' }}
+                    defaultValue={answerItem?.info ?? ''}
+                    ref={(c) => {
+                      if (c && props.mutable) {
+                        infosRef.current[`child_ref_${option.key}_info`] = c
+                      }
+                    }}
+                  />
+                )}
+              </div>
             </div>
           )
         })}
