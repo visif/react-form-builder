@@ -54,3 +54,4 @@ lib/
 
 # bundles
 bundle.js
+.npmrc
