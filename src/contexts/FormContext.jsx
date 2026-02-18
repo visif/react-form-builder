@@ -15,9 +15,28 @@
  * updateValue('field_name', newValue)
  * updateVariable('varKey', computedValue)
  */
-import React, { createContext, useCallback, useContext, useState, useRef, useMemo } from 'react'
+import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react'
 
-const FormContext = createContext(null)
+// Default no-op context value for when FormProvider is not available
+// (e.g., duplicate React instances via yarn link, or components used standalone)
+const defaultFormContextValue = {
+  values: {},
+  updateValue: () => {},
+  getValue: () => undefined,
+  getAllValues: () => ({}),
+  resetValues: () => {},
+  variables: {},
+  updateVariable: () => {},
+  getVariable: () => undefined,
+  getAllVariables: () => ({}),
+  setAllVariables: () => {},
+  addVariableListener: () => () => {},
+  validationErrors: [],
+  setErrors: () => {},
+  getErrors: () => [],
+}
+
+const FormContext = createContext(defaultFormContextValue)
 
 export const FormProvider = ({ children, initialValues = {} }) => {
   const [values, setValues] = useState(initialValues)
@@ -136,8 +155,12 @@ export const FormProvider = ({ children, initialValues = {} }) => {
 
 export const useFormContext = () => {
   const context = useContext(FormContext)
-  if (!context) {
-    throw new Error('useFormContext must be used within a FormProvider')
+  if (context === defaultFormContextValue && process.env.NODE_ENV !== 'production') {
+    console.warn(
+      'useFormContext: No FormProvider found. Using default no-op context. ' +
+        'If you are using yarn link or npm link, ensure only one copy of React is loaded. ' +
+        'See: https://react.dev/warnings/invalid-hook-call-warning'
+    )
   }
   return context
 }

@@ -2,8 +2,16 @@ import React, { createContext, useCallback, useContext, useReducer, useRef } fro
 
 import { get, post } from '../utils/requests'
 
+// Default no-op context value for resilience against duplicate React instances
+const defaultFormBuilderContextValue = {
+  state: { data: [], action: undefined },
+  dispatch: () => {},
+  subscribe: () => () => {},
+  setExternalHandler: () => {},
+}
+
 // Create context
-const FormBuilderContext = createContext(null)
+const FormBuilderContext = createContext(defaultFormBuilderContextValue)
 
 // Action types
 const SET_DATA = 'SET_DATA'
@@ -174,8 +182,12 @@ export function FormBuilderProvider({ children }) {
 // Hook to use the store
 export function useFormBuilderStore() {
   const context = useContext(FormBuilderContext)
-  if (!context) {
-    throw new Error('useFormBuilderStore must be used within a FormBuilderProvider')
+  if (context === defaultFormBuilderContextValue && process.env.NODE_ENV !== 'production') {
+    console.warn(
+      'useFormBuilderStore: No FormBuilderProvider found. Using default no-op context. ' +
+        'If you are using yarn link or npm link, ensure only one copy of React is loaded. ' +
+        'See: https://react.dev/warnings/invalid-hook-call-warning'
+    )
   }
   return context
 }

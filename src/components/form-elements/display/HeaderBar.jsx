@@ -4,10 +4,11 @@
 import React from 'react'
 
 import PropTypes from 'prop-types'
-import { Button, Tag } from 'antd'
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons'
 
-import Grip from '../layout/Grip'
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons'
+import { Button, Tag } from 'antd'
+
+import Grip from '../layout/grip'
 
 const HeaderBar = (props) => {
   return (

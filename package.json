@@ -1,26 +1,27 @@
 {
-  "name": "visiforge-form-builder",
-  "version": "1.0.0",
+  "name": "@visif/form-builder",
+  "version": "0.0.1",
   "description": "A complete React form builder with drag-and-drop - modernized for React 18, Vite, and hooks",
-  "main": "lib/index.js",
-  "module": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "dist/app.umd.js",
+  "module": "dist/app.es.js",
   "exports": {
     ".": {
-      "import": "./lib/index.js",
-      "require": "./lib/index.js"
+      "import": "./dist/app.es.js",
+      "require": "./dist/app.umd.js"
     },
     "./dist/app.css": "./dist/app.css"
   },
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visif/react-form-builder.git"
+  },
   "sideEffects": [
     "*.css",
     "*.scss"
   ],
   "files": [
-    "lib",
     "dist",
-    "dist/app.css",
     "README.md",
     "docs/MIGRATION_GUIDE.md",
     "docs/CHANGELOG.md",
@@ -57,8 +58,8 @@
     "xss": "^1.0.15"
   },
   "peerDependencies": {
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.25.9",
@@ -92,12 +93,15 @@
     "dev": "vite",
     "start": "vite",
     "build": "vite build",
-    "build:lib": "npm run transpile && npm run build:style",
+    "build:lib": "npm run build && npm run build:style",
     "build:style": "sass ./scss/application.scss dist/app.css --style compressed",
     "preview": "vite preview",
     "pretranspile": "rimraf lib",
     "transpile": "babel --out-dir lib src --copy-files",
-    "prepublishOnly": "npm run build:lib && npm run build",
+    "prepublishOnly": "npm run build && npm run build:style",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }
