@@ -11,10 +11,11 @@ import CustomElement from '../shared/CustomElement'
 const dustbinStyles = (backgroundColor) => ({
   border: '1px solid rgba(0,0,0,0.2)',
   minHeight: '2rem',
+  height: '100%',
   width: '100%',
   backgroundColor,
   padding: 0,
-  float: 'left',
+  boxSizing: 'border-box',
 })
 
 // Helper Functions

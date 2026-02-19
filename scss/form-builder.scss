@@ -5,9 +5,9 @@
     border: 1px solid #ddd;
     background: #ffffff;
     padding: 0 0 10px 0;
-    box-shadow: 0 0 2px 1px rgba(0,0,0,0.1);
+    box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.1);
     min-height: 750px;
-    width:100%;
+    width: 100%;
     overflow-x: auto;
     box-sizing: border-box;
 
@@ -20,13 +20,7 @@
       width: 100%;
       font-weight: bold;
       margin: 5px 0;
-      background: repeating-linear-gradient(
-        45deg,
-        #fff,
-        #fff 10px,
-        #eee 10px,
-        #eee 20px
-      );
+      background: repeating-linear-gradient(45deg, #fff, #fff 10px, #eee 10px, #eee 20px);
     }
 
     label {
@@ -68,11 +62,12 @@
       height: 100vh;
       // width: 0;
       width: 715px;
-      transition: .5s;
+      transition: 0.5s;
       overflow-y: hidden;
       box-sizing: border-box;
 
-      h4, .dismiss-edit {
+      h4,
+      .dismiss-edit {
         margin-bottom: 30px;
       }
       .dismiss-edit {
@@ -129,7 +124,7 @@
               &.form-control {
                 width: 84.26%;
                 float: left;
-                &[type="checkbox"] {
+                &[type='checkbox'] {
                   border: none;
                   box-shadow: none;
                   margin-top: 0;
@@ -149,7 +144,7 @@
       }
     }
     .Sortable {
-      transition: opacity .25s ease-in;
+      transition: opacity 0.25s ease-in;
       position: relative;
       cursor: move;
       box-sizing: border-box;
@@ -160,13 +155,17 @@
       -ms-user-select: none;
       user-select: none;
       .rfb-item {
-        padding: 10px 20px;
+        padding: 0 10px;
         box-sizing: border-box;
         &.SortableItem {
           position: relative;
           .form-group {
+            margin-bottom: 0;
             pointer-events: none;
-            label, select, input, a {
+            label,
+            select,
+            input,
+            a {
               cursor: move;
             }
             input[type='date'] {
@@ -175,7 +174,8 @@
             .react-star-rating {
               display: block;
             }
-            .checkbox-label, .radio-label {
+            .checkbox-label,
+            .radio-label {
               font-weight: normal;
               display: block;
             }
@@ -199,7 +199,7 @@
         &.is-placeholder {
           display: block;
           z-index: auto;
-          opacity: .4;
+          opacity: 0.4;
           border: 2px #ccc dashed;
           margin: 2px 0;
         }
@@ -207,6 +207,9 @@
           opacity: 0;
           z-index: 100;
           position: relative;
+          .ant-tag {
+            border: none !important;
+          }
           .label {
             position: absolute;
             left: 20px;
@@ -214,7 +217,7 @@
           .toolbar-header-buttons {
             position: absolute;
             right: 0;
-            margin-top:-20px;
+            margin-top: -20px;
             display: flex;
             gap: 5px;
           }
@@ -222,7 +225,10 @@
         &:hover {
           box-shadow: inset 0 0 5px #ddd;
           background: #fff;
-          select, input {
+          padding: 8px 12px 10px;
+          border-radius: 4px;
+          select,
+          input {
             cursor: move;
             pointer-events: none;
           }
@@ -240,17 +246,17 @@
       .edit-form {
         z-index: 2000;
         border-right: 1px solid #ddd;
-        box-shadow: 0 0 2px 1px rgba(0,0,0,0.1);
+        box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.1);
         // width: 80%;
         left: 0;
-        transition: .5s;
+        transition: 0.5s;
       }
     }
 
     .preview-toolbar {
       display: flex;
       align-items: center;
-      background-color: "#f8f8f8";
+      background-color: '#f8f8f8';
       border-bottom: 1px solid #ddd;
       padding: 6px 12px;
       cursor: pointer;
@@ -316,7 +322,7 @@
 
 .image-upload-preview {
   border: 4px solid #fff;
-  box-shadow: 0 0 2px 2px rgba(0,0,0,0.1);
+  box-shadow: 0 0 2px 2px rgba(0, 0, 0, 0.1);
 }
 
 .btn-image-clear {
@@ -324,7 +330,7 @@
   padding: 15px;
 }
 
-@media ( max-width: $screen-sm-min ) {
+@media (max-width: $screen-sm-min) {
   .react-form-builder {
     position: relative;
 
@@ -357,7 +363,6 @@
     }
 
     .react-form-builder-toolbar {
-
       h4 {
         padding: 10px;
         background: #7a0019;
@@ -372,8 +377,8 @@
       -webkit-transition: transform 0.5s;
       transition: transform 0.5s;
 
-      -webkit-transform: translate(0,0);
-      transform: translate(0,0);
+      -webkit-transform: translate(0, 0);
+      transform: translate(0, 0);
 
       right: 0;
       border-top: 2px solid #ccc;
@@ -385,8 +390,8 @@
     }
 
     .active-toolbar {
-      -webkit-transform: translate(0,-300px);
-      transform: translate(0,-300px);
+      -webkit-transform: translate(0, -300px);
+      transform: translate(0, -300px);
     }
   }
 
@@ -452,12 +457,15 @@
 }
 
 .form-place-holder {
-  margin:10px;
-  border:2px dashed #bbb;
-  -moz-border-radius:5px;
-  -webkit-border-radius:5px;
-  border-radius:5px;
-  padding:25px;
-  text-align:center;
-  font:20pt bold,"Vollkorn";color:#bbb
+  margin: 10px;
+  border: 2px dashed #bbb;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  padding: 25px;
+  text-align: center;
+  font:
+    20pt bold,
+    'Vollkorn';
+  color: #bbb;
 }

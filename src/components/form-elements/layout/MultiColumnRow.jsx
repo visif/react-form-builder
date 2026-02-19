@@ -148,6 +148,7 @@ const MultiColumnRow = (props) => {
                       boxSizing: 'border-box',
                       // overflow: 'hidden',
                       border: '1px solid #d0d5dd',
+                      height: '1px',
                     }}
                     >
                       {controls ? (
