@@ -178,7 +178,13 @@ class DatePicker extends React.Component {
 
     // Create tooltip text showing editor name
     const tooltipText =
-      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
+      savedEditor && savedEditor.name && hasValue
+        ? `${
+            this.state.value
+              ? this.formatDate(this.state.value, this.state.formatMask)
+              : ''
+          }\nEdited by: ${savedEditor.name}`
+        : ''
 
     const props = {
       type: 'date',

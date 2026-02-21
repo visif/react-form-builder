@@ -131,7 +131,7 @@ class FileUpload extends React.Component {
     // Create tooltip text showing editor name
     const files = this.state.fileList ? this.state.fileList.map(f => f.originalName).join(', ') : '';
     const tooltipText =
-      savedEditor && savedEditor.name && hasValue ? `Value: ${files}\nEdited by: ${savedEditor.name}` : ''
+      savedEditor && savedEditor.name && hasValue ? `${files}\nEdited by: ${savedEditor.name}` : ''
 
     return (
       <div

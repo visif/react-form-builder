@@ -195,7 +195,7 @@ class TextInput extends React.Component {
 
     // Create tooltip text for editor name
     const tooltipText =
-      savedEditor && savedEditor.name && hasValue ? `Value: ${this.state.value}\nEdited by: ${savedEditor.name}` : ''
+      savedEditor && savedEditor.name && hasValue ? `${this.state.value}\nEdited by: ${savedEditor.name}` : ''
 
     const props = {}
     props.type = 'text'
@@ -303,7 +303,7 @@ class NumberInput extends React.Component {
 
     // Create tooltip text for editor name
     const tooltipText =
-      savedEditor && savedEditor.name && hasValue ? `Value: ${this.state.value}\nEdited by: ${savedEditor.name}` : ''
+      savedEditor && savedEditor.name && hasValue ? `${this.state.value}\nEdited by: ${savedEditor.name}` : ''
 
     const props = {}
     props.type = 'number'
@@ -401,7 +401,7 @@ class TextArea extends React.Component {
 
     // Create tooltip text for editor name
     const tooltipText =
-      savedEditor && savedEditor.name && hasValue ? `Value: ${this.state.value}\nEdited by: ${savedEditor.name}` : ''
+      savedEditor && savedEditor.name && hasValue ? `${this.state.value}\nEdited by: ${savedEditor.name}` : ''
 
     const props = {}
     props.className = 'form-control'
@@ -458,7 +458,7 @@ class Dropdown extends React.Component {
         : ''
 
     this.state = {
-      defaultValue: props.defaultValue,
+      defaultValue: rawDefaultValue,
       value,
       info,
     }
@@ -467,6 +467,14 @@ class Dropdown extends React.Component {
   static getDerivedStateFromProps(props, state) {
     const rawDefaultValue =
       props.defaultValue !== undefined ? props.defaultValue : props.data?.defaultValue
+
+    if (props.mutable && props.data.field_name && (props.defaultValue === undefined || props.defaultValue === null)) {
+        // If mutable but defaultValue is missing or null, possibly due to a reset or clear,
+        // we might want to check the data object.
+    }
+
+    // Check if props.defaultValue has changed from what we last saw.
+    // JSON.stringify is a bit heavy but handles deep comparison for objects.
     if (JSON.stringify(state.defaultValue) !== JSON.stringify(rawDefaultValue)) {
       const value =
         rawDefaultValue && typeof rawDefaultValue === 'object'
@@ -486,14 +494,13 @@ class Dropdown extends React.Component {
         defaultValue: rawDefaultValue,
         value,
         info: shouldShowInfo ? info : '',
-        info: shouldShowInfo ? info : '',
       }
     }
     return state
   }
 
   handleChange = (e) => {
-    const constValue = e && e.target ? e.target.value : e ? e.value : ''
+    const constValue = e && e.target ? e.target.value : e && e.value ? e.value : ''
 
     // Check if the newly selected option has info enabled
     // Use loose equality to handle type coercion (string vs number)
@@ -557,10 +564,9 @@ class Dropdown extends React.Component {
 
     // Create tooltip text for editor name
     const tooltipText =
-      savedEditor && savedEditor.name && hasValue ? `Value: ${this.state.value}\nEdited by: ${savedEditor.name}` : ''
+      savedEditor && savedEditor.name && hasValue ? `${this.state.value}\nEdited by: ${savedEditor.name}` : ''
 
     const props = {}
-    props.className = 'form-control'
     props.name = this.props.data.field_name
     props.onChange = this.handleChange
     props.isSearchable = true
@@ -706,7 +712,7 @@ class Signature extends React.Component {
 
     // Create tooltip text for editor name
     const tooltipText =
-      savedEditor && savedEditor.name && hasValue ? `Value: ${defaultValue}\nEdited by: ${savedEditor.name}` : ''
+      savedEditor && savedEditor.name && hasValue ? `${defaultValue}\nEdited by: ${savedEditor.name}` : ''
 
     let canClear = !!defaultValue
     const props = {}
@@ -825,7 +831,7 @@ class Tags extends React.Component {
     // Create tooltip text for editor name
     const tooltipText =
       savedEditor && savedEditor.name && hasValue
-        ? `Value: ${this.state.value
+        ? `${this.state.value
             .map((v) => v.label || v.text)
             .join(', ')}\nEdited by: ${savedEditor.name}`
         : ''
@@ -899,7 +905,7 @@ class Checkboxes extends React.Component {
     // Create tooltip text for editor name
     const tooltipText =
       savedEditor && savedEditor.name && hasValue
-        ? `Value: ${this.state.value
+        ? `${this.state.value
             .map((v) => {
               if (v.value) {
                 const opt = this.props.data.options.find((o) => o.key === v.key)
@@ -1124,7 +1130,7 @@ class RadioButtons extends React.Component {
     // Create tooltip text for editor name
     const tooltipText =
       savedEditor && savedEditor.name && hasValue
-        ? `Value: ${this.state.defaultValue
+        ? `${this.state.defaultValue
             .map((v) => {
               if (v.value) {
                 const opt = this.props.data.options.find((o) => o.key === v.key)
@@ -1362,7 +1368,7 @@ class Rating extends React.Component {
     // Create tooltip text for editor name
     const tooltipText =
       savedEditor && savedEditor.name && hasValue
-        ? `Value: ${currentRating}\nEdited by: ${savedEditor.name}`
+        ? `${currentRating}\nEdited by: ${savedEditor.name}`
         : ''
 
     const props = {}
@@ -1488,7 +1494,7 @@ class Camera extends React.Component {
     // Create tooltip text for editor name
     const tooltipText =
       savedEditor && savedEditor.name && hasValue
-        ? `Value: ${this.state.img || this.props.defaultValue}\nEdited by: ${
+        ? `${this.state.img || this.props.defaultValue}\nEdited by: ${
             savedEditor.name
           }`
         : ''
@@ -1607,7 +1613,7 @@ class Range extends React.Component {
     // Create tooltip text for editor name
     const tooltipText =
       savedEditor && savedEditor.name && hasValue
-        ? `Value: ${currentVal}\nEdited by: ${savedEditor.name}`
+        ? `${currentVal}\nEdited by: ${savedEditor.name}`
         : ''
 
     const props = {}

@@ -258,7 +258,9 @@ class DataSource extends React.Component {
 
     // Create tooltip text showing editor name
     const tooltipText =
-      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
+      savedEditor && savedEditor.name && hasValue
+        ? `${this.state.searchText}\nEdited by: ${savedEditor.name}`
+        : ''
 
     const props = {
       type: 'text',
