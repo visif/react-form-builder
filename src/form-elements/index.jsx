@@ -564,9 +564,17 @@ class Dropdown extends React.Component {
         userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
+    const options = this.props.data.options.map((option) => ({
+      ...option,
+      label: option.text,
+    }))
+    const selectedOption = options.find((option) => option.value == this.state.value)
+
     // Create tooltip text for editor name
     const tooltipText =
-      savedEditor && savedEditor.name && hasValue ? `${this.state.value}\nEdited by: ${savedEditor.name}` : ''
+      savedEditor && savedEditor.name && hasValue
+        ? `${selectedOption ? selectedOption.label : this.state.value}\nEdited by: ${savedEditor.name}`
+        : ''
 
     const props = {}
     props.name = this.props.data.field_name
@@ -586,31 +594,28 @@ class Dropdown extends React.Component {
       props.isDisabled = true
     }
 
+    const showInfo = selectedOption && selectedOption.info
+
     let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
-
-    const options = this.props.data.options.map((option) => ({
-      ...option,
-      label: option.text,
-    }))
-    const selectedOption = options.find((option) => option.value == this.state.value)
-    const showInfo = selectedOption && selectedOption.info
 
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
         <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
           <ComponentLabel {...this.props} />
-          <Select
-            {...props}
-            className="react-select-container"
-            classNamePrefix="react-select"
-            options={options}
-            value={selectedOption || null}
-            isClearable
-          />
+          <div title={tooltipText}>
+            <Select
+              {...props}
+              className="react-select-container"
+              classNamePrefix="react-select"
+              options={options}
+              value={selectedOption || null}
+              isClearable
+            />
+          </div>
           {showInfo && (
             <input
               type="text"
