@@ -499,15 +499,17 @@ class Dropdown extends React.Component {
     return state
   }
 
-  handleChange = (e) => {
-    const constValue = e && e.target ? e.target.value : e && e.value ? e.value : ''
+  handleChange = (selectedOption) => {
+    // react-select passes the entire selected object, not an event
+    // If null (cleared), use empty string; otherwise use the value property
+    const constValue = selectedOption ? selectedOption.value : ''
 
     // Check if the newly selected option has info enabled
     // Use loose equality to handle type coercion (string vs number)
-    const selectedOption = this.props.data.options.find(
+    const selectedOptionData = this.props.data.options.find(
       (option) => option.value == constValue
     )
-    const shouldShowInfo = selectedOption?.info
+    const shouldShowInfo = selectedOptionData?.info
 
     // If switching to an option without info, clear the info field
     // If switching to an option with info, keep any existing info or empty if none
@@ -623,6 +625,7 @@ class Dropdown extends React.Component {
               ref={this.infoField}
             />
           )}
+          <input type="hidden" name={this.props.data.field_name} value={this.state.value} />
         </div>
       </div>
     )
