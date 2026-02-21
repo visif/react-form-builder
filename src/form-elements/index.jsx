@@ -195,7 +195,7 @@ class TextInput extends React.Component {
 
     // Create tooltip text for editor name
     const tooltipText =
-      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
+      savedEditor && savedEditor.name && hasValue ? `Value: ${this.state.value}\nEdited by: ${savedEditor.name}` : ''
 
     const props = {}
     props.type = 'text'
@@ -303,7 +303,7 @@ class NumberInput extends React.Component {
 
     // Create tooltip text for editor name
     const tooltipText =
-      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
+      savedEditor && savedEditor.name && hasValue ? `Value: ${this.state.value}\nEdited by: ${savedEditor.name}` : ''
 
     const props = {}
     props.type = 'number'
@@ -401,7 +401,7 @@ class TextArea extends React.Component {
 
     // Create tooltip text for editor name
     const tooltipText =
-      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
+      savedEditor && savedEditor.name && hasValue ? `Value: ${this.state.value}\nEdited by: ${savedEditor.name}` : ''
 
     const props = {}
     props.className = 'form-control'
@@ -557,7 +557,7 @@ class Dropdown extends React.Component {
 
     // Create tooltip text for editor name
     const tooltipText =
-      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
+      savedEditor && savedEditor.name && hasValue ? `Value: ${this.state.value}\nEdited by: ${savedEditor.name}` : ''
 
     const props = {}
     props.className = 'form-control'
@@ -706,7 +706,7 @@ class Signature extends React.Component {
 
     // Create tooltip text for editor name
     const tooltipText =
-      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
+      savedEditor && savedEditor.name && hasValue ? `Value: ${defaultValue}\nEdited by: ${savedEditor.name}` : ''
 
     let canClear = !!defaultValue
     const props = {}
@@ -824,7 +824,11 @@ class Tags extends React.Component {
 
     // Create tooltip text for editor name
     const tooltipText =
-      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
+      savedEditor && savedEditor.name && hasValue
+        ? `Value: ${this.state.value
+            .map((v) => v.label || v.text)
+            .join(', ')}\nEdited by: ${savedEditor.name}`
+        : ''
 
     if (this.props.mutable) {
       // props.isDisabled = this.props.read_only;
@@ -894,7 +898,18 @@ class Checkboxes extends React.Component {
 
     // Create tooltip text for editor name
     const tooltipText =
-      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
+      savedEditor && savedEditor.name && hasValue
+        ? `Value: ${this.state.value
+            .map((v) => {
+              if (v.value) {
+                const opt = this.props.data.options.find((o) => o.key === v.key)
+                return opt ? opt.text : v.key
+              }
+              return null
+            })
+            .filter(Boolean)
+            .join(', ')}\nEdited by: ${savedEditor.name}`
+        : ''
 
     const self = this
     let classNames = 'custom-control custom-checkbox'
@@ -1108,7 +1123,18 @@ class RadioButtons extends React.Component {
 
     // Create tooltip text for editor name
     const tooltipText =
-      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
+      savedEditor && savedEditor.name && hasValue
+        ? `Value: ${this.state.defaultValue
+            .map((v) => {
+              if (v.value) {
+                const opt = this.props.data.options.find((o) => o.key === v.key)
+                return opt ? opt.text : v.key
+              }
+              return null
+            })
+            .filter(Boolean)
+            .join(', ')}\nEdited by: ${savedEditor.name}`
+        : ''
 
     const self = this
     let classNames = 'custom-control custom-radio'
@@ -1335,7 +1361,9 @@ class Rating extends React.Component {
 
     // Create tooltip text for editor name
     const tooltipText =
-      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
+      savedEditor && savedEditor.name && hasValue
+        ? `Value: ${currentRating}\nEdited by: ${savedEditor.name}`
+        : ''
 
     const props = {}
     props.name = this.props.data.field_name
@@ -1459,7 +1487,11 @@ class Camera extends React.Component {
 
     // Create tooltip text for editor name
     const tooltipText =
-      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
+      savedEditor && savedEditor.name && hasValue
+        ? `Value: ${this.state.img || this.props.defaultValue}\nEdited by: ${
+            savedEditor.name
+          }`
+        : ''
 
     let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
@@ -1574,7 +1606,9 @@ class Range extends React.Component {
 
     // Create tooltip text for editor name
     const tooltipText =
-      savedEditor && savedEditor.name && hasValue ? `Edited by: ${savedEditor.name}` : ''
+      savedEditor && savedEditor.name && hasValue
+        ? `Value: ${currentVal}\nEdited by: ${savedEditor.name}`
+        : ''
 
     const props = {}
     const name = this.props.data.field_name
