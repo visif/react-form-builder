@@ -128,6 +128,12 @@ const withDragAndDrop = (ComposedComponent) => {
             return
           }
 
+          // Items dragged out of a column cell use index -1 as sentinel;
+          // restoring them to the canvas is handled by the drop handler, not moveCard.
+          if (dragIndex === -1) {
+            return
+          }
+
           if (dragIndex === hoverIndex) {
             return
           }
@@ -158,11 +164,7 @@ const withDragAndDrop = (ComposedComponent) => {
     if (data?.isContainer) {
       drop(ref)
       dragPreview(ref)
-      if (dragHandleRef.current) {
-        drag(dragHandleRef)
-      } else {
-        drag(ref)
-      }
+      drag(dragHandleRef)
     } else {
       dragPreview(drop(ref))
       drag(ref)

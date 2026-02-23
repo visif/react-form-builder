@@ -953,6 +953,30 @@ const Preview = (props) => {
     accept: [ItemTypes.CARD, ItemTypes.BOX],
     drop: (item, monitor) => {
       if (monitor.didDrop()) return
+
+      // Walk child elements to find right insertion index from cursor Y
+      const el = sortableRef.current
+      let insertIndex = items.length
+
+      if (el) {
+        const clientY = monitor.getClientOffset()?.y
+        if (clientY !== undefined) {
+          for (let i = 0; i < el.children.length; i++) {
+            const rect = el.children[i].getBoundingClientRect()
+            if (clientY < rect.top + rect.height / 2) {
+              insertIndex = i
+              break
+            }
+          }
+        }
+      }
+
+      // Restore items dragged out of a multi-column cell onto empty canvas space
+      if (item.data?.parentId && typeof insertCard === 'function') {
+        insertCard(item, insertIndex, item.id)
+        return
+      }
+
       if (!item.isNew || !item.data || item.isProcessed) return
       if (typeof item.onCreate !== 'function') return
 
@@ -960,22 +984,6 @@ const Preview = (props) => {
       if (!newItem) return
 
       item.isProcessed = true
-
-      // Walk child elements to find the right insertion index from cursor Y
-      const el = sortableRef.current
-      let insertIndex = items.length
-
-      if (el) {
-        const clientY = monitor.getClientOffset().y
-        for (let i = 0; i < el.children.length; i++) {
-          const rect = el.children[i].getBoundingClientRect()
-          if (clientY < rect.top + rect.height / 2) {
-            insertIndex = i
-            break
-          }
-        }
-      }
-
       insertCard(newItem, insertIndex)
     },
     collect: (monitor) => ({
