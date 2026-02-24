@@ -37,6 +37,17 @@ const ComponentLabel = (props) => {
   // Remove wrapping <p> tags from Quill editor output to prevent block-level elements
   labelText = labelText.replace(/^<p>/i, '').replace(/<\/p>$/i, '')
 
+  const plainLabelText = labelText
+    .replace(/<br\s*\/?>/gi, '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/<[^>]*>/g, '')
+    .replace(/\u200B/g, '')
+    .trim()
+
+  if (!plainLabelText) {
+    return null
+  }
+
   if (props.data.formularKey && props.preview) {
     labelText = `${labelText} (${props.data.formularKey})`
   }
