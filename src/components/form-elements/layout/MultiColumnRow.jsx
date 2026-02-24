@@ -53,7 +53,7 @@ const MultiColumnRow = (props) => {
       <div>
         <ComponentLabel {...props} />
         <table
-          className="table table-bordered"
+          className="rfb-multicolumn-table"
           style={{
             marginBottom: '0',
             borderCollapse: 'collapse',
@@ -112,7 +112,7 @@ const MultiColumnRow = (props) => {
                     className="row-label rfb-table-row-label"
                     style={{
                       textAlign: 'right',
-                      padding: '4px 8px',
+                      padding: '8px',
                       backgroundColor: '#f9fafb',
                       fontWeight: 'var(--rfb-table-row-font-weight, bold)',
                       fontFamily: 'var(--rfb-table-row-font-family, inherit)',
@@ -141,7 +141,7 @@ const MultiColumnRow = (props) => {
                     <td
                       key={`${rowIndex}_${columnIndex}_${item || '_'}`}
                       style={{
-                        padding: '4px 8px',
+                        padding: '8px',
                         width: `${columnWidth}%`,
                         maxWidth: `${columnWidth}%`,
                         verticalAlign: 'top',
@@ -149,7 +149,6 @@ const MultiColumnRow = (props) => {
                         boxSizing: 'border-box',
                         // overflow: 'hidden',
                         border: '1px solid #d0d5dd',
-                        height: '1px',
                       }}
                     >
                       {controls ? (

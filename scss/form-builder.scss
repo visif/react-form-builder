@@ -455,6 +455,22 @@
   }
 }
 
+// Reset styles for elements rendered inside MultiColumnRow cells
+// to prevent builder preview padding/hover from breaking table cell layout
+.rfb-multicolumn-table {
+  .rfb-item {
+    padding: 0 !important;
+    &:hover {
+      box-shadow: none;
+      background: transparent;
+    }
+    .form-group {
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+  }
+}
+
 .form-place-holder {
   margin: 10px;
   border: 2px dashed #bbb;
