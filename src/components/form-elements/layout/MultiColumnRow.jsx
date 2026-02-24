@@ -59,7 +59,6 @@ const MultiColumnRow = (props) => {
             borderCollapse: 'collapse',
             tableLayout: 'fixed',
             width: '100%',
-            overflow: 'hidden',
           }}
         >
           {data.columns && (
@@ -92,7 +91,6 @@ const MultiColumnRow = (props) => {
                       maxWidth: `${columnWidths[columnIndex]}%`,
                       minWidth: `${columnWidths[columnIndex]}%`,
                       boxSizing: 'border-box',
-                      overflow: 'hidden',
                       backgroundColor: '#eaecf0',
                       border: '1px solid #d0d5dd',
                     }}
@@ -145,9 +143,7 @@ const MultiColumnRow = (props) => {
                         width: `${columnWidth}%`,
                         maxWidth: `${columnWidth}%`,
                         verticalAlign: 'top',
-                        // minWidth: `${columnWidth}%`,
                         boxSizing: 'border-box',
-                        // overflow: 'hidden',
                         border: '1px solid #d0d5dd',
                       }}
                     >
