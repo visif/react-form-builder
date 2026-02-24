@@ -55,6 +55,7 @@ const MultiColumnRow = (props) => {
         <table
           className="table table-bordered"
           style={{
+            marginBottom: '0',
             borderCollapse: 'collapse',
             tableLayout: 'fixed',
             width: '100%',
@@ -139,17 +140,17 @@ const MultiColumnRow = (props) => {
                   return (
                     <td
                       key={`${rowIndex}_${columnIndex}_${item || '_'}`}
-                    style={{
-                      padding: '4px 8px',
-                      width: `${columnWidth}%`,
-                      maxWidth: `${columnWidth}%`,
-                      verticalAlign: 'top',
-                      // minWidth: `${columnWidth}%`,
-                      boxSizing: 'border-box',
-                      // overflow: 'hidden',
-                      border: '1px solid #d0d5dd',
-                      height: '1px',
-                    }}
+                      style={{
+                        padding: '4px 8px',
+                        width: `${columnWidth}%`,
+                        maxWidth: `${columnWidth}%`,
+                        verticalAlign: 'top',
+                        // minWidth: `${columnWidth}%`,
+                        boxSizing: 'border-box',
+                        // overflow: 'hidden',
+                        border: '1px solid #d0d5dd',
+                        height: '1px',
+                      }}
                     >
                       {controls ? (
                         controls[rowIndex]?.[columnIndex]

@@ -1,8 +1,9 @@
 import React from 'react'
-import { Button, Input } from 'antd'
-import { PlusOutlined, MinusOutlined } from '@ant-design/icons'
 
 import PropTypes from 'prop-types'
+
+import { MinusOutlined, PlusOutlined } from '@ant-design/icons'
+import { Button, Input } from 'antd'
 
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
@@ -130,22 +131,25 @@ const Table = (props) => {
     }
   }, [rowsAdded, inputs, columns, rows, props])
 
-  const handleInputChange = React.useCallback((rowIndex, colIndex, value) => {
-    setInputs((prevInputs) => {
-      const newInputs = [...prevInputs]
-      if (!newInputs[rowIndex]) {
-        newInputs[rowIndex] = []
-      }
-      newInputs[rowIndex][colIndex] = value
+  const handleInputChange = React.useCallback(
+    (rowIndex, colIndex, value) => {
+      setInputs((prevInputs) => {
+        const newInputs = [...prevInputs]
+        if (!newInputs[rowIndex]) {
+          newInputs[rowIndex] = []
+        }
+        newInputs[rowIndex][colIndex] = value
 
-      // Update form context with new table data
-      if (props.handleChange) {
-        props.handleChange(props.data.field_name, newInputs)
-      }
+        // Update form context with new table data
+        if (props.handleChange) {
+          props.handleChange(props.data.field_name, newInputs)
+        }
 
-      return newInputs
-    })
-  }, [props])
+        return newInputs
+      })
+    },
+    [props]
+  )
 
   const getColumnWidth = React.useCallback((totalWidthCount, width) => {
     const currentWidth = parseInt(width) ? Number(width) : 1
@@ -271,13 +275,11 @@ const Table = (props) => {
           {renderRows()}
         </table>
         {!isFixedRow && (
-          <div style={{ marginTop: '12px', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+          <div
+            style={{ marginTop: '12px', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}
+          >
             {inputs.length > 0 && (
-              <Button
-                icon={<MinusOutlined />}
-                onClick={removeRow}
-                disabled={!isSameEditor}
-              >
+              <Button icon={<MinusOutlined />} onClick={removeRow} disabled={!isSameEditor}>
                 Remove Row
               </Button>
             )}
