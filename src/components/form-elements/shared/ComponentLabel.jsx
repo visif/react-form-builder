@@ -2,6 +2,21 @@ import React from 'react'
 
 import myxss from '../../../utils/xss'
 
+// Decode HTML entities that may be stored in the backend as escaped HTML
+// e.g. "&lt;span style=&quot;font-size:16px&quot;&gt;text&lt;/span&gt;" → "<span style="font-size:16px">text</span>"
+const decodeHtmlEntities = (str) => {
+  if (!str || typeof str !== 'string') return str
+  // Only decode if the string contains HTML entities (quick check)
+  if (!str.includes('&')) return str
+  return str
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, '&') // must be last to avoid double-decoding
+}
+
 const ComponentLabel = (props) => {
   // Don't render anything if either isShowLabel is false or hideLabel is true
   if (
@@ -32,7 +47,7 @@ const ComponentLabel = (props) => {
   const hasRequiredLabel =
     props.data.hasOwnProperty('required') && props.data.required === true && !props.read_only
 
-  let labelText = myxss.process(props.data.label)
+  let labelText = myxss.process(decodeHtmlEntities(props.data.label))
 
   // Remove wrapping <p> tags from Quill editor output to prevent block-level elements
   labelText = labelText.replace(/^<p>/i, '').replace(/<\/p>$/i, '')

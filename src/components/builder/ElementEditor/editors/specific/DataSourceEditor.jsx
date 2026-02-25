@@ -3,6 +3,22 @@ import React from 'react'
 import CheckboxFieldEditor from './CheckboxFieldEditor'
 import SelectFieldEditor from './SelectFieldEditor'
 
+// Strip HTML tags and decode common entities to produce a plain-text label
+// e.g. "<span style="font-size:16px;">Judgement :</span>" → "Judgement :"
+const toPlainText = (str) => {
+  if (!str || typeof str !== 'string') return ''
+  return str
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, '&')
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .trim()
+}
+
 /**
  * DataSource element editor
  * Handles sourceType selection and form field mapping
@@ -14,11 +30,6 @@ import SelectFieldEditor from './SelectFieldEditor'
  * @param {Function} onBlur - Handler for field blur events
  */
 const DataSourceEditor = ({ element, formDataSource, activeForm, onChange, onBlur }) => {
-  // Debug: Log the current state
-  console.log('DataSourceEditor - element:', element)
-  console.log('DataSourceEditor - formDataSource:', formDataSource)
-  console.log('DataSourceEditor - activeForm:', activeForm)
-
   return (
     <div>
       {/* sourceType: Determines the data source type (name, department, role, or form)
@@ -68,19 +79,21 @@ const DataSourceEditor = ({ element, formDataSource, activeForm, onChange, onBlu
           {activeForm && activeForm.columns && (
             <div className="form-group">
               <label className="control-label">Select Fields</label>
-              {activeForm.columns.map((item) => (
-                <CheckboxFieldEditor
-                  key={item.field_name}
-                  id={item.field_name}
-                  label={item.label || item.text || ''}
-                  checked={
-                    `formField${item.field_name}` in element
-                      ? element[`formField${item.field_name}`]
-                      : false
-                  }
-                  onChange={(e) => onChange(`formField${item.field_name}`, 'checked', e)}
-                />
-              ))}
+              {activeForm.columns
+                .filter((item) => toPlainText(item.label || item.text || '') !== '')
+                .map((item) => (
+                  <CheckboxFieldEditor
+                    key={item.field_name}
+                    id={item.field_name}
+                    label={toPlainText(item.label || item.text || '')}
+                    checked={
+                      `formField${item.field_name}` in element
+                        ? element[`formField${item.field_name}`]
+                        : false
+                    }
+                    onChange={(e) => onChange(`formField${item.field_name}`, 'checked', e)}
+                  />
+                ))}
             </div>
           )}
         </div>
