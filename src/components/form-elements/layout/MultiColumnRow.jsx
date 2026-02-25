@@ -110,7 +110,7 @@ const MultiColumnRow = (props) => {
                     className="row-label rfb-table-row-label"
                     style={{
                       textAlign: 'right',
-                      padding: '8px',
+                      padding: '12px',
                       backgroundColor: '#f9fafb',
                       fontWeight: 'var(--rfb-table-row-font-weight, bold)',
                       fontFamily: 'var(--rfb-table-row-font-family, inherit)',
@@ -139,7 +139,7 @@ const MultiColumnRow = (props) => {
                     <td
                       key={`${rowIndex}_${columnIndex}_${item || '_'}`}
                       style={{
-                        padding: '8px',
+                        padding: '12px',
                         width: `${columnWidth}%`,
                         maxWidth: `${columnWidth}%`,
                         verticalAlign: 'top',
