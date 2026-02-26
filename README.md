@@ -80,6 +80,45 @@ npm install
 npm run dev
 ```
 
+## Local Linking (use in another project without publishing)
+
+Use `npm link` to consume this package locally from a host project during development.
+
+### 1. Build and register the link
+
+In this repo, build the library and register it as a global symlink:
+
+```bash
+npm run build:lib
+npm link
+```
+
+### 2. Link into host project
+
+In your host project's root directory:
+
+```bash
+npm link @visif/form-builder
+```
+
+### 3. Rebuild on changes
+
+After editing source files in this repo, re-run the build to propagate changes:
+
+```bash
+npm run build:lib
+```
+
+### 4. Unlink when done
+
+```bash
+# In host project
+npm unlink @visif/form-builder
+
+# In this repo
+npm unlink
+```
+
 ## Build & Publish
 
 ```bash
