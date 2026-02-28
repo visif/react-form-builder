@@ -54,10 +54,12 @@ export default class ReactForm extends React.Component {
     this.emitter = new EventEmitter()
     this.getDataById = this.getDataById.bind(this)
     this.handleVariableChange = this.handleVariableChange.bind(this)
-    const ansData = convert(props.answer_data)
+    this.handleAutoSave = this.handleAutoSave.bind(this)
     this.state = {
-      answerData: ansData,
-      variables: this._getVariableValue(ansData, props.data),
+      answerData: {},
+      variables: {},
+      prevAnswerDataProp: undefined, // ensure it differs from null/undefined if needed
+      isInitialized: false,
     }
   }
 
@@ -78,19 +80,78 @@ export default class ReactForm extends React.Component {
     ) {
       this.variableSubscription.remove()
     }
+    if (this.autoSaveTimeout) {
+      clearTimeout(this.autoSaveTimeout)
+    }
   }
 
-  static getDerivedStateFromProps(props) {
-    const ansData = convert(props.answer_data)
+  _getSessionKey() {
+    const { sessionKey, form_action, task_id } = this.props
+    return sessionKey || task_id || form_action || 'react-form-builder-session'
+  }
 
-    return {
-      answerData: ansData,
-      variables: ReactForm.prototype._getVariableValue.call(
-        { props },
-        ansData,
-        props.data
-      ),
+  handleAutoSave() {
+    if (
+      !this.props.saveSessionStorage ||
+      typeof window === 'undefined' ||
+      !window.sessionStorage
+    )
+      return
+
+    if (this.autoSaveTimeout) {
+      clearTimeout(this.autoSaveTimeout)
     }
+    this.autoSaveTimeout = setTimeout(() => {
+      try {
+        const data = this._collectFormData(this.props.data)
+        if (data && data.length > 0) {
+          window.sessionStorage.setItem(this._getSessionKey(), JSON.stringify(data))
+        }
+      } catch (e) {
+        console.error('Failed to auto-save to session storage', e)
+      }
+    }, 1000)
+  }
+
+  static getDerivedStateFromProps(props, state) {
+    if (!state.isInitialized || props.answer_data !== state.prevAnswerDataProp) {
+      let dbData = convert(props.answer_data)
+      let sessionDataObj = {}
+      if (
+        props.saveSessionStorage &&
+        typeof window !== 'undefined' &&
+        window.sessionStorage
+      ) {
+        const sessionKey =
+          props.sessionKey ||
+          props.task_id ||
+          props.form_action ||
+          'react-form-builder-session'
+        const stored = window.sessionStorage.getItem(sessionKey)
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored)
+            sessionDataObj = convert(parsed)
+          } catch (e) {
+            console.error('Failed to parse session storage data', e)
+          }
+        }
+      }
+
+      const ansData = { ...dbData, ...sessionDataObj }
+
+      return {
+        isInitialized: true,
+        prevAnswerDataProp: props.answer_data,
+        answerData: ansData,
+        variables: ReactForm.prototype._getVariableValue.call(
+          { props },
+          ansData,
+          props.data
+        ),
+      }
+    }
+    return null
   }
 
   _getVariableValue(ansData, items) {
@@ -414,7 +475,6 @@ export default class ReactForm extends React.Component {
       }
     })
 
-    console.log('Collected Form Data:', formData)
     return formData
   }
 
@@ -465,6 +525,13 @@ export default class ReactForm extends React.Component {
 
       // Only submit if there are no errors.
       if (errors.length < 1) {
+        if (
+          this.props.saveSessionStorage &&
+          typeof window !== 'undefined' &&
+          window.sessionStorage
+        ) {
+          window.sessionStorage.removeItem(this._getSessionKey())
+        }
         const data = this._collectFormData(this.props.data)
         onSubmit(data, this.props.parentElementId)
       }
@@ -480,6 +547,13 @@ export default class ReactForm extends React.Component {
 
       // Only submit if there are no errors.
       if (errors.length < 1) {
+        if (
+          this.props.saveSessionStorage &&
+          typeof window !== 'undefined' &&
+          window.sessionStorage
+        ) {
+          window.sessionStorage.removeItem(this._getSessionKey())
+        }
         const $form = ReactDOM.findDOMNode(this.form)
         $form.submit()
       }
@@ -989,6 +1063,11 @@ export default class ReactForm extends React.Component {
             action={this.props.form_action}
             onSubmit={this.handleSubmit.bind(this)}
             method={this.props.form_method}
+            onChange={this.handleAutoSave}
+            onBlur={this.handleAutoSave}
+            onMouseUp={this.handleAutoSave}
+            onKeyUp={this.handleAutoSave}
+            onTouchEnd={this.handleAutoSave}
           >
             {this.props.authenticity_token && (
               <div style={formTokenStyle}>
