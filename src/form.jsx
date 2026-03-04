@@ -84,7 +84,10 @@ const readDraftFromStorage = (props) => {
     const raw = window.localStorage.getItem(buildDraftStorageKey(props))
     if (!raw) return null
     const parsed = JSON.parse(raw)
-    return parsed && typeof parsed === 'object' ? parsed : null
+    if (!parsed || typeof parsed !== 'object') return null
+    // Treat an empty object as no draft
+    if (Object.keys(parsed).length === 0) return null
+    return parsed
   } catch (_) {
     return null
   }
