@@ -44,7 +44,7 @@ const convert = (answers) => {
   return answers || {}
 }
 
-const DRAFT_AUTOSAVE_INTERVAL = 60 * 1000 // 1 minute
+const DRAFT_AUTOSAVE_INTERVAL = 30 * 1000 // 30 seconds
 
 const buildDraftStorageKey = (props) => {
   if (props.draftStorageKey) {
