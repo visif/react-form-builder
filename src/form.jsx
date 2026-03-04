@@ -97,6 +97,8 @@ export default class ReactForm extends React.Component {
 
   _draftInterval = null
 
+  _draftCleared = false
+
   constructor(props) {
     super(props)
     this.emitter = new EventEmitter()
@@ -135,7 +137,7 @@ export default class ReactForm extends React.Component {
       this._draftInterval = null
     }
     // Save one last time before unmounting so partial work is not lost
-    if (!this.props.read_only) {
+    if (!this.props.read_only && !this._draftCleared) {
       this._saveDraft()
     }
     if (
@@ -683,14 +685,58 @@ export default class ReactForm extends React.Component {
     if (typeof window === 'undefined' || !window.localStorage) return
     try {
       window.localStorage.removeItem(this._getDraftStorageKey())
-      this.setState({ draftRestored: false })
+    } catch (_) {
+      // Ignore
+    }
+
+    // Stop the autosave interval so it won't re-save the draft
+    if (this._draftInterval) {
+      clearInterval(this._draftInterval)
+      this._draftInterval = null
+    }
+    this._draftCleared = true
+
+    // Reset form state back to original answer_data (without draft)
+    const ansData = convert(this.props.answer_data)
+    this.setState({
+      draftRestored: false,
+      answerData: ansData,
+      variables: this._getVariableValue(ansData, this.props.data),
+    })
+  }
+
+  /**
+   * Public method – can be called via a ref from the parent app:
+   *   formRef.current.clearDraft()
+   */
+  clearDraft = () => {
+    this._clearDraft()
+  }
+
+  handleClearDraft = () => {
+    this._clearDraft()
+  }
+
+  /**
+   * Static helper so external code can clear a draft without a ref:
+   *   ReactFormGenerator.clearDraftData({ form_action: '/api/form', ... })
+   */
+  static clearDraftData(props) {
+    if (typeof window === 'undefined' || !window.localStorage) return
+    try {
+      const key = buildDraftStorageKey(props)
+      window.localStorage.removeItem(key)
     } catch (_) {
       // Ignore
     }
   }
 
-  handleClearDraft = () => {
-    this._clearDraft()
+  /**
+   * Static helper to check if a draft exists:
+   *   ReactFormGenerator.hasDraft({ form_action: '/api/form', ... })
+   */
+  static hasDraft(props) {
+    return readDraftFromStorage(props) !== null
   }
 
   handleVariableChange = (params) => {
@@ -882,7 +928,7 @@ export default class ReactForm extends React.Component {
     return (
       <>
         {submitButton || <input type="submit" className="btn btn-big" value={actionName} />}
-        {this.state.draftRestored && !this.props.read_only && (
+        {!this.props.read_only && (
           <button
             type="button"
             className="btn btn-default btn-big"
