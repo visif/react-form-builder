@@ -44,10 +44,58 @@ const convert = (answers) => {
   return answers || {}
 }
 
+const DRAFT_AUTOSAVE_INTERVAL = 60 * 1000 // 1 minute
+
+const buildDraftStorageKey = (props) => {
+  if (props.draftStorageKey) {
+    return props.draftStorageKey
+  }
+
+  const parts = ['rfb_draft']
+
+  // Include user id when available for per-user scoping
+  if (props.draftStorageUserId) {
+    parts.push(props.draftStorageUserId)
+  } else if (typeof props.getActiveUserProperties === 'function') {
+    try {
+      const user = props.getActiveUserProperties()
+      if (user && user.userId) {
+        parts.push(user.userId)
+      }
+    } catch (_) { /* ignore */ }
+  }
+
+  if (props.parentElementId) {
+    parts.push(props.parentElementId)
+  } else if (props.form_action) {
+    parts.push(props.form_action)
+  } else if (props.task_id) {
+    parts.push(props.task_id)
+  } else {
+    parts.push('default')
+  }
+
+  return parts.join(':')
+}
+
+const readDraftFromStorage = (props) => {
+  if (typeof window === 'undefined' || !window.localStorage) return null
+  try {
+    const raw = window.localStorage.getItem(buildDraftStorageKey(props))
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    return parsed && typeof parsed === 'object' ? parsed : null
+  } catch (_) {
+    return null
+  }
+}
+
 export default class ReactForm extends React.Component {
   form
 
   inputs = {}
+
+  _draftInterval = null
 
   constructor(props) {
     super(props)
@@ -55,9 +103,12 @@ export default class ReactForm extends React.Component {
     this.getDataById = this.getDataById.bind(this)
     this.handleVariableChange = this.handleVariableChange.bind(this)
     const ansData = convert(props.answer_data)
+    const draft = readDraftFromStorage(props)
+    const mergedData = draft ? { ...ansData, ...draft } : ansData
     this.state = {
-      answerData: ansData,
-      variables: this._getVariableValue(ansData, props.data),
+      answerData: mergedData,
+      variables: this._getVariableValue(mergedData, props.data),
+      draftRestored: !!draft,
     }
   }
 
@@ -69,9 +120,24 @@ export default class ReactForm extends React.Component {
         this.handleVariableChange
       )
     }
+
+    // Start periodic draft autosave (every 1 minute)
+    if (!this.props.read_only) {
+      this._draftInterval = setInterval(() => {
+        this._saveDraft()
+      }, DRAFT_AUTOSAVE_INTERVAL)
+    }
   }
 
   componentWillUnmount() {
+    if (this._draftInterval) {
+      clearInterval(this._draftInterval)
+      this._draftInterval = null
+    }
+    // Save one last time before unmounting so partial work is not lost
+    if (!this.props.read_only) {
+      this._saveDraft()
+    }
     if (
       this.variableSubscription &&
       typeof this.variableSubscription.remove === 'function'
@@ -82,14 +148,17 @@ export default class ReactForm extends React.Component {
 
   static getDerivedStateFromProps(props) {
     const ansData = convert(props.answer_data)
+    const draft = readDraftFromStorage(props)
+    const mergedData = draft ? { ...ansData, ...draft } : ansData
 
     return {
-      answerData: ansData,
+      answerData: mergedData,
       variables: ReactForm.prototype._getVariableValue.call(
         { props },
-        ansData,
+        mergedData,
         props.data
       ),
+      draftRestored: !!draft,
     }
   }
 
@@ -467,6 +536,7 @@ export default class ReactForm extends React.Component {
       if (errors.length < 1) {
         const data = this._collectFormData(this.props.data)
         onSubmit(data, this.props.parentElementId)
+        this._clearDraft()
       }
     } else {
       // incase no submit function provided => go to form submit
@@ -480,6 +550,7 @@ export default class ReactForm extends React.Component {
 
       // Only submit if there are no errors.
       if (errors.length < 1) {
+        this._clearDraft()
         const $form = ReactDOM.findDOMNode(this.form)
         $form.submit()
       }
@@ -589,6 +660,37 @@ export default class ReactForm extends React.Component {
 
   handleChange = (propKey, value) => {
     this.emitter.emit('variableChange', { propKey, value })
+  }
+
+  // ─── Draft persistence helpers ────────────────────────────────────────
+
+  _getDraftStorageKey() {
+    return buildDraftStorageKey(this.props)
+  }
+
+  _saveDraft() {
+    if (typeof window === 'undefined' || !window.localStorage) return
+    try {
+      const formData = this._collectFormData(this.props.data)
+      const draft = convert(formData)
+      window.localStorage.setItem(this._getDraftStorageKey(), JSON.stringify(draft))
+    } catch (_) {
+      // Ignore quota / security errors
+    }
+  }
+
+  _clearDraft() {
+    if (typeof window === 'undefined' || !window.localStorage) return
+    try {
+      window.localStorage.removeItem(this._getDraftStorageKey())
+      this.setState({ draftRestored: false })
+    } catch (_) {
+      // Ignore
+    }
+  }
+
+  handleClearDraft = () => {
+    this._clearDraft()
   }
 
   handleVariableChange = (params) => {
@@ -778,7 +880,19 @@ export default class ReactForm extends React.Component {
     const { actionName = 'Submit', submitButton = false } = this.props
 
     return (
-      submitButton || <input type="submit" className="btn btn-big" value={actionName} />
+      <>
+        {submitButton || <input type="submit" className="btn btn-big" value={actionName} />}
+        {this.state.draftRestored && !this.props.read_only && (
+          <button
+            type="button"
+            className="btn btn-default btn-big"
+            style={{ marginLeft: '10px' }}
+            onClick={this.handleClearDraft}
+          >
+            Clear Draft
+          </button>
+        )}
+      </>
     )
   }
 
@@ -983,6 +1097,11 @@ export default class ReactForm extends React.Component {
       <div>
         <FormValidator emitter={this.emitter} />
         <div className="react-form-builder-form">
+          {this.state.draftRestored && !this.props.read_only && (
+            <div className="alert alert-info" style={{ marginBottom: '10px' }}>
+              Your previous draft has been restored.
+            </div>
+          )}
           <form
             encType="multipart/form-data"
             ref={(c) => (this.form = c)}
