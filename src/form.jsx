@@ -102,6 +102,8 @@ export default class ReactForm extends React.Component {
 
   _draftCleared = false
 
+  _draftStarted = false
+
   constructor(props) {
     super(props)
     this.emitter = new EventEmitter()
@@ -126,12 +128,8 @@ export default class ReactForm extends React.Component {
       )
     }
 
-    // Start periodic draft autosave (every 1 minute)
-    if (!this.props.read_only) {
-      this._draftInterval = setInterval(() => {
-        this._saveDraft()
-      }, DRAFT_AUTOSAVE_INTERVAL)
-    }
+    // Draft autosave is NOT started here.
+    // It starts lazily on the first user interaction (see _handleFormInteraction).
   }
 
   componentWillUnmount() {
@@ -140,7 +138,7 @@ export default class ReactForm extends React.Component {
       this._draftInterval = null
     }
     // Save one last time before unmounting so partial work is not lost
-    if (!this.props.read_only && !this._draftCleared) {
+    if (!this.props.read_only && !this._draftCleared && this._draftStarted) {
       this._saveDraft()
     }
     if (
@@ -669,6 +667,21 @@ export default class ReactForm extends React.Component {
 
   // ─── Draft persistence helpers ────────────────────────────────────────
 
+  _startDraftAutosave() {
+    if (this._draftStarted || this._draftCleared || this.props.read_only) return
+    this._draftStarted = true
+    this._draftInterval = setInterval(() => {
+      this._saveDraft()
+    }, DRAFT_AUTOSAVE_INTERVAL)
+  }
+
+  _handleFormInteraction = () => {
+    // Start autosave on the very first user interaction
+    if (!this._draftStarted) {
+      this._startDraftAutosave()
+    }
+  }
+
   _getDraftStorageKey() {
     return buildDraftStorageKey(this.props)
   }
@@ -1156,6 +1169,8 @@ export default class ReactForm extends React.Component {
             ref={(c) => (this.form = c)}
             action={this.props.form_action}
             onSubmit={this.handleSubmit.bind(this)}
+            onChange={this._handleFormInteraction}
+            onInput={this._handleFormInteraction}
             method={this.props.form_method}
           >
             {this.props.authenticity_token && (
