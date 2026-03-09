@@ -141,8 +141,8 @@ class DatePicker extends React.Component {
       try {
         // Use formatMask for parsing if available without shifting local time
         value = dayjs(props.defaultValue, formatMask).isValid()
-          ? dayjs.utc(dayjs(props.defaultValue, formatMask).format('YYYY-MM-DDTHH:mm:ss')).toISOString()
-          : dayjs.utc(dayjs(props.defaultValue).format('YYYY-MM-DDTHH:mm:ss')).toISOString()
+          ? dayjs.utc(dayjs.utc(props.defaultValue, formatMask).format('YYYY-MM-DDTHH:mm:ss')).toISOString()
+          : dayjs.utc(dayjs.utc(props.defaultValue).format('YYYY-MM-DDTHH:mm:ss')).toISOString()
       } catch (error) {
         console.warn('Invalid date value:', props.defaultValue)
         value = null
