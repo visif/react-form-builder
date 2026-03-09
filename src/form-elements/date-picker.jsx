@@ -94,7 +94,9 @@ class DatePicker extends React.Component {
 
   handleChange = (date) => {
     const { formatMask } = this.state
-    const isoDate = date ? date.toISOString() : null
+    // Lock exact selected numbers by forging a UTC string directly from the digits
+    const isoDate = date ? dayjs.utc(date.format('YYYY-MM-DDTHH:mm:ss')).toISOString() : null
+    console.log('Saved Date (Locked Digits):', isoDate) // Added for verification
     this.setState({
       value: isoDate,
       placeholder: formatMask.toLowerCase(),
@@ -102,10 +104,12 @@ class DatePicker extends React.Component {
   }
 
   handleTimeChange = (time) => {
-    const isoTime = time ? time.toISOString() : null
+    // Keep exact time, append to today's date, and lock digits into UTC
+    const isoTime = time ? dayjs.utc(`${dayjs().format('YYYY-MM-DD')}T${time.format('HH:mm:ss')}`).toISOString() : null
+    console.log('Saved Time (Locked Digits):', isoTime) // Added for verification
     this.setState({
       value: isoTime,
-      placeholder: 'HH:MM',
+      placeholder: 'HH:mm',
     })
   }
 
@@ -125,16 +129,20 @@ class DatePicker extends React.Component {
 
   static updateDateTime(props, formatMask) {
     let value
-    const { defaultToday } = props.data
+    const { defaultToday, showTimeSelectOnly } = props.data
 
     if (defaultToday && !props.defaultValue) {
-      value = dayjs().toISOString()
+      if (showTimeSelectOnly) {
+        value = dayjs.utc(`${dayjs().format('YYYY-MM-DD')}T${dayjs().format('HH:mm:ss')}`).toISOString()
+      } else {
+        value = dayjs.utc(dayjs().format('YYYY-MM-DDTHH:mm:ss')).toISOString()
+      }
     } else if (props.defaultValue) {
       try {
-        // Use formatMask for parsing if available
+        // Use formatMask for parsing if available without shifting local time
         value = dayjs(props.defaultValue, formatMask).isValid()
-          ? dayjs(props.defaultValue, formatMask).toISOString()
-          : dayjs(props.defaultValue).utc(true).toISOString()
+          ? dayjs.utc(dayjs(props.defaultValue, formatMask).format('YYYY-MM-DDTHH:mm:ss')).toISOString()
+          : dayjs.utc(dayjs(props.defaultValue).format('YYYY-MM-DDTHH:mm:ss')).toISOString()
       } catch (error) {
         console.warn('Invalid date value:', props.defaultValue)
         value = null
@@ -143,7 +151,7 @@ class DatePicker extends React.Component {
 
     return {
       value,
-      placeholder: formatMask.toLowerCase(),
+      placeholder: props.data.showTimeSelectOnly ? 'HH:mm' : formatMask.toLowerCase(),
       defaultToday,
       formatMask,
       defaultValue: props.defaultValue,
@@ -153,11 +161,14 @@ class DatePicker extends React.Component {
   formatDate = (date, formatMask) => {
     if (!date) return ''
 
+    // Read the exact digits out of the UTC string and treat them as local so they don't shift!
+    const lockedDate = dayjs(dayjs.utc(date).format('YYYY-MM-DDTHH:mm:ss'))
+
     if (getCalendarType() === 'EN') {
-      return dayjs(date).utc(true).format(formatMask)
+      return lockedDate.format(formatMask)
     } else {
       // Convert to Buddhist calendar (add 543 years)
-      return dayjs(date).utc(true).format(formatMask.replace('YYYY', 'BBBB'))
+      return lockedDate.format(formatMask.replace('YYYY', 'BBBB'))
     }
   }
 
@@ -181,7 +192,7 @@ class DatePicker extends React.Component {
       savedEditor && savedEditor.name && hasValue
         ? `${
             this.state.value
-              ? this.formatDate(this.state.value, this.state.formatMask)
+              ? this.formatDate(this.state.value, showTimeSelectOnly ? 'HH:mm' : this.state.formatMask)
               : ''
           }\nEdited by: ${savedEditor.name}`
         : ''
@@ -222,7 +233,7 @@ class DatePicker extends React.Component {
                 placeholder={this.state.placeholder}
                 value={
                   this.state.value
-                    ? this.formatDate(this.state.value, this.state.formatMask)
+                    ? this.formatDate(this.state.value, showTimeSelectOnly ? 'HH:mm' : this.state.formatMask)
                     : ''
                 }
                 disabled={!isSameEditor}
@@ -233,7 +244,8 @@ class DatePicker extends React.Component {
                 name={props.name}
                 ref={props.ref}
                 onChange={this.handleChange}
-                value={this.state.value ? dayjs(this.state.value).utc(true) : null}
+                // Convert UTC string digits identically into local dayjs instance preventing shifts
+                value={this.state.value ? dayjs(dayjs.utc(this.state.value).format('YYYY-MM-DDTHH:mm:ss')) : null}
                 className="form-control bold-date-picker"
                 format={(value) => this.formatDate(value, this.state.formatMask)}
                 showTime={showTimeSelect ? { format: 'HH:mm', showSecond: false } : null}
@@ -246,7 +258,8 @@ class DatePicker extends React.Component {
                 name={props.name}
                 ref={props.ref}
                 onChange={this.handleTimeChange}
-                value={this.state.value ? dayjs(this.state.value).utc(true) : null}
+                // Convert UTC string digits identically into local dayjs instance preventing shifts
+                value={this.state.value ? dayjs(dayjs.utc(this.state.value).format('YYYY-MM-DDTHH:mm:ss')) : null}
                 className="form-control bold-time-picker"
                 disabled={!isSameEditor || this.state.loading}
                 placeholder={this.state.placeholder}
