@@ -75,7 +75,11 @@ const buildDraftStorageKey = (props) => {
     parts.push(props.task_id)
   }
 
-  if (!props.parentElementId && !props.form_action && !props.task_id) {
+  if (props.form_rev_id) {
+    parts.push(props.form_rev_id)
+  }
+
+  if (!props.parentElementId && !props.form_action && !props.task_id && !props.form_rev_id) {
     parts.push('default')
   }
 
