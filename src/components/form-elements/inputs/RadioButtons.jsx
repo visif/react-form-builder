@@ -129,7 +129,32 @@ const RadioButtons = (props) => {
                 <div
                   style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', width: '100%' }}
                 >
-                  <Radio value={option.key}>
+                  <Radio
+                    value={option.key}
+                    onClick={() => {
+                      if (selectedOption?.key === option.key) {
+                        setValue([])
+                        if (handleChange) {
+                          handleChange(formularKey || props.data.field_name, [])
+                        }
+                        if (props.updateElement) {
+                          props.updateElement({
+                            ...props.data,
+                            dirty: true,
+                            value: [],
+                            options: props.data.options.map((opt) => ({
+                              ...opt,
+                              checked: false,
+                              selected: false,
+                            })),
+                          })
+                        }
+                        if (props.onElementChange && isInDynamicColumn) {
+                          props.onElementChange({ ...props.data, _selectionChangeOnly: true })
+                        }
+                      }
+                    }}
+                  >
                     <span style={{ fontSize: '13px', color: '#262626' }}>{option.text}</span>
                   </Radio>
                   {isChecked && option.info && (
