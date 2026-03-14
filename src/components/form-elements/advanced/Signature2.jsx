@@ -61,11 +61,20 @@ const Signature2 = (props) => {
 
   const clickToSign = React.useCallback(() => {
     if (typeof props.getActiveUserProperties !== 'function') {
+      if (!isError) {
+        setIsError(true)
+        setTimeout(() => {
+          setIsError(false)
+        }, 5000)
+      }
       return
     }
 
     const userProperties = props.getActiveUserProperties()
     let roleLists = (userProperties && userProperties.role) || []
+    if (!Array.isArray(roleLists)) {
+      roleLists = [roleLists]
+    }
     roleLists = roleLists.concat([(userProperties && userProperties.name) || ''])
 
     const position = `${props.data.position}`.toLocaleLowerCase().trim()
@@ -172,9 +181,15 @@ const Signature2 = (props) => {
         >
           {isError ? 'You have no permission to sign' : '__________________'}
         </div>
-        <h6 style={{ textAlign: 'center', minHeight: 20, margin: '4px 0' }}>{isSigned && `(${signedPerson})`}</h6>
-        <h6 style={{ textAlign: 'center', margin: '4px 0' }}>{props.data.position || 'Placeholder Text'}</h6>
-        {signedDateTime && <h6 style={{ textAlign: 'center', margin: '4px 0' }}>{formatDate(signedDateTime)}</h6>}
+        <h6 style={{ textAlign: 'center', minHeight: 20, margin: '4px 0' }}>
+          {isSigned && `(${signedPerson})`}
+        </h6>
+        <h6 style={{ textAlign: 'center', margin: '4px 0' }}>
+          {props.data.position || 'Placeholder Text'}
+        </h6>
+        {signedDateTime && (
+          <h6 style={{ textAlign: 'center', margin: '4px 0' }}>{formatDate(signedDateTime)}</h6>
+        )}
       </div>
     </div>
   )
