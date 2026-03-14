@@ -55,6 +55,7 @@
 import React from 'react'
 
 import PropTypes from 'prop-types'
+
 import { Typography } from 'antd'
 
 import store from '../../../contexts/FormBuilderContext'
@@ -158,6 +159,7 @@ const Toolbar = (props) => {
       }
       elementOptions.canHaveOptionCorrect = item.canHaveOptionCorrect !== false
       elementOptions.canHaveOptionValue = item.canHaveOptionValue !== false
+      elementOptions.canHaveDefaultValue = item.canHaveDefaultValue || false
       elementOptions.canPopulateFromApi = item.canPopulateFromApi !== false
 
       if (item.class_name) {
@@ -278,7 +280,14 @@ const Toolbar = (props) => {
         overflow: 'hidden',
       }}
     >
-      <div style={{ borderBottom: '1px solid #e8e8e8', paddingBottom: '12px', marginBottom: '12px', flexShrink: 0 }}>
+      <div
+        style={{
+          borderBottom: '1px solid #e8e8e8',
+          paddingBottom: '12px',
+          marginBottom: '12px',
+          flexShrink: 0,
+        }}
+      >
         <Title
           level={4}
           style={{
@@ -433,6 +442,7 @@ function _defaultItems() {
     {
       key: 'Dropdown',
       canHaveAnswer: true,
+      canHaveDefaultValue: true,
       name: 'Dropdown',
       icon: 'far fa-caret-square-down',
       label: 'Placeholder Label',

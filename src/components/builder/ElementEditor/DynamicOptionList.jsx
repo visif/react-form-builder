@@ -2,10 +2,11 @@
  * <DynamicOptionList />
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Input, Checkbox, Button, Space } from 'antd'
-import { PlusOutlined, MinusOutlined } from '@ant-design/icons'
 
 import PropTypes from 'prop-types'
+
+import { MinusOutlined, PlusOutlined } from '@ant-design/icons'
+import { Button, Checkbox, Input, Radio, Space } from 'antd'
 
 import ID from '../../../utils/uuid'
 
@@ -17,6 +18,7 @@ const DynamicOptionList = ({
   canHaveOptionValue = false,
   canHaveOptionCorrect = false,
   canHaveInfo = false,
+  canHaveDefaultValue = false,
 }) => {
   const [element, setElement] = useState(propsElement)
   const [dirty, setDirty] = useState(false)
@@ -219,6 +221,30 @@ const DynamicOptionList = ({
     [preview, updateElement, syncOptionsWithSameColumnElements]
   )
 
+  const handleOptionDefault = useCallback(
+    (optionIndex) => {
+      setElement((prevElement) => {
+        const newElement = { ...prevElement }
+
+        newElement.options.forEach((opt, i) => {
+          if (i === optionIndex) {
+            opt.isDefault = !opt.isDefault
+          } else {
+            delete opt.isDefault
+          }
+        })
+
+        setTimeout(() => {
+          updateElement.call(preview, newElement)
+          syncOptionsWithSameColumnElements(newElement.options)
+        }, 0)
+
+        return newElement
+      })
+    },
+    [preview, updateElement, syncOptionsWithSameColumnElements]
+  )
+
   const updateOption = useCallback(() => {
     if (dirty) {
       updateElement.call(preview, element)
@@ -278,15 +304,46 @@ const DynamicOptionList = ({
   const shouldShowCorrect =
     canHaveOptionCorrect || (isInDynamicColumn && propsElement?.element === 'Checkboxes')
 
+  const shouldShowDefault = canHaveDefaultValue
+
+  // Compute how many extra columns after Options/Value
+  const extraCols = [shouldShowInfo, shouldShowCorrect, shouldShowDefault].filter(Boolean)
+  const extraColWidths = extraCols.map(() => '60px').join(' ')
+
+  const getGridColumns = () => {
+    if (canHaveOptionValue) {
+      if (extraCols.length > 0) {
+        return `1fr 120px ${extraColWidths} 120px`
+      }
+      return '1fr 120px 120px'
+    }
+    return '1fr 120px'
+  }
+
+  const gridTemplateColumns = getGridColumns()
+
   return (
     <div className="dynamic-option-list">
       <ul>
         <li>
-          <div style={{ display: 'grid', gridTemplateColumns: canHaveOptionValue ? (shouldShowInfo || shouldShowCorrect ? '1fr 120px 60px 60px 120px' : '1fr 120px 120px') : '1fr 120px', gap: '8px', alignItems: 'center', padding: '4px 0' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns,
+              gap: '8px',
+              alignItems: 'center',
+              padding: '4px 0',
+            }}
+          >
             <Input value="Options" disabled />
             {canHaveOptionValue && <Input value="Value" disabled />}
             {shouldShowInfo && <Input value="Info" disabled style={{ textAlign: 'center' }} />}
-            {shouldShowCorrect && <Input value="Correct" disabled style={{ textAlign: 'center' }} />}
+            {shouldShowCorrect && (
+              <Input value="Correct" disabled style={{ textAlign: 'center' }} />
+            )}
+            {shouldShowDefault && (
+              <Input value="Default" disabled style={{ textAlign: 'center' }} />
+            )}
             <div></div>
           </div>
         </li>
@@ -295,7 +352,15 @@ const DynamicOptionList = ({
           const val = option.value || ''
           return (
             <li className="clearfix" key={itemKey}>
-              <div style={{ display: 'grid', gridTemplateColumns: canHaveOptionValue ? (canHaveInfo || canHaveOptionCorrect ? '1fr 120px 60px 60px 120px' : '1fr 120px 120px') : '1fr 120px', gap: '8px', alignItems: 'center', padding: '4px 0' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns,
+                  gap: '8px',
+                  alignItems: 'center',
+                  padding: '4px 0',
+                }}
+              >
                 <Input
                   value={option.text}
                   onChange={(e) => {
@@ -327,6 +392,12 @@ const DynamicOptionList = ({
                       Object.prototype.hasOwnProperty.call(option, 'correct') && option.correct
                     }
                     onChange={() => handleOptionCorrect(index)}
+                  />
+                )}
+                {shouldShowDefault && (
+                  <Radio
+                    checked={option.isDefault === true}
+                    onChange={() => handleOptionDefault(index)}
                   />
                 )}
 
@@ -386,6 +457,7 @@ DynamicOptionList.propTypes = {
   canHaveOptionValue: PropTypes.bool,
   canHaveOptionCorrect: PropTypes.bool,
   canHaveInfo: PropTypes.bool,
+  canHaveDefaultValue: PropTypes.bool,
 }
 
 export default DynamicOptionList

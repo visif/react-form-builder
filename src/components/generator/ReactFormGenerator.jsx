@@ -145,13 +145,36 @@ const ReactForm = (props) => {
         formContext.updateValue(key, value)
       }
     })
+
+    // Seed FormContext with isDefault option values for Dropdowns without answer data
+    props.data.forEach((item) => {
+      if (item.element === 'Dropdown' && !ansData[item.field_name] && Array.isArray(item.options)) {
+        const defaultOption = item.options.find((opt) => opt.isDefault === true)
+        if (defaultOption) {
+          formContext.updateValue(item.field_name, defaultOption.value)
+        }
+      }
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.answer_data, props.data])
 
   // Helper functions
   const getDefaultValue = useCallback(
     (item) => {
-      return answerData[item.field_name]
+      const value = answerData[item.field_name]
+      if (value !== undefined && value !== null) {
+        return value
+      }
+
+      // For Dropdown, fall back to the option marked as isDefault
+      if (item.element === 'Dropdown' && Array.isArray(item.options)) {
+        const defaultOption = item.options.find((opt) => opt.isDefault === true)
+        if (defaultOption) {
+          return defaultOption.value
+        }
+      }
+
+      return undefined
     },
     [answerData]
   )

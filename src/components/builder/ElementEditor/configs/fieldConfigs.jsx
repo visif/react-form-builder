@@ -26,8 +26,13 @@ export const buildFieldConfigs = ({
   onContentChange,
   updateElement,
 }) => {
-  const { canHaveDisplayHorizontal, canHaveOptionCorrect, canHaveOptionValue, canHaveInfo } =
-    props.element
+  const {
+    canHaveDisplayHorizontal,
+    canHaveOptionCorrect,
+    canHaveOptionValue,
+    canHaveInfo,
+    canHaveDefaultValue,
+  } = props.element
 
   return [
     // Rich text content editor (for Paragraph, Header, etc.)
@@ -161,6 +166,7 @@ export const buildFieldConfigs = ({
         canHaveOptionCorrect,
         canHaveOptionValue,
         canHaveInfo,
+        canHaveDefaultValue,
         data: props.preview?.state?.data,
         updateElement: props.updateElement,
         preview: props.preview,
