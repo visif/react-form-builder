@@ -8,6 +8,7 @@
  * - Simple display elements
  */
 import React from 'react'
+
 import Registry from '../../../utils/registry'
 import FormElements from '../../form-elements/index'
 import {
@@ -131,13 +132,7 @@ export const getSimpleElement = (item) => {
 /**
  * Render form element based on type
  */
-export const renderFormElement = (
-  item,
-  props,
-  handlers,
-  helpers,
-  refs
-) => {
+export const renderFormElement = (item, props, handlers, helpers, refs) => {
   const {
     handleChange,
     getDefaultValue,
@@ -171,7 +166,8 @@ export const renderFormElement = (
         getEditor,
         formContext,
         inputsRef,
-        (customItem) => getCustomElement(customItem, props, handleChange, getDefaultValue, inputsRef)
+        (customItem) =>
+          getCustomElement(customItem, props, handleChange, getDefaultValue, inputsRef)
       )
 
     case 'DataSource':
@@ -196,11 +192,8 @@ export const renderFormElement = (
       return getCustomElement(item, props, handleChange, getDefaultValue, inputsRef)
 
     case 'FourColumnRow':
-      return getContainerElement(
-        item,
-        FourColumnRow,
-        getDataById,
-        (currentItem) => getInputElement(
+      return getContainerElement(item, FourColumnRow, getDataById, (currentItem) =>
+        getInputElement(
           currentItem,
           props,
           handleChange,
@@ -208,16 +201,14 @@ export const renderFormElement = (
           getEditor,
           formContext,
           inputsRef,
-          (customItem) => getCustomElement(customItem, props, handleChange, getDefaultValue, inputsRef)
+          (customItem) =>
+            getCustomElement(customItem, props, handleChange, getDefaultValue, inputsRef)
         )
       )
 
     case 'ThreeColumnRow':
-      return getContainerElement(
-        item,
-        ThreeColumnRow,
-        getDataById,
-        (currentItem) => getInputElement(
+      return getContainerElement(item, ThreeColumnRow, getDataById, (currentItem) =>
+        getInputElement(
           currentItem,
           props,
           handleChange,
@@ -225,16 +216,14 @@ export const renderFormElement = (
           getEditor,
           formContext,
           inputsRef,
-          (customItem) => getCustomElement(customItem, props, handleChange, getDefaultValue, inputsRef)
+          (customItem) =>
+            getCustomElement(customItem, props, handleChange, getDefaultValue, inputsRef)
         )
       )
 
     case 'TwoColumnRow':
-      return getContainerElement(
-        item,
-        TwoColumnRow,
-        getDataById,
-        (currentItem) => getInputElement(
+      return getContainerElement(item, TwoColumnRow, getDataById, (currentItem) =>
+        getInputElement(
           currentItem,
           props,
           handleChange,
@@ -242,16 +231,14 @@ export const renderFormElement = (
           getEditor,
           formContext,
           inputsRef,
-          (customItem) => getCustomElement(customItem, props, handleChange, getDefaultValue, inputsRef)
+          (customItem) =>
+            getCustomElement(customItem, props, handleChange, getDefaultValue, inputsRef)
         )
       )
 
     case 'DynamicColumnRow':
-      return getContainerElement(
-        item,
-        DynamicColumnRow,
-        getDataById,
-        (currentItem) => getInputElement(
+      return getContainerElement(item, DynamicColumnRow, getDataById, (currentItem) =>
+        getInputElement(
           currentItem,
           props,
           handleChange,
@@ -259,7 +246,8 @@ export const renderFormElement = (
           getEditor,
           formContext,
           inputsRef,
-          (customItem) => getCustomElement(customItem, props, handleChange, getDefaultValue, inputsRef)
+          (customItem) =>
+            getCustomElement(customItem, props, handleChange, getDefaultValue, inputsRef)
         )
       )
 
@@ -355,6 +343,7 @@ export const renderFormElement = (
           key={`form_${item.id}`}
           data={item}
           defaultValue={getDefaultValue(item)}
+          handleChange={handleChange}
           onUploadFile={props.onUploadFile}
           onDownloadFile={props.onDownloadFile}
           editor={getEditor(item)}

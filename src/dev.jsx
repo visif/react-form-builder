@@ -1,7 +1,9 @@
-import React from 'react';
-import { createRoot } from 'react-dom/client';
-import { ReactFormBuilder, ReactFormGenerator } from './index';
-import '../scss/application.scss';
+import React from 'react'
+
+import { createRoot } from 'react-dom/client'
+
+import '../scss/application.scss'
+import { ReactFormBuilder, ReactFormGenerator } from './index'
 
 // Mock sample form data for testing
 const SAMPLE_FORM_DATA = [
@@ -18,7 +20,8 @@ const SAMPLE_FORM_DATA = [
     id: 'sample-paragraph',
     element: 'Paragraph',
     text: 'Paragraph',
-    content: '<p style="color: #333;">Please fill out all required fields marked with <span style="color: red;">*</span></p>',
+    content:
+      '<p style="color: #333;">Please fill out all required fields marked with <span style="color: red;">*</span></p>',
     static: true,
   },
   {
@@ -76,7 +79,7 @@ const SAMPLE_FORM_DATA = [
     field_name: 'comments',
     label: 'Comments',
   },
-];
+]
 
 // Mock answer data for testing pre-population
 const SAMPLE_ANSWER_DATA = [
@@ -84,247 +87,292 @@ const SAMPLE_ANSWER_DATA = [
   { name: 'email', value: 'john.doe@example.com' },
   { name: 'country', value: 'us' },
   { name: 'interests', value: ['tech', 'music'] },
-];
+]
 
 // Dev app with comprehensive testing features
 function DevApp() {
-  const [formData, setFormData] = React.useState([]);
-  const [showPreview, setShowPreview] = React.useState(false);
-  const [submittedData, setSubmittedData] = React.useState(null);
-  const [answerData, setAnswerData] = React.useState([]);
-  const [readOnly, setReadOnly] = React.useState(false);
-  const [skipValidations, setSkipValidations] = React.useState(false);
-  const [hideActions, setHideActions] = React.useState(false);
-  const [logs, setLogs] = React.useState([]);
-  const [builderKey, setBuilderKey] = React.useState(0); // Key to force remount
-  const [generatorKey, setGeneratorKey] = React.useState(0); // Key to force generator remount
-  const [isLogExpanded, setIsLogExpanded] = React.useState(false); // Event log collapse state
+  const [formData, setFormData] = React.useState([])
+  const [showPreview, setShowPreview] = React.useState(false)
+  const [submittedData, setSubmittedData] = React.useState(null)
+  const [answerData, setAnswerData] = React.useState([])
+  const [readOnly, setReadOnly] = React.useState(false)
+  const [skipValidations, setSkipValidations] = React.useState(false)
+  const [hideActions, setHideActions] = React.useState(false)
+  const [logs, setLogs] = React.useState([])
+  const [builderKey, setBuilderKey] = React.useState(0) // Key to force remount
+  const [generatorKey, setGeneratorKey] = React.useState(0) // Key to force generator remount
+  const [isLogExpanded, setIsLogExpanded] = React.useState(false) // Event log collapse state
 
   // Mock files configuration for file uploads
-  const mockFiles = React.useMemo(() => [
-    {
-      id: 'file1',
-      file_name: 'sample-document.pdf',
-      file_path: 'https://example.com/files/sample-document.pdf',
-    },
-    {
-      id: 'file2',
-      file_name: 'sample-image.jpg',
-      file_path: 'https://example.com/files/sample-image.jpg',
-    },
-  ], []);
+  const mockFiles = React.useMemo(
+    () => [
+      {
+        id: 'file1',
+        file_name: 'sample-document.pdf',
+        file_path: 'https://example.com/files/sample-document.pdf',
+      },
+      {
+        id: 'file2',
+        file_name: 'sample-image.jpg',
+        file_path: 'https://example.com/files/sample-image.jpg',
+      },
+    ],
+    []
+  )
 
   // Add log entry with throttling to prevent performance issues
   const addLog = React.useCallback((type, message, data = null) => {
-    const timestamp = new Date().toLocaleTimeString();
-    setLogs(prev => {
+    const timestamp = new Date().toLocaleTimeString()
+    setLogs((prev) => {
       // Limit log size to prevent memory issues
-      const newLogs = [...prev, { type, message, data, timestamp }];
-      return newLogs.length > 100 ? newLogs.slice(-100) : newLogs;
-    });
-    console.log(`[${type}] ${message}`, data || '');
-  }, []);
+      const newLogs = [...prev, { type, message, data, timestamp }]
+      return newLogs.length > 100 ? newLogs.slice(-100) : newLogs
+    })
+    console.log(`[${type}] ${message}`, data || '')
+  }, [])
 
   // Debounce timer ref
-  const changeTimeoutRef = React.useRef(null);
-  const userPropertiesLoggedRef = React.useRef(false);
+  const changeTimeoutRef = React.useRef(null)
+  const userPropertiesLoggedRef = React.useRef(false)
 
   // Mock callbacks
-  const handleLoad = React.useCallback((data) => {
-    addLog('onLoad', 'Form data loaded', data);
-  }, [addLog]);
+  const handleLoad = React.useCallback(
+    (data) => {
+      addLog('onLoad', 'Form data loaded', data)
+    },
+    [addLog]
+  )
 
-  const handleChange = React.useCallback((data) => {
-    // Update form data immediately
-    setFormData(data);
-    // Debounced logging to prevent performance issues
-    if (changeTimeoutRef.current) {
-      clearTimeout(changeTimeoutRef.current);
-    }
-    changeTimeoutRef.current = setTimeout(() => {
-      addLog('onChange', 'Form data changed', { elementCount: data.length });
-    }, 300);
-  }, [addLog]);
+  const handleChange = React.useCallback(
+    (data) => {
+      // Update form data immediately
+      setFormData(data)
+      // Debounced logging to prevent performance issues
+      if (changeTimeoutRef.current) {
+        clearTimeout(changeTimeoutRef.current)
+      }
+      changeTimeoutRef.current = setTimeout(() => {
+        addLog('onChange', 'Form data changed', { elementCount: data.length })
+      }, 300)
+    },
+    [addLog]
+  )
 
-  const handlePost = React.useCallback((data) => {
-    addLog('onPost', 'Form saved via POST', data);
-    return Promise.resolve({ success: true, message: 'Form saved successfully' });
-  }, [addLog]);
+  const handlePost = React.useCallback(
+    (data) => {
+      addLog('onPost', 'Form saved via POST', data)
+      return Promise.resolve({ success: true, message: 'Form saved successfully' })
+    },
+    [addLog]
+  )
 
-  const handleFormSubmit = React.useCallback((data) => {
-    addLog('onSubmit', 'Form submitted', data);
-    setSubmittedData(data);
-    // Simulate async processing
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        addLog('onSubmit', 'Form submission completed');
-        resolve({ success: true });
-      }, 500);
-    });
-  }, [addLog]);
+  const handleFormSubmit = React.useCallback(
+    (data) => {
+      addLog('onSubmit', 'Form submitted', data)
+      setSubmittedData(data)
+      // Simulate async processing
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          addLog('onSubmit', 'Form submission completed')
+          resolve({ success: true })
+        }, 500)
+      })
+    },
+    [addLog]
+  )
 
-  const handleUpdate = React.useCallback((data) => {
-    addLog('onUpdate', 'Form field updated', data);
-  }, [addLog]);
+  const handleUpdate = React.useCallback(
+    (data) => {
+      addLog('onUpdate', 'Form field updated', data)
+    },
+    [addLog]
+  )
 
   // Mock file upload callbacks
-  const handleImageUpload = React.useCallback((file) => {
-    addLog('onImageUpload', 'Image upload requested', { fileName: file?.name, size: file?.size });
-    // Simulate async upload
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const mockUrl = `https://example.com/uploads/${file?.name || 'image.jpg'}`;
-        addLog('onImageUpload', 'Image upload completed', { url: mockUrl });
-        resolve(mockUrl);
-      }, 1000);
-    });
-  }, [addLog]);
+  const handleImageUpload = React.useCallback(
+    (file) => {
+      addLog('onImageUpload', 'Image upload requested', { fileName: file?.name, size: file?.size })
+      // Simulate async upload
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          const mockUrl = `https://example.com/uploads/${file?.name || 'image.jpg'}`
+          addLog('onImageUpload', 'Image upload completed', { url: mockUrl })
+          resolve(mockUrl)
+        }, 1000)
+      })
+    },
+    [addLog]
+  )
 
-  const handleUploadFile = React.useCallback((file) => {
-    addLog('onUploadFile', 'File upload requested', { fileName: file?.name, size: file?.size });
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const mockUrl = `https://example.com/uploads/${file?.name || 'file.pdf'}`;
-        addLog('onUploadFile', 'File upload completed', { url: mockUrl });
-        resolve(mockUrl);
-      }, 1000);
-    });
-  }, [addLog]);
+  const handleUploadFile = React.useCallback(
+    (file) => {
+      addLog('onUploadFile', 'File upload requested', { fileName: file?.name, size: file?.size })
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          const mockUrl = `https://example.com/uploads/${file?.name || 'file.pdf'}`
+          addLog('onUploadFile', 'File upload completed', { url: mockUrl })
+          resolve(mockUrl)
+        }, 1000)
+      })
+    },
+    [addLog]
+  )
 
-  const handleUploadImage = React.useCallback((file) => {
-    addLog('onUploadImage', 'Image upload (alt) requested', { fileName: file?.name, size: file?.size });
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const mockUrl = `https://example.com/uploads/${file?.name || 'image.png'}`;
-        addLog('onUploadImage', 'Image upload (alt) completed', { url: mockUrl });
-        resolve(mockUrl);
-      }, 1000);
-    });
-  }, [addLog]);
+  const handleUploadImage = React.useCallback(
+    (file) => {
+      addLog('onUploadImage', 'Image upload (alt) requested', {
+        fileName: file?.name,
+        size: file?.size,
+      })
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          const mockUrl = `https://example.com/uploads/${file?.name || 'image.png'}`
+          addLog('onUploadImage', 'Image upload (alt) completed', { url: mockUrl })
+          resolve(mockUrl)
+        }, 1000)
+      })
+    },
+    [addLog]
+  )
 
-  const handleDownloadFile = React.useCallback((fileUrl) => {
-    addLog('onDownloadFile', 'File download requested', { url: fileUrl });
-    // Simulate download
-    window.open(fileUrl, '_blank');
-  }, [addLog]);
+  const handleDownloadFile = React.useCallback(
+    (fileUrl) => {
+      addLog('onDownloadFile', 'File download requested', { url: fileUrl })
+      // Simulate download
+      window.open(fileUrl, '_blank')
+    },
+    [addLog]
+  )
 
   // Mock data source callbacks
-  const handleGetDataSource = React.useCallback((data) => {
-    addLog('getDataSource', 'Data source requested', data);
+  const handleGetDataSource = React.useCallback(
+    (data) => {
+      addLog('getDataSource', 'Data source requested', data)
 
-    // Return mock data based on sourceType
-    switch (data.sourceType) {
-      case 'name':
-        return Promise.resolve([
-          { id: 'user_1', name: 'John Doe' },
-          { id: 'user_2', name: 'Jane Smith' },
-          { id: 'user_3', name: 'Bob Johnson' },
-        ]);
-      case 'department':
-        return Promise.resolve([
-          { id: 'dept_1', name: 'Engineering' },
-          { id: 'dept_2', name: 'Sales' },
-          { id: 'dept_3', name: 'Marketing' },
-          { id: 'dept_4', name: 'HR' },
-        ]);
-      case 'role':
-        return Promise.resolve([
-          { id: 'role_1', name: 'Admin' },
-          { id: 'role_2', name: 'Manager' },
-          { id: 'role_3', name: 'Employee' },
-        ]);
-      case 'form':
-        // If it's a form source, we might want to return data from that form
-        // For now, return generic form data
-        return Promise.resolve([
-          { id: 'form_item_1', name: 'Form Item 1' },
-          { id: 'form_item_2', name: 'Form Item 2' },
-          { id: 'form_item_3', name: 'Form Item 3' },
-        ]);
-      default:
-        // Default mock data
-        return Promise.resolve([
-          { id: 'option1', name: 'Option 1' },
-          { id: 'option2', name: 'Option 2' },
-          { id: 'option3', name: 'Option 3' },
-        ]);
-    }
-  }, [addLog]);
+      // Return mock data based on sourceType
+      switch (data.sourceType) {
+        case 'name':
+          return Promise.resolve([
+            { id: 'user_1', name: 'John Doe' },
+            { id: 'user_2', name: 'Jane Smith' },
+            { id: 'user_3', name: 'Bob Johnson' },
+          ])
+        case 'department':
+          return Promise.resolve([
+            { id: 'dept_1', name: 'Engineering' },
+            { id: 'dept_2', name: 'Sales' },
+            { id: 'dept_3', name: 'Marketing' },
+            { id: 'dept_4', name: 'HR' },
+          ])
+        case 'role':
+          return Promise.resolve([
+            { id: 'role_1', name: 'Admin' },
+            { id: 'role_2', name: 'Manager' },
+            { id: 'role_3', name: 'Employee' },
+          ])
+        case 'form':
+          // If it's a form source, we might want to return data from that form
+          // For now, return generic form data
+          return Promise.resolve([
+            { id: 'form_item_1', name: 'Form Item 1' },
+            { id: 'form_item_2', name: 'Form Item 2' },
+            { id: 'form_item_3', name: 'Form Item 3' },
+          ])
+        default:
+          // Default mock data
+          return Promise.resolve([
+            { id: 'option1', name: 'Option 1' },
+            { id: 'option2', name: 'Option 2' },
+            { id: 'option3', name: 'Option 3' },
+          ])
+      }
+    },
+    [addLog]
+  )
 
-  const handleGetFormSource = React.useCallback((data) => {
-    addLog('getFormSource', 'Form source requested', { data });
-    // Return mock array of forms for DataSource/FormLink dropdown
-    // The 'data' parameter is the element data object
-    const mockForms = [
-      {
-        id: 1,
-        title: 'Employee Registration Form',
-        name: 'Employee Registration Form',
-      },
-      {
-        id: 2,
-        title: 'Customer Feedback Form',
-        name: 'Customer Feedback Form',
-      },
-      {
-        id: 3,
-        title: 'Event Registration Form',
-        name: 'Event Registration Form',
-      },
-    ];
-    return Promise.resolve(mockForms);
-  }, [addLog]);
+  const handleGetFormSource = React.useCallback(
+    (data) => {
+      addLog('getFormSource', 'Form source requested', { data })
+      // Return mock array of forms for DataSource/FormLink dropdown
+      // The 'data' parameter is the element data object
+      const mockForms = [
+        {
+          id: 1,
+          title: 'Employee Registration Form',
+          name: 'Employee Registration Form',
+        },
+        {
+          id: 2,
+          title: 'Customer Feedback Form',
+          name: 'Customer Feedback Form',
+        },
+        {
+          id: 3,
+          title: 'Event Registration Form',
+          name: 'Event Registration Form',
+        },
+      ]
+      return Promise.resolve(mockForms)
+    },
+    [addLog]
+  )
 
-  const handleGetFormContent = React.useCallback((formItem) => {
-    // Extract the ID from the form object (formItem can be the entire form object or just an ID)
-    const formId = typeof formItem === 'object' ? formItem.id : formItem;
-    addLog('getFormContent', 'Form content requested', { formItem, extractedId: formId });
+  const handleGetFormContent = React.useCallback(
+    (formItem) => {
+      // Extract the ID from the form object (formItem can be the entire form object or just an ID)
+      const formId = typeof formItem === 'object' ? formItem.id : formItem
+      addLog('getFormContent', 'Form content requested', { formItem, extractedId: formId })
 
-    // Mock form content with realistic field structures
-    // Note: DataSourceEditor expects an object with a 'columns' property
-    const mockFormContents = {
-      1: { // Employee Registration Form
-        columns: [
-          { id: 'emp_id', field_name: 'employee_id', label: 'Employee ID' },
-          { id: 'emp_name', field_name: 'full_name', label: 'Full Name' },
-          { id: 'emp_email', field_name: 'email', label: 'Email Address' },
-          { id: 'emp_dept', field_name: 'department', label: 'Department' },
-          { id: 'emp_pos', field_name: 'position', label: 'Position' },
-        ]
-      },
-      2: { // Customer Feedback Form
-        columns: [
-          { id: 'cust_name', field_name: 'customer_name', label: 'Customer Name' },
-          { id: 'cust_email', field_name: 'email', label: 'Email' },
-          { id: 'cust_rating', field_name: 'rating', label: 'Satisfaction Rating' },
-          { id: 'cust_feedback', field_name: 'feedback', label: 'Feedback Comments' },
-        ]
-      },
-      3: { // Event Registration Form
-        columns: [
-          { id: 'evt_name', field_name: 'attendee_name', label: 'Attendee Name' },
-          { id: 'evt_email', field_name: 'email', label: 'Email Address' },
-          { id: 'evt_phone', field_name: 'phone', label: 'Phone Number' },
-          { id: 'evt_ticket', field_name: 'ticket_type', label: 'Ticket Type' },
-          { id: 'evt_diet', field_name: 'dietary_requirements', label: 'Dietary Requirements' },
-        ]
-      },
-    };
+      // Mock form content with realistic field structures
+      // Note: DataSourceEditor expects an object with a 'columns' property
+      const mockFormContents = {
+        1: {
+          // Employee Registration Form
+          columns: [
+            { id: 'emp_id', field_name: 'employee_id', label: 'Employee ID' },
+            { id: 'emp_name', field_name: 'full_name', label: 'Full Name' },
+            { id: 'emp_email', field_name: 'email', label: 'Email Address' },
+            { id: 'emp_dept', field_name: 'department', label: 'Department' },
+            { id: 'emp_pos', field_name: 'position', label: 'Position' },
+          ],
+        },
+        2: {
+          // Customer Feedback Form
+          columns: [
+            { id: 'cust_name', field_name: 'customer_name', label: 'Customer Name' },
+            { id: 'cust_email', field_name: 'email', label: 'Email' },
+            { id: 'cust_rating', field_name: 'rating', label: 'Satisfaction Rating' },
+            { id: 'cust_feedback', field_name: 'feedback', label: 'Feedback Comments' },
+          ],
+        },
+        3: {
+          // Event Registration Form
+          columns: [
+            { id: 'evt_name', field_name: 'attendee_name', label: 'Attendee Name' },
+            { id: 'evt_email', field_name: 'email', label: 'Email Address' },
+            { id: 'evt_phone', field_name: 'phone', label: 'Phone Number' },
+            { id: 'evt_ticket', field_name: 'ticket_type', label: 'Ticket Type' },
+            { id: 'evt_diet', field_name: 'dietary_requirements', label: 'Dietary Requirements' },
+          ],
+        },
+      }
 
-    const content = mockFormContents[formId] || { columns: [] };
-    addLog('getFormContent', 'Returning form content', {
-      formId,
-      fieldCount: content.columns?.length || 0,
-      structure: content
-    });
-    return Promise.resolve(content);
-  }, [addLog]);
+      const content = mockFormContents[formId] || { columns: [] }
+      addLog('getFormContent', 'Returning form content', {
+        formId,
+        fieldCount: content.columns?.length || 0,
+        structure: content,
+      })
+      return Promise.resolve(content)
+    },
+    [addLog]
+  )
 
   const handleGetActiveUserProperties = React.useCallback(() => {
     // Only log once to prevent infinite loop (this function is called on every render)
     if (!userPropertiesLoggedRef.current) {
-      addLog('getActiveUserProperties', 'Active user properties requested');
-      userPropertiesLoggedRef.current = true;
+      addLog('getActiveUserProperties', 'Active user properties requested')
+      userPropertiesLoggedRef.current = true
     }
     // Return mock user properties directly (not a Promise)
     return {
@@ -333,80 +381,82 @@ function DevApp() {
       email: 'john.doe@example.com',
       role: 'admin',
       hasDCCRole: true,
-    };
-  }, [addLog]);
+    }
+  }, [addLog])
 
   // Clear logs
   const clearLogs = React.useCallback(() => {
-    setLogs([]);
-  }, []);
+    setLogs([])
+  }, [])
 
   // Load sample data
   const loadSampleData = React.useCallback(() => {
-    setFormData(SAMPLE_FORM_DATA);
-    setBuilderKey(prev => prev + 1); // Force remount
-    addLog('info', 'Sample form data loaded', { elementCount: SAMPLE_FORM_DATA.length });
-  }, [addLog]);
+    setFormData(SAMPLE_FORM_DATA)
+    setBuilderKey((prev) => prev + 1) // Force remount
+    addLog('info', 'Sample form data loaded', { elementCount: SAMPLE_FORM_DATA.length })
+  }, [addLog])
 
   // Load sample answers
   const loadSampleAnswers = React.useCallback(() => {
-    setAnswerData(SAMPLE_ANSWER_DATA);
-    setGeneratorKey(prev => prev + 1); // Force generator remount
-    addLog('info', 'Sample answer data loaded', { answerCount: SAMPLE_ANSWER_DATA.length });
-  }, [addLog]);
+    setAnswerData(SAMPLE_ANSWER_DATA)
+    setGeneratorKey((prev) => prev + 1) // Force generator remount
+    addLog('info', 'Sample answer data loaded', { answerCount: SAMPLE_ANSWER_DATA.length })
+  }, [addLog])
 
   // Clear form data
   const clearFormData = React.useCallback(() => {
-    setFormData([]);
-    setSubmittedData(null);
-    setBuilderKey(prev => prev + 1); // Force remount
-    addLog('info', 'Form data cleared');
-  }, [addLog]);
+    setFormData([])
+    setSubmittedData(null)
+    setBuilderKey((prev) => prev + 1) // Force remount
+    addLog('info', 'Form data cleared')
+  }, [addLog])
 
   // Clear answer data
   const clearAnswerData = React.useCallback(() => {
-    setAnswerData([]);
-    setGeneratorKey(prev => prev + 1); // Force generator remount
-    addLog('info', 'Answer data cleared');
-  }, [addLog]);
+    setAnswerData([])
+    setGeneratorKey((prev) => prev + 1) // Force generator remount
+    addLog('info', 'Answer data cleared')
+  }, [addLog])
 
   // Export form data as JSON
   const exportFormData = React.useCallback(() => {
-    const dataStr = JSON.stringify(formData, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-    const exportFileDefaultName = 'form-data.json';
+    const dataStr = JSON.stringify(formData, null, 2)
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
+    const exportFileDefaultName = 'form-data.json'
 
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
+    const linkElement = document.createElement('a')
+    linkElement.setAttribute('href', dataUri)
+    linkElement.setAttribute('download', exportFileDefaultName)
+    linkElement.click()
 
-    addLog('info', 'Form data exported');
-  }, [formData, addLog]);
+    addLog('info', 'Form data exported')
+  }, [formData, addLog])
 
   return (
     <div style={{ padding: '20px', maxWidth: '1800px', margin: '0 auto' }}>
       <h1>React Form Builder - Development & Testing</h1>
 
       {/* Control Panel */}
-      <div style={{
-        backgroundColor: '#f8f9fa',
-        padding: '15px',
-        borderRadius: '8px',
-        marginBottom: '20px',
-        border: '1px solid #dee2e6'
-      }}>
+      <div
+        style={{
+          backgroundColor: '#f8f9fa',
+          padding: '15px',
+          borderRadius: '8px',
+          marginBottom: '20px',
+          border: '1px solid #dee2e6',
+        }}
+      >
         <h3 style={{ marginTop: 0 }}>Control Panel</h3>
 
         {/* Main Actions */}
         <div style={{ marginBottom: '15px' }}>
           <button
             onClick={() => {
-              setShowPreview(!showPreview);
+              setShowPreview(!showPreview)
               if (showPreview) {
-                setSubmittedData(null);
+                setSubmittedData(null)
               }
-              addLog('info', showPreview ? 'Switched to Builder view' : 'Switched to Preview view');
+              addLog('info', showPreview ? 'Switched to Builder view' : 'Switched to Preview view')
             }}
             style={{
               padding: '10px 20px',
@@ -416,7 +466,7 @@ function DevApp() {
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
-              marginRight: '10px'
+              marginRight: '10px',
             }}
           >
             {showPreview ? '← Back to Builder' : 'Preview Form →'}
@@ -432,7 +482,7 @@ function DevApp() {
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
-              marginRight: '10px'
+              marginRight: '10px',
             }}
           >
             Load Sample Form
@@ -450,7 +500,7 @@ function DevApp() {
               borderRadius: '4px',
               cursor: formData.length === 0 ? 'not-allowed' : 'pointer',
               marginRight: '10px',
-              opacity: formData.length === 0 ? 0.6 : 1
+              opacity: formData.length === 0 ? 0.6 : 1,
             }}
           >
             Clear Form
@@ -467,7 +517,7 @@ function DevApp() {
               border: 'none',
               borderRadius: '4px',
               cursor: formData.length === 0 ? 'not-allowed' : 'pointer',
-              opacity: formData.length === 0 ? 0.6 : 1
+              opacity: formData.length === 0 ? 0.6 : 1,
             }}
           >
             Export JSON
@@ -475,22 +525,26 @@ function DevApp() {
         </div>
 
         {/* Mock Functions Info */}
-        <div style={{
-          backgroundColor: 'white',
-          padding: '10px',
-          borderRadius: '4px',
-          border: '1px solid #dee2e6',
-          marginBottom: '15px'
-        }}>
+        <div
+          style={{
+            backgroundColor: 'white',
+            padding: '10px',
+            borderRadius: '4px',
+            border: '1px solid #dee2e6',
+            marginBottom: '15px',
+          }}
+        >
           <h4 style={{ marginTop: 0, fontSize: '14px', color: '#6c757d' }}>
             📋 Mocked Functions Available
           </h4>
           <div style={{ fontSize: '12px', color: '#6c757d', lineHeight: '1.6' }}>
             <strong>Form Callbacks:</strong> onChange, onLoad, onPost, onSubmit, onUpdate
             <br />
-            <strong>File Operations:</strong> onImageUpload, onUploadFile, onUploadImage, onDownloadFile
+            <strong>File Operations:</strong> onImageUpload, onUploadFile, onUploadImage,
+            onDownloadFile
             <br />
-            <strong>Data Sources:</strong> getDataSource, getFormSource, getFormContent, getActiveUserProperties
+            <strong>Data Sources:</strong> getDataSource, getFormSource, getFormContent,
+            getActiveUserProperties
             <br />
             <em style={{ color: '#28a745' }}>All events are logged in the Event Log sidebar →</em>
           </div>
@@ -498,12 +552,14 @@ function DevApp() {
 
         {/* Preview Options */}
         {showPreview && (
-          <div style={{
-            backgroundColor: 'white',
-            padding: '10px',
-            borderRadius: '4px',
-            border: '1px solid #dee2e6'
-          }}>
+          <div
+            style={{
+              backgroundColor: 'white',
+              padding: '10px',
+              borderRadius: '4px',
+              border: '1px solid #dee2e6',
+            }}
+          >
             <h4 style={{ marginTop: 0 }}>Preview Options</h4>
 
             <label style={{ display: 'block', marginBottom: '10px' }}>
@@ -511,8 +567,8 @@ function DevApp() {
                 type="checkbox"
                 checked={readOnly}
                 onChange={(e) => {
-                  setReadOnly(e.target.checked);
-                  addLog('info', `Read-only mode ${e.target.checked ? 'enabled' : 'disabled'}`);
+                  setReadOnly(e.target.checked)
+                  addLog('info', `Read-only mode ${e.target.checked ? 'enabled' : 'disabled'}`)
                 }}
                 style={{ marginRight: '8px' }}
               />
@@ -524,8 +580,8 @@ function DevApp() {
                 type="checkbox"
                 checked={skipValidations}
                 onChange={(e) => {
-                  setSkipValidations(e.target.checked);
-                  addLog('info', `Skip validations ${e.target.checked ? 'enabled' : 'disabled'}`);
+                  setSkipValidations(e.target.checked)
+                  addLog('info', `Skip validations ${e.target.checked ? 'enabled' : 'disabled'}`)
                 }}
                 style={{ marginRight: '8px' }}
               />
@@ -537,8 +593,8 @@ function DevApp() {
                 type="checkbox"
                 checked={hideActions}
                 onChange={(e) => {
-                  setHideActions(e.target.checked);
-                  addLog('info', `Hide actions ${e.target.checked ? 'enabled' : 'disabled'}`);
+                  setHideActions(e.target.checked)
+                  addLog('info', `Hide actions ${e.target.checked ? 'enabled' : 'disabled'}`)
                 }}
                 style={{ marginRight: '8px' }}
               />
@@ -556,7 +612,7 @@ function DevApp() {
                   border: 'none',
                   borderRadius: '4px',
                   cursor: 'pointer',
-                  marginRight: '10px'
+                  marginRight: '10px',
                 }}
               >
                 Load Sample Answers
@@ -573,7 +629,7 @@ function DevApp() {
                   border: 'none',
                   borderRadius: '4px',
                   cursor: answerData.length === 0 ? 'not-allowed' : 'pointer',
-                  opacity: answerData.length === 0 ? 0.6 : 1
+                  opacity: answerData.length === 0 ? 0.6 : 1,
                 }}
               >
                 Clear Answers
@@ -595,12 +651,14 @@ function DevApp() {
           {!showPreview ? (
             // Form Builder View
             <>
-              <div style={{
-                height: 'calc(100vh - 400px)',
-                border: '1px solid #dee2e6',
-                borderRadius: '8px',
-                overflow: 'hidden'
-              }}>
+              <div
+                style={{
+                  height: 'calc(100vh - 400px)',
+                  border: '1px solid #dee2e6',
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                }}
+              >
                 <ReactFormBuilder
                   key={builderKey}
                   data={formData}
@@ -626,14 +684,16 @@ function DevApp() {
 
               <div style={{ marginTop: '20px' }}>
                 <h3>Form Data (JSON) - {formData.length} elements</h3>
-                <pre style={{
-                  backgroundColor: '#f5f5f5',
-                  padding: '10px',
-                  borderRadius: '4px',
-                  overflow: 'auto',
-                  maxHeight: '300px',
-                  fontSize: '12px'
-                }}>
+                <pre
+                  style={{
+                    backgroundColor: '#f5f5f5',
+                    padding: '10px',
+                    borderRadius: '4px',
+                    overflow: 'auto',
+                    maxHeight: '300px',
+                    fontSize: '12px',
+                  }}
+                >
                   {JSON.stringify(formData, null, 2)}
                 </pre>
               </div>
@@ -643,13 +703,15 @@ function DevApp() {
             <div>
               <h2>Form Preview/Generator</h2>
               {formData.length === 0 ? (
-                <div style={{
-                  padding: '40px',
-                  textAlign: 'center',
-                  backgroundColor: '#f8f9fa',
-                  borderRadius: '8px',
-                  border: '1px solid #dee2e6'
-                }}>
+                <div
+                  style={{
+                    padding: '40px',
+                    textAlign: 'center',
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '8px',
+                    border: '1px solid #dee2e6',
+                  }}
+                >
                   <p style={{ fontSize: '18px', color: '#6c757d' }}>
                     No form elements yet. Go back to the builder and add some elements.
                   </p>
@@ -663,7 +725,7 @@ function DevApp() {
                       border: 'none',
                       borderRadius: '4px',
                       cursor: 'pointer',
-                      marginTop: '10px'
+                      marginTop: '10px',
                     }}
                   >
                     Load Sample Form
@@ -682,6 +744,8 @@ function DevApp() {
                     hide_actions={hideActions}
                     action_name="Submit Form"
                     back_name="Reset"
+                    onUploadFile={handleUploadFile}
+                    onDownloadFile={handleDownloadFile}
                     getDataSource={handleGetDataSource}
                     getFormSource={handleGetFormSource}
                     getFormContent={handleGetFormContent}
@@ -691,13 +755,15 @@ function DevApp() {
                   {submittedData && (
                     <div style={{ marginTop: '20px' }}>
                       <h3 style={{ color: '#28a745' }}>✓ Form Submitted Successfully!</h3>
-                      <pre style={{
-                        backgroundColor: '#d4edda',
-                        padding: '10px',
-                        borderRadius: '4px',
-                        overflow: 'auto',
-                        border: '1px solid #c3e6cb'
-                      }}>
+                      <pre
+                        style={{
+                          backgroundColor: '#d4edda',
+                          padding: '10px',
+                          borderRadius: '4px',
+                          overflow: 'auto',
+                          border: '1px solid #c3e6cb',
+                        }}
+                      >
                         {JSON.stringify(submittedData, null, 2)}
                       </pre>
                     </div>
@@ -709,22 +775,26 @@ function DevApp() {
         </div>
 
         {/* Event Log Sidebar */}
-        <div style={{
-          width: isLogExpanded ? '400px' : '50px',
-          backgroundColor: '#f8f9fa',
-          borderRadius: '8px',
-          border: '1px solid #dee2e6',
-          padding: isLogExpanded ? '15px' : '10px',
-          maxHeight: 'calc(100vh - 200px)',
-          overflow: 'auto',
-          transition: 'width 0.3s ease, padding 0.3s ease'
-        }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: isLogExpanded ? '10px' : '0'
-          }}>
+        <div
+          style={{
+            width: isLogExpanded ? '400px' : '50px',
+            backgroundColor: '#f8f9fa',
+            borderRadius: '8px',
+            border: '1px solid #dee2e6',
+            padding: isLogExpanded ? '15px' : '10px',
+            maxHeight: 'calc(100vh - 200px)',
+            overflow: 'auto',
+            transition: 'width 0.3s ease, padding 0.3s ease',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: isLogExpanded ? '10px' : '0',
+            }}
+          >
             {isLogExpanded && <h3 style={{ margin: 0 }}>Event Log</h3>}
             <div style={{ display: 'flex', gap: '5px' }}>
               <button
@@ -737,7 +807,7 @@ function DevApp() {
                   color: 'white',
                   border: 'none',
                   borderRadius: '4px',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
                 }}
               >
                 {isLogExpanded ? '◀' : '▶'}
@@ -752,7 +822,7 @@ function DevApp() {
                     color: 'white',
                     border: 'none',
                     borderRadius: '4px',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
                   }}
                 >
                   Clear
@@ -776,37 +846,46 @@ function DevApp() {
                         borderRadius: '4px',
                         marginBottom: '8px',
                         fontSize: '12px',
-                        border: '1px solid #dee2e6'
+                        border: '1px solid #dee2e6',
                       }}
                     >
-                      <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        marginBottom: '4px'
-                      }}>
-                        <span style={{
-                          fontWeight: 'bold',
-                          color: log.type === 'onSubmit' ? '#28a745' :
-                                 log.type === 'onChange' ? '#007bff' :
-                                 log.type === 'info' ? '#6c757d' : '#17a2b8'
-                        }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          marginBottom: '4px',
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontWeight: 'bold',
+                            color:
+                              log.type === 'onSubmit'
+                                ? '#28a745'
+                                : log.type === 'onChange'
+                                  ? '#007bff'
+                                  : log.type === 'info'
+                                    ? '#6c757d'
+                                    : '#17a2b8',
+                          }}
+                        >
                           {log.type}
                         </span>
-                        <span style={{ color: '#6c757d', fontSize: '11px' }}>
-                          {log.timestamp}
-                        </span>
+                        <span style={{ color: '#6c757d', fontSize: '11px' }}>{log.timestamp}</span>
                       </div>
                       <div style={{ color: '#495057' }}>{log.message}</div>
                       {log.data && (
-                        <pre style={{
-                          marginTop: '4px',
-                          fontSize: '10px',
-                          backgroundColor: '#f8f9fa',
-                          padding: '4px',
-                          borderRadius: '2px',
-                          overflow: 'auto',
-                          maxHeight: '100px'
-                        }}>
+                        <pre
+                          style={{
+                            marginTop: '4px',
+                            fontSize: '10px',
+                            backgroundColor: '#f8f9fa',
+                            padding: '4px',
+                            borderRadius: '2px',
+                            overflow: 'auto',
+                            maxHeight: '100px',
+                          }}
+                        >
                           {JSON.stringify(log.data, null, 2)}
                         </pre>
                       )}
@@ -819,9 +898,9 @@ function DevApp() {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-const container = document.getElementById('root');
-const root = createRoot(container);
-root.render(<DevApp />);
+const container = document.getElementById('root')
+const root = createRoot(container)
+root.render(<DevApp />)

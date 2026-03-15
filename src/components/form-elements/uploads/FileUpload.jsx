@@ -1,6 +1,7 @@
 import React from 'react'
+
+import { DeleteOutlined, DownloadOutlined, UploadOutlined } from '@ant-design/icons'
 import { Button, List } from 'antd'
-import { UploadOutlined, DeleteOutlined, DownloadOutlined } from '@ant-design/icons'
 
 import ComponentHeader from '../shared/ComponentHeader'
 
@@ -13,6 +14,13 @@ const FileUpload = (props) => {
     props.defaultValue && props.defaultValue.fileList
   )
   const [fileList, setFileList] = React.useState([...initFileList])
+
+  // Sync fileList to FormContext so submission and validation pick it up
+  React.useEffect(() => {
+    if (props.handleChange && props.data?.field_name) {
+      props.handleChange(props.data.field_name, { fileList })
+    }
+  }, [fileList, props.handleChange, props.data?.field_name])
 
   React.useEffect(() => {
     console.log('FileUpload >> useEffect (prop sync)')
