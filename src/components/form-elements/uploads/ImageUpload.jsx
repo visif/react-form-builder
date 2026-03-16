@@ -17,12 +17,38 @@ const ImageUpload = (props) => {
   const [fileName, setFileName] = React.useState(initFileName)
   const [blobUrl, setBlobUrl] = React.useState(initBlobUrl)
   const [isOpen, setIsOpen] = React.useState(false)
+  const [containerSize, setContainerSize] = React.useState({
+    width: (props.defaultValue && props.defaultValue.width) || null,
+    height: (props.defaultValue && props.defaultValue.height) || null,
+  })
+  const containerRef = React.useRef(null)
+
+  // Observe user-initiated resizes; guard against re-render-triggered re-fires
+  React.useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    const observer = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect
+      setContainerSize((prev) => {
+        if (prev.width === width && prev.height === height) return prev
+        return { width, height }
+      })
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   React.useEffect(() => {
     if (props.handleChange && props.data?.field_name) {
-      props.handleChange(props.data.field_name, { filePath, fileName, blobUrl })
+      props.handleChange(props.data.field_name, {
+        filePath,
+        fileName,
+        blobUrl,
+        width: containerSize.width,
+        height: containerSize.height,
+      })
     }
-  }, [filePath, fileName, blobUrl, props.handleChange, props.data?.field_name])
+  }, [filePath, fileName, blobUrl, containerSize, props.handleChange, props.data?.field_name])
 
   React.useEffect(() => {
     console.log('ImageUpload >> useEffect (prop sync)')
@@ -36,6 +62,10 @@ const ImageUpload = (props) => {
       setFilePath(newFilePath)
       setFileName(newFileName)
       setBlobUrl(newBlobUrl)
+      setContainerSize({
+        width: props.defaultValue.width || null,
+        height: props.defaultValue.height || null,
+      })
     }
   }, [props.defaultValue, defaultValue])
 
@@ -92,7 +122,20 @@ const ImageUpload = (props) => {
     <div className={`SortableItem rfb-item${props.data.pageBreakBefore ? ' alwaysbreak' : ''}`}>
       <ComponentHeader {...props} />
       <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
-        <div style={{ position: 'relative' }}>
+        <div
+          ref={containerRef}
+          style={{
+            position: 'relative',
+            display: blobUrl || filePath ? 'inline-block' : 'block',
+            resize: blobUrl || filePath ? 'both' : 'none',
+            overflow: 'hidden',
+            minWidth: 80,
+            minHeight: 60,
+            maxWidth: '100%',
+            ...(containerSize.width && { width: containerSize.width }),
+            ...(containerSize.height && { height: containerSize.height }),
+          }}
+        >
           {filePath && (
             <Button
               type="text"
@@ -109,7 +152,12 @@ const ImageUpload = (props) => {
           )}
           {(blobUrl || filePath) && (
             <Image
-              style={{ width: '100%', cursor: 'pointer' }}
+              style={{
+                width: '100%',
+                height: '100%',
+                display: 'block',
+                objectFit: 'contain',
+              }}
               src={blobUrl || filePath}
               preview={{
                 visible: isOpen,
