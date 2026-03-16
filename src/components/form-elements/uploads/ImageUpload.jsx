@@ -1,6 +1,7 @@
 import React from 'react'
+
+import { DeleteOutlined, UploadOutlined } from '@ant-design/icons'
 import { Button, Image, Modal } from 'antd'
-import { UploadOutlined, DeleteOutlined } from '@ant-design/icons'
 
 import ComponentHeader from '../shared/ComponentHeader'
 
@@ -16,6 +17,12 @@ const ImageUpload = (props) => {
   const [fileName, setFileName] = React.useState(initFileName)
   const [blobUrl, setBlobUrl] = React.useState(initBlobUrl)
   const [isOpen, setIsOpen] = React.useState(false)
+
+  React.useEffect(() => {
+    if (props.handleChange && props.data?.field_name) {
+      props.handleChange(props.data.field_name, { filePath, fileName, blobUrl })
+    }
+  }, [filePath, fileName, blobUrl, props.handleChange, props.data?.field_name])
 
   React.useEffect(() => {
     console.log('ImageUpload >> useEffect (prop sync)')

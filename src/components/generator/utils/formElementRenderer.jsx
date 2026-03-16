@@ -379,6 +379,7 @@ export const renderFormElement = (item, props, handlers, helpers, refs) => {
           key={`form_${item.id}`}
           data={item}
           defaultValue={getDefaultValue(item)}
+          handleChange={handleChange}
           onUploadImage={props.onUploadImage}
           editor={getEditor(item)}
           getActiveUserProperties={props.getActiveUserProperties}

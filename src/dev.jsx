@@ -226,7 +226,9 @@ function DevApp() {
       })
       return new Promise((resolve) => {
         setTimeout(() => {
-          const mockUrl = `https://example.com/uploads/${file?.name || 'image.png'}`
+          // Return path WITHOUT extension — ImageUpload.jsx appends the extension itself
+          const baseName = file?.name?.replace(/\.[^.]+$/, '') || 'image'
+          const mockUrl = `https://example.com/uploads/${baseName}`
           addLog('onUploadImage', 'Image upload (alt) completed', { url: mockUrl })
           resolve(mockUrl)
         }, 1000)
@@ -746,6 +748,7 @@ function DevApp() {
                     back_name="Reset"
                     onUploadFile={handleUploadFile}
                     onDownloadFile={handleDownloadFile}
+                    onUploadImage={handleUploadImage}
                     getDataSource={handleGetDataSource}
                     getFormSource={handleGetFormSource}
                     getFormContent={handleGetFormContent}
