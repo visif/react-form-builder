@@ -104,18 +104,40 @@ export const getInputElement = (
 /**
  * Get container element (rows/columns)
  */
+const wrapWithRequiredIndicator = (element, item) => {
+  if (item?.required === true && item?.hideLabel === true) {
+    return (
+      <>
+        <span style={{ color: 'red', fontSize: '11px', display: 'block', marginBottom: '4px' }}>
+          * Required
+        </span>
+        {element}
+      </>
+    )
+  }
+  return element
+}
+
 export const getContainerElement = (item, Element, getDataById, getInputElement) => {
   const controls = Array.isArray(item.childItems[0])
     ? item.childItems.map((row) => {
         return row.map((x) => {
           const currentItem = getDataById(x)
-          return x && currentItem ? getInputElement(currentItem) : <div>&nbsp;</div>
+          return x && currentItem ? (
+            wrapWithRequiredIndicator(getInputElement(currentItem), currentItem)
+          ) : (
+            <div>&nbsp;</div>
+          )
         })
       })
     : [
         item.childItems.map((x) => {
           const currentItem = getDataById(x)
-          return x && currentItem ? getInputElement(currentItem) : <div>&nbsp;</div>
+          return x && currentItem ? (
+            wrapWithRequiredIndicator(getInputElement(currentItem), currentItem)
+          ) : (
+            <div>&nbsp;</div>
+          )
         }),
       ]
   return <Element mutable={true} key={`form_${item.id}`} data={item} controls={controls} />

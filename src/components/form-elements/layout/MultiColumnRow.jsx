@@ -150,23 +150,41 @@ const MultiColumnRow = (props) => {
                       {controls ? (
                         controls[rowIndex]?.[columnIndex]
                       ) : (
-                        <Dustbin
-                          style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}
-                          data={data}
-                          accepts={accepts}
-                          items={childItems[rowIndex]}
-                          row={rowIndex}
-                          col={columnIndex}
-                          parentIndex={index}
-                          editModeOn={editModeOn}
-                          _onDestroy={() => removeChild(data, rowIndex, columnIndex)}
-                          getDataById={getDataById}
-                          setAsChild={setAsChild}
-                          seq={seq}
-                          syncColumnChanges={syncColumnChanges}
-                          updateElement={updateElement}
-                          {...props}
-                        />
+                        <>
+                          {(() => {
+                            const childItem =
+                              getDataById && getDataById(childItems[rowIndex][columnIndex])
+                            return childItem?.required === true && childItem?.hideLabel === true ? (
+                              <span
+                                style={{
+                                  color: 'red',
+                                  fontSize: '11px',
+                                  display: 'block',
+                                  marginBottom: '4px',
+                                }}
+                              >
+                                * Required
+                              </span>
+                            ) : null
+                          })()}
+                          <Dustbin
+                            style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}
+                            data={data}
+                            accepts={accepts}
+                            items={childItems[rowIndex]}
+                            row={rowIndex}
+                            col={columnIndex}
+                            parentIndex={index}
+                            editModeOn={editModeOn}
+                            _onDestroy={() => removeChild(data, rowIndex, columnIndex)}
+                            getDataById={getDataById}
+                            setAsChild={setAsChild}
+                            seq={seq}
+                            syncColumnChanges={syncColumnChanges}
+                            updateElement={updateElement}
+                            {...props}
+                          />
+                        </>
                       )}
                     </td>
                   )
