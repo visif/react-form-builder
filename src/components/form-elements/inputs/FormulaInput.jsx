@@ -268,6 +268,9 @@ const FormulaInput = (props) => {
             width: '100%',
             borderStyle: 'solid',
             cursor: 'not-allowed',
+            color: 'rgba(0, 0, 0, 0.85)',
+            WebkitTextFillColor: 'rgba(0, 0, 0, 0.85)',
+            opacity: 1,
           }}
         />
         {/* eslint-enable react/jsx-props-no-spreading */}

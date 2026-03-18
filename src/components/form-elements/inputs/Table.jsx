@@ -206,6 +206,11 @@ const Table = (props) => {
                     autoSize={{ minRows: 1, maxRows: 5 }}
                     disabled={isLabel || !isSameEditor}
                     value={value}
+                    style={{
+                      color: 'rgba(0, 0, 0, 0.85)',
+                      WebkitTextFillColor: 'rgba(0, 0, 0, 0.85)',
+                      opacity: 1,
+                    }}
                     onChange={(event) => {
                       handleInputChange(i, jIndex, event.target.value)
                     }}

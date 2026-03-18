@@ -138,7 +138,13 @@ const Checkboxes = (props) => {
                 {isChecked && option.info && (
                   <TextArea
                     rows={2}
-                    style={{ flex: 1, minWidth: '150px' }}
+                    style={{
+                      flex: 1,
+                      minWidth: '150px',
+                      color: 'rgba(0, 0, 0, 0.85)',
+                      WebkitTextFillColor: 'rgba(0, 0, 0, 0.85)',
+                      opacity: 1,
+                    }}
                     defaultValue={answerItem?.info ?? ''}
                     onChange={(e) => {
                       const infoValue = e.target.value

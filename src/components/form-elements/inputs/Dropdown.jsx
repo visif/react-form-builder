@@ -61,7 +61,12 @@ const Dropdown = (props) => {
   }
 
   const selectProps = {}
-  selectProps.style = { width: '100%' }
+  selectProps.style = {
+    width: '100%',
+    color: 'rgba(0, 0, 0, 0.85)',
+    WebkitTextFillColor: 'rgba(0, 0, 0, 0.85)',
+    opacity: 1,
+  }
   selectProps.placeholder = 'Please Select'
   selectProps.value = value || undefined
   selectProps.onChange = handleChange

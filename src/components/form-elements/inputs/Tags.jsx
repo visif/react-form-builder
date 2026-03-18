@@ -32,39 +32,42 @@ const Tags = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Empty deps - only run on mount
 
-  const handleChange = React.useCallback((selectedValues) => {
-    const newValue = selectedValues || []
-    setValue(newValue)
+  const handleChange = React.useCallback(
+    (selectedValues) => {
+      const newValue = selectedValues || []
+      setValue(newValue)
 
-    const { data, handleChange: onFormularChange } = props
-    const { formularKey, field_name } = data
+      const { data, handleChange: onFormularChange } = props
+      const { formularKey, field_name } = data
 
-    // Always call handleChange to update the form context
-    if (onFormularChange) {
-      // Use formularKey if it exists, otherwise use field_name
-      onFormularChange(formularKey || field_name, newValue)
-    }
-
-    // If onElementChange is provided, call it to synchronize changes across the column
-    if (props.onElementChange) {
-      // Create updated data object with the new value
-      const updatedData = {
-        ...props.data,
-        value: newValue,
+      // Always call handleChange to update the form context
+      if (onFormularChange) {
+        // Use formularKey if it exists, otherwise use field_name
+        onFormularChange(formularKey || field_name, newValue)
       }
 
-      // Send it for synchronization across columns
-      props.onElementChange(updatedData)
+      // If onElementChange is provided, call it to synchronize changes across the column
+      if (props.onElementChange) {
+        // Create updated data object with the new value
+        const updatedData = {
+          ...props.data,
+          value: newValue,
+        }
 
-      // Immediately apply changes to this component's data
-      if (props.data.dirty === undefined || props.data.dirty) {
-        updatedData.dirty = true
-        if (props.updateElement) {
-          props.updateElement(updatedData)
+        // Send it for synchronization across columns
+        props.onElementChange(updatedData)
+
+        // Immediately apply changes to this component's data
+        if (props.data.dirty === undefined || props.data.dirty) {
+          updatedData.dirty = true
+          if (props.updateElement) {
+            props.updateElement(updatedData)
+          }
         }
       }
-    }
-  }, [props])
+    },
+    [props]
+  )
 
   const options = props.data.options.map((option) => ({
     value: option.value,
@@ -73,7 +76,12 @@ const Tags = (props) => {
 
   const selectProps = {
     mode: 'multiple',
-    style: { width: '100%' },
+    style: {
+      width: '100%',
+      color: 'rgba(0, 0, 0, 0.85)',
+      WebkitTextFillColor: 'rgba(0, 0, 0, 0.85)',
+      opacity: 1,
+    },
     placeholder: props.data.label || 'Select tags',
     onChange: handleChange,
     options,

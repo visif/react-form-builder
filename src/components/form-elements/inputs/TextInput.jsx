@@ -60,7 +60,12 @@ const TextInput = (props) => {
   inputProps.name = props.data.field_name
   inputProps.onChange = handleChange
   inputProps.value = value
-  inputProps.style = { width: '100%' }
+  inputProps.style = {
+    width: '100%',
+    color: 'rgba(0, 0, 0, 0.85)',
+    WebkitTextFillColor: 'rgba(0, 0, 0, 0.85)',
+    opacity: 1,
+  }
 
   if (props.mutable) {
     inputProps.ref = inputField

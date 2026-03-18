@@ -63,7 +63,12 @@ const TextArea = (props) => {
   textareaProps.autoSize = { minRows: 3, maxRows: 10 }
   textareaProps.onChange = handleChange
   textareaProps.value = value
-  textareaProps.style = { width: '100%' }
+  textareaProps.style = {
+    width: '100%',
+    color: 'rgba(0, 0, 0, 0.85)',
+    WebkitTextFillColor: 'rgba(0, 0, 0, 0.85)',
+    opacity: 1,
+  }
 
   if (props.read_only || !isSameEditor) {
     textareaProps.disabled = true

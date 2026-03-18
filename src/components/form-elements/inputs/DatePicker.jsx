@@ -230,7 +230,12 @@ const DatePicker = (props) => {
               placeholder={placeholder}
               value={value ? formatDate(value, formatMask) : ''}
               disabled={!isSameEditor}
-              style={{ width: '100%' }}
+              style={{
+                width: '100%',
+                color: 'rgba(0, 0, 0, 0.85)',
+                WebkitTextFillColor: 'rgba(0, 0, 0, 0.85)',
+                opacity: 1,
+              }}
             />
           ) : !showTimeSelectOnly ? (
             <AntDatePicker
@@ -242,7 +247,12 @@ const DatePicker = (props) => {
               showTime={showTimeSelect ? { format: 'HH:mm', showSecond: false } : null}
               disabled={!isSameEditor || loading}
               placeholder={placeholder}
-              style={{ width: '100%' }}
+              style={{
+                width: '100%',
+                color: 'rgba(0, 0, 0, 0.85)',
+                WebkitTextFillColor: 'rgba(0, 0, 0, 0.85)',
+                opacity: 1,
+              }}
             />
           ) : (
             <AntTimePicker
@@ -252,7 +262,12 @@ const DatePicker = (props) => {
               value={value ? dayjs(value) : null}
               disabled={!isSameEditor || loading}
               placeholder={placeholder}
-              style={{ width: '100%' }}
+              style={{
+                width: '100%',
+                color: 'rgba(0, 0, 0, 0.85)',
+                WebkitTextFillColor: 'rgba(0, 0, 0, 0.85)',
+                opacity: 1,
+              }}
               format="HH:mm"
               minuteStep={1}
             />
