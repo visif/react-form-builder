@@ -4,11 +4,11 @@
 
 Three-layer component model:
 
-| Layer | Location | Role |
-|---|---|---|
-| **Builder** | `src/components/builder/` | Drag-and-drop canvas (`ReactFormBuilder`, `Preview`, `Toolbar`, `ElementEditor`) |
-| **Generator** | `src/components/generator/` | Form renderer (`ReactFormGenerator`, `FormValidator`) |
-| **Form Elements** | `src/components/form-elements/` | Field components shared by both layers |
+| Layer             | Location                        | Role                                                                             |
+| ----------------- | ------------------------------- | -------------------------------------------------------------------------------- |
+| **Builder**       | `src/components/builder/`       | Drag-and-drop canvas (`ReactFormBuilder`, `Preview`, `Toolbar`, `ElementEditor`) |
+| **Generator**     | `src/components/generator/`     | Form renderer (`ReactFormGenerator`, `FormValidator`)                            |
+| **Form Elements** | `src/components/form-elements/` | Field components shared by both layers                                           |
 
 Form elements are organized by category — `inputs/`, `display/`, `advanced/`, `uploads/`, `shared/` — and aggregated into a single plain `FormElements` object in [`src/components/form-elements/index.jsx`](../src/components/form-elements/index.jsx).
 
@@ -22,16 +22,22 @@ State is managed via `useReducer` + `createContext` in [`src/contexts/FormBuilde
 - Use `useCallback` to memoize handlers passed as props.
 - Custom elements are registered via the `Registry` singleton in [`src/utils/registry.js`](../src/utils/registry.js) — `Registry.register(name, Component)` throws on duplicates.
 
+## Package Manager
+
+- **Use Yarn v1 (classic) for all workspace commands.**
+- Do not use `npm install` for dependency installation in this repository.
+- Keep `yarn.lock` as the source of truth for dependency resolution.
+
 ## Build and Test
 
 ```bash
-npm install          # install dependencies
-npm run dev          # start Vite dev server (entry: src/dev.jsx)
-npm run build        # Vite library build → dist/app.es.js + dist/app.umd.js
-npm run build:style  # compile SCSS → dist/app.css
-npm run build:lib    # build + build:style
-npm run transpile    # Babel → lib/ (legacy output, rarely needed)
-npm run format       # Prettier over src/**
+yarn                 # install dependencies
+yarn dev             # start Vite dev server (entry: src/dev.jsx)
+yarn build           # Vite library build → dist/app.es.js + dist/app.umd.js
+yarn build:style     # compile SCSS → dist/app.css
+yarn build:lib       # build + build:style
+yarn transpile       # Babel → lib/ (legacy output, rarely needed)
+yarn format          # Prettier over src/**
 ```
 
 No test suite is currently configured — do not fabricate test commands.
@@ -50,7 +56,8 @@ No test suite is currently configured — do not fabricate test commands.
 - **Ant Design v5** is the UI component library (DatePicker, Slider, TimePicker, etc.) — Bootstrap is no longer used.
 - **react-quill-new** powers rich-text editing inside form elements.
 - **hot-formula-parser** is used by `FormulaInput`.
-- Published to GitHub Packages registry as `@visif/form-builder`; configure `.npmrc` with `@visif:registry=https://npm.pkg.github.com` and a `GITHUB_TOKEN`.
+- Published to GitHub Packages registry as `@visif/form-builder`; configure `.npmrc` with `@visif:registry=https://npm.pkg.github.com` and `//npm.pkg.github.com/:_authToken=<TOKEN_WITH_write:packages>`.
+- Publish with `npm publish` (uses `prepublishOnly` to build artifacts before publishing).
 
 ## Security
 
