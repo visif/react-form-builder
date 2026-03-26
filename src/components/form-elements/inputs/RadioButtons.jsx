@@ -75,6 +75,7 @@ const RadioButtons = (props) => {
       <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
         <ComponentLabel className="form-label" {...props} />
         <Radio.Group
+          style={{ width: '100%' }}
           name={uniqueName}
           value={selectedOption?.key}
           disabled={props.read_only || !isSameEditor}
