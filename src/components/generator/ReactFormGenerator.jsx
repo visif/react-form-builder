@@ -287,7 +287,28 @@ const ReactForm = (props) => {
       // Regular input: store value AND update formula variable
       formContext.updateValue(fieldName, value)
       const varKey = item?.formularKey || propKey
-      formContext.updateVariable(varKey, value)
+
+      // Extract a scalar value for formula variables.
+      // RadioButtons/Checkboxes emit [{key, value, info}] arrays — the formula
+      // system expects a plain numeric/string value.
+      let formulaValue = value
+      if (Array.isArray(value)) {
+        if (value.length === 0) {
+          formulaValue = ''
+        } else {
+          const firstItem = value[0]
+          if (typeof firstItem === 'object' && firstItem !== null && 'value' in firstItem) {
+            formulaValue =
+              typeof firstItem.value === 'boolean' ? (firstItem.value ? 1 : 0) : firstItem.value
+          } else {
+            formulaValue = firstItem
+          }
+        }
+      } else if (typeof value === 'object' && value !== null && 'value' in value) {
+        formulaValue = value.value
+      }
+
+      formContext.updateVariable(varKey, formulaValue)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [props.data]
