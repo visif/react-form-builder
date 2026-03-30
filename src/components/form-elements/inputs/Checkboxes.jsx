@@ -27,7 +27,6 @@ const Checkboxes = (props) => {
     const differentFromCurrent = defaultValueJSON !== currentValueJSON
 
     if (defaultChanged && differentFromCurrent) {
-      console.log('RESETTING VALUE because defaultValue changed externally')
       setValue(props.defaultValue || [])
       initialDefaultValue.current = props.defaultValue
     }
@@ -81,7 +80,6 @@ const Checkboxes = (props) => {
                   {...checkboxProps}
                   onChange={(e) => {
                     const checked = e.target.checked
-                    console.log('Checkbox clicked!', option.key, 'Checked:', checked)
 
                     // Build new value array
                     const newValue = checked
@@ -95,15 +93,13 @@ const Checkboxes = (props) => {
                         ]
                       : (value || []).filter((item) => item.key !== option.key)
 
-                    console.log('New value:', newValue)
-
                     // Update local state
                     setValue(newValue)
 
                     // Call parent handleChange to update form context
                     if (props.handleChange) {
-                      console.log('Calling handleChange with:', props.data.field_name, newValue)
-                      props.handleChange(props.data.field_name, newValue)
+                      const { formularKey, field_name } = props.data
+                      props.handleChange(formularKey || field_name, newValue)
                     }
 
                     // Defer state updates to avoid setState during render
@@ -153,7 +149,8 @@ const Checkboxes = (props) => {
                       )
                       setValue(newValue)
                       if (props.handleChange) {
-                        props.handleChange(props.data.field_name, newValue)
+                        const { formularKey, field_name } = props.data
+                        props.handleChange(formularKey || field_name, newValue)
                       }
                     }}
                     ref={(c) => {

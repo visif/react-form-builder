@@ -57,7 +57,6 @@ const FormulaInput = (props) => {
   const { data, style, variables: propVariables, emitter, defaultValue, handleChange } = props
 
   // --- state ---
-  const [error] = useState('')
   const [formula, setFormula] = useState(data?.formula || '')
   const [variables, setVariables] = useState(propVariables || {})
   const [value, setValue] = useState(() => {
@@ -263,7 +262,6 @@ const FormulaInput = (props) => {
           name={data?.field_name}
           value={formatNumber(value)}
           disabled={true}
-          status={error ? 'error' : ''}
           style={{
             width: '100%',
             borderStyle: 'solid',
@@ -273,10 +271,6 @@ const FormulaInput = (props) => {
             opacity: 1,
           }}
         />
-        {/* eslint-enable react/jsx-props-no-spreading */}
-        {error && (
-          <div style={{ color: '#ff4d4f', fontSize: '14px', marginTop: '4px' }}>{error}</div>
-        )}
       </div>
     </div>
   )

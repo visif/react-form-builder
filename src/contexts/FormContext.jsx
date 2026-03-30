@@ -44,6 +44,14 @@ export const FormProvider = ({ children, initialValues = {} }) => {
   const [validationErrors, setValidationErrors] = useState([])
   const variableListenersRef = useRef([])
 
+  // Refs for stable getter functions — avoid re-creating callbacks when state changes
+  const valuesRef = useRef(values)
+  const variablesRef = useRef(variables)
+  const validationErrorsRef = useRef(validationErrors)
+  valuesRef.current = values
+  variablesRef.current = variables
+  validationErrorsRef.current = validationErrors
+
   const updateValue = useCallback((fieldName, value) => {
     setValues((prev) => ({
       ...prev,
@@ -51,16 +59,13 @@ export const FormProvider = ({ children, initialValues = {} }) => {
     }))
   }, [])
 
-  const getValue = useCallback(
-    (fieldName) => {
-      return values[fieldName]
-    },
-    [values]
-  )
+  const getValue = useCallback((fieldName) => {
+    return valuesRef.current[fieldName]
+  }, [])
 
   const getAllValues = useCallback(() => {
-    return values
-  }, [values])
+    return valuesRef.current
+  }, [])
 
   const resetValues = useCallback(() => {
     setValues(initialValues)
@@ -83,16 +88,13 @@ export const FormProvider = ({ children, initialValues = {} }) => {
     })
   }, [])
 
-  const getVariable = useCallback(
-    (varKey) => {
-      return variables[varKey]
-    },
-    [variables]
-  )
+  const getVariable = useCallback((varKey) => {
+    return variablesRef.current[varKey]
+  }, [])
 
   const getAllVariables = useCallback(() => {
-    return variables
-  }, [variables])
+    return variablesRef.current
+  }, [])
 
   const setAllVariables = useCallback((newVariables) => {
     setVariables(newVariables)
@@ -112,8 +114,8 @@ export const FormProvider = ({ children, initialValues = {} }) => {
   }, [])
 
   const getErrors = useCallback(() => {
-    return validationErrors
-  }, [validationErrors])
+    return validationErrorsRef.current
+  }, [])
 
   const value = useMemo(
     () => ({
@@ -132,22 +134,7 @@ export const FormProvider = ({ children, initialValues = {} }) => {
       setErrors,
       getErrors,
     }),
-    [
-      values,
-      updateValue,
-      getValue,
-      getAllValues,
-      resetValues,
-      variables,
-      updateVariable,
-      getVariable,
-      getAllVariables,
-      setAllVariables,
-      addVariableListener,
-      validationErrors,
-      setErrors,
-      getErrors,
-    ]
+    [values, variables, validationErrors]
   )
 
   return <FormContext.Provider value={value}>{children}</FormContext.Provider>

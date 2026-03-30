@@ -2,6 +2,16 @@
 // Private array of chars to use
 const CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('')
 
+// Use crypto.getRandomValues when available for better randomness
+const getRandomInt = (max) => {
+  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+    const array = new Uint32Array(1)
+    crypto.getRandomValues(array)
+    return array[0] % max
+  }
+  return Math.floor(Math.random() * max)
+}
+
 const uuid = function (len, radix) {
   const chars = CHARS
   const uuid = []
@@ -10,7 +20,7 @@ const uuid = function (len, radix) {
 
   if (len) {
     // Compact form
-    for (i = 0; i < len; i++) uuid[i] = chars[0 | (Math.random() * radix)]
+    for (i = 0; i < len; i++) uuid[i] = chars[getRandomInt(radix)]
   } else {
     // rfc4122, version 4 form
     let r
@@ -23,7 +33,7 @@ const uuid = function (len, radix) {
     // per rfc4122, sec. 4.1.5
     for (i = 0; i < 36; i++) {
       if (!uuid[i]) {
-        r = 0 | (Math.random() * 16)
+        r = getRandomInt(16)
         uuid[i] = chars[i == 19 ? (r & 0x3) | 0x8 : r]
       }
     }
@@ -45,7 +55,7 @@ const uuidFast = function () {
     } else if (i == 14) {
       uuid[i] = '4'
     } else {
-      if (rnd <= 0x02) rnd = (0x2000000 + Math.random() * 0x1000000) | 0
+      if (rnd <= 0x02) rnd = (0x2000000 + getRandomInt(0x1000000)) | 0
       r = rnd & 0xf
       rnd = rnd >> 4
       uuid[i] = chars[i == 19 ? (r & 0x3) | 0x8 : r]
@@ -57,7 +67,7 @@ const uuidFast = function () {
 // A more compact, but less performant, RFC4122v4 solution:
 const uuidCompact = function () {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    const r = (Math.random() * 16) | 0
+    const r = getRandomInt(16)
     const v = c == 'x' ? r : (r & 0x3) | 0x8
     return v.toString(16)
   })

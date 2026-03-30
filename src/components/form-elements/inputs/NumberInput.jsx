@@ -44,7 +44,7 @@ const NumberInput = (props) => {
         }
       }
     },
-    [props]
+    [props.data, props.handleChange, props.onElementChange, props.updateElement]
   )
 
   const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()

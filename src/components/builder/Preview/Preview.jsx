@@ -78,14 +78,14 @@ const Preview = (props) => {
   // the current version, avoiding stale-closure bugs.
   const onChangeRef = useRef(null)
 
-  let seq = 0
+  const seqRef = useRef(0)
 
   useEffect(() => {
     const { onLoad, onPost, data, url, saveUrl } = props
     store.setExternalHandler(onLoad, onPost)
     setData(data || [])
     setAnswerData({})
-    seq = 0
+    seqRef.current = 0
 
     const unsubscribe = store.subscribe((state) => {
       onChangeRef.current(state.payload)
@@ -119,17 +119,12 @@ const Preview = (props) => {
   }
 
   const updateElement = (element) => {
-    let found = false
-    for (let i = 0, len = data.length; i < len; i++) {
-      if (element.id === data[i].id) {
-        data[i] = element
-        found = true
-        break
-      }
-    }
-    if (found) {
-      seq = seq > 100000 ? 0 : seq + 1
-      store.dispatch('updateOrder', data)
+    const index = data.findIndex((item) => element.id === item.id)
+    if (index !== -1) {
+      const newData = [...data]
+      newData[index] = element
+      seqRef.current = seqRef.current > 100000 ? 0 : seqRef.current + 1
+      store.dispatch('updateOrder', newData)
     }
   }
 
@@ -420,7 +415,7 @@ const Preview = (props) => {
     }
 
     // Update sequence number
-    seq = seq > 100000 ? 0 : seq + 1
+    seqRef.current = seqRef.current > 100000 ? 0 : seqRef.current + 1
 
     // Update the state once with all changes
     setData(updatedData)
@@ -457,7 +452,7 @@ const Preview = (props) => {
       newData = newData.filter((x) => !elementsToRemove.includes(x))
 
       // Update sequence number
-      seq = seq > 100000 ? 0 : seq + 1
+      seqRef.current = seqRef.current > 100000 ? 0 : seqRef.current + 1
 
       // Update the state and store
       store.dispatch('updateOrder', newData)
@@ -487,7 +482,7 @@ const Preview = (props) => {
       delete item.setAsChild
       delete item.parentIndex
       item.index = newIndex
-      seq = seq > 100000 ? 0 : seq + 1
+      seqRef.current = seqRef.current > 100000 ? 0 : seqRef.current + 1
       store.dispatch('updateOrder', newData)
       setData(newData)
     }
@@ -875,7 +870,7 @@ const Preview = (props) => {
       <SortableFormElement
         id={item.id}
         key={item.id}
-        seq={seq}
+        seq={seqRef.current}
         index={index}
         moveCard={moveCard}
         insertCard={insertCard}

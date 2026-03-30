@@ -65,6 +65,10 @@ export function FormBuilderProvider({ children }) {
   const onPostRef = useRef(null)
   const onLoadRef = useRef(null)
   const subscribersRef = useRef([])
+  const stateRef = useRef(state)
+
+  // Keep stateRef in sync with latest state
+  stateRef.current = state
 
   // Notify subscribers when state changes
   React.useEffect(() => {
@@ -122,21 +126,21 @@ export function FormBuilderProvider({ children }) {
     create: useCallback(
       (element) => {
         dispatch({ type: CREATE_ELEMENT, payload: element })
-        // Save after creating
-        const newData = [...state.data, element]
+        // Save after creating — use stateRef for latest data
+        const newData = [...stateRef.current.data, element]
         saveData(newData)
       },
-      [state.data, saveData]
+      [saveData]
     ),
 
     delete: useCallback(
       (element) => {
         dispatch({ type: DELETE_ELEMENT, payload: element })
-        // Save after deleting
-        const newData = state.data.filter((item) => item !== element)
+        // Save after deleting — use stateRef for latest data
+        const newData = stateRef.current.data.filter((item) => item !== element)
         saveData(newData)
       },
-      [state.data, saveData]
+      [saveData]
     ),
 
     updateOrder: useCallback(

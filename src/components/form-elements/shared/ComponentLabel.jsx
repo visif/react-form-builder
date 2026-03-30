@@ -45,7 +45,9 @@ const ComponentLabel = (props) => {
   }
 
   const hasRequiredLabel =
-    props.data.hasOwnProperty('required') && props.data.required === true && !props.read_only
+    Object.prototype.hasOwnProperty.call(props.data, 'required') &&
+    props.data.required === true &&
+    !props.read_only
 
   let labelText = myxss.process(decodeHtmlEntities(props.data.label))
 

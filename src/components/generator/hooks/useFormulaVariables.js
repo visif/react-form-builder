@@ -7,7 +7,9 @@
  * - Updates dependent formula fields automatically
  */
 import { useCallback, useEffect } from 'react'
+
 import { Parser } from 'hot-formula-parser'
+
 import { useFormContext } from '../../../contexts/FormContext'
 
 export const useFormulaVariables = (props, setAnswerData) => {
@@ -33,9 +35,10 @@ export const useFormulaVariables = (props, setAnswerData) => {
         // Keep track of which variables have been updated to detect cascading changes
         const updatedVariables = new Set([params.propKey])
         let hasChanges = true
+        let maxIterations = 100
 
         // Continue recalculating until no more changes occur (cascading updates)
-        while (hasChanges) {
+        while (hasChanges && maxIterations-- > 0) {
           hasChanges = false
 
           // Find formula fields that depend on any recently updated variables

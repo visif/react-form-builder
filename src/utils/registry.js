@@ -32,8 +32,7 @@ function regg() {
   }
 
   function get(name) {
-    // eslint-disable-next-line no-prototype-builtins
-    if (!registry.hasOwnProperty(name)) {
+    if (!Object.prototype.hasOwnProperty.call(registry, name)) {
       console.error(`No such entry '${name}'`)
     }
     return registry[name]

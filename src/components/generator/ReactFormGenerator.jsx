@@ -61,8 +61,6 @@
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
-import ReactDOM from 'react-dom'
-
 import { Button } from 'antd'
 
 import { FormProvider, useFormContext } from '../../contexts/FormContext'
@@ -359,8 +357,7 @@ const ReactForm = (props) => {
 
         // Only submit if there are no errors.
         if (errors.length < 1) {
-          const $form = ReactDOM.findDOMNode(formRef.current)
-          $form.submit()
+          formRef.current.submit()
         }
       }
       // }

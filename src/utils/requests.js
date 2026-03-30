@@ -11,12 +11,22 @@ export function post(url, data) {
     method: 'POST',
     headers,
     body: JSON.stringify(data),
-  }).then((response) => response)
+  }).then((response) => {
+    if (!response.ok) {
+      throw new Error(`POST ${url} failed with status ${response.status}`)
+    }
+    return response
+  })
 }
 
 export function get(url) {
   return fetch(url, {
     method: 'GET',
     headers,
-  }).then((response) => response.json())
+  }).then((response) => {
+    if (!response.ok) {
+      throw new Error(`GET ${url} failed with status ${response.status}`)
+    }
+    return response.json()
+  })
 }

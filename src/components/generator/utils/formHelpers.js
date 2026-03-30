@@ -45,16 +45,14 @@ export const getVariableValueHelper = (ansData, items) => {
         if (
           typeof firstItem === 'object' &&
           firstItem !== null &&
-          firstItem.hasOwnProperty('value') &&
+          Object.prototype.hasOwnProperty.call(firstItem, 'value') &&
           typeof firstItem.value === 'boolean'
         ) {
           // Find the item in the items array that matches the field_name
           const matchedItem = items.find((target) => target.field_name === item.field_name)
           if (matchedItem && matchedItem.options) {
             // Find the option where the key matches the firstItem value
-            const matchedOption = matchedItem.options.find(
-              (option) => option.key === firstItem.key
-            )
+            const matchedOption = matchedItem.options.find((option) => option.key === firstItem.key)
             if (matchedOption) {
               value = matchedOption.value || matchedOption.text || firstItem.value
             } else {
@@ -66,7 +64,11 @@ export const getVariableValueHelper = (ansData, items) => {
         } else {
           value = firstItem.value
         }
-      } else if (typeof value === 'object' && value !== null && value.hasOwnProperty('value')) {
+      } else if (
+        typeof value === 'object' &&
+        value !== null &&
+        Object.prototype.hasOwnProperty.call(value, 'value')
+      ) {
         value = value.value
       }
 

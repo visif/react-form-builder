@@ -95,7 +95,47 @@ if (whiteList.video) whiteList.video.push('src', 'controls', 'width', 'height')
 
 const myxss = new xss.FilterXSS({
   whiteList,
-  css: false, // Disable CSS filtering to allow all styles from the rich text editor
+  css: {
+    whiteList: {
+      color: true,
+      'background-color': true,
+      'font-size': true,
+      'font-weight': true,
+      'font-style': true,
+      'font-family': true,
+      'text-align': true,
+      'text-decoration': true,
+      'line-height': true,
+      'letter-spacing': true,
+      margin: true,
+      'margin-top': true,
+      'margin-right': true,
+      'margin-bottom': true,
+      'margin-left': true,
+      padding: true,
+      'padding-top': true,
+      'padding-right': true,
+      'padding-bottom': true,
+      'padding-left': true,
+      border: true,
+      'border-radius': true,
+      width: true,
+      height: true,
+      'max-width': true,
+      'max-height': true,
+      'min-width': true,
+      'min-height': true,
+      display: true,
+      'vertical-align': true,
+      float: true,
+      clear: true,
+      'list-style-type': true,
+      'text-indent': true,
+      'white-space': true,
+      'word-break': true,
+      'overflow-wrap': true,
+    },
+  },
   stripIgnoreTag: true, // Filter out tags not in the whitelist
   stripIgnoreTagBody: ['script'], // Filter out script tag content
 })

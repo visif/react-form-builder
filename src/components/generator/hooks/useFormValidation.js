@@ -8,7 +8,9 @@
  * - Signature image extraction
  */
 import { useCallback } from 'react'
+
 import ReactDOM from 'react-dom'
+
 import { useFormContext } from '../../../contexts/FormContext'
 
 export const useFormValidation = (props, inputsRef, getItemValue, collectFormItems) => {
@@ -24,8 +26,8 @@ export const useFormValidation = (props, inputsRef, getItemValue, collectFormIte
           item.options.forEach((option) => {
             const $option = ReactDOM.findDOMNode(ref.options[`child_ref_${option.key}`])
             if (
-              (option.hasOwnProperty('correct') && !$option.checked) ||
-              (!option.hasOwnProperty('correct') && $option.checked)
+              (Object.prototype.hasOwnProperty.call(option, 'correct') && !$option.checked) ||
+              (!Object.prototype.hasOwnProperty.call(option, 'correct') && $option.checked)
             ) {
               incorrect = true
             }
@@ -53,8 +55,6 @@ export const useFormValidation = (props, inputsRef, getItemValue, collectFormIte
       if (item.required === true) {
         // Get value from FormContext - single source of truth
         const value = formContext.getValue(item.field_name)
-
-        console.log(`Validating ${item.label}:`, { value, element: item.element, field_name: item.field_name })
 
         if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
           // Check if array has any checked items
@@ -92,22 +92,25 @@ export const useFormValidation = (props, inputsRef, getItemValue, collectFormIte
   )
 
   // Extract signature canvas data
-  const getSignatureImg = useCallback((item) => {
-    const ref = inputsRef.current[item.field_name]
-    if (!ref || !ref.canvas) return // Skip if ref or canvas doesn't exist
+  const getSignatureImg = useCallback(
+    (item) => {
+      const ref = inputsRef.current[item.field_name]
+      if (!ref || !ref.canvas) return // Skip if ref or canvas doesn't exist
 
-    const $canvas_sig = ref.canvas.current
-    if ($canvas_sig) {
-      const base64 = $canvas_sig.toDataURL().replace('data:image/png;base64,', '')
-      const isEmpty = $canvas_sig.isEmpty()
-      const $input_sig = ReactDOM.findDOMNode(ref.inputField.current)
-      if (isEmpty) {
-        $input_sig.value = ''
-      } else {
-        $input_sig.value = base64
+      const $canvas_sig = ref.canvas.current
+      if ($canvas_sig) {
+        const base64 = $canvas_sig.toDataURL().replace('data:image/png;base64,', '')
+        const isEmpty = $canvas_sig.isEmpty()
+        const $input_sig = ReactDOM.findDOMNode(ref.inputField.current)
+        if (isEmpty) {
+          $input_sig.value = ''
+        } else {
+          $input_sig.value = base64
+        }
       }
-    }
-  }, [inputsRef])
+    },
+    [inputsRef]
+  )
 
   // Form validation with section logic
   const validateForm = useCallback(() => {
