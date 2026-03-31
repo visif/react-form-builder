@@ -74,6 +74,13 @@ const Tags = (props) => {
     label: option.text,
   }))
 
+  const stripHtml = (html) => {
+    if (!html) return ''
+    const tmp = document.createElement('div')
+    tmp.innerHTML = html
+    return tmp.textContent || tmp.innerText || ''
+  }
+
   const selectProps = {
     mode: 'multiple',
     style: {
@@ -82,7 +89,7 @@ const Tags = (props) => {
       WebkitTextFillColor: 'rgba(0, 0, 0, 0.85)',
       opacity: 1,
     },
-    placeholder: props.data.label || 'Select tags',
+    placeholder: stripHtml(props.data.label) || 'Select tags',
     onChange: handleChange,
     options,
   }
