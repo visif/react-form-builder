@@ -26,21 +26,21 @@ const dateFormatList = {
 }
 
 const dateTimeFormatList = {
-  'dd MMMM yyyy': 'DD MMMM YYYY HH:MM',
-  'dd-MMM-yyyy': 'DD-MMM-YYYY HH:MM',
-  'dd-MMM-yy': 'DD-MMM-YY HH:MM',
-  'yyyy-MM-dd': 'YYYY-MM-DD HH:MM',
-  'MM/dd/yyyy': 'MM/DD/YYYY HH:MM',
-  'dd/MM/yyyy': 'DD/MM/YYYY HH:MM',
-  'dd/MM/yy': 'DD/MM/YY HH:MM',
-  'MMM dd, yyyy': 'MMM DD, YYYY HH:MM',
+  'dd MMMM yyyy': 'DD MMMM YYYY HH:mm',
+  'dd-MMM-yyyy': 'DD-MMM-YYYY HH:mm',
+  'dd-MMM-yy': 'DD-MMM-YY HH:mm',
+  'yyyy-MM-dd': 'YYYY-MM-DD HH:mm',
+  'MM/dd/yyyy': 'MM/DD/YYYY HH:mm',
+  'dd/MM/yyyy': 'DD/MM/YYYY HH:mm',
+  'dd/MM/yy': 'DD/MM/YY HH:mm',
+  'MMM dd, yyyy': 'MMM DD, YYYY HH:mm',
 }
 
 export const getDateFormat = (showTimeSelect) => {
   const key = showTimeSelect
     ? dateTimeFormatList[localStorage.getItem(keyDateFormat)]
     : dateFormatList[localStorage.getItem(keyDateFormat)]
-  return key || (showTimeSelect ? 'DD MMMM YYYY HH:MM' : 'DD MMMM YYYY')
+  return key || (showTimeSelect ? 'DD MMMM YYYY HH:mm' : 'DD MMMM YYYY')
 }
 
 export const getCalendarType = () => {
@@ -64,13 +64,13 @@ const DatePicker = (props) => {
   const updateDateTime = React.useCallback(
     (formatMask) => {
       let value
-      const { defaultToday } = props.data
+      const { defaultToday, showTimeSelectOnly } = props.data
 
       if (defaultToday && !props.defaultValue) {
         value = dayjs().toISOString()
       } else if (props.defaultValue) {
         try {
-          // Use formatMask for parsing if available
+          // Use formatMask for parsing natively, letting local/UTC offsets calculate correctly
           value = dayjs(props.defaultValue, formatMask).isValid()
             ? dayjs(props.defaultValue, formatMask).toISOString()
             : dayjs(props.defaultValue).toISOString()
@@ -82,7 +82,7 @@ const DatePicker = (props) => {
 
       return {
         value,
-        placeholder: formatMask.toLowerCase(),
+        placeholder: showTimeSelectOnly ? 'HH:mm' : formatMask.toLowerCase(),
         defaultToday,
         formatMask,
         defaultValue: props.defaultValue,
@@ -144,13 +144,15 @@ const DatePicker = (props) => {
 
   const handleChange = React.useCallback(
     (date) => {
-      const isoDate = date ? date.toISOString() : null
-      setValue(isoDate)
+      // Allow actual Time Zone offset logic to save correctly (e.g., 16:14 local -> 23:14 UTC)
+      // but force the correct selected DATE locally in case of midnight wrapping
+      const lockedDate = date ? dayjs(date.format('YYYY-MM-DDTHH:mm:ss')).toISOString() : null
+      setValue(lockedDate)
       setPlaceholder(formatMask.toLowerCase())
 
       // Update form context
       if (props.handleChange) {
-        props.handleChange(props.data.field_name, isoDate)
+        props.handleChange(props.data.field_name, lockedDate)
       }
     },
     [formatMask, props]
@@ -160,7 +162,7 @@ const DatePicker = (props) => {
     (time) => {
       const isoTime = time ? time.toISOString() : null
       setValue(isoTime)
-      setPlaceholder('HH:MM')
+      setPlaceholder('HH:mm')
 
       // Update form context
       if (props.handleChange) {
@@ -180,11 +182,15 @@ const DatePicker = (props) => {
   const formatDate = React.useCallback((date, mask) => {
     if (!date) return ''
 
+    // Since we are correctly saving standard UTC in the database now,
+    // dayjs will automatically bring it back up to local time seamlessly
+    const localDate = dayjs(date)
+
     if (getCalendarType() === 'EN') {
-      return dayjs(date).format(mask)
+      return localDate.format(mask)
     } else {
       // Convert to Buddhist calendar (add 543 years)
-      return dayjs(date).format(mask.replace('YYYY', 'BBBB'))
+      return localDate.format(mask.replace('YYYY', 'BBBB'))
     }
   }, [])
 
@@ -192,15 +198,30 @@ const DatePicker = (props) => {
   const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()
 
   const savedEditor = props.editor
+  const hasValue = value && value.toString().trim() !== ''
+
+  // Allow editing if no value exists OR if user is the same editor
   let isSameEditor = true
-  if (savedEditor && savedEditor.userId && !!userProperties) {
+  if (savedEditor && savedEditor.userId && hasValue && !!userProperties) {
     isSameEditor =
       userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
+  // Create tooltip text showing editor name
+  const tooltipText =
+    savedEditor && savedEditor.name && hasValue
+      ? `${
+          value ? formatDate(value, showTimeSelectOnly ? 'HH:mm' : formatMask) : ''
+        }\nEdited by: ${savedEditor.name}`
+      : ''
+
   const inputProps = {
     type: 'date',
+    className: 'form-control',
     name: props.data.field_name,
+  }
+  if (tooltipText) {
+    inputProps.title = tooltipText
   }
 
   const readOnly = props.data.readOnly || props.read_only || !isSameEditor
@@ -218,7 +239,7 @@ const DatePicker = (props) => {
   return (
     <div className={baseClasses}>
       <ComponentHeader {...props} />
-      <div className="form-group">
+      <div className="form-group" title={tooltipText}>
         <ComponentLabel {...props} />
         <div>
           {readOnly ? (
@@ -228,14 +249,9 @@ const DatePicker = (props) => {
               ref={inputProps.ref}
               readOnly={readOnly}
               placeholder={placeholder}
-              value={value ? formatDate(value, formatMask) : ''}
+              value={value ? formatDate(value, showTimeSelectOnly ? 'HH:mm' : formatMask) : ''}
               disabled={!isSameEditor}
-              style={{
-                width: '100%',
-                color: 'rgba(0, 0, 0, 0.85)',
-                WebkitTextFillColor: 'rgba(0, 0, 0, 0.85)',
-                opacity: 1,
-              }}
+              className="form-control"
             />
           ) : !showTimeSelectOnly ? (
             <AntDatePicker
@@ -243,16 +259,12 @@ const DatePicker = (props) => {
               ref={inputProps.ref}
               onChange={handleChange}
               value={value ? dayjs(value) : null}
+              className="form-control bold-date-picker"
               format={(val) => formatDate(val, formatMask)}
               showTime={showTimeSelect ? { format: 'HH:mm', showSecond: false } : null}
               disabled={!isSameEditor || loading}
               placeholder={placeholder}
-              style={{
-                width: '100%',
-                color: 'rgba(0, 0, 0, 0.85)',
-                WebkitTextFillColor: 'rgba(0, 0, 0, 0.85)',
-                opacity: 1,
-              }}
+              style={{ display: 'inline-block', width: 'auto' }}
             />
           ) : (
             <AntTimePicker
@@ -260,14 +272,10 @@ const DatePicker = (props) => {
               ref={inputProps.ref}
               onChange={handleTimeChange}
               value={value ? dayjs(value) : null}
+              className="form-control bold-time-picker"
               disabled={!isSameEditor || loading}
               placeholder={placeholder}
-              style={{
-                width: '100%',
-                color: 'rgba(0, 0, 0, 0.85)',
-                WebkitTextFillColor: 'rgba(0, 0, 0, 0.85)',
-                opacity: 1,
-              }}
+              style={{ display: 'inline-block', width: 'auto' }}
               format="HH:mm"
               minuteStep={1}
             />
