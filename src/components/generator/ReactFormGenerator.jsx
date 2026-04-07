@@ -65,6 +65,12 @@ import { Button } from 'antd'
 
 import { FormProvider, useFormContext } from '../../contexts/FormContext'
 import FormValidator from './FormValidator'
+import {
+  clearDraftData,
+  hasDraft,
+  readDraftFromStorage,
+  useDraftPersistence,
+} from './hooks/useDraftPersistence'
 import { useFormDataCollection } from './hooks/useFormDataCollection'
 import { useFormulaVariables } from './hooks/useFormulaVariables'
 // Hooks
@@ -81,21 +87,29 @@ const ReactForm = (props) => {
   // Get form context
   const formContext = useFormContext()
 
-  // State
-  const [answerData, setAnswerData] = useState(() => convertAnswerData(props.answer_data))
+  // State — seed from answer_data merged with any restored draft
+  const [answerData, setAnswerData] = useState(() => {
+    const ansData = convertAnswerData(props.answer_data)
+    const draft = readDraftFromStorage(props)
+    return draft ? { ...ansData, ...draft } : ansData
+  })
 
   // Initialize variables in context
   useEffect(() => {
     const ansData = convertAnswerData(props.answer_data)
-    const initialVariables = getVariableValueHelper(ansData, props.data)
+    const draft = readDraftFromStorage(props)
+    const merged = draft ? { ...ansData, ...draft } : ansData
+    const initialVariables = getVariableValueHelper(merged, props.data)
     formContext.setAllVariables(initialVariables)
   }, []) // Only on mount
 
   // Update state when props change
   useEffect(() => {
     const ansData = convertAnswerData(props.answer_data)
-    setAnswerData(ansData)
-    const newVariables = getVariableValueHelper(ansData, props.data)
+    const draft = readDraftFromStorage(props)
+    const merged = draft ? { ...ansData, ...draft } : ansData
+    setAnswerData(merged)
+    const newVariables = getVariableValueHelper(merged, props.data)
     formContext.setAllVariables(newVariables)
 
     // Also update FormContext values with answer data
@@ -320,6 +334,12 @@ const ReactForm = (props) => {
     getEditor
   )
 
+  // Draft persistence
+  const { draftRestored, handleFormInteraction, clearDraft } = useDraftPersistence(
+    props,
+    collectFormData
+  )
+
   const { validateForm } = useFormValidation(props, inputsRef, getItemValue, collectFormItems)
 
   useFormulaVariables(props, setAnswerData)
@@ -344,6 +364,7 @@ const ReactForm = (props) => {
         if (errors.length < 1) {
           const data = collectFormData(props.data)
           onSubmit(data, props.parentElementId)
+          clearDraft()
         }
       } else {
         // incase no submit function provided => go to form submit
@@ -357,26 +378,43 @@ const ReactForm = (props) => {
 
         // Only submit if there are no errors.
         if (errors.length < 1) {
+          clearDraft()
           formRef.current.submit()
         }
       }
       // }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [props, collectFormData, validateForm]
+    [props, collectFormData, validateForm, clearDraft]
   )
+
+  const handleClearDraft = useCallback(() => {
+    clearDraft()
+    // Reset form state back to original answer_data (without draft)
+    const ansData = convertAnswerData(props.answer_data)
+    setAnswerData(ansData)
+    const newVariables = getVariableValueHelper(ansData, props.data)
+    formContext.setAllVariables(newVariables)
+  }, [clearDraft, props.answer_data, props.data, formContext])
 
   const handleRenderSubmit = useCallback(() => {
     const { actionName = 'Submit', submitButton = false } = props
 
     return (
-      submitButton || (
-        <Button type="primary" htmlType="submit" size="large">
-          {actionName}
-        </Button>
-      )
+      <>
+        {submitButton || (
+          <Button type="primary" htmlType="submit" size="large">
+            {actionName}
+          </Button>
+        )}
+        {!props.read_only && (
+          <Button type="default" size="large" style={{ marginLeft: 8 }} onClick={handleClearDraft}>
+            Clear Draft
+          </Button>
+        )}
+      </>
     )
-  }, [props])
+  }, [props, handleClearDraft])
 
   // Render logic
   let data_items = props.data
@@ -430,11 +468,18 @@ const ReactForm = (props) => {
     <div>
       <FormValidator />
       <div className="react-form-builder-form">
+        {draftRestored && !props.read_only && (
+          <div className="alert alert-info" style={{ marginBottom: '10px' }}>
+            Your previous draft has been restored.
+          </div>
+        )}
         <form
           encType="multipart/form-data"
           ref={formRef}
           action={props.form_action}
           onSubmit={handleSubmit}
+          onChange={handleFormInteraction}
+          onInput={handleFormInteraction}
           method={props.form_method}
         >
           {props.authenticity_token && (
@@ -478,5 +523,17 @@ const ReactFormWithContext = (props) => {
     </FormProvider>
   )
 }
+
+/**
+ * Static helper – clear a draft without a component ref:
+ *   ReactFormGenerator.clearDraftData({ form_action: '/api/form', ... })
+ */
+ReactFormWithContext.clearDraftData = clearDraftData
+
+/**
+ * Static helper – check if a draft exists:
+ *   ReactFormGenerator.hasDraft({ form_action: '/api/form', ... })
+ */
+ReactFormWithContext.hasDraft = hasDraft
 
 export default ReactFormWithContext
