@@ -442,6 +442,8 @@ function _defaultItems() {
     {
       key: 'Dropdown',
       canHaveAnswer: true,
+      canHaveInfo: true,
+      canHaveOptionCorrect: false,
       canHaveDefaultValue: true,
       name: 'Dropdown',
       icon: 'far fa-caret-square-down',
