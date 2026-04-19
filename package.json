@@ -1,6 +1,6 @@
 {
   "name": "@visif/form-builder",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A complete React form builder with drag-and-drop - modernized for React 18, Vite, and hooks",
   "main": "dist/app.umd.js",
   "module": "dist/app.es.js",
@@ -98,6 +98,7 @@
     "preview": "vite preview",
     "pretranspile": "rimraf lib",
     "transpile": "babel --out-dir lib src --copy-files",
+    "prepare": "npm run build && npm run build:style",
     "prepublishOnly": "npm run build && npm run build:style",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
   },
