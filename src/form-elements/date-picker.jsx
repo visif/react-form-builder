@@ -24,21 +24,21 @@ const dateFormatList = {
 }
 
 const dateTimeFormatList = {
-  'dd MMMM yyyy': 'DD MMMM YYYY HH:MM',
-  'dd-MMM-yyyy': 'DD-MMM-YYYY HH:MM',
-  'dd-MMM-yy': 'DD-MMM-YY HH:MM',
-  'yyyy-MM-dd': 'YYYY-MM-DD HH:MM',
-  'MM/dd/yyyy': 'MM/DD/YYYY HH:MM',
-  'dd/MM/yyyy': 'DD/MM/YYYY HH:MM',
-  'dd/MM/yy': 'DD/MM/YY HH:MM',
-  'MMM dd, yyyy': 'MMM DD, YYYY HH:MM',
+  'dd MMMM yyyy': 'DD MMMM YYYY HH:mm',
+  'dd-MMM-yyyy': 'DD-MMM-YYYY HH:mm',
+  'dd-MMM-yy': 'DD-MMM-YY HH:mm',
+  'yyyy-MM-dd': 'YYYY-MM-DD HH:mm',
+  'MM/dd/yyyy': 'MM/DD/YYYY HH:mm',
+  'dd/MM/yyyy': 'DD/MM/YYYY HH:mm',
+  'dd/MM/yy': 'DD/MM/YY HH:mm',
+  'MMM dd, yyyy': 'MMM DD, YYYY HH:mm',
 }
 
 export const getDateFormat = (showTimeSelect) => {
   const key = showTimeSelect
     ? dateTimeFormatList[localStorage.getItem(keyDateFormat)]
     : dateFormatList[localStorage.getItem(keyDateFormat)]
-  return key || (showTimeSelect ? 'DD MMMM YYYY HH:MM' : 'DD MMMM YYYY')
+  return key || (showTimeSelect ? 'DD MMMM YYYY HH:mm' : 'DD MMMM YYYY')
 }
 
 export const getCalendarType = () => {
