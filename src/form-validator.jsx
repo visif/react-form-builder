@@ -3,6 +3,7 @@
  */
 import React from 'react'
 import xss from 'xss'
+import './styles/validation-error.css'
 
 const myxss = new xss.FilterXSS({
   whiteList: {
