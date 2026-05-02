@@ -8,6 +8,11 @@ import Dustbin from './dustbin'
 
 const accepts = [ItemTypes.BOX, ItemTypes.CARD]
 
+const stripPTags = (html) => {
+  if (!html) return html
+  return html.replace(/<p>/gi, '').replace(/<\/p>/gi, '').trim()
+}
+
 const MultiColumnRow = (props) => {
   const {
     controls,
@@ -101,6 +106,7 @@ const MultiColumnRow = (props) => {
                     className="rfb-table-column-header"
                     style={{
                       textAlign: 'center',
+                      verticalAlign: 'middle',
                       fontWeight: 'var(--rfb-table-header-font-weight, bold)',
                       fontFamily: 'var(--rfb-table-header-font-family, inherit)',
                       backgroundColor: '#e9ecef',
@@ -113,7 +119,7 @@ const MultiColumnRow = (props) => {
                       overflow: 'hidden',
                     }}
                   >
-                    {column.text}
+                    <span dangerouslySetInnerHTML={{ __html: stripPTags(column.text) }} />
                     {column.required && (
                       <span className="label-required badge badge-danger ml-1">
                         Required
@@ -133,13 +139,20 @@ const MultiColumnRow = (props) => {
                     className="row-label rfb-table-row-label"
                     style={{
                       textAlign: 'right',
+                      verticalAlign: 'middle',
                       paddingRight: '10px',
                       backgroundColor: '#f5f5f5',
                       fontWeight: 'var(--rfb-table-row-font-weight, bold)',
                       fontFamily: 'var(--rfb-table-row-font-family, inherit)',
                     }}
                   >
-                    {data.rowLabels[rowIndex] ? data.rowLabels[rowIndex].text : ''}
+                    <span
+                      dangerouslySetInnerHTML={{
+                        __html: data.rowLabels[rowIndex]
+                          ? stripPTags(data.rowLabels[rowIndex].text)
+                          : '',
+                      }}
+                    />
                   </td>
                 )}
                 {row.map((item, columnIndex) => {

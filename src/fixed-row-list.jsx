@@ -3,7 +3,43 @@
  */
 import React from 'react'
 import PropTypes from 'prop-types'
+import { Editor } from 'react-draft-wysiwyg'
+import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css'
+import {
+  ContentState,
+  convertFromHTML,
+  convertToRaw,
+  EditorState,
+  RichUtils,
+} from 'draft-js'
+import draftToHtml from 'draftjs-to-html'
 import ID from './UUID'
+
+const rowLabelToolbar = {
+  options: ['inline', 'list', 'textAlign', 'fontSize', 'link', 'colorPicker', 'history'],
+  inline: {
+    inDropdown: false,
+    className: undefined,
+    options: ['bold', 'italic', 'underline', 'superscript', 'subscript'],
+  },
+  link: {
+    popupClassName: 'link-popup-left',
+  },
+  colorPicker: {
+    className: 'rainbow-color-picker',
+    component: undefined,
+    popupClassName: 'color-picker-popup-left',
+    colors: [
+      'rgb(97,189,109)', 'rgb(26,188,156)', 'rgb(84,172,210)', 'rgb(44,130,201)',
+      'rgb(147,101,184)', 'rgb(71,85,119)', 'rgb(204,204,204)', 'rgb(65,168,95)',
+      'rgb(0,168,133)', 'rgb(61,142,185)', 'rgb(41,105,176)', 'rgb(85,57,130)',
+      'rgb(40,50,78)', 'rgb(0,0,0)', 'rgb(247,218,100)', 'rgb(251,160,38)',
+      'rgb(235,107,86)', 'rgb(226,80,65)', 'rgb(163,143,132)', 'rgb(239,239,239)',
+      'rgb(255,255,255)', 'rgb(250,197,28)', 'rgb(243,121,52)', 'rgb(209,72,65)',
+      'rgb(184,49,47)', 'rgb(124,112,107)', 'rgb(209,213,216)',
+    ],
+  },
+}
 
 class FixedRowList extends React.Component {
   constructor(props) {
@@ -12,6 +48,7 @@ class FixedRowList extends React.Component {
     this.state = {
       element,
       dirty: false,
+      editorStates: {},
     }
   }
 
@@ -32,27 +69,81 @@ class FixedRowList extends React.Component {
     return Number(element.rows || 1) === element.rowLabels.length
   }
 
-  editRow(index, key, e) {
-    const { element } = this.state
-    const targetValue = e.target.value || ''
+  editorStateFor(text) {
+    if (text) {
+      try {
+        const blocks = convertFromHTML(text)
+        if (blocks.contentBlocks && blocks.contentBlocks.length) {
+          return EditorState.createWithContent(
+            ContentState.createFromBlockArray(blocks)
+          )
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+    return RichUtils.toggleInlineStyle(EditorState.createEmpty(), 'BOLD')
+  }
 
-    // Ensure rowLabels[index] exists
+  onRowEditorStateChange(rowKey, editorState) {
+    this.setState((prev) => ({
+      editorStates: { ...prev.editorStates, [rowKey]: editorState },
+      dirty: true,
+    }))
+  }
+
+  onRowEditorBlur(index, rowKey) {
+    const { editorStates, element } = this.state
+    const editorState = editorStates[rowKey]
+
+    if (!editorState) return
+
     if (!element.rowLabels[index]) {
       element.rowLabels[index] = { value: '', text: '', key: ID.uuid() }
     }
 
-    // Safely check if value property differs from the generated value
+    const html = draftToHtml(convertToRaw(editorState.getCurrentContent()))
+    const plainText = editorState.getCurrentContent().getPlainText()
+
+    const currentValue = element.rowLabels[index].value || ''
+    const currentKeyValue =
+      typeof element.rowLabels[index].text === 'string'
+        ? element.rowLabels[index].text.replace(/<[^>]+>/g, '')
+        : element.rowLabels[index].text || ''
+
+    const val =
+      currentValue !== this._setValue(currentKeyValue)
+        ? currentValue
+        : this._setValue(plainText)
+
+    element.rowLabels[index].text = html
+    element.rowLabels[index].value = val
+
+    this.setState(
+      {
+        element,
+        dirty: true,
+      },
+      this.updateRow.bind(this)
+    )
+  }
+
+  editRow(index, key, e) {
+    const { element } = this.state
+    const targetValue = e.target.value || ''
+
+    if (!element.rowLabels[index]) {
+      element.rowLabels[index] = { value: '', text: '', key: ID.uuid() }
+    }
+
     const currentValue = element.rowLabels[index].value || ''
     const currentKeyValue = element.rowLabels[index][key] || ''
 
-    // If value is already custom (not auto-generated from text), keep it
-    // Otherwise, set it to the new auto-generated value
     const val =
       currentValue !== this._setValue(currentKeyValue)
         ? currentValue
         : this._setValue(targetValue)
 
-    // Update the properties
     element.rowLabels[index][key] = targetValue
     element.rowLabels[index].value = val
 
@@ -84,10 +175,7 @@ class FixedRowList extends React.Component {
       key: ID.uuid(),
     })
 
-    // Update rows count only if it was in sync with rowLabels
-    if (this.areRowsInSync()) {
-      element.rows = element.rowLabels.length
-    }
+    element.rows = element.rowLabels.length
 
     // Initialize a new row in childItems if it doesn't exist
     if (!element.childItems) {
@@ -217,10 +305,7 @@ class FixedRowList extends React.Component {
     // Remove the row label
     element.rowLabels.splice(index, 1)
 
-    // Update rows count only if it was in sync with rowLabels
-    if (this.areRowsInSync()) {
-      element.rows = element.rowLabels.length
-    }
+    element.rows = element.rowLabels.length
 
     // If we have childItems, also remove the row from there
     if (element.childItems && Array.isArray(element.childItems)) {
@@ -306,17 +391,16 @@ class FixedRowList extends React.Component {
               <li className="clearfix" key={`li_label_${key}`}>
                 <div className="row">
                   <div className="col-sm-9">
-                    <input
-                      tabIndex={index + 1}
-                      key={`input_label_${key}`}
-                      className="form-control"
-                      style={{ width: '100%' }}
-                      type="text"
-                      name={`text_${index}`}
-                      placeholder="Row Label"
-                      value={option.text}
-                      onBlur={this.updateRow.bind(this)}
-                      onChange={this.editRow.bind(this, index, 'text')}
+                    <Editor
+                      toolbar={rowLabelToolbar}
+                      editorState={
+                        this.state.editorStates[option.key] || this.editorStateFor(option.text)
+                      }
+                      onEditorStateChange={(es) =>
+                        this.onRowEditorStateChange(option.key, es)
+                      }
+                      onBlur={() => this.onRowEditorBlur(index, option.key)}
+                      stripPastedStyles={false}
                     />
                   </div>
                   <div className="col-sm-3">
