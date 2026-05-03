@@ -39,6 +39,18 @@ input[type='date'] {
     margin-bottom: 8px;
     position: relative;
 
+    &.rfb-section-item {
+      padding: 4px 0;
+
+      .rfb-section-title {
+        margin: 8px 0 4px;
+      }
+
+      .rfb-section-divider {
+        margin: 0;
+      }
+    }
+
     label {
       font-weight: normal;
     }

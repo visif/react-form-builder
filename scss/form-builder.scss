@@ -158,6 +158,17 @@
         padding: 8px 12px 10px;
         margin-bottom: 8px;
         box-sizing: border-box;
+        &.rfb-section-item {
+          padding: 4px 12px 6px;
+
+          .rfb-section-title {
+            margin: 0 0 4px;
+          }
+
+          .rfb-section-divider {
+            margin: 0;
+          }
+        }
         &.SortableItem {
           position: relative;
           .form-group {
