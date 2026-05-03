@@ -1,0 +1,21 @@
+{
+  "name": "react18-form-builder-demo",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "predev": "yarn --cwd ../.. build:lib",
+    "dev": "vite",
+    "prebuild": "yarn --cwd ../.. build:lib",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.3",
+    "vite": "^6.0.0"
+  }
+}
