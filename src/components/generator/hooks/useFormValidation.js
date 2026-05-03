@@ -132,6 +132,48 @@ export const useFormValidation = (props, inputsRef, getItemValue, collectFormIte
     const formItems = collectFormItems(orderedItems)
     const sectionItems = formItems.filter((item) => item.element === 'Section')
 
+    const hasAnyUserInput = formItems.some((item) => {
+      if (item.element === 'Section') {
+        return false
+      }
+
+      const { value } = item
+
+      if (Array.isArray(value)) {
+        return value.length > 0
+      }
+
+      if (item.element === 'FileUpload') {
+        return !!(value && value.fileList && value.fileList.length > 0)
+      }
+
+      if (item.element === 'ImageUpload') {
+        return !!(value && value.filePath)
+      }
+
+      if (item.element === 'DataSource') {
+        return !!(value && value.value)
+      }
+
+      if (item.element === 'FormulaInput') {
+        return value && value.value !== undefined && value.value !== null && value.value !== ''
+      }
+
+      if (value && typeof value === 'object') {
+        return Object.values(value).some((v) => !!v)
+      }
+
+      if (typeof value === 'string') {
+        return value.trim().length > 0
+      }
+
+      return !!value
+    })
+
+    if (!hasAnyUserInput) {
+      return errors
+    }
+
     // Validate with special condition when there is any section
     if (sectionItems.length > 0) {
       // split items into groups by section
@@ -184,8 +226,25 @@ export const useFormValidation = (props, inputsRef, getItemValue, collectFormIte
         }
       })
 
-      const itemIds = activeItems.map((item) => item.id)
-      data_items = props.data.filter((item) => itemIds.includes(item.id))
+      if (activeSectionFound) {
+        const itemIds = activeItems.map((item) => item.id)
+        data_items = props.data.filter((item) => itemIds.includes(item.id))
+      } else {
+        // If all defined sections are empty (no form items under any section),
+        // skip section-based required validation.
+        const hasItemsUnderAnySection = sectionItems.some(
+          (section) =>
+            Array.isArray(sectionGroup[section.id]) && sectionGroup[section.id].length > 0
+        )
+
+        if (hasItemsUnderAnySection) {
+          // No active section yet, but sections do contain form items:
+          // validate full form so required fields trigger on first submit.
+          data_items = props.data
+        } else {
+          data_items = []
+        }
+      }
     }
 
     data_items.forEach((item) => {
