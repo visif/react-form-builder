@@ -160,7 +160,11 @@ export default class Table extends React.Component {
               if (isLabel) {
                 return (
                   <td>
-                    <label>{this.state.rowLabels[i].text}</label>
+                    <span
+                      dangerouslySetInnerHTML={{
+                        __html: this.getSafeHeaderHtml(this.state.rowLabels[i].text),
+                      }}
+                    />
                   </td>
                 )
               }
@@ -200,6 +204,26 @@ export default class Table extends React.Component {
   getColumnWidth = (totalWidthCount, width) => {
     const currentWidth = parseInt(width) ? Number(width) : 1
     return `${(currentWidth / totalWidthCount) * 100}%`
+  }
+
+  getSafeHeaderHtml = (text) => {
+    return String(text ?? '')
+      .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
+      .replace(/\son\w+=("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+      .replace(/javascript:/gi, '')
+      .replace(/<p\b([^>]*)>/gi, (match, attrs = '') => {
+        if (/\bstyle\s*=\s*"([^"]*)"/i.test(attrs)) {
+          return match.replace(/\bstyle\s*=\s*"([^"]*)"/i, (styleMatch, styleValue) => {
+            return `style="${styleValue};margin:0;"`
+          })
+        }
+        if (/\bstyle\s*=\s*'([^']*)'/i.test(attrs)) {
+          return match.replace(/\bstyle\s*=\s*'([^']*)'/i, (styleMatch, styleValue) => {
+            return `style='${styleValue};margin:0;'`
+          })
+        }
+        return `<p${attrs} style="margin:0;">`
+      })
   }
 
   render() {
@@ -260,7 +284,11 @@ export default class Table extends React.Component {
                         width: this.getColumnWidth(totalWidthCount, col.width),
                       }}
                     >
-                      {col.text}
+                      <span
+                        dangerouslySetInnerHTML={{
+                          __html: this.getSafeHeaderHtml(col.text),
+                        }}
+                      />
                     </th>
                   )
                 })}
