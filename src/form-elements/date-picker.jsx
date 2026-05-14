@@ -94,9 +94,30 @@ class DatePicker extends React.Component {
 
   handleChange = (date) => {
     const { formatMask } = this.state
+    const calendarType = getCalendarType()
+
     // Allow actual Time Zone offset logic to save correctly (e.g., 16:14 local -> 23:14 UTC)
     // but force the correct selected DATE locally in case of midnight wrapping
-    const lockedDate = date ? dayjs(date.format('YYYY-MM-DDTHH:mm:ss')).toISOString() : null
+    let lockedDate = null
+
+    if (date) {
+      // Get the year from the date object
+      let year = date.year()
+
+      // If calendar type is Buddhist, the year returned might be in Buddhist era
+      // We need to convert it back to Gregorian for storage (subtract 543)
+      if (calendarType === 'TH' || calendarType !== 'EN') {
+        // Check if the year seems to be in Buddhist format (543 years ahead)
+        if (year > 2500) {
+          year = year - 543
+        }
+      }
+
+      // Create a new date with the corrected Gregorian year
+      const correctedDate = date.clone().year(year)
+      lockedDate = correctedDate.format('YYYY-MM-DDTHH:mm:ss')
+      lockedDate = dayjs(lockedDate).toISOString()
+    }
 
     console.log('Saved Date:', lockedDate) // Added for verification
     this.setState({
@@ -132,15 +153,30 @@ class DatePicker extends React.Component {
   static updateDateTime(props, formatMask) {
     let value
     const { defaultToday, showTimeSelectOnly } = props.data
+    const calendarType = getCalendarType()
 
     if (defaultToday && !props.defaultValue) {
       value = dayjs().toISOString() // Let dayjs automatically calculate database UTC constraints
     } else if (props.defaultValue) {
       try {
         // Use formatMask for parsing natively, letting local/UTC offsets calculate correctly
-        value = dayjs(props.defaultValue, formatMask).isValid()
-          ? dayjs(props.defaultValue, formatMask).toISOString()
-          : dayjs(props.defaultValue).toISOString()
+        let parsedDate = dayjs(props.defaultValue, formatMask)
+
+        if (parsedDate.isValid()) {
+          // If calendar type is Buddhist and the parsed year is in Buddhist era range,
+          // convert it back to Gregorian before saving
+          if (calendarType !== 'EN' && parsedDate.year() > 2500) {
+            parsedDate = parsedDate.year(parsedDate.year() - 543)
+          }
+          value = parsedDate.toISOString()
+        } else {
+          let fallbackDate = dayjs(props.defaultValue)
+          // Apply the same Buddhist conversion to fallback parsing
+          if (calendarType !== 'EN' && fallbackDate.year() > 2500) {
+            fallbackDate = fallbackDate.year(fallbackDate.year() - 543)
+          }
+          value = fallbackDate.toISOString()
+        }
       } catch (error) {
         console.warn('Invalid date value:', props.defaultValue)
         value = null
@@ -168,6 +204,21 @@ class DatePicker extends React.Component {
     } else {
       // Convert to Buddhist calendar (add 543 years)
       return localDate.format(formatMask.replace('YYYY', 'BBBB'))
+    }
+  }
+
+  getFormattedDateForPicker = (date, formatMask) => {
+    if (!date) return ''
+
+    const calendarType = getCalendarType()
+    const localDate = dayjs(date)
+
+    if (calendarType === 'EN') {
+      return localDate.format(formatMask)
+    } else {
+      // Buddhist calendar - convert year to Buddhist Era
+      const buddhist = localDate.format(formatMask.replace('YYYY', 'BBBB').replace('YY', 'BB'))
+      return buddhist
     }
   }
 
@@ -246,7 +297,7 @@ class DatePicker extends React.Component {
                 // Use standard dayjs parse of the DB ISO String, naturally matching your local BKK clock
                 value={this.state.value ? dayjs(this.state.value) : null}
                 className="form-control bold-date-picker"
-                format={(value) => this.formatDate(value, this.state.formatMask)}
+                format={(value) => this.getFormattedDateForPicker(value, this.state.formatMask)}
                 showTime={showTimeSelect ? { format: 'HH:mm', showSecond: false } : null}
                 disabled={!isSameEditor || this.state.loading}
                 placeholder={this.state.placeholder}
