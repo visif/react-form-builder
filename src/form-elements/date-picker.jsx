@@ -1,13 +1,87 @@
 import React from 'react'
 import { DatePicker as AntDatePicker, TimePicker as AntTimePicker } from 'antd'
-import dayjs from 'dayjs'
-import buddhistEra from 'dayjs/plugin/buddhistEra'
-import utc from 'dayjs/plugin/utc'
+import generatePicker from 'antd/es/date-picker/generatePicker';
+import dayjsGenerateConfig from 'rc-picker/lib/generate/dayjs';
+import dayjs from 'dayjs';
+import buddhistEra from 'dayjs/plugin/buddhistEra';
+import localeData from 'dayjs/plugin/localeData';
+import advancedFormat from 'dayjs/plugin/advancedFormat';
+import weekOfYear from 'dayjs/plugin/weekOfYear';
+import th from 'dayjs/locale/th';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
+import utc from 'dayjs/plugin/utc';
 import ComponentHeader from './component-header'
 import ComponentLabel from './component-label'
 
+
 dayjs.extend(utc)
-dayjs.extend(buddhistEra)
+dayjs.extend(advancedFormat);
+dayjs.extend(localeData);
+dayjs.extend(weekOfYear);
+dayjs.extend(buddhistEra);
+dayjs.extend(customParseFormat);
+dayjs.extend(localizedFormat);
+// Thai month names for Buddhist calendar
+const THAI_MONTHS_FULL = [
+  'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+  'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+];
+const THAI_MONTHS_SHORT = [
+  'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.',
+  'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'
+];
+
+const buddhistConfig = {
+  ...dayjsGenerateConfig,
+  getFixedDate: (string) => dayjs(string, ['DD/MM/YYYY'], 'en'),
+  setYear: (date, year) => date.year(year - 543),
+  getYear: (date) => {
+    if (dayjs.isDayjs(date)) {
+      return date.year() + 543;
+    } else if (typeof date === 'string') {
+      const dayjsDate = dayjs(date);
+      return dayjsDate.year() + 543;
+    } else {
+      return null;
+    }
+  },
+  locale: {
+    getWeekFirstDay: (locale) => dayjs().locale('th').localeData().firstDayOfWeek(),
+    getWeekFirstDate: (locale, date) => date.locale('th').day(0),
+    getWeek: (locale, date) => date.locale('th').week(),
+    getShortWeekDays: (locale) => dayjs().locale('th').localeData().weekdaysMin(),
+    getShortMonths: (locale) => dayjs().locale('th').localeData().monthsShort(),
+    format: (locale, date, format) => {
+      const yearInBE = date.year() + 543;
+      const yearPart = format.includes('YYYY') ? yearInBE.toString() : yearInBE.toString().slice(-2);
+      const monthFull = THAI_MONTHS_FULL[date.month()];
+      const monthShort = THAI_MONTHS_SHORT[date.month()];
+      const monthNumber = date.format('MM');
+      const day = date.format('DD');
+      let formattedDate = format
+        .replace('YYYY', yearPart)
+        .replace('YY', yearPart.slice(-2))
+        .replace('MMMM', monthFull)
+        .replace('MMM', monthShort)
+        .replace('MM', monthNumber)
+        .replace('DD', day);
+      return formattedDate;
+    },
+    parse: (locale, text, formats) => {
+      for (let i = 0; i < formats.length; i += 1) {
+        const format = formats[i];
+        const date = dayjs(text, format, true).locale('th');
+        if (date.isValid()) {
+          return date;
+        }
+      }
+      return null;
+    },
+  },
+};
+
+const DatePickerTH = generatePicker(buddhistConfig);
 
 const keyDateFormat = 'setting_date_format'
 const keyCalendarType = 'setting_calendar_type'
@@ -268,6 +342,7 @@ class DatePicker extends React.Component {
       baseClasses += ' alwaysbreak'
     }
 
+    const calendarType = getCalendarType();
     return (
       <div className={baseClasses}>
         <ComponentHeader {...this.props} />
@@ -290,25 +365,38 @@ class DatePicker extends React.Component {
                 className="form-control"
               />
             ) : !showTimeSelectOnly ? (
-              <AntDatePicker
-                name={props.name}
-                ref={props.ref}
-                onChange={this.handleChange}
-                // Use standard dayjs parse of the DB ISO String, naturally matching your local BKK clock
-                value={this.state.value ? dayjs(this.state.value) : null}
-                className="form-control bold-date-picker"
-                format={(value) => this.getFormattedDateForPicker(value, this.state.formatMask)}
-                showTime={showTimeSelect ? { format: 'HH:mm', showSecond: false } : null}
-                disabled={!isSameEditor || this.state.loading}
-                placeholder={this.state.placeholder}
-                style={{ display: 'inline-block', width: 'auto' }}
-              />
+              calendarType === 'EN' ? (
+                <AntDatePicker
+                  name={props.name}
+                  ref={props.ref}
+                  onChange={this.handleChange}
+                  value={this.state.value ? dayjs(this.state.value) : null}
+                  className="form-control bold-date-picker"
+                  format={(value) => this.getFormattedDateForPicker(value, this.state.formatMask)}
+                  showTime={showTimeSelect ? { format: 'HH:mm', showSecond: false } : null}
+                  disabled={!isSameEditor || this.state.loading}
+                  placeholder={this.state.placeholder}
+                  style={{ display: 'inline-block', width: 'auto' }}
+                />
+              ) : (
+                <DatePickerTH
+                  name={props.name}
+                  ref={props.ref}
+                  onChange={this.handleChange}
+                  value={this.state.value ? dayjs(this.state.value) : null}
+                  className="form-control bold-date-picker"
+                  format={this.state.formatMask.replace('YYYY', 'BBBB')}
+                  showTime={showTimeSelect ? { format: 'HH:mm', showSecond: false } : null}
+                  disabled={!isSameEditor || this.state.loading}
+                  placeholder={this.state.placeholder}
+                  style={{ display: 'inline-block', width: 'auto' }}
+                />
+              )
             ) : (
               <AntTimePicker
                 name={props.name}
                 ref={props.ref}
                 onChange={this.handleTimeChange}
-                // Use standard dayjs parse of the DB ISO String, naturally returning +7 BKK safely
                 value={this.state.value ? dayjs(this.state.value) : null}
                 className="form-control bold-time-picker"
                 disabled={!isSameEditor || this.state.loading}
