@@ -385,7 +385,7 @@ class DatePicker extends React.Component {
                   onChange={this.handleChange}
                   value={this.state.value ? dayjs(this.state.value) : null}
                   className="form-control bold-date-picker"
-                  format={this.state.formatMask.replace('YYYY', 'BBBB')}
+                  format={(value) => this.getFormattedDateForPicker(value, this.state.formatMask)}
                   showTime={showTimeSelect ? { format: 'HH:mm', showSecond: false } : null}
                   disabled={!isSameEditor || this.state.loading}
                   placeholder={this.state.placeholder}
