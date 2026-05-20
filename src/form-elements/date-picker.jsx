@@ -22,6 +22,7 @@ dayjs.extend(weekOfYear);
 dayjs.extend(buddhistEra);
 dayjs.extend(customParseFormat);
 dayjs.extend(localizedFormat);
+
 // Thai month names for Buddhist calendar
 const THAI_MONTHS_FULL = [
   'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
@@ -58,16 +59,19 @@ const buddhistConfig = {
       const monthFull = THAI_MONTHS_FULL[date.month()];
       const monthShort = THAI_MONTHS_SHORT[date.month()];
       const monthNumber = date.format('MM');
-      const day = date.format('DD');
-      // FIX: replace DD and MM *before* any year tokens to prevent
-      // 'YY' inside 'DD' being matched and corrupting day cells to 'D'
+      const dayPadded = date.format('DD');  // "01" .. "31"
+      const dayNum = date.format('D');      // "1"  .. "31"
+
+      // FIX: handle single 'D' token (used by rc-picker for calendar day cells)
+      // Replace longer tokens first to avoid partial collisions
       let formattedDate = format
         .replace('MMMM', monthFull)
         .replace('MMM', monthShort)
         .replace('MM', monthNumber)
-        .replace('DD', day)
+        .replace('DD', dayPadded)                    // two-digit day
+        .replace(/(?<!D)D(?!D)/g, dayNum)            // single D not part of DD
         .replace('YYYY', yearPart)
-        .replace(/(?<!Y)YY(?!YY)/g, yearPart.slice(-2));
+        .replace(/(?<!Y)YY(?!Y)/g, yearPart.slice(-2)); // standalone YY only
       return formattedDate;
     },
     parse: (locale, text, formats) => {
@@ -122,8 +126,7 @@ export const getCalendarType = () => {
   return key || 'EN'
 }
 
-// Helper: convert a dayjs format mask to Buddhist Era format safely,
-// avoiding partial matches like the 'YY' inside 'DD' corrupting the output.
+// Helper: convert a dayjs format mask to Buddhist Era format safely
 const toBuddhistFormat = (formatMask) => {
   return formatMask
     .replace('YYYY', 'BBBB')
@@ -264,9 +267,7 @@ class DatePicker extends React.Component {
 
   formatDate = (date, formatMask) => {
     if (!date) return ''
-
     const localDate = dayjs(date)
-
     if (getCalendarType() === 'EN') {
       return localDate.format(formatMask)
     } else {
@@ -276,10 +277,8 @@ class DatePicker extends React.Component {
 
   getFormattedDateForPicker = (date, formatMask) => {
     if (!date) return ''
-
     const calendarType = getCalendarType()
     const localDate = dayjs(date)
-
     if (calendarType === 'EN') {
       return localDate.format(formatMask)
     } else {
