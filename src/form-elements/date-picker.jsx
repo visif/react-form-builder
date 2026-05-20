@@ -120,6 +120,14 @@ export const getCalendarType = () => {
   return key || 'EN'
 }
 
+// Helper: convert a dayjs format mask to Buddhist Era format safely,
+// avoiding partial matches like the 'YY' inside 'DD' corrupting the output.
+const toBuddhistFormat = (formatMask) => {
+  return formatMask
+    .replace('YYYY', 'BBBB')               // full 4-digit year first
+    .replace(/(?<!B)YY(?![Y])/g, 'BB')     // standalone YY only (not part of YYYY/BBBB)
+}
+
 class DatePicker extends React.Component {
   constructor(props) {
     super(props)
@@ -276,8 +284,9 @@ class DatePicker extends React.Component {
     if (getCalendarType() === 'EN') {
       return localDate.format(formatMask)
     } else {
-      // Convert to Buddhist calendar (add 543 years)
-      return localDate.format(formatMask.replace('YYYY', 'BBBB'))
+      // FIX: use toBuddhistFormat helper to safely replace year tokens
+      // without corrupting 'DD' by accidentally matching the 'YY' inside it
+      return localDate.format(toBuddhistFormat(formatMask))
     }
   }
 
@@ -290,9 +299,9 @@ class DatePicker extends React.Component {
     if (calendarType === 'EN') {
       return localDate.format(formatMask)
     } else {
-      // Buddhist calendar - convert year to Buddhist Era
-      const buddhist = localDate.format(formatMask.replace('YYYY', 'BBBB').replace('YY', 'BB'))
-      return buddhist
+      // FIX: use toBuddhistFormat helper to safely replace year tokens
+      // without corrupting 'DD' by accidentally matching the 'YY' inside it
+      return localDate.format(toBuddhistFormat(formatMask))
     }
   }
 
