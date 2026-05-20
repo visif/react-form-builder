@@ -59,13 +59,15 @@ const buddhistConfig = {
       const monthShort = THAI_MONTHS_SHORT[date.month()];
       const monthNumber = date.format('MM');
       const day = date.format('DD');
+      // FIX: replace DD and MM *before* any year tokens to prevent
+      // 'YY' inside 'DD' being matched and corrupting day cells to 'D'
       let formattedDate = format
-        .replace('YYYY', yearPart)
-        .replace('YY', yearPart.slice(-2))
         .replace('MMMM', monthFull)
         .replace('MMM', monthShort)
         .replace('MM', monthNumber)
-        .replace('DD', day);
+        .replace('DD', day)
+        .replace('YYYY', yearPart)
+        .replace(/(?<!Y)YY(?!YY)/g, yearPart.slice(-2));
       return formattedDate;
     },
     parse: (locale, text, formats) => {
@@ -124,8 +126,8 @@ export const getCalendarType = () => {
 // avoiding partial matches like the 'YY' inside 'DD' corrupting the output.
 const toBuddhistFormat = (formatMask) => {
   return formatMask
-    .replace('YYYY', 'BBBB')               // full 4-digit year first
-    .replace(/(?<!B)YY(?![Y])/g, 'BB')     // standalone YY only (not part of YYYY/BBBB)
+    .replace('YYYY', 'BBBB')
+    .replace(/(?<!B)YY(?![Y])/g, 'BB')
 }
 
 class DatePicker extends React.Component {
@@ -155,7 +157,6 @@ class DatePicker extends React.Component {
     const maxRetries = 3
 
     if (!this.state.value && defaultValue) {
-      // If value hasn't loaded yet, check again in a moment
       setTimeout(() => {
         if (this.mounted && !this.state.value) {
           const { formatMask } = this.state
@@ -163,7 +164,6 @@ class DatePicker extends React.Component {
             ...DatePicker.updateDateTime(this.props, formatMask),
             loading: false,
           })
-          // Keep checking if still no value and attempts are less than maxRetries
           if (!this.state.value && attempt < maxRetries) {
             this.checkForValue(attempt + 1)
           }
@@ -178,30 +178,23 @@ class DatePicker extends React.Component {
     const { formatMask } = this.state
     const calendarType = getCalendarType()
 
-    // Allow actual Time Zone offset logic to save correctly (e.g., 16:14 local -> 23:14 UTC)
-    // but force the correct selected DATE locally in case of midnight wrapping
     let lockedDate = null
 
     if (date) {
-      // Get the year from the date object
       let year = date.year()
 
-      // If calendar type is Buddhist, the year returned might be in Buddhist era
-      // We need to convert it back to Gregorian for storage (subtract 543)
       if (calendarType === 'TH' || calendarType !== 'EN') {
-        // Check if the year seems to be in Buddhist format (543 years ahead)
         if (year > 2500) {
           year = year - 543
         }
       }
 
-      // Create a new date with the corrected Gregorian year
       const correctedDate = date.clone().year(year)
       lockedDate = correctedDate.format('YYYY-MM-DDTHH:mm:ss')
       lockedDate = dayjs(lockedDate).toISOString()
     }
 
-    console.log('Saved Date:', lockedDate) // Added for verification
+    console.log('Saved Date:', lockedDate)
     this.setState({
       value: lockedDate,
       placeholder: formatMask.toLowerCase(),
@@ -209,9 +202,8 @@ class DatePicker extends React.Component {
   }
 
   handleTimeChange = (time) => {
-    // Keep exact local time selection in sync with database mathematical bounds
     const isoTime = time ? time.toISOString() : null
-    console.log('Saved Time (Real UTC Math):', isoTime) // Added for verification
+    console.log('Saved Time (Real UTC Math):', isoTime)
     this.setState({
       value: isoTime,
       placeholder: 'HH:mm',
@@ -238,22 +230,18 @@ class DatePicker extends React.Component {
     const calendarType = getCalendarType()
 
     if (defaultToday && !props.defaultValue) {
-      value = dayjs().toISOString() // Let dayjs automatically calculate database UTC constraints
+      value = dayjs().toISOString()
     } else if (props.defaultValue) {
       try {
-        // Use formatMask for parsing natively, letting local/UTC offsets calculate correctly
         let parsedDate = dayjs(props.defaultValue, formatMask)
 
         if (parsedDate.isValid()) {
-          // If calendar type is Buddhist and the parsed year is in Buddhist era range,
-          // convert it back to Gregorian before saving
           if (calendarType !== 'EN' && parsedDate.year() > 2500) {
             parsedDate = parsedDate.year(parsedDate.year() - 543)
           }
           value = parsedDate.toISOString()
         } else {
           let fallbackDate = dayjs(props.defaultValue)
-          // Apply the same Buddhist conversion to fallback parsing
           if (calendarType !== 'EN' && fallbackDate.year() > 2500) {
             fallbackDate = fallbackDate.year(fallbackDate.year() - 543)
           }
@@ -277,15 +265,11 @@ class DatePicker extends React.Component {
   formatDate = (date, formatMask) => {
     if (!date) return ''
 
-    // Since we are correctly saving standard UTC in the database now,
-    // dayjs will automatically bring it back up to local (+7 BKK) seamlessly!
     const localDate = dayjs(date)
 
     if (getCalendarType() === 'EN') {
       return localDate.format(formatMask)
     } else {
-      // FIX: use toBuddhistFormat helper to safely replace year tokens
-      // without corrupting 'DD' by accidentally matching the 'YY' inside it
       return localDate.format(toBuddhistFormat(formatMask))
     }
   }
@@ -299,8 +283,6 @@ class DatePicker extends React.Component {
     if (calendarType === 'EN') {
       return localDate.format(formatMask)
     } else {
-      // FIX: use toBuddhistFormat helper to safely replace year tokens
-      // without corrupting 'DD' by accidentally matching the 'YY' inside it
       return localDate.format(toBuddhistFormat(formatMask))
     }
   }
@@ -313,14 +295,12 @@ class DatePicker extends React.Component {
     const savedEditor = this.props.editor
     const hasValue = this.state.value && this.state.value.toString().trim() !== ''
 
-    // Allow editing if no value exists OR if user is the same editor
     let isSameEditor = true
     if (savedEditor && savedEditor.userId && hasValue && !!userProperties) {
       isSameEditor =
         userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
     }
 
-    // Create tooltip text showing editor name
     const tooltipText =
       savedEditor && savedEditor.name && hasValue
         ? `${
