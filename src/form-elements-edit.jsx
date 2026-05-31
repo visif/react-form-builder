@@ -1043,6 +1043,9 @@ export default class FormElementsEdit extends React.Component {
               <option value="role" key="role">
                 Role
               </option>
+              <option value="email" key="email">
+                Email
+              </option>
               <option value="form" key="form">
                 Form
               </option>

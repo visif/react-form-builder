@@ -842,6 +842,12 @@ const Preview = (props) => {
               { id: 2, name: 'roleB' },
             ]
           }
+          if (data.sourceType === 'email') {
+            return [
+              { id: 1, name: 'userA@example.com' },
+              { id: 2, name: 'userB@example.com' },
+            ]
+          }
           if (data.sourceType === 'form') {
             return [
               { id: 1, name: 'formA' },
