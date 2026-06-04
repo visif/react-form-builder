@@ -58,7 +58,8 @@ export const useRowSync = (getDataById, updateElement) => {
 
       // For DataSource, only sync user selections, not initialization
       const isDataSourceUserSelection =
-        changedElement.element === 'DataSource' && changedElement.isUserSelection === true
+        (changedElement.element === 'DataSource' || changedElement.element === 'Dataset') &&
+        changedElement.isUserSelection === true
 
       // If this is just a selection change in a form element, don't sync it to other rows
       // Exception: DataSource user selections should be synced
@@ -230,6 +231,7 @@ export const useRowSync = (getDataById, updateElement) => {
             break
 
           case 'DataSource':
+          case 'Dataset':
             // For DataSource, only sync structural properties and user selections
             // but handle them carefully to prevent infinite loops
             if (changedElement.isUserSelection) {

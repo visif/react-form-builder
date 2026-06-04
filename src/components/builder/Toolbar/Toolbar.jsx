@@ -238,8 +238,8 @@ const Toolbar = (props) => {
         elementOptions.specificRole = 'specific'
       }
 
-      if (item.key === 'DataSource') {
-        elementOptions.sourceType = item.sourceType
+      if (item.key === 'DataSource' || item.key === 'Dataset') {
+        elementOptions.sourceType = item.sourceType || 'name'
         elementOptions.formSource = item.formSource
         elementOptions.formField = item.formField || {}
       }
@@ -523,6 +523,18 @@ function _defaultItems() {
       icon: 'fa fa-database',
       field_name: 'data_source_',
       sourceType: 'name',
+      formSource: '',
+      formField: {},
+      canHaveAnswer: true,
+      label: 'Placeholder Label',
+    },
+    {
+      key: 'Dataset',
+      element: 'Dataset',
+      name: 'Dataset',
+      icon: 'fa fa-database',
+      field_name: 'dataset_',
+      sourceType: 'dataset',
       formSource: '',
       formField: {},
       canHaveAnswer: true,

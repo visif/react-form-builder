@@ -29,6 +29,7 @@ const {
   Download,
   Camera,
   DataSource,
+  Dataset,
   FormLink,
 } = FormElements
 
@@ -193,8 +194,10 @@ export const renderFormElement = (item, props, handlers, helpers, refs) => {
       )
 
     case 'DataSource':
+    case 'Dataset': {
+      const DataSourceElement = item.element === 'Dataset' ? Dataset : DataSource
       return (
-        <DataSource
+        <DataSourceElement
           handleChange={handleChange}
           ref={(c) => {
             inputsRef.current[item.field_name] = c
@@ -209,6 +212,7 @@ export const renderFormElement = (item, props, handlers, helpers, refs) => {
           getActiveUserProperties={props.getActiveUserProperties}
         />
       )
+    }
 
     case 'CustomElement':
       return getCustomElement(item, props, handleChange, getDefaultValue, inputsRef)

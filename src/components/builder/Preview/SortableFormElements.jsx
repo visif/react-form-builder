@@ -27,6 +27,7 @@ const {
   Signature,
   Signature2,
   DataSource,
+  Dataset,
   HyperLink,
   Download,
   Camera,
@@ -70,6 +71,7 @@ FormElements.Table = SortableElement(Table)
 FormElements.Section = SortableElement(Section)
 FormElements.Signature2 = SortableElement(Signature2)
 FormElements.DataSource = SortableElement(DataSource)
+FormElements.Dataset = SortableElement(Dataset)
 FormElements.FileUpload = SortableElement(FileUpload)
 FormElements.ImageUpload = SortableElement(ImageUpload)
 FormElements.FormulaInput = SortableElement(FormulaInput)

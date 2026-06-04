@@ -151,7 +151,7 @@ export const useFormValidation = (props, inputsRef, getItemValue, collectFormIte
         return !!(value && value.filePath)
       }
 
-      if (item.element === 'DataSource') {
+      if (item.element === 'DataSource' || item.element === 'Dataset') {
         return !!(value && value.value)
       }
 

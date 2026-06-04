@@ -60,6 +60,7 @@ FormElements.Table = Table
 FormElements.Section = Section
 FormElements.Signature2 = Signature2
 FormElements.DataSource = DataSource
+FormElements.Dataset = DataSource
 FormElements.FileUpload = FileUpload
 FormElements.ImageUpload = ImageUpload
 FormElements.FormulaInput = FormulaInput

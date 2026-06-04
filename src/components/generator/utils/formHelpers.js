@@ -104,7 +104,10 @@ export const getItemValue = (item, ref) => {
       signedPersonId: ref.state.signedPersonId,
       signedDateTime: ref.state.signedDateTime,
     }
-  } else if (item.element === 'DataSource' && ref.state.searchText) {
+  } else if (
+    (item.element === 'DataSource' || item.element === 'Dataset') &&
+    ref.state.searchText
+  ) {
     $item.value = {
       type: ref.props.data.sourceType,
       value: ref.state.searchText,

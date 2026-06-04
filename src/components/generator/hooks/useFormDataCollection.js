@@ -70,7 +70,7 @@ export const useFormDataCollection = (props, inputsRef, getItemValue, getEditor)
           hasValue = !!contextValue?.filePath
         } else if (item.element === 'Signature2') {
           hasValue = !!contextValue?.isSigned
-        } else if (item.element === 'DataSource') {
+        } else if (item.element === 'DataSource' || item.element === 'Dataset') {
           hasValue = !!contextValue?.value
         } else if (item.element === 'Table') {
           hasValue =
@@ -148,7 +148,10 @@ export const useFormDataCollection = (props, inputsRef, getItemValue, getEditor)
             : Array.isArray(valueItem.value) && valueItem.value.length > 0
               ? activeUser
               : null
-        } else if (item.element === 'DataSource' && ref.state.searchText) {
+        } else if (
+          (item.element === 'DataSource' || item.element === 'Dataset') &&
+          ref.state.searchText
+        ) {
           itemData.editor = oldEditor ? oldEditor : valueItem.value.value ? activeUser : null
         } else if (item.element === 'FileUpload') {
           itemData.editor = oldEditor

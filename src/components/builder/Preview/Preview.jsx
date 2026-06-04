@@ -61,6 +61,12 @@ const defaultGetDataSource = (data) => {
       { id: 2, name: 'formB' },
     ]
   }
+  if (data.sourceType === 'dataset') {
+    return [
+      { id: 1, name: 'datasetA' },
+      { id: 2, name: 'datasetB' },
+    ]
+  }
   return []
 }
 const defaultOnUploadFile = (file) => `${file.name}-${Math.random() * 10000000}`
@@ -646,7 +652,8 @@ const Preview = (props) => {
 
       // For DataSource, only sync user selections, not initialization
       const isDataSourceUserSelection =
-        changedElement.element === 'DataSource' && changedElement.isUserSelection === true
+        (changedElement.element === 'DataSource' || changedElement.element === 'Dataset') &&
+        changedElement.isUserSelection === true
 
       // If this is just a selection change in a form element, don't sync it to other rows
       // Exception: DataSource user selections should be synced
@@ -818,6 +825,7 @@ const Preview = (props) => {
             break
 
           case 'DataSource':
+          case 'Dataset':
             // For DataSource, only sync structural properties and user selections
             // but handle them carefully to prevent infinite loops
             if (changedElement.isUserSelection) {

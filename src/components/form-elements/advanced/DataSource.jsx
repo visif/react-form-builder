@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { Input } from 'antd'
 
 import ComponentHeader from '../shared/ComponentHeader'
@@ -25,7 +26,7 @@ const DataSource = (props) => {
     if (props.data.parentId && props.onElementChange && !loading && !syncInProgress.current) {
       props.onElementChange({
         ...props.data,
-        element: 'DataSource',
+        element: props.data.element || 'DataSource',
         initialized: true,
         sourceType: props.data.sourceType,
         formSource: props.data.formSource,
@@ -183,7 +184,7 @@ const DataSource = (props) => {
         lastSyncTimestamp.current = currentTime
         props.onElementChange({
           ...props.data,
-          element: 'DataSource',
+          element: props.data.element || 'DataSource',
           selectedItem: item,
           value: item.name,
           isUserSelection: true, // Flag to indicate this is a user selection

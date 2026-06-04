@@ -125,7 +125,9 @@ export const useFormElementEdit = (props) => {
   useEffect(() => {
     const loadFormData = async () => {
       if (
-        (props.element.element === 'DataSource' || props.element.element === 'FormLink') &&
+        (props.element.element === 'DataSource' ||
+          props.element.element === 'Dataset' ||
+          props.element.element === 'FormLink') &&
         props.getFormSource
       ) {
         console.log('Loading form sources...')

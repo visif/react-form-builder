@@ -41,8 +41,10 @@ const DataSourceEditor = ({ element, formDataSource, activeForm, onChange, onBlu
           value={element.sourceType || 'name'}
           options={[
             { value: 'name', label: 'Name', key: 'name' },
+            { value: 'email', label: 'Email', key: 'email' },
             { value: 'department', label: 'Department', key: 'department' },
             { value: 'role', label: 'Role', key: 'role' },
+            { value: 'dataset', label: 'Dataset', key: 'dataset' },
             { value: 'form', label: 'Form', key: 'form' },
           ]}
           onChange={(e) => onChange('sourceType', 'value', e)}

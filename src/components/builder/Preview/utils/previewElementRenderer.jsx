@@ -6,6 +6,7 @@
  * - Renders the edit form for selected elements
  */
 import React from 'react'
+
 import SortableFormElements from './SortableFormElements'
 
 /**
@@ -83,6 +84,12 @@ export const getElement = (
             { id: 2, name: 'formB' },
           ]
         }
+        if (data.sourceType === 'dataset') {
+          return [
+            { id: 1, name: 'datasetA' },
+            { id: 2, name: 'datasetB' },
+          ]
+        }
         return []
       }}
       getFormSource={props.getFormSource}
@@ -97,16 +104,14 @@ export const getElement = (
 /**
  * Render the edit form for the selected element
  */
-export const showEditForm = (
-  {
-    updateElement,
-    getDataById,
-    syncRowChanges,
-    data,
-    props,
-    manualEditModeOff,
-  }
-) => {
+export const showEditForm = ({
+  updateElement,
+  getDataById,
+  syncRowChanges,
+  data,
+  props,
+  manualEditModeOff,
+}) => {
   const handleUpdateElement = (element) => {
     updateElement(element)
 
