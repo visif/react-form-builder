@@ -153,7 +153,7 @@ export default class FormElementsEdit extends React.Component {
       this.props.getFormSource
     ) {
       // call api to get form data
-      formDataSource = (await this.props.getFormSource()) || []
+      formDataSource = (await this.props.getFormSource(this.props.element)) || []
       if (formDataSource) {
         activeForm = formDataSource.find(
           (item) => item.id == this.props.element.formSource
@@ -205,6 +205,16 @@ export default class FormElementsEdit extends React.Component {
     // targProperty could be value or checked
     const this_element = this.state.element
     this_element[elemProperty] = e.target[targProperty]
+
+    if (elemProperty === 'sourceType' && this.props.getFormSource) {
+      this_element.formSource = ''
+      const formDataSource = (await this.props.getFormSource(this_element)) || []
+      this.setState((current) => ({
+        ...current,
+        formDataSource,
+        activeForm: {},
+      }))
+    }
 
     if (elemProperty === 'formSource' && this.state.formDataSource) {
       const activeForm = this.state.formDataSource.find(
@@ -1049,16 +1059,22 @@ export default class FormElementsEdit extends React.Component {
               <option value="form" key="form">
                 Form
               </option>
+              <option value="dataset" key="dataset">
+                Dataset
+              </option>
             </select>
           </div>
         )}
 
-        {this.props.element.sourceType === 'form' && (
+        {(this.props.element.sourceType === 'form' ||
+          this.props.element.sourceType === 'dataset') && (
           <div>
             {this.props.element.hasOwnProperty('formSource') && (
               <div className="form-group">
                 <label className="control-label" htmlFor="formSource">
-                  Form Source
+                  {this.props.element.sourceType === 'dataset'
+                    ? 'Dataset Source'
+                    : 'Form Source'}
                 </label>
                 <select
                   className="form-control"
@@ -1081,10 +1097,13 @@ export default class FormElementsEdit extends React.Component {
               </div>
             )}
 
-            {this.props.element.sourceType === 'form' && (
+            {(this.props.element.sourceType === 'form' ||
+              this.props.element.sourceType === 'dataset') && (
               <div className="form-group">
                 <label className="control-label" htmlFor="formSource">
-                  Select Fields
+                  {this.props.element.sourceType === 'dataset'
+                    ? 'Select Dataset Keys'
+                    : 'Select Fields'}
                 </label>
                 {this.state.activeForm &&
                   this.state.activeForm.columns &&

@@ -139,7 +139,37 @@ class DataSource extends React.Component {
     return null
   }
 
+  getDataSourceConfigKey = (data) =>
+    JSON.stringify({
+      sourceType: data?.sourceType,
+      formSource: data?.formSource,
+      fields: Object.keys(data || {})
+        .filter((key) => key.startsWith('formField'))
+        .sort()
+        .map((key) => [key, data[key]]),
+    })
+
   componentDidUpdate(prevProps) {
+    if (
+      this.getDataSourceConfigKey(prevProps.data) !==
+      this.getDataSourceConfigKey(this.props.data)
+    ) {
+      this.setState(
+        {
+          searchText: '',
+          selectedItem: null,
+          defaultSelectedItem: null,
+          loading: true,
+        },
+        async () => {
+          await this.loadDataSource()
+          if (this.mounted) {
+            this.setState({ loading: false })
+          }
+        }
+      )
+    }
+
     // Clear the sync flag after processing
     if (
       this.props.data.isSyncUpdate &&
