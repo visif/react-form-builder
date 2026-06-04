@@ -9,6 +9,11 @@ import Dustbin from './dustbin'
 
 const accepts = [ItemTypes.BOX, ItemTypes.CARD]
 
+const stripPTags = (html) => {
+  if (!html) return html
+  return html.replace(/<p>/gi, '').replace(/<\/p>/gi, '').trim()
+}
+
 const MultiColumnRow = (props) => {
   const {
     controls,
@@ -20,6 +25,11 @@ const MultiColumnRow = (props) => {
     seq,
     index,
     updateElement,
+    connectDragSource,
+    onSelectChildForm,
+    openLinkedForm,
+    getFormInfo,
+    getFormSource,
   } = props
 
   const { childItems = [], pageBreakBefore } = data
@@ -49,7 +59,7 @@ const MultiColumnRow = (props) => {
 
   return (
     <div className={baseClasses}>
-      <ComponentHeader {...props} />
+      {headerWithHandle}
       <div>
         <ComponentLabel {...props} />
         <table
@@ -84,6 +94,7 @@ const MultiColumnRow = (props) => {
                     className="rfb-table-column-header"
                     style={{
                       textAlign: 'center',
+                      verticalAlign: 'middle',
                       fontWeight: 'var(--rfb-table-header-font-weight, bold)',
                       fontFamily: 'var(--rfb-table-header-font-family, inherit)',
                       padding: '10px 8px',
@@ -95,7 +106,12 @@ const MultiColumnRow = (props) => {
                       border: '1px solid #d0d5dd',
                     }}
                   >
-                    {column.text}
+                    <span dangerouslySetInnerHTML={{ __html: stripPTags(column.text) }} />
+                    {column.required && (
+                      <span className="label-required badge badge-danger ml-1">
+                        Required
+                      </span>
+                    )}
                   </th>
                 ))}
               </tr>
@@ -117,7 +133,13 @@ const MultiColumnRow = (props) => {
                       border: '1px solid #d0d5dd',
                     }}
                   >
-                    {data.rowLabels[rowIndex] ? data.rowLabels[rowIndex].text : ''}
+                    <span
+                      dangerouslySetInnerHTML={{
+                        __html: data.rowLabels[rowIndex]
+                          ? stripPTags(data.rowLabels[rowIndex].text)
+                          : '',
+                      }}
+                    />
                   </td>
                 )}
                 {row.map((item, columnIndex) => {
