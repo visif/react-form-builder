@@ -63,6 +63,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import { Button } from 'antd'
 
+import FORM_BUILDER_VERSION from '../../constants/version'
 import { FormProvider, useFormContext } from '../../contexts/FormContext'
 import FormValidator from './FormValidator'
 import {
@@ -467,7 +468,11 @@ const ReactForm = (props) => {
   return (
     <div>
       <FormValidator />
-      <div className="react-form-builder-form">
+      <div
+        className="react-form-builder-form"
+        data-rfb-version={FORM_BUILDER_VERSION}
+        data-rfb-component="generator"
+      >
         {draftRestored && !props.read_only && (
           <div className="alert alert-info" style={{ marginBottom: '10px' }}>
             Your previous draft has been restored.

@@ -3,6 +3,11 @@ import path from 'path'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
+  define: {
+    'import.meta.env.VITE_FORM_BUILDER_VERSION': JSON.stringify(
+      process.env.npm_package_version || '0.0.1'
+    ),
+  },
   plugins: [react()],
   build: {
     lib: {

@@ -59,6 +59,7 @@ import PropTypes from 'prop-types'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 
+import FORM_BUILDER_VERSION from '../../constants/version'
 import Preview from './Preview/Preview'
 import Toolbar from './Toolbar/Toolbar'
 
@@ -97,7 +98,12 @@ const ReactFormBuilder = (props) => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="react-form-builder clearfix" style={{ height: '100%' }}>
+      <div
+        className="react-form-builder clearfix"
+        style={{ height: '100%' }}
+        data-rfb-version={FORM_BUILDER_VERSION}
+        data-rfb-component="builder"
+      >
         <div
           style={{
             display: 'flex',

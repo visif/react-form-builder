@@ -59,7 +59,7 @@ const MultiColumnRow = (props) => {
 
   return (
     <div className={baseClasses}>
-      {headerWithHandle}
+      <ComponentHeader {...props} />
       <div>
         <ComponentLabel {...props} />
         <table
@@ -108,9 +108,7 @@ const MultiColumnRow = (props) => {
                   >
                     <span dangerouslySetInnerHTML={{ __html: stripPTags(column.text) }} />
                     {column.required && (
-                      <span className="label-required badge badge-danger ml-1">
-                        Required
-                      </span>
+                      <span className="label-required badge badge-danger ml-1">Required</span>
                     )}
                   </th>
                 ))}

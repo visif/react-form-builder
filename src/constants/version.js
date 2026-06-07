@@ -1,0 +1,4 @@
+const FORM_BUILDER_VERSION = import.meta.env.VITE_FORM_BUILDER_VERSION || '0.0.4'
+
+export default FORM_BUILDER_VERSION
+export { FORM_BUILDER_VERSION }
