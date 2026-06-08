@@ -230,20 +230,19 @@ export const useFormValidation = (props, inputsRef, getItemValue, collectFormIte
         const itemIds = activeItems.map((item) => item.id)
         data_items = props.data.filter((item) => itemIds.includes(item.id))
       } else {
-        // If all defined sections are empty (no form items under any section),
-        // skip section-based required validation.
-        const hasItemsUnderAnySection = sectionItems.some(
-          (section) =>
-            Array.isArray(sectionGroup[section.id]) && sectionGroup[section.id].length > 0
-        )
+        // No section has user input yet.
+        // Validate only the initial scope: items before the first section and
+        // items under the first section.
+        const firstSectionId = sectionItems[0]?.id
+        const initialItems = [
+          ...(Array.isArray(sectionGroup['']) ? sectionGroup[''] : []),
+          ...(firstSectionId && Array.isArray(sectionGroup[firstSectionId])
+            ? sectionGroup[firstSectionId]
+            : []),
+        ]
 
-        if (hasItemsUnderAnySection) {
-          // No active section yet, but sections do contain form items:
-          // validate full form so required fields trigger on first submit.
-          data_items = props.data
-        } else {
-          data_items = []
-        }
+        const initialItemIds = initialItems.map((item) => item.id)
+        data_items = props.data.filter((item) => initialItemIds.includes(item.id))
       }
     }
 
