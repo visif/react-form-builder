@@ -73,6 +73,18 @@ export const useFormElementEdit = (props) => {
         const activeFormItem = formDataSource.find((item) => item.id == this_element[elemProperty])
         let activeFormContent = {}
 
+        // Persist selected form label for FormLink so generator can display it
+        if (props.element.element === 'FormLink') {
+          const selectedFormLabel = activeFormItem?.title || activeFormItem?.name || ''
+          this_element.value = selectedFormLabel
+          this_element.formName = selectedFormLabel
+          this_element.selectedFormId = activeFormItem || undefined
+
+          props.element.value = selectedFormLabel
+          props.element.formName = selectedFormLabel
+          props.element.selectedFormId = activeFormItem || undefined
+        }
+
         if (activeFormItem && props.getFormContent) {
           console.log('Fetching form content for:', activeFormItem)
           activeFormContent = (await props.getFormContent(activeFormItem)) || {}

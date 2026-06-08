@@ -21,6 +21,13 @@ const FormLink = (props) => {
   const [isShowingList, setIsShowingList] = React.useState(false)
   const [loading, setLoading] = React.useState(true)
 
+  const getFormDisplayName = React.useCallback((form) => {
+    if (!form) return ''
+    if (typeof form === 'string') return form
+    if (typeof form === 'number') return ''
+    return form.title || form.name || form.Name || ''
+  }, [])
+
   const checkForValue = React.useCallback(
     (attempt = 0) => {
       const maxRetries = 3
@@ -62,7 +69,7 @@ const FormLink = (props) => {
               setFormList(forms)
               setMatchedList(forms)
               setSelectedFormId(selectedForm)
-              setSearchText('')
+              setSearchText(getFormDisplayName(selectedForm))
               return
             }
           }
@@ -78,7 +85,7 @@ const FormLink = (props) => {
         }
       }
     }
-  }, [props.getFormSource, props.data.formSource])
+  }, [props.getFormSource, props.data.formSource, getFormDisplayName])
 
   React.useEffect(() => {
     mounted.current = true
@@ -122,6 +129,18 @@ const FormLink = (props) => {
     }
   }, [props.defaultValue, defaultSelectedForm])
 
+  React.useEffect(() => {
+    if (!props.data.formSource || formList.length === 0) {
+      return
+    }
+
+    const matchedForm = formList.find((form) => form.id == props.data.formSource)
+    if (matchedForm) {
+      setSelectedFormId(matchedForm)
+      setSearchText(getFormDisplayName(matchedForm))
+    }
+  }, [props.data.formSource, formList, getFormDisplayName])
+
   const handleInputFocus = React.useCallback(() => {
     setIsShowingList(true)
   }, [])
@@ -131,6 +150,34 @@ const FormLink = (props) => {
       setIsShowingList(false)
     }, 200)
   }, [])
+
+  const canSelectFromList = props.mutable && typeof props.getFormSource === 'function'
+
+  const handlePrimaryAction = React.useCallback(() => {
+    if (canSelectFromList) {
+      setIsShowingList(true)
+      return
+    }
+
+    const resolvedFormSource =
+      props.data.formSource || selectedFormId?.id || selectedFormId?.value || undefined
+
+    if (typeof props.onSelectChildForm === 'function') {
+      props.onSelectChildForm(props.data.id, resolvedFormSource)
+      return
+    }
+
+    if (typeof props.openLinkedForm === 'function' && resolvedFormSource !== undefined) {
+      props.openLinkedForm(resolvedFormSource)
+    }
+  }, [
+    canSelectFromList,
+    props.onSelectChildForm,
+    props.openLinkedForm,
+    props.data.id,
+    props.data.formSource,
+    selectedFormId,
+  ])
 
   const debounceOnChange = React.useCallback(
     (value) => {
@@ -227,15 +274,26 @@ const FormLink = (props) => {
     baseClasses += ' alwaysbreak'
   }
 
-  const formTitle = selectedFormId ? selectedFormId.title : 'Select a form'
-  const isFormSelected = !!selectedFormId
+  const selectedFormTitle =
+    getFormDisplayName(selectedFormId) ||
+    getFormDisplayName(formList.find((form) => form.id == props.data.formSource))
+
+  const displayedFormName =
+    formInfo?.Name ||
+    formInfo?.name ||
+    selectedFormTitle ||
+    searchText ||
+    props.data.value ||
+    'Please select a form'
+
+  const isFormSelected = !!(selectedFormId || props.data.formSource || selectedFormTitle)
 
   return (
     <section className={baseClasses}>
       <ComponentHeader {...props} />
       <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
         <ComponentLabel {...props} style={{ display: 'block' }} />
-        {props.mutable && isShowingList && matchedList.length > 0 && (
+        {canSelectFromList && isShowingList && matchedList.length > 0 && (
           <div
             style={{
               position: 'absolute',
@@ -275,40 +333,40 @@ const FormLink = (props) => {
           style={{
             position: 'relative',
             display: 'inline-block',
-            width: '100%',
+            width: 'auto',
+            maxWidth: '100%',
           }}
         >
-          <div className="form-link-container" style={{ display: 'flex', alignItems: 'center' }}>
+          <div
+            className="form-link-container"
+            style={{ display: 'inline-flex', alignItems: 'center', maxWidth: '100%' }}
+          >
             {isFormSelected ? (
-              <div
-                onClick={() => setIsShowingList(true)}
+              <Button
+                type="default"
+                onClick={handlePrimaryAction}
                 style={{
-                  flex: 1,
-                  border: '1px solid #ced4da',
-                  borderRadius: '.25rem',
-                  padding: '6px 12px',
-                  cursor: 'pointer',
-                  backgroundColor: '#fff',
                   minHeight: '38px',
+                  textAlign: 'left',
                   display: 'flex',
+                  justifyContent: 'flex-start',
                   alignItems: 'center',
+                  maxWidth: '100%',
                 }}
               >
-                <span>{formInfo ? formInfo.Name : 'Please select a form'}</span>
-              </div>
+                {displayedFormName}
+              </Button>
             ) : (
               <div className="form-link-preview" style={{ padding: '6px 0' }}>
                 <Button
                   href="#"
-                  style={{ textDecoration: 'unset' }}
+                  style={{ textDecoration: 'unset', textAlign: 'left', maxWidth: '100%' }}
                   onClick={(e) => {
                     e.preventDefault()
-                    if (typeof props.onSelectChildForm === 'function') {
-                      props.onSelectChildForm(props.data.id, props.data.formSource)
-                    }
+                    handlePrimaryAction()
                   }}
                 >
-                  {formInfo ? formInfo.Name : 'Please select a form'}
+                  {displayedFormName}
                 </Button>
               </div>
             )}
