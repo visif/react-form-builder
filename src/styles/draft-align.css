@@ -65,8 +65,8 @@
 }
 
 .color-picker-popup-left {
-  left: 0 !important;
-  right: auto !important;
+  left: auto !important;
+  right: 0 !important;
   transform: none !important;
   max-width: calc(100vw - 24px) !important;
   z-index: 1060 !important;
