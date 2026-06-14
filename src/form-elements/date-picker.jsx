@@ -286,6 +286,10 @@ class DatePicker extends React.Component {
     }
   }
 
+  getPopupContainer = (triggerNode) => {
+    return triggerNode.closest('.rfb-item') || triggerNode.parentElement || document.body
+  }
+
   render() {
     const { showTimeSelect, showTimeSelectOnly } = this.props.data
     const userProperties =
@@ -364,6 +368,7 @@ class DatePicker extends React.Component {
                   showTime={showTimeSelect ? { format: 'HH:mm', showSecond: false } : null}
                   disabled={!isSameEditor || this.state.loading}
                   placeholder={this.state.placeholder}
+                  getPopupContainer={this.getPopupContainer}
                   style={{ display: 'inline-block', width: 'auto' }}
                 />
               ) : (
@@ -377,6 +382,7 @@ class DatePicker extends React.Component {
                   showTime={showTimeSelect ? { format: 'HH:mm', showSecond: false } : null}
                   disabled={!isSameEditor || this.state.loading}
                   placeholder={this.state.placeholder}
+                  getPopupContainer={this.getPopupContainer}
                   style={{ display: 'inline-block', width: 'auto' }}
                 />
               )
@@ -389,6 +395,7 @@ class DatePicker extends React.Component {
                 className="form-control bold-time-picker"
                 disabled={!isSameEditor || this.state.loading}
                 placeholder={this.state.placeholder}
+                getPopupContainer={this.getPopupContainer}
                 style={{ display: 'inline-block', width: 'auto' }}
                 format="HH:mm"
                 minuteStep={1}
