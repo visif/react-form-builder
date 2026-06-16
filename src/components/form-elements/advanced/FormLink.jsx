@@ -339,28 +339,22 @@ const FormLink = (props) => {
         >
           <div
             className="form-link-container"
-            style={{ display: 'inline-flex', alignItems: 'center', maxWidth: '100%' }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              width: 'auto',
+              maxWidth: '100%',
+            }}
           >
             {isFormSelected ? (
-              <Button
-                type="default"
-                onClick={handlePrimaryAction}
-                style={{
-                  minHeight: '38px',
-                  textAlign: 'left',
-                  display: 'flex',
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                  maxWidth: '100%',
-                }}
-              >
+              <Button type="default" className="form-link-action-btn" onClick={handlePrimaryAction}>
                 {displayedFormName}
               </Button>
             ) : (
-              <div className="form-link-preview" style={{ padding: '6px 0' }}>
+              <div className="form-link-preview" style={{ padding: '6px 0', width: 'auto' }}>
                 <Button
                   href="#"
-                  style={{ textDecoration: 'unset', textAlign: 'left', maxWidth: '100%' }}
+                  className="form-link-action-btn"
                   onClick={(e) => {
                     e.preventDefault()
                     handlePrimaryAction()

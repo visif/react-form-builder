@@ -94,6 +94,39 @@ input[type='date'] {
       .label-required {
         margin-left: 5px;
       }
+
+      .form-link-container,
+      .form-link-preview {
+        width: fit-content;
+        max-width: 100%;
+      }
+
+      .form-link-action-btn.ant-btn {
+        width: fit-content;
+        max-width: 100%;
+        min-height: 54px;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 24px;
+        justify-content: flex-start;
+        align-items: center;
+        background: #6f7b88;
+        color: #fff;
+        font-size: 20px;
+        font-weight: 400;
+        line-height: 1.2;
+        text-align: left;
+        white-space: normal;
+        overflow-wrap: anywhere;
+      }
+
+      .form-link-action-btn.ant-btn:hover,
+      .form-link-action-btn.ant-btn:focus,
+      .form-link-action-btn.ant-btn:active {
+        border: none;
+        background: #6f7b88;
+        color: #fff;
+      }
     }
   }
 }
