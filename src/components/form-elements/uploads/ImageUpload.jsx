@@ -22,11 +22,16 @@ const ImageUpload = (props) => {
     height: (props.defaultValue && props.defaultValue.height) || null,
   })
   const containerRef = React.useRef(null)
+  const shouldObserveResize =
+    !!(blobUrl || filePath) && containerSize.width != null && containerSize.height != null
 
   // Observe user-initiated resizes; guard against re-render-triggered re-fires
   React.useEffect(() => {
+    if (!shouldObserveResize) return
+
     const el = containerRef.current
     if (!el) return
+
     const observer = new ResizeObserver(([entry]) => {
       const { width, height } = entry.contentRect
       setContainerSize((prev) => {
@@ -34,9 +39,10 @@ const ImageUpload = (props) => {
         return { width, height }
       })
     })
+
     observer.observe(el)
     return () => observer.disconnect()
-  }, [])
+  }, [shouldObserveResize])
 
   React.useEffect(() => {
     if (props.handleChange && props.data?.field_name) {
@@ -77,7 +83,28 @@ const ImageUpload = (props) => {
         setFilePath('')
         setFileName('')
         setBlobUrl('')
+        setContainerSize({ width: null, height: null })
       },
+    })
+  }, [])
+
+  const handleImageLoad = React.useCallback((event) => {
+    const nextWidth = event?.target?.naturalWidth
+    const nextHeight = event?.target?.naturalHeight
+
+    if (!nextWidth || !nextHeight) {
+      return
+    }
+
+    setContainerSize((prev) => {
+      if (prev.width != null && prev.height != null) {
+        return prev
+      }
+
+      return {
+        width: prev.width ?? nextWidth,
+        height: prev.height ?? nextHeight,
+      }
     })
   }, [])
 
@@ -118,6 +145,9 @@ const ImageUpload = (props) => {
       userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
+  const hasExplicitWidth = containerSize.width != null
+  const hasExplicitHeight = containerSize.height != null
+
   return (
     <div className={`SortableItem rfb-item${props.data.pageBreakBefore ? ' alwaysbreak' : ''}`}>
       <ComponentHeader {...props} />
@@ -152,9 +182,11 @@ const ImageUpload = (props) => {
           )}
           {(blobUrl || filePath) && (
             <Image
+              onLoad={handleImageLoad}
               style={{
-                width: '100%',
-                height: '100%',
+                width: hasExplicitWidth ? '100%' : 'auto',
+                maxWidth: '100%',
+                height: hasExplicitHeight ? '100%' : 'auto',
                 display: 'block',
                 objectFit: 'contain',
               }}
