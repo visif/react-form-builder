@@ -70,8 +70,16 @@ const buddhistConfig = {
         .replace('MM', monthNumber)
         .replace('DD', dayPadded)                    // two-digit day
         .replace(/(?<!D)D(?!D)/g, dayNum)            // single D not part of DD
+        .replace('BBBB', yearPart)
+        .replace(/(?<!B)BB(?!B)/g, yearPart.slice(-2))
         .replace('YYYY', yearPart)
         .replace(/(?<!Y)YY(?!Y)/g, yearPart.slice(-2)); // standalone YY only
+
+      // rc-picker requests single-token formats (e.g. "D") for calendar cells.
+      if (formattedDate === format) {
+        return date.locale('th').format(format)
+      }
+
       return formattedDate;
     },
     parse: (locale, text, formats) => {
@@ -275,19 +283,10 @@ class DatePicker extends React.Component {
     }
   }
 
-  getFormattedDateForPicker = (date, formatMask) => {
-    if (!date) return ''
+  getPickerFormat = () => {
+    const { formatMask } = this.state
     const calendarType = getCalendarType()
-    const localDate = dayjs(date)
-    if (calendarType === 'EN') {
-      return localDate.format(formatMask)
-    } else {
-      return localDate.format(toBuddhistFormat(formatMask))
-    }
-  }
-
-  getPopupContainer = (triggerNode) => {
-    return triggerNode.closest('.rfb-item') || triggerNode.parentElement || document.body
+    return calendarType === 'EN' ? formatMask : toBuddhistFormat(formatMask)
   }
 
   render() {
@@ -364,11 +363,12 @@ class DatePicker extends React.Component {
                   onChange={this.handleChange}
                   value={this.state.value ? dayjs(this.state.value) : null}
                   className="form-control bold-date-picker"
-                  format={(value) => this.getFormattedDateForPicker(value, this.state.formatMask)}
+                  format={this.getPickerFormat()}
                   showTime={showTimeSelect ? { format: 'HH:mm', showSecond: false } : null}
                   disabled={!isSameEditor || this.state.loading}
                   placeholder={this.state.placeholder}
-                  getPopupContainer={this.getPopupContainer}
+                  getPopupContainer={() => document.body}
+                  styles={{ popup: { root: { zIndex: 2100 } } }}
                   style={{ display: 'inline-block', width: 'auto' }}
                 />
               ) : (
@@ -378,11 +378,12 @@ class DatePicker extends React.Component {
                   onChange={this.handleChange}
                   value={this.state.value ? dayjs(this.state.value) : null}
                   className="form-control bold-date-picker"
-                  format={(value) => this.getFormattedDateForPicker(value, this.state.formatMask)}
+                  format={this.getPickerFormat()}
                   showTime={showTimeSelect ? { format: 'HH:mm', showSecond: false } : null}
                   disabled={!isSameEditor || this.state.loading}
                   placeholder={this.state.placeholder}
-                  getPopupContainer={this.getPopupContainer}
+                  getPopupContainer={() => document.body}
+                  styles={{ popup: { root: { zIndex: 2100 } } }}
                   style={{ display: 'inline-block', width: 'auto' }}
                 />
               )
@@ -395,7 +396,8 @@ class DatePicker extends React.Component {
                 className="form-control bold-time-picker"
                 disabled={!isSameEditor || this.state.loading}
                 placeholder={this.state.placeholder}
-                getPopupContainer={this.getPopupContainer}
+                getPopupContainer={() => document.body}
+                styles={{ popup: { root: { zIndex: 2100 } } }}
                 style={{ display: 'inline-block', width: 'auto' }}
                 format="HH:mm"
                 minuteStep={1}
