@@ -7,6 +7,10 @@ import utc from 'dayjs/plugin/utc'
 
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
+import {
+  getPickerPopupContainer,
+  isMulticolumnChild,
+} from '../../../utils/multicolumnField'
 
 dayjs.extend(utc)
 dayjs.extend(buddhistEra)
@@ -97,7 +101,7 @@ const DatePicker = (props) => {
   const [value, setValue] = React.useState(initialState.value)
   const [placeholder, setPlaceholder] = React.useState(initialState.placeholder)
   const [formatMask, setFormatMask] = React.useState(initialState.formatMask)
-  const [loading, setLoading] = React.useState(true)
+  const [loading, setLoading] = React.useState(() => !initialState.value && Boolean(props.defaultValue))
 
   const checkForValue = React.useCallback(
     (attempt = 0) => {
@@ -235,11 +239,18 @@ const DatePicker = (props) => {
   if (props.data.pageBreakBefore) {
     baseClasses += ' alwaysbreak'
   }
+  if (isMulticolumnChild(props.data)) {
+    baseClasses += ' is-isolated rfb-multicolumn-interactive'
+  }
+
+  const formGroupClassName = isMulticolumnChild(props.data)
+    ? 'form-group is-isolated'
+    : 'form-group'
 
   return (
     <div className={baseClasses}>
       <ComponentHeader {...props} />
-      <div className="form-group" title={tooltipText}>
+      <div className={formGroupClassName} title={tooltipText}>
         <ComponentLabel {...props} />
         <div>
           {readOnly ? (
@@ -265,6 +276,7 @@ const DatePicker = (props) => {
               disabled={!isSameEditor || loading}
               placeholder={placeholder}
               style={{ display: 'inline-block', width: 'auto' }}
+              getPopupContainer={getPickerPopupContainer}
             />
           ) : (
             <AntTimePicker
@@ -278,6 +290,7 @@ const DatePicker = (props) => {
               style={{ display: 'inline-block', width: 'auto' }}
               format="HH:mm"
               minuteStep={1}
+              getPopupContainer={getPickerPopupContainer}
             />
           )}
         </div>

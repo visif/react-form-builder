@@ -130,3 +130,43 @@ input[type='date'] {
     }
   }
 }
+
+.react-form-builder-form {
+  .rfb-multicolumn-table {
+    overflow: visible;
+
+    td {
+      position: relative;
+      vertical-align: top;
+      overflow: visible;
+      isolation: isolate;
+    }
+
+    td:has(.ant-picker),
+    td:has(.bold-time-picker),
+    td:has(.rfb-multicolumn-interactive),
+    td:focus-within {
+      z-index: 5;
+    }
+
+    .rfb-item {
+      overflow: visible;
+
+      &.rfb-multicolumn-interactive,
+      &:has(.ant-picker),
+      &:has(.bold-time-picker),
+      &:focus-within {
+        position: relative;
+        z-index: 5;
+      }
+
+      .ant-picker,
+      .ant-picker-input,
+      .ant-picker-input > input,
+      .ant-picker-suffix,
+      .ant-picker-clear {
+        pointer-events: auto !important;
+      }
+    }
+  }
+}

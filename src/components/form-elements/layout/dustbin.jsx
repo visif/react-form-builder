@@ -4,6 +4,7 @@ import { useDrag, useDrop } from 'react-dnd'
 
 import ItemTypes from '../../../constants/itemTypes'
 import Registry from '../../../utils/registry'
+import { isInteractiveMulticolumnField } from '../../../utils/multicolumnField'
 import FormElements from '../index'
 import CustomElement from '../shared/CustomElement'
 
@@ -99,7 +100,7 @@ const Dustbin = React.forwardRef(
     const [{ isDragging }, drag] = useDrag(
       () => ({
         type: ItemTypes.CARD,
-        canDrag: Boolean(item),
+        canDrag: Boolean(item) && !isInteractiveMulticolumnField(item?.element),
         item: {
           itemType: ItemTypes.CARD,
           id: item?.id,
@@ -169,16 +170,23 @@ const Dustbin = React.forwardRef(
       updateElement,
     })
 
+    const skipDragWrapper = item && isInteractiveMulticolumnField(item.element)
+
     const draggableElement = item ? (
-      <div
-        ref={drag}
-        style={{
-          cursor: 'move',
-          opacity: isDragging ? 0.5 : 1,
-        }}
-      >
-        {element}
-      </div>
+      skipDragWrapper ? (
+        element
+      ) : (
+        <div
+          ref={drag}
+          className="rfb-dustbin-drag-surface"
+          style={{
+            cursor: 'move',
+            opacity: isDragging ? 0.5 : 1,
+          }}
+        >
+          {element}
+        </div>
+      )
     ) : (
       element
     )

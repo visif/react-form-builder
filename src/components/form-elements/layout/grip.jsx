@@ -1,7 +1,7 @@
 import React from 'react'
 
-import { useDrag } from 'react-dnd'
 import { HolderOutlined } from '@ant-design/icons'
+import { useDrag } from 'react-dnd'
 
 import ItemTypes from '../../../constants/itemTypes'
 
@@ -36,14 +36,13 @@ const Grip = (props) => {
   return (
     <div
       ref={drag}
-      className="btn is-isolated"
+      className="rfb-toolbar-header-action rfb-toolbar-header-grip is-isolated"
       style={{
         ...style,
         opacity: isDragging ? 0.5 : 1,
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '4px 8px',
       }}
     >
       <HolderOutlined style={{ fontSize: '14px' }} />

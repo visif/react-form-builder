@@ -248,7 +248,7 @@
           border: 2px #ccc dashed;
           margin: 2px 0;
         }
-        .toolbar-header {
+        .rfb-toolbar-header {
           opacity: 0;
           z-index: 100;
           position: relative;
@@ -260,12 +260,36 @@
             position: absolute;
             left: 20px;
           }
-          .toolbar-header-buttons {
+          .rfb-toolbar-header-buttons {
             position: absolute;
             right: 0;
             margin-top: -20px;
             display: flex;
             gap: 5px;
+
+            .rfb-toolbar-header-action {
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              width: 28px;
+              height: 28px;
+              min-width: 28px;
+              padding: 0 !important;
+              margin: 0;
+              border: 0;
+              border-radius: 50%;
+              line-height: 1;
+              box-shadow: none;
+              flex: 0 0 auto;
+            }
+
+            .rfb-toolbar-header-action.ant-btn {
+              background: transparent;
+            }
+
+            .rfb-toolbar-header-grip {
+              background: transparent;
+            }
           }
         }
         &:hover {
@@ -276,7 +300,7 @@
             cursor: move;
             pointer-events: none;
           }
-          .toolbar-header {
+          .rfb-toolbar-header {
             opacity: 1;
           }
         }
@@ -394,14 +418,13 @@
         }
       }
 
-      .Sortable .rfb-item .toolbar-header .toolbar-header-buttons {
+      .Sortable .rfb-item .rfb-toolbar-header .rfb-toolbar-header-buttons {
         right: -15px;
-        .btn {
-          margin-right: 5px;
+        .rfb-toolbar-header-action {
           border-radius: 50%;
-          padding: 7px 0px 0 3px;
           width: 35px;
           height: 35px;
+          min-width: 35px;
         }
       }
     }
@@ -503,9 +526,37 @@
 // Reset styles for elements rendered inside MultiColumnRow cells
 // to prevent builder preview padding/hover from breaking table cell layout
 .rfb-multicolumn-table {
+  overflow: visible;
+
+  td {
+    position: relative;
+    vertical-align: top;
+    overflow: visible;
+  }
+
+  td:has(.ant-picker),
+  td:has(.bold-time-picker),
+  td:has(.ant-select),
+  td:has(.rfb-multicolumn-interactive),
+  td:focus-within {
+    z-index: 5;
+  }
+
   .rfb-item {
     padding: 0 !important;
     margin-bottom: 0 !important;
+    position: relative;
+    z-index: 1;
+    overflow: visible;
+
+    &:has(.ant-picker),
+    &:has(.bold-time-picker),
+    &:has(.ant-select),
+    &.rfb-multicolumn-interactive,
+    &:focus-within {
+      z-index: 5;
+    }
+
     &:hover {
       box-shadow: none;
       background: transparent;
@@ -513,6 +564,72 @@
     .form-group {
       margin-top: 0;
       margin-bottom: 0;
+    }
+
+    .ant-picker,
+    .ant-picker-input,
+    .ant-picker-input > input,
+    .ant-picker-suffix,
+    .ant-picker-clear {
+      pointer-events: auto;
+    }
+  }
+}
+
+.react-form-builder .react-form-builder-preview .Sortable .rfb-multicolumn-table {
+  .rfb-item.SortableItem .form-group,
+  .rfb-item.SortableItem .form-group input,
+  .rfb-item.SortableItem .form-group .ant-picker,
+  .rfb-item.SortableItem .form-group .ant-picker-input,
+  .rfb-item.SortableItem .form-group .ant-picker-input > input,
+  .rfb-item.SortableItem .form-group .ant-picker-suffix,
+  .rfb-item.SortableItem .form-group .ant-picker-clear,
+  .rfb-item.SortableItem.is-isolated,
+  .rfb-item.SortableItem.is-isolated .form-group {
+    pointer-events: auto !important;
+  }
+
+  .rfb-dustbin-drag-surface {
+    pointer-events: none;
+
+    .form-group,
+    .ant-picker,
+    .ant-picker-input,
+    .ant-picker-input > input,
+    input,
+    select,
+    textarea,
+    button,
+    .is-isolated,
+    .rfb-multicolumn-interactive {
+      pointer-events: auto !important;
+    }
+  }
+
+  div[style*='cursor: move'] {
+    pointer-events: none;
+
+    .form-group,
+    .ant-picker,
+    .ant-picker-input,
+    .ant-picker-input > input,
+    input,
+    select,
+    textarea,
+    button {
+      pointer-events: auto !important;
+    }
+  }
+}
+
+.react-form-builder .react-form-builder-preview .Sortable .rfb-item.SortableItem:has(.rfb-multicolumn-table):hover {
+  .rfb-multicolumn-table {
+    .form-group,
+    .ant-picker,
+    .ant-picker-input,
+    .ant-picker-input > input,
+    input {
+      pointer-events: auto !important;
     }
   }
 }
