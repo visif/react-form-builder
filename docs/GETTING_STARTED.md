@@ -1,8 +1,8 @@
-# Getting Started with react-form-builder2
+# Getting Started with @visif/form-builder
 
 ## 📚 Documentation Overview
 
-Welcome to react-form-builder2 v1.0.0! Here are your comprehensive guides:
+Welcome to `@visif/form-builder`! Here are your comprehensive guides:
 
 1. **[README.md](./README.md)** - Main documentation and quick start
 2. **[API.md](./API.md)** - Complete API reference and prop types
@@ -20,9 +20,9 @@ Welcome to react-form-builder2 v1.0.0! Here are your comprehensive guides:
 #### 1. Installation
 
 ```bash
-npm install react-form-builder2 --legacy-peer-deps
+npm install @visif/form-builder
 # or
-yarn add react-form-builder2
+yarn add @visif/form-builder
 ```
 
 **Requirements:**
@@ -35,8 +35,8 @@ yarn add react-form-builder2
 ```javascript
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { ReactFormBuilder } from 'react-form-builder2';
-import 'react-form-builder2/dist/app.css';
+import { ReactFormBuilder } from '@visif/form-builder';
+import '@visif/form-builder/dist/app.css';
 
 function App() {
   const handleSubmit = (data) => {
@@ -59,7 +59,7 @@ root.render(<App />);
 #### 3. Basic Usage - Form Generator
 
 ```javascript
-import { ReactFormGenerator } from 'react-form-builder2';
+import { ReactFormGenerator } from '@visif/form-builder';
 
 function DisplayForm({ formData }) {
   return (

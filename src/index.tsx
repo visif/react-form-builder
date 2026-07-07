@@ -8,11 +8,14 @@
 import ReactFormBuilder from './components/builder/ReactFormBuilder'
 import ReactFormGenerator from './components/generator/ReactFormGenerator'
 import FORM_BUILDER_VERSION from './constants/version'
+import type { FormBuildersExport } from './types/form'
+import Registry from './utils/registry'
 
-const FormBuilders = {}
-FormBuilders.ReactFormBuilder = ReactFormBuilder
-FormBuilders.ReactFormGenerator = ReactFormGenerator
+const FormBuilders: FormBuildersExport = {
+  ReactFormBuilder,
+  ReactFormGenerator,
+}
 
 export default FormBuilders
 
-export { ReactFormBuilder, ReactFormGenerator, FORM_BUILDER_VERSION }
+export { ReactFormBuilder, ReactFormGenerator, FORM_BUILDER_VERSION, Registry }

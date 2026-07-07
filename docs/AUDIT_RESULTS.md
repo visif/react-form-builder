@@ -1,5 +1,7 @@
 # Phase 1: Dependencies Audit Results
 
+> **Historical archive (2025).** The library now ships as `@visif/form-builder` with Vite 6, React 18 hooks-only components, and `dist/` as the publish target. See [README.md](../README.md) and [.github/copilot-instructions.md](../.github/copilot-instructions.md) for the current architecture.
+
 **Date**: October 27, 2025
 **Status**: In Progress
 

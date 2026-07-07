@@ -19,13 +19,9 @@ const dateFormatList = {
   'MMM dd, yyyy': 'MMM DD, YYYY',
 }
 
-export const getDateFormat = () => {
-  return dateFormatList[localStorage.getItem(keyDateFormat)] || 'DD MMMM YYYY'
-}
+export const getDateFormat = () => dateFormatList[localStorage.getItem(keyDateFormat)] || 'DD MMMM YYYY'
 
-export const getCalendarType = () => {
-  return localStorage.getItem(keyCalendarType) || 'EN'
-}
+export const getCalendarType = () => localStorage.getItem(keyCalendarType) || 'EN'
 
 export const formatDate = (date) => {
   if (!date) return ''
@@ -34,8 +30,7 @@ export const formatDate = (date) => {
 
   if (getCalendarType() === 'EN') {
     return dayjs(date).format(format)
-  } else {
+  }
     // Use Buddhist Era (BBBB) formatting
     return dayjs(date).format(format.replace('YYYY', 'BBBB'))
-  }
 }

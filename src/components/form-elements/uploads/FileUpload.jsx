@@ -62,7 +62,7 @@ const FileUpload = (props) => {
 
       const newFileList = Array.from(event.target.files)
       const newResponse = []
-      for (let i = 0; i < newFileList.length; i = i + 1) {
+      for (let i = 0; i < newFileList.length; i += 1) {
         const currentFile = newFileList[i]
         const response = await uploadAttachFile(currentFile)
         if (response) {
@@ -159,14 +159,14 @@ const FileUpload = (props) => {
                   actions={
                     isSameEditor
                       ? [
-                          <Button
-                            key="delete"
-                            type="text"
-                            size="small"
-                            danger
-                            icon={<DeleteOutlined />}
-                            onClick={() => onRemoveFile(file)}
-                          />,
+                        <Button
+                          key="delete"
+                          type="text"
+                          size="small"
+                          danger
+                          icon={<DeleteOutlined />}
+                          onClick={() => onRemoveFile(file)}
+                        />,
                         ]
                       : []
                   }
@@ -178,7 +178,9 @@ const FileUpload = (props) => {
                     onClick={() => onDownloadFile(file)}
                     style={{ padding: 0 }}
                   >
-                    {index + 1}. {file.originalName}
+                    {index + 1}
+                    .
+                    {file.originalName}
                   </Button>
                 </List.Item>
               )}

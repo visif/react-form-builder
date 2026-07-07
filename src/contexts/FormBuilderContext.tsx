@@ -1,17 +1,16 @@
-import React, { createContext, useCallback, useContext, useReducer, useRef } from 'react'
+import React, { createContext, useCallback, useContext, useReducer, useRef, type ReactNode } from 'react'
 
+import type { FormBuilderContextValue, FormBuilderState, FormElementData } from '../types/form'
 import { get, post } from '../utils/requests'
 
-// Default no-op context value for resilience against duplicate React instances
-const defaultFormBuilderContextValue = {
+const defaultFormBuilderContextValue: FormBuilderContextValue = {
   state: { data: [], action: undefined },
   dispatch: () => {},
   subscribe: () => () => {},
   setExternalHandler: () => {},
 }
 
-// Create context
-const FormBuilderContext = createContext(defaultFormBuilderContextValue)
+const FormBuilderContext = createContext<FormBuilderContextValue>(defaultFormBuilderContextValue)
 
 // Action types
 const SET_DATA = 'SET_DATA'
@@ -20,19 +19,21 @@ const DELETE_ELEMENT = 'DELETE_ELEMENT'
 const UPDATE_ORDER = 'UPDATE_ORDER'
 
 // Reducer
-function formBuilderReducer(state, action) {
+function formBuilderReducer(state: FormBuilderState, action: { type: string; payload?: unknown }): FormBuilderState {
   switch (action.type) {
-    case SET_DATA:
+    case SET_DATA: {
+      const payload = action.payload as { data: FormElementData[]; action?: string }
       return {
         ...state,
-        data: action.payload.data,
-        action: action.payload.action,
+        data: payload.data,
+        action: payload.action,
       }
+    }
 
     case CREATE_ELEMENT:
       return {
         ...state,
-        data: [...state.data, action.payload],
+        data: [...state.data, action.payload as FormElementData],
       }
 
     case DELETE_ELEMENT: {
@@ -46,7 +47,7 @@ function formBuilderReducer(state, action) {
     case UPDATE_ORDER:
       return {
         ...state,
-        data: action.payload,
+        data: action.payload as FormElementData[],
       }
 
     default:
@@ -55,11 +56,11 @@ function formBuilderReducer(state, action) {
 }
 
 // Provider component
-export function FormBuilderProvider({ children }) {
+export const FormBuilderProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(formBuilderReducer, {
     data: [],
     action: undefined,
-  })
+  } as FormBuilderState)
 
   const saveUrlRef = useRef(null)
   const onPostRef = useRef(null)
@@ -78,7 +79,7 @@ export function FormBuilderProvider({ children }) {
   }, [state])
 
   // Save data
-  const saveData = useCallback((data, action) => {
+  const saveData = useCallback((data: FormElementData[], action?: string) => {
     if (onPostRef.current) {
       onPostRef.current({ task_data: data, action })
     } else if (saveUrlRef.current) {

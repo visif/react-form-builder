@@ -111,7 +111,6 @@ const withDragAndDrop = (ComposedComponent) => {
           // Handle child insertion from toolbar (special case)
           if (item.data && typeof item.setAsChild === 'function') {
             insertCard(item, hoverIndex, item.id)
-            return
           }
         },
         hover: (item, monitor) => {

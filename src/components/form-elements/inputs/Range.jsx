@@ -78,7 +78,7 @@ const Range = (props) => {
     if (idx === datalist.length - 1) {
       option_props.style = { width: `${w}%`, textAlign: 'right' }
     }
-    return <label {...option_props}>{d}</label>
+    return <label key={option_props.key} {...option_props}>{d}</label>
   })
 
   let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`

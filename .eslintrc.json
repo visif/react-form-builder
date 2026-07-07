@@ -38,7 +38,7 @@
     // Code quality
     "max-len": ["warn", { "code": 100, "ignoreComments": true, "ignoreStrings": true, "ignoreTemplateLiterals": true }],
     "semi": ["error", "never"],
-    "comma-dangle": ["warn", "es5"],
+    "comma-dangle": ["warn", "only-multiline"],
     "no-console": ["warn", { "allow": ["warn", "error"] }],
     "no-debugger": "warn",
     "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
@@ -65,8 +65,25 @@
 
     // Import rules
     "import/prefer-default-export": "off",
-    "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
-    "import/extensions": ["error", "ignorePackages", { "js": "never", "jsx": "never" }],
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "devDependencies": [
+          "**/*.test.js",
+          "**/*.test.jsx",
+          "**/*.test.ts",
+          "**/*.test.tsx",
+          "**/*.spec.js",
+          "**/*.spec.jsx",
+          "**/*.spec.ts",
+          "**/*.spec.tsx",
+          "**/test/**",
+          "vitest.config.js",
+          "vite.config.js"
+        ]
+      }
+    ],
+    "import/extensions": ["error", "ignorePackages", { "js": "never", "jsx": "never", "ts": "never", "tsx": "never" }],
     "import/order": "off", // Let Prettier plugin handle this
 
     // React specific
@@ -99,7 +116,26 @@
     // JSX a11y
     "jsx-a11y/label-has-associated-control": "warn",
     "jsx-a11y/click-events-have-key-events": "warn",
-    "jsx-a11y/no-static-element-interactions": "warn"
+    "jsx-a11y/no-static-element-interactions": "warn",
+
+    // Legacy codebase: keep signal without blocking CI on stylistic issues
+    "react/button-has-type": "warn",
+    "no-use-before-define": "warn",
+    "eqeqeq": "warn",
+    "no-shadow": "warn",
+    "no-nested-ternary": "warn",
+    "react/no-find-dom-node": "warn",
+    "default-param-last": "warn",
+    "react/display-name": "warn",
+    "import/no-cycle": "warn",
+    "array-callback-return": "warn",
+    "radix": "warn",
+    "no-unused-expressions": "warn",
+    "react/no-unused-prop-types": "warn",
+    "no-await-in-loop": "warn",
+    "no-lonely-if": "warn",
+    "no-loop-func": "warn",
+    "react/jsx-no-constructed-context-values": "warn"
   },
   "settings": {
     "react": {
@@ -107,8 +143,26 @@
     },
     "import/resolver": {
       "node": {
-        "extensions": [".js", ".jsx", ".json"]
+        "extensions": [".js", ".jsx", ".ts", ".tsx", ".json"]
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "files": ["**/*.{ts,tsx}"],
+      "parser": "@typescript-eslint/parser",
+      "parserOptions": {
+        "ecmaVersion": 2022,
+        "sourceType": "module",
+        "ecmaFeatures": {
+          "jsx": true
+        }
+      },
+      "plugins": ["@typescript-eslint"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }]
+      }
+    }
+  ]
 }

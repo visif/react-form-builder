@@ -173,7 +173,7 @@ const Table = (props) => {
     return (
       <tbody>
         {Array.from(Array(activeRows).keys()).map((i) => (
-          <tr key={'row' + i}>
+          <tr key={`row${i}`}>
             {props.data?.columns?.map((j, jIndex) => {
               const isLabel = isFixedRow && jIndex === 0
 
@@ -237,9 +237,7 @@ const Table = (props) => {
   if (props?.data?.pageBreakBefore) {
     baseClasses += ' alwaysbreak'
   }
-  const totalWidthCount = props.data?.columns.reduce((previous, current) => {
-    return previous + (parseInt(current.width) ? Number(current.width) : 1)
-  }, 0)
+  const totalWidthCount = props.data?.columns.reduce((previous, current) => previous + (parseInt(current.width) ? Number(current.width) : 1), 0)
   const isFixedRow = rowLabels?.length > 0
 
   return (
@@ -258,23 +256,21 @@ const Table = (props) => {
         >
           <thead>
             <tr>
-              {props.data?.columns?.map((col, colIndex) => {
-                return (
-                  <th
-                    key={`header-${colIndex}`}
-                    scope="col"
-                    style={{
+              {props.data?.columns?.map((col, colIndex) => (
+                <th
+                  key={`header-${colIndex}`}
+                  scope="col"
+                  style={{
                       width: getColumnWidth(totalWidthCount, col.width),
                       border: '1px solid #d9d9d9',
                       padding: '8px',
                       backgroundColor: '#fafafa',
                       fontWeight: 500,
                     }}
-                  >
-                    {col.text}
-                  </th>
-                )
-              })}
+                >
+                  {col.text}
+                </th>
+                ))}
             </tr>
           </thead>
           {renderRows()}

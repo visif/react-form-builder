@@ -2,8 +2,7 @@
  * Handle image file upload for image elements
  * Reads file, uploads via callback, and updates element dimensions
  */
-export const createImageUploadHandler = (setElement, props) => {
-  return async (event) => {
+export const createImageUploadHandler = (setElement, props) => async (event) => {
     if (!event || !event.target || !event.target.files || !props.onImageUpload) {
       if (!props.onImageUpload) {
         setElement((prev) => {
@@ -44,4 +43,3 @@ export const createImageUploadHandler = (setElement, props) => {
       })
     }
   }
-}

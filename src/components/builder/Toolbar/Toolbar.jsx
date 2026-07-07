@@ -7,7 +7,7 @@
  *
  * @example
  * // Basic usage with default items
- * import { Toolbar } from 'react-form-builder2';
+ * import { Toolbar } from '@visif/form-builder';
  *
  * <Toolbar showDescription={true} />
  *

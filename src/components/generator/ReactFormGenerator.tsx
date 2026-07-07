@@ -9,8 +9,8 @@
  *
  * @example
  * // Basic usage
- * import { ReactFormGenerator } from 'react-form-builder2';
- * import 'react-form-builder2/dist/app.css';
+ * import { ReactFormGenerator } from '@visif/form-builder';
+ * import '@visif/form-builder/dist/app.css';
  *
  * function DisplayForm({ formData }) {
  *   return (
@@ -65,6 +65,7 @@ import { Button } from 'antd'
 
 import FORM_BUILDER_VERSION from '../../constants/version'
 import { FormProvider, useFormContext } from '../../contexts/FormContext'
+import type { ReactFormGeneratorProps } from '../../types/form'
 import FormValidator from './FormValidator'
 import {
   clearDraftData,
@@ -80,7 +81,7 @@ import { renderFormElement } from './utils/formElementRenderer'
 // Utils
 import { convertAnswerData, getItemValue, getVariableValueHelper } from './utils/formHelpers'
 
-const ReactForm = (props) => {
+const ReactForm = (props: ReactFormGeneratorProps) => {
   // Refs
   const formRef = useRef(null)
   const inputsRef = useRef({})
@@ -117,7 +118,7 @@ const ReactForm = (props) => {
     // Need to convert checkbox/radio values to proper format
     Object.keys(ansData).forEach((key) => {
       const item = props.data.find((d) => d.field_name === key)
-      let value = ansData[key]
+      const value = ansData[key]
 
       // Convert simple arrays to checkbox/radio format
       if (item && (item.element === 'Checkboxes' || item.element === 'RadioButtons')) {
@@ -147,7 +148,7 @@ const ReactForm = (props) => {
           formContext.updateValue(key, [
             {
               key: matchingOption?.key || value,
-              value: value,
+              value,
               info: '',
             },
           ])
@@ -509,14 +510,8 @@ const ReactForm = (props) => {
   )
 }
 
-ReactForm.defaultProps = {
-  validateForCorrectness: false,
-  data: [],
-  answer_data: {},
-}
-
 // Wrapper component that provides FormContext
-const ReactFormWithContext = (props) => {
+const ReactFormWithContext = (props: ReactFormGeneratorProps) => {
   // Convert answer_data to initial values for context
   // answer_data can be in array format [{name: 'field_name', value: 'value'}]
   // or object format {field_name: 'value'}

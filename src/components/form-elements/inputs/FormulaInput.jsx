@@ -170,7 +170,7 @@ const FormulaInput = (props) => {
       setIsUpdating(true)
 
       const parser = new Parser()
-      let newVariables = { ...currentVars }
+      const newVariables = { ...currentVars }
 
       if (params.value === '' || params.value === null || params.value === undefined) {
         newVariables[params.propKey] = 0
@@ -218,11 +218,9 @@ const FormulaInput = (props) => {
   )
 
   // Cancel pending debounce on unmount
-  useEffect(() => {
-    return () => {
+  useEffect(() => () => {
       if (debouncedUpdate.cancel) debouncedUpdate.cancel()
-    }
-  }, [debouncedUpdate])
+    }, [debouncedUpdate])
 
   // ---------------------------------------------------------------
   // Emitter subscription (variableChange)

@@ -1,12 +1,6 @@
 # Build-generated variables
 **/variables.js
 
-# Webpack configs
-**/webpack.*.js
-webpack.config.js
-webpack.config.babel.js
-webpack.production.config.js
-
 # Dependencies
 node_modules
 bower_components

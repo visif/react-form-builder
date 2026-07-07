@@ -48,7 +48,7 @@ export const getDateFormat = (showTimeSelect) => {
 }
 
 export const getCalendarType = () => {
-  var key = localStorage.getItem(keyCalendarType)
+  const key = localStorage.getItem(keyCalendarType)
   return key || 'EN'
 }
 
@@ -192,10 +192,9 @@ const DatePicker = (props) => {
 
     if (getCalendarType() === 'EN') {
       return localDate.format(mask)
-    } else {
+    }
       // Convert to Buddhist calendar (add 543 years)
       return localDate.format(mask.replace('YYYY', 'BBBB'))
-    }
   }, [])
 
   const { showTimeSelect, showTimeSelectOnly } = props.data

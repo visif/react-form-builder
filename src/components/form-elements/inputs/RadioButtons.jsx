@@ -172,7 +172,7 @@ const RadioButtons = (props) => {
                       onChange={(e) => {
                         const infoValue = e.target.value
                         const newValue = (value || []).map((item) =>
-                          item.key === option.key ? { ...item, info: infoValue } : item
+                          (item.key === option.key ? { ...item, info: infoValue } : item)
                         )
                         setValue(newValue)
                         if (handleChange) {

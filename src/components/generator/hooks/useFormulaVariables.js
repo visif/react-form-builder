@@ -42,11 +42,9 @@ export const useFormulaVariables = (props, setAnswerData) => {
           hasChanges = false
 
           // Find formula fields that depend on any recently updated variables
-          const affectedFields = allFormulaFields.filter((formulaField) => {
-            return Array.from(updatedVariables).some((varKey) =>
+          const affectedFields = allFormulaFields.filter((formulaField) => Array.from(updatedVariables).some((varKey) =>
               formulaField.formula.includes(varKey)
-            )
-          })
+            ))
 
           // Clear the updated variables set for this iteration
           updatedVariables.clear()

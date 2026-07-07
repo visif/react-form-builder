@@ -7,7 +7,7 @@
  */
 import React from 'react'
 
-import SortableFormElements from './SortableFormElements'
+import SortableFormElements from '../SortableFormElements'
 
 /**
  * Render a single form element with all necessary props

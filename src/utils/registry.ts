@@ -1,19 +1,19 @@
-/* eslint-disable no-use-before-define */
-function regg() {
-  const registry = {}
+import type { ComponentType } from 'react'
 
-  const self = {
+import type { RegistryApi } from '../types/form'
+
+type RegistryEntry = ComponentType<unknown> | Record<string, unknown>
+
+function regg(): RegistryApi {
+  const registry: Record<string, RegistryEntry> = {}
+
+  const self: RegistryApi = {
     register,
     list,
     get,
   }
 
-  /**
-   * Registers a entry and make it read only
-   * @param {String} name To get the entry by
-   * @param {Object} entry What you want to register
-   */
-  function register(name, entry) {
+  function register(name: string, entry: RegistryEntry): RegistryApi {
     if (!name) {
       throw new Error('You must provide a valid name for this entry.')
     }
@@ -31,14 +31,14 @@ function regg() {
     return self
   }
 
-  function get(name) {
+  function get(name: string): RegistryEntry | undefined {
     if (!Object.prototype.hasOwnProperty.call(registry, name)) {
       console.error(`No such entry '${name}'`)
     }
     return registry[name]
   }
 
-  function list() {
+  function list(): string[] {
     return Object.keys(registry)
   }
 

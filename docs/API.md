@@ -1,6 +1,6 @@
 # API Documentation
 
-Complete API reference for react-form-builder2 v1.0.0+
+Complete API reference for `@visif/form-builder`.
 
 ## Table of Contents
 
@@ -45,8 +45,8 @@ Main form builder component with drag-and-drop interface.
 #### Usage
 
 ```javascript
-import { ReactFormBuilder } from 'react-form-builder2';
-import 'react-form-builder2/dist/app.css';
+import { ReactFormBuilder } from '@visif/form-builder';
+import '@visif/form-builder/dist/app.css';
 
 function App() {
   const handleSubmit = (data) => {
@@ -95,7 +95,7 @@ Renders forms from JSON data structure.
 #### Usage
 
 ```javascript
-import { ReactFormGenerator } from 'react-form-builder2';
+import { ReactFormGenerator } from '@visif/form-builder';
 
 function DisplayForm({ formData, answers }) {
   const handleSubmit = (data) => {
@@ -149,7 +149,7 @@ Draggable form element palette.
 #### Usage
 
 ```javascript
-import { Toolbar } from 'react-form-builder2';
+import { Toolbar } from '@visif/form-builder';
 
 const customItems = [
   {
@@ -477,8 +477,8 @@ TypeScript definitions are not yet included but are planned for a future release
 For now, you can create custom type definitions:
 
 ```typescript
-// types/react-form-builder2.d.ts
-declare module 'react-form-builder2' {
+// types/@visif/form-builder.d.ts
+declare module '@visif/form-builder' {
   export interface ToolbarItem {
     key: string;
     name: string;

@@ -45,7 +45,7 @@ export const getCustomElement = (item, props, handleChange, getDefaultValue, inp
   }
 
   const inputProps = item.forwardRef && {
-    handleChange: handleChange,
+    handleChange,
     defaultValue: getDefaultValue(item),
     ref: (c) => (inputsRef.current[item.field_name] = c),
   }
@@ -121,16 +121,14 @@ const wrapWithRequiredIndicator = (element, item) => {
 
 export const getContainerElement = (item, Element, getDataById, getInputElement) => {
   const controls = Array.isArray(item.childItems[0])
-    ? item.childItems.map((row) => {
-        return row.map((x) => {
+    ? item.childItems.map((row) => row.map((x) => {
           const currentItem = getDataById(x)
           return x && currentItem ? (
             wrapWithRequiredIndicator(getInputElement(currentItem), currentItem)
           ) : (
             <div>&nbsp;</div>
           )
-        })
-      })
+        }))
     : [
         item.childItems.map((x) => {
           const currentItem = getDataById(x)

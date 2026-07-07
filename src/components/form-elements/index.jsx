@@ -5,7 +5,6 @@ import Rating from './advanced/Rating'
 // Advanced Components
 import Signature from './advanced/Signature'
 import Signature2 from './advanced/Signature2'
-import StarRating from './advanced/StarRating'
 import Download from './display/Download'
 import Header from './display/Header'
 import HeaderBar from './display/HeaderBar'

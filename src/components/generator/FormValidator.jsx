@@ -4,28 +4,8 @@
 import React from 'react'
 import { ExclamationCircleOutlined, CloseOutlined } from '@ant-design/icons'
 
-import xss from 'xss'
-
 import { useFormContext } from '../../contexts/FormContext'
-
-const myxss = new xss.FilterXSS({
-  whiteList: {
-    u: [],
-    br: [],
-    b: [],
-    i: [],
-    ol: ['style'],
-    ul: ['style'],
-    li: [],
-    p: ['style'],
-    sub: [],
-    sup: [],
-    div: ['style'],
-    em: [],
-    strong: [],
-    span: ['style'],
-  },
-})
+import myxss from '../../utils/xss'
 
 const FormValidator = () => {
   const formContext = useFormContext()
@@ -96,7 +76,9 @@ const FormValidator = () => {
           ) : (
             <div>
               <div style={{ marginBottom: '8px', fontWeight: 'bold', color: '#5f2120' }}>
-                {errors.length} required fields are missing:
+                {errors.length}
+                {' '}
+                required fields are missing:
               </div>
               <ul style={{ margin: 0, paddingLeft: '20px', color: '#5f2120' }}>
                 {errors.map((error, idx) => (

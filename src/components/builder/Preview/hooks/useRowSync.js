@@ -152,7 +152,7 @@ export const useRowSync = (getDataById, updateElement) => {
             }
 
             // Sync capability flags but don't sync individual option selections
-            ;['canHaveOptionCorrect', 'canHaveOptionValue', 'canHaveInfo'].forEach((prop) => {
+            ['canHaveOptionCorrect', 'canHaveOptionValue', 'canHaveInfo'].forEach((prop) => {
               if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
                 updatedItem[prop] = changedElement[prop]
                 changed = true
@@ -173,7 +173,7 @@ export const useRowSync = (getDataById, updateElement) => {
             break
           case 'DatePicker':
             // Sync date-specific properties
-            ;['showTimeSelect', 'showTimeSelectOnly', 'defaultToday'].forEach((prop) => {
+            ['showTimeSelect', 'showTimeSelectOnly', 'defaultToday'].forEach((prop) => {
               if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
                 updatedItem[prop] = changedElement[prop]
                 changed = true
@@ -183,7 +183,7 @@ export const useRowSync = (getDataById, updateElement) => {
 
           case 'Range':
             // Sync range-specific properties
-            ;['min_value', 'max_value', 'step', 'default_value', 'min_label', 'max_label'].forEach(
+            ['min_value', 'max_value', 'step', 'default_value', 'min_label', 'max_label'].forEach(
               (prop) => {
                 if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
                   updatedItem[prop] = changedElement[prop]
@@ -201,7 +201,7 @@ export const useRowSync = (getDataById, updateElement) => {
             changed = true
             break
           case 'Image':
-            ;['center', 'width', 'height'].forEach((prop) => {
+            ['center', 'width', 'height'].forEach((prop) => {
               if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
                 updatedItem[prop] = changedElement[prop]
                 changed = true
@@ -212,7 +212,7 @@ export const useRowSync = (getDataById, updateElement) => {
           case 'Paragraph':
           case 'Header':
             // Sync text styling properties
-            ;['bold', 'italic', 'content'].forEach((prop) => {
+            ['bold', 'italic', 'content'].forEach((prop) => {
               if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
                 updatedItem[prop] = changedElement[prop]
                 changed = true
@@ -222,7 +222,7 @@ export const useRowSync = (getDataById, updateElement) => {
 
           case 'FormulaInput':
             // Sync formula properties
-            ;['formula', 'formularKey'].forEach((prop) => {
+            ['formula', 'formularKey'].forEach((prop) => {
               if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
                 updatedItem[prop] = changedElement[prop]
                 changed = true
@@ -243,7 +243,7 @@ export const useRowSync = (getDataById, updateElement) => {
               changed = true
             } else {
               // Sync structural properties like sourceType, formSource, etc.
-              ;['sourceType', 'formSource'].forEach((prop) => {
+              ['sourceType', 'formSource'].forEach((prop) => {
                 if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
                   updatedItem[prop] = changedElement[prop]
                   changed = true

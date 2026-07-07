@@ -73,9 +73,7 @@ export const clearDraftData = (props) => {
   }
 }
 
-export const hasDraft = (props) => {
-  return readDraftFromStorage(props) !== null
-}
+export const hasDraft = (props) => readDraftFromStorage(props) !== null
 
 // ─── Hook ───────────────────────────────────────────────────────────────
 
@@ -146,8 +144,7 @@ export const useDraftPersistence = (props, collectFormData) => {
   }, [])
 
   // ── Cleanup on unmount ──────────────────────────────────────────────
-  useEffect(() => {
-    return () => {
+  useEffect(() => () => {
       if (draftIntervalRef.current) {
         clearInterval(draftIntervalRef.current)
         draftIntervalRef.current = null
@@ -156,8 +153,7 @@ export const useDraftPersistence = (props, collectFormData) => {
       if (!propsRef.current.read_only && !draftClearedRef.current && draftStartedRef.current) {
         saveDraft()
       }
-    }
-  }, [saveDraft])
+    }, [saveDraft])
 
   return {
     /** Answer data merged with any restored draft */

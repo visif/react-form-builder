@@ -746,7 +746,7 @@ const Preview = (props) => {
             }
 
             // Sync capability flags but don't sync individual option selections
-            ;['canHaveOptionCorrect', 'canHaveOptionValue', 'canHaveInfo'].forEach((prop) => {
+            ['canHaveOptionCorrect', 'canHaveOptionValue', 'canHaveInfo'].forEach((prop) => {
               if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
                 updatedItem[prop] = changedElement[prop]
                 changed = true
@@ -767,7 +767,7 @@ const Preview = (props) => {
             break
           case 'DatePicker':
             // Sync date-specific properties
-            ;['showTimeSelect', 'showTimeSelectOnly', 'defaultToday'].forEach((prop) => {
+            ['showTimeSelect', 'showTimeSelectOnly', 'defaultToday'].forEach((prop) => {
               if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
                 updatedItem[prop] = changedElement[prop]
                 changed = true
@@ -777,7 +777,7 @@ const Preview = (props) => {
 
           case 'Range':
             // Sync range-specific properties
-            ;['min_value', 'max_value', 'step', 'default_value', 'min_label', 'max_label'].forEach(
+            ['min_value', 'max_value', 'step', 'default_value', 'min_label', 'max_label'].forEach(
               (prop) => {
                 if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
                   updatedItem[prop] = changedElement[prop]
@@ -795,7 +795,7 @@ const Preview = (props) => {
             changed = true
             break
           case 'Image':
-            ;['center', 'width', 'height'].forEach((prop) => {
+            ['center', 'width', 'height'].forEach((prop) => {
               if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
                 updatedItem[prop] = changedElement[prop]
                 changed = true
@@ -806,7 +806,7 @@ const Preview = (props) => {
           case 'Paragraph':
           case 'Header':
             // Sync text styling properties
-            ;['bold', 'italic', 'content'].forEach((prop) => {
+            ['bold', 'italic', 'content'].forEach((prop) => {
               if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
                 updatedItem[prop] = changedElement[prop]
                 changed = true
@@ -816,7 +816,7 @@ const Preview = (props) => {
 
           case 'FormulaInput':
             // Sync formula properties
-            ;['formula', 'formularKey'].forEach((prop) => {
+            ['formula', 'formularKey'].forEach((prop) => {
               if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
                 updatedItem[prop] = changedElement[prop]
                 changed = true
@@ -837,7 +837,7 @@ const Preview = (props) => {
               changed = true
             } else {
               // Sync structural properties like sourceType, formSource, etc.
-              ;['sourceType', 'formSource'].forEach((prop) => {
+              ['sourceType', 'formSource'].forEach((prop) => {
                 if (changedElement[prop] !== undefined && changedElement[prop] !== itemData[prop]) {
                   updatedItem[prop] = changedElement[prop]
                   changed = true

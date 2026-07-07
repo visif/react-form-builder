@@ -103,11 +103,9 @@ export const useFormElementEdit = (props) => {
       if (targProperty === 'checked') {
         props.updateElement.call(props.preview, this_element)
         setDirty(false)
-      } else {
-        if (debouncedPushRef.current) {
+      } else if (debouncedPushRef.current) {
           debouncedPushRef.current()
         }
-      }
     },
     [element, formDataSource, props]
   )

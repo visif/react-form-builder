@@ -7,8 +7,8 @@
  *
  * @example
  * // Basic usage
- * import { ReactFormBuilder } from 'react-form-builder2';
- * import 'react-form-builder2/dist/app.css';
+ * import { ReactFormBuilder } from '@visif/form-builder';
+ * import '@visif/form-builder/dist/app.css';
  *
  * function App() {
  *   return (
@@ -54,16 +54,15 @@
  */
 import React from 'react'
 
-import PropTypes from 'prop-types'
-
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 
 import FORM_BUILDER_VERSION from '../../constants/version'
+import type { ReactFormBuilderProps } from '../../types/form'
 import Preview from './Preview/Preview'
 import Toolbar from './Toolbar/Toolbar'
 
-const ReactFormBuilder = (props) => {
+const ReactFormBuilder = (props: ReactFormBuilderProps) => {
   const [editMode, setEditMode] = React.useState(false)
   const [editElement, setEditElement] = React.useState(null)
 
@@ -89,7 +88,10 @@ const ReactFormBuilder = (props) => {
     }
   }, [editMode])
 
-  const toolbarProps = {
+  const toolbarProps: {
+    showDescription?: boolean
+    items?: ReactFormBuilderProps['toolbarItems']
+  } = {
     showDescription: props.show_description,
   }
   if (props.toolbarItems) {
@@ -165,31 +167,6 @@ const ReactFormBuilder = (props) => {
       </div>
     </DndProvider>
   )
-}
-
-ReactFormBuilder.propTypes = {
-  show_description: PropTypes.bool,
-  toolbarItems: PropTypes.array,
-  customToolbarItems: PropTypes.array,
-  files: PropTypes.array,
-  showCorrectColumn: PropTypes.bool,
-  data: PropTypes.array,
-  url: PropTypes.string,
-  saveUrl: PropTypes.string,
-  onLoad: PropTypes.func,
-  onPost: PropTypes.func,
-  variables: PropTypes.object,
-  renderEditForm: PropTypes.func,
-  onChange: PropTypes.func,
-  uploadUrl: PropTypes.string,
-  onImageUpload: PropTypes.func,
-  getDataSource: PropTypes.func,
-  getFormSource: PropTypes.func,
-  getFormContent: PropTypes.func,
-  getActiveUserProperties: PropTypes.func,
-  onUploadFile: PropTypes.func,
-  onUploadImage: PropTypes.func,
-  onDownloadFile: PropTypes.func,
 }
 
 export default ReactFormBuilder

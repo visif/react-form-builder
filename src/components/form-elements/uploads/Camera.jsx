@@ -52,7 +52,7 @@ const Camera = (props) => {
         <ComponentLabel {...props} />
         {props.read_only === true && props.defaultValue && props.defaultValue.length > 0 ? (
           <div>
-            <img src={sourceDataURL} />
+            <img src={sourceDataURL} alt="" />
           </div>
         ) : (
           <div className="image-upload-container">

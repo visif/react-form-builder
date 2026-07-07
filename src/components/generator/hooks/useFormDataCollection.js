@@ -83,7 +83,7 @@ export const useFormDataCollection = (props, inputsRef, getItemValue, getEditor)
           hasValue = !!contextValue
         }
 
-        itemData.editor = oldEditor ? oldEditor : hasValue ? activeUser : null
+        itemData.editor = oldEditor || (hasValue ? activeUser : null)
         return itemData
       }
 
@@ -104,13 +104,13 @@ export const useFormDataCollection = (props, inputsRef, getItemValue, getEditor)
             checked_options.push({
               key: option.key,
               value: option.value,
-              info: info,
+              info,
             })
           }
         })
 
         itemData.value = checked_options
-        itemData.editor = oldEditor ? oldEditor : checked_options.length > 0 ? activeUser : null
+        itemData.editor = oldEditor || (checked_options.length > 0 ? activeUser : null)
       } else {
         if (!ref) {
           // If no ref exists, still include the field with empty/default value
@@ -139,36 +139,28 @@ export const useFormDataCollection = (props, inputsRef, getItemValue, getEditor)
         const valueItem = getItemValue(item, ref)
 
         itemData.value = valueItem.value
-        itemData.editor = oldEditor ? oldEditor : valueItem.value ? activeUser : null
+        itemData.editor = oldEditor || (valueItem.value ? activeUser : null)
         if (item.element === 'Signature2') {
-          itemData.editor = oldEditor ? oldEditor : valueItem.value.isSigned ? activeUser : null
+          itemData.editor = oldEditor || (valueItem.value.isSigned ? activeUser : null)
         } else if (item.element === 'Tags') {
-          itemData.editor = oldEditor
-            ? oldEditor
-            : Array.isArray(valueItem.value) && valueItem.value.length > 0
+          itemData.editor = oldEditor || (Array.isArray(valueItem.value) && valueItem.value.length > 0
               ? activeUser
-              : null
+              : null)
         } else if (
           (item.element === 'DataSource' || item.element === 'Dataset') &&
           ref.state.searchText
         ) {
-          itemData.editor = oldEditor ? oldEditor : valueItem.value.value ? activeUser : null
+          itemData.editor = oldEditor || (valueItem.value.value ? activeUser : null)
         } else if (item.element === 'FileUpload') {
-          itemData.editor = oldEditor
-            ? oldEditor
-            : valueItem.value.fileList && valueItem.value.fileList.length > 0
+          itemData.editor = oldEditor || (valueItem.value.fileList && valueItem.value.fileList.length > 0
               ? activeUser
-              : null
+              : null)
         } else if (item.element === 'ImageUpload') {
-          itemData.editor = oldEditor ? oldEditor : valueItem.value.filePath ? activeUser : null
+          itemData.editor = oldEditor || (valueItem.value.filePath ? activeUser : null)
         } else if (item.element === 'Table') {
-          itemData.editor = oldEditor
-            ? oldEditor
-            : valueItem.value.find((itemRow) => {
-                  return itemRow.find((val) => !!val)
-                })
+          itemData.editor = oldEditor || (valueItem.value.find((itemRow) => itemRow.find((val) => !!val))
               ? activeUser
-              : null
+              : null)
         }
       }
 

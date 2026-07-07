@@ -51,6 +51,22 @@ import { Registry } from '@visif/form-builder'
 Registry.register('MyWidget', MyWidgetComponent)
 ```
 
+## Requirements
+
+- React 18+
+- Node.js 18+
+
+## Exports
+
+| Export | Description |
+|--------|-------------|
+| `ReactFormBuilder` | Drag-and-drop form designer |
+| `ReactFormGenerator` | Form renderer with validation |
+| `Registry` | Register custom form elements |
+| `FORM_BUILDER_VERSION` | Current package version string |
+
+TypeScript declaration files are published in `dist/index.d.ts`.
+
 ## Props
 
 ### ReactFormBuilder
@@ -76,8 +92,11 @@ Registry.register('MyWidget', MyWidgetComponent)
 ## Development
 
 ```bash
-npm install
-npm run dev
+yarn install
+yarn dev        # Vite playground
+yarn lint       # ESLint
+yarn test       # Vitest
+yarn build:lib  # Production build + styles
 ```
 
 ## Local Linking (use in another project without publishing)

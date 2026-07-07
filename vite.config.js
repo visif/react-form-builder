@@ -1,6 +1,7 @@
 import react from '@vitejs/plugin-react'
 import path from 'path'
 import { defineConfig } from 'vite'
+import dts from 'vite-plugin-dts'
 
 export default defineConfig({
   define: {
@@ -8,10 +9,22 @@ export default defineConfig({
       process.env.npm_package_version || '0.0.1'
     ),
   },
-  plugins: [react()],
+  plugins: [
+    react(),
+    dts({
+      include: ['src/index.tsx', 'src/types/**/*.ts', 'src/constants/**/*.ts', 'src/utils/registry.ts', 'src/utils/multicolumnField.ts', 'src/contexts/**/*.tsx', 'src/components/builder/ReactFormBuilder.tsx', 'src/components/generator/ReactFormGenerator.tsx'],
+      rollupTypes: true,
+      tsconfigPath: './tsconfig.json',
+    }),
+  ],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+    },
+  },
   build: {
     lib: {
-      entry: path.resolve(__dirname, 'src/index.jsx'),
+      entry: path.resolve(__dirname, 'src/index.tsx'),
       name: 'ReactFormBuilder',
       formats: ['es', 'umd'],
       fileName: (format) => `app.${format}.js`,
@@ -19,7 +32,6 @@ export default defineConfig({
     outDir: 'dist',
     cssFileName: 'app',
     rollupOptions: {
-      // Externalize React so the consumer's React is used
       external: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
       output: {
         globals: {

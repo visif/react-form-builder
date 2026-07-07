@@ -30,7 +30,7 @@ const DataSource = (props) => {
         initialized: true,
         sourceType: props.data.sourceType,
         formSource: props.data.formSource,
-        selectedItem: selectedItem,
+        selectedItem,
         value: searchText,
         isInitialSync: true, // Flag to indicate this is initial synchronization
       })
@@ -38,7 +38,7 @@ const DataSource = (props) => {
       props.handleChange(props.data.field_name, {
         type: props.data.sourceType,
         value: searchText,
-        selectedItem: selectedItem,
+        selectedItem,
       })
     }
   }, [props, loading, selectedItem, searchText])

@@ -75,8 +75,7 @@ const SelectFieldEditor = ({
         placeholder="Please select"
         showSearch
         filterOption={(input, option) =>
-          (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-        }
+          (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
         getPopupContainer={(trigger) => trigger.parentNode}
         dropdownStyle={{ zIndex: 9999 }}
       />

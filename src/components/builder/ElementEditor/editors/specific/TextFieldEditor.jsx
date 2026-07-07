@@ -18,24 +18,23 @@ const TextFieldEditor = ({
   placeholder = '',
   helpText = null,
   className,
-}) => {
-  return (
-    <div className="form-group">
-      {label && (
-        <label className="control-label" htmlFor={id}>
-          {label}
-        </label>
+}) => (
+  <div className="form-group">
+    {label && (
+    <label className="control-label" htmlFor={id}>
+      {label}
+    </label>
       )}
-      {multiline ? (
-        <TextArea
-          id={id}
-          value={value}
-          defaultValue={value}
-          onBlur={onBlur}
-          onChange={onChange}
-          placeholder={placeholder}
-          autoSize={{ minRows: 2, maxRows: 6 }}
-        />
+    {multiline ? (
+      <TextArea
+        id={id}
+        value={value}
+        defaultValue={value}
+        onBlur={onBlur}
+        onChange={onChange}
+        placeholder={placeholder}
+        autoSize={{ minRows: 2, maxRows: 6 }}
+      />
       ) : (
         <Input
           id={id}
@@ -47,9 +46,8 @@ const TextFieldEditor = ({
           placeholder={placeholder}
         />
       )}
-      {helpText && <p className="help-block">{helpText}</p>}
-    </div>
+    {helpText && <p className="help-block">{helpText}</p>}
+  </div>
   )
-}
 
 export default TextFieldEditor

@@ -26,13 +26,11 @@ const DynamicOptionList = ({
   const timeoutIdRef = useRef(null)
 
   // Cleanup on unmount
-  useEffect(() => {
-    return () => {
+  useEffect(() => () => {
       if (timeoutIdRef.current) {
         clearTimeout(timeoutIdRef.current)
       }
-    }
-  }, [])
+    }, [])
 
   const setValue = (text) => text.replace(/[^A-Z0-9]+/gi, '_').toLowerCase()
 
@@ -118,8 +116,7 @@ const DynamicOptionList = ({
   )
 
   // Throttle utility function
-  const throttle = useCallback((func, wait) => {
-    return (...args) => {
+  const throttle = useCallback((func, wait) => (...args) => {
       const now = Date.now()
       const remaining = wait - (now - previousTimeRef.current)
 
@@ -136,8 +133,7 @@ const DynamicOptionList = ({
           func(...args)
         }, remaining)
       }
-    }
-  }, [])
+    }, [])
 
   const handleOptionChangeThrottled = useCallback(
     throttle((optionIndex, { target: { value } }) => {
@@ -260,7 +256,7 @@ const DynamicOptionList = ({
         const nextValue =
           Math.max(
             ...newElement.options.map(({ value }) =>
-              Number.isNaN(Number(value)) ? 0 : parseInt(value, 10)
+              (Number.isNaN(Number(value)) ? 0 : parseInt(value, 10))
             )
           ) + 1
 

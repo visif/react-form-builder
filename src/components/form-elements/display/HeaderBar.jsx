@@ -10,43 +10,41 @@ import { Button, Tag } from 'antd'
 
 import Grip from '../layout/grip'
 
-const HeaderBar = (props) => {
-  return (
-    <div className="rfb-toolbar-header">
-      <Tag bordered={false} style={{ backgroundColor: 'transparent', padding: 0 }}>
-        {props.data.text}
-      </Tag>
-      <div className="rfb-toolbar-header-buttons">
-        {props.data.element !== 'LineBreak' && (
-          <Button
-            type="text"
-            size="small"
-            icon={<EditOutlined />}
-            className="rfb-toolbar-header-action is-isolated"
-            onClick={props.editModeOn?.bind(props.parent, props.data)}
-          />
+const HeaderBar = (props) => (
+  <div className="rfb-toolbar-header">
+    <Tag bordered={false} style={{ backgroundColor: 'transparent', padding: 0 }}>
+      {props.data.text}
+    </Tag>
+    <div className="rfb-toolbar-header-buttons">
+      {props.data.element !== 'LineBreak' && (
+      <Button
+        type="text"
+        size="small"
+        icon={<EditOutlined />}
+        className="rfb-toolbar-header-action is-isolated"
+        onClick={props.editModeOn?.bind(props.parent, props.data)}
+      />
         )}
-        <Button
-          type="text"
-          size="small"
-          icon={<DeleteOutlined />}
-          className="rfb-toolbar-header-action is-isolated"
-          danger
-          onClick={props.onDestroy?.bind(null, props.data)}
-        />
-        {!props.data.isContainer && (
-          <Grip
-            data={props.data}
-            index={props.index}
-            onDestroy={props.onDestroy}
-            setAsChild={props.setAsChild}
-            getDataById={props.getDataById}
-          />
+      <Button
+        type="text"
+        size="small"
+        icon={<DeleteOutlined />}
+        className="rfb-toolbar-header-action is-isolated"
+        danger
+        onClick={props.onDestroy?.bind(null, props.data)}
+      />
+      {!props.data.isContainer && (
+      <Grip
+        data={props.data}
+        index={props.index}
+        onDestroy={props.onDestroy}
+        setAsChild={props.setAsChild}
+        getDataById={props.getDataById}
+      />
         )}
-      </div>
     </div>
+  </div>
   )
-}
 
 HeaderBar.propTypes = {
   data: PropTypes.shape({

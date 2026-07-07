@@ -13,13 +13,9 @@ const FixedRowList = ({ element: propsElement, preview = null, updateElement }) 
   const [element, setElement] = useState(propsElement)
   const [dirty, setDirty] = useState(false)
 
-  const _setValue = (text) => {
-    return `${text || ''}`.replace(/[^A-Z0-9]+/gi, '_').toLowerCase()
-  }
+  const _setValue = (text) => `${text || ''}`.replace(/[^A-Z0-9]+/gi, '_').toLowerCase()
 
-  const areRowsInSync = useCallback(() => {
-    return Number(element.rows || 1) === element.rowLabels.length
-  }, [element.rows, element.rowLabels.length])
+  const areRowsInSync = useCallback(() => Number(element.rows || 1) === element.rowLabels.length, [element.rows, element.rowLabels.length])
 
   const editRow = useCallback(
     (index, key, e) => {

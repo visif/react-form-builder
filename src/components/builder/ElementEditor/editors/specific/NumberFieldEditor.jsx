@@ -17,30 +17,28 @@ const NumberFieldEditor = ({
   step = null,
   className,
   helpText = null,
-}) => {
-  return (
-    <div className="form-group">
-      <div className="form-group-range">
-        {label && (
-          <label className="control-label" htmlFor={id}>
-            {label}
-          </label>
+}) => (
+  <div className="form-group">
+    <div className="form-group-range">
+      {label && (
+      <label className="control-label" htmlFor={id}>
+        {label}
+      </label>
         )}
-        <InputNumber
-          id={id}
-          value={value}
-          defaultValue={value}
-          onBlur={onBlur}
-          onChange={onChange}
-          min={min}
-          max={max}
-          step={step}
-          style={{ width: '100%' }}
-        />
-        {helpText && <p className="help-block">{helpText}</p>}
-      </div>
+      <InputNumber
+        id={id}
+        value={value}
+        defaultValue={value}
+        onBlur={onBlur}
+        onChange={onChange}
+        min={min}
+        max={max}
+        step={step}
+        style={{ width: '100%' }}
+      />
+      {helpText && <p className="help-block">{helpText}</p>}
     </div>
+  </div>
   )
-}
 
 export default NumberFieldEditor

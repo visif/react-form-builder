@@ -90,7 +90,7 @@ const SAMPLE_ANSWER_DATA = [
 ]
 
 // Dev app with comprehensive testing features
-function DevApp() {
+const DevApp = () => {
   const [formData, setFormData] = React.useState([])
   const [showPreview, setShowPreview] = React.useState(false)
   const [submittedData, setSubmittedData] = React.useState(null)
@@ -423,7 +423,7 @@ function DevApp() {
   // Export form data as JSON
   const exportFormData = React.useCallback(() => {
     const dataStr = JSON.stringify(formData, null, 2)
-    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
+    const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`
     const exportFileDefaultName = 'form-data.json'
 
     const linkElement = document.createElement('a')
@@ -540,12 +540,18 @@ function DevApp() {
             📋 Mocked Functions Available
           </h4>
           <div style={{ fontSize: '12px', color: '#6c757d', lineHeight: '1.6' }}>
-            <strong>Form Callbacks:</strong> onChange, onLoad, onPost, onSubmit, onUpdate
+            <strong>Form Callbacks:</strong>
+            {' '}
+            onChange, onLoad, onPost, onSubmit, onUpdate
             <br />
-            <strong>File Operations:</strong> onImageUpload, onUploadFile, onUploadImage,
+            <strong>File Operations:</strong>
+            {' '}
+            onImageUpload, onUploadFile, onUploadImage,
             onDownloadFile
             <br />
-            <strong>Data Sources:</strong> getDataSource, getFormSource, getFormContent,
+            <strong>Data Sources:</strong>
+            {' '}
+            getDataSource, getFormSource, getFormContent,
             getActiveUserProperties
             <br />
             <em style={{ color: '#28a745' }}>All events are logged in the Event Log sidebar →</em>
@@ -639,7 +645,11 @@ function DevApp() {
 
               {answerData.length > 0 && (
                 <span style={{ marginLeft: '10px', color: '#28a745' }}>
-                  ✓ {answerData.length} answers loaded
+                  ✓
+                  {' '}
+                  {answerData.length}
+                  {' '}
+                  answers loaded
                 </span>
               )}
             </div>
@@ -685,7 +695,12 @@ function DevApp() {
               </div>
 
               <div style={{ marginTop: '20px' }}>
-                <h3>Form Data (JSON) - {formData.length} elements</h3>
+                <h3>
+                  Form Data (JSON) -
+                  {formData.length}
+                  {' '}
+                  elements
+                </h3>
                 <pre
                   style={{
                     backgroundColor: '#f5f5f5',

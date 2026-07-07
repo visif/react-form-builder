@@ -29,17 +29,16 @@ const toPlainText = (str) => {
  * @param {Function} onChange - Handler for field value changes
  * @param {Function} onBlur - Handler for field blur events
  */
-const DataSourceEditor = ({ element, formDataSource, activeForm, onChange, onBlur }) => {
-  return (
-    <div>
-      {/* sourceType: Determines the data source type (name, department, role, or form)
+const DataSourceEditor = ({ element, formDataSource, activeForm, onChange, onBlur }) => (
+  <div>
+    {/* sourceType: Determines the data source type (name, department, role, or form)
           Defaults to 'name' if not set */}
-      {'sourceType' in element && (
-        <SelectFieldEditor
-          id="sourceType"
-          label="Source Type"
-          value={element.sourceType || 'name'}
-          options={[
+    {'sourceType' in element && (
+    <SelectFieldEditor
+      id="sourceType"
+      label="Source Type"
+      value={element.sourceType || 'name'}
+      options={[
             { value: 'name', label: 'Name', key: 'name' },
             { value: 'email', label: 'Email', key: 'email' },
             { value: 'department', label: 'Department', key: 'department' },
@@ -47,22 +46,22 @@ const DataSourceEditor = ({ element, formDataSource, activeForm, onChange, onBlu
             { value: 'dataset', label: 'Dataset', key: 'dataset' },
             { value: 'form', label: 'Form', key: 'form' },
           ]}
-          onChange={(e) => onChange('sourceType', 'value', e)}
-          onBlur={onBlur}
-        />
+      onChange={(e) => onChange('sourceType', 'value', e)}
+      onBlur={onBlur}
+    />
       )}
 
-      {/* Show form-specific fields only when sourceType is 'form' */}
-      {element.sourceType === 'form' && (
-        <div>
-          {/* formSource: ID of the selected form to pull data from
+    {/* Show form-specific fields only when sourceType is 'form' */}
+    {element.sourceType === 'form' && (
+    <div>
+      {/* formSource: ID of the selected form to pull data from
               Defaults to -1 (Please select) when first shown */}
-          {'formSource' in element && (
-            <SelectFieldEditor
-              id="formSource"
-              label="Form Source"
-              value={element.formSource || -1}
-              options={[
+      {'formSource' in element && (
+      <SelectFieldEditor
+        id="formSource"
+        label="Form Source"
+        value={element.formSource || -1}
+        options={[
                 { value: -1, label: 'Please select', key: -1 },
                 ...(formDataSource || []).map((item) => ({
                   value: item.id,
@@ -70,18 +69,18 @@ const DataSourceEditor = ({ element, formDataSource, activeForm, onChange, onBlu
                   key: item.id,
                 })),
               ]}
-              onChange={(e) => onChange('formSource', 'value', e)}
-              onBlur={onBlur}
-            />
+        onChange={(e) => onChange('formSource', 'value', e)}
+        onBlur={onBlur}
+      />
           )}
 
-          {/* Form field selection: Show checkboxes for each column in the selected form
+      {/* Form field selection: Show checkboxes for each column in the selected form
               Allows selecting which fields from the source form should be displayed
               Field names are stored as formField{field_name} properties on the element */}
-          {activeForm && activeForm.columns && (
-            <div className="form-group">
-              <label className="control-label">Select Fields</label>
-              {activeForm.columns
+      {activeForm && activeForm.columns && (
+      <div className="form-group">
+        <label className="control-label">Select Fields</label>
+        {activeForm.columns
                 .filter((item) => toPlainText(item.label || item.text || '') !== '')
                 .map((item) => (
                   <CheckboxFieldEditor
@@ -96,12 +95,11 @@ const DataSourceEditor = ({ element, formDataSource, activeForm, onChange, onBlu
                     onChange={(e) => onChange(`formField${item.field_name}`, 'checked', e)}
                   />
                 ))}
-            </div>
+      </div>
           )}
-        </div>
-      )}
     </div>
+      )}
+  </div>
   )
-}
 
 export default DataSourceEditor
