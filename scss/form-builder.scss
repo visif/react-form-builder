@@ -158,6 +158,20 @@
         padding: 8px 12px 10px;
         margin-bottom: 8px;
         box-sizing: border-box;
+
+        // Keep display Typography compact in builder preview too
+        .ant-typography,
+        h1.ant-typography,
+        h2.ant-typography,
+        h3.ant-typography,
+        h4.ant-typography,
+        h5.ant-typography,
+        .ant-typography p,
+        .ant-typography > div {
+          margin-top: 0;
+          margin-bottom: 0;
+        }
+
         &.rfb-section-item {
           padding: 4px 12px 6px;
 
