@@ -67,6 +67,11 @@ Registry.register('MyWidget', MyWidgetComponent)
 
 TypeScript declaration files are published in `dist/index.d.ts`.
 
+## Form element notes
+
+- Prefer **`Signature2`** for new forms (role/position-aware digital signature).
+- The legacy canvas **`Signature`** element still renders existing schemas but is removed from the default toolbar and emits a deprecation warning in development.
+
 ## Props
 
 CamelCase props are preferred. Legacy snake_case aliases still work; when both are passed, camelCase wins.

@@ -1,3 +1,7 @@
+/**
+ * @deprecated Use `Signature2` instead. Canvas Signature remains for backward
+ * compatibility with existing form schemas but is hidden from the default toolbar.
+ */
 import React from 'react'
 import { Button, Image } from 'antd'
 import { CloseOutlined } from '@ant-design/icons'
@@ -7,7 +11,18 @@ import SignaturePad from 'react-signature-canvas'
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
 
+let didWarnSignatureDeprecated = false
+
 const Signature = (props) => {
+  React.useEffect(() => {
+    if (process.env.NODE_ENV !== 'production' && !didWarnSignatureDeprecated) {
+      didWarnSignatureDeprecated = true
+      console.warn(
+        '[RFB] The canvas "Signature" element is deprecated. Prefer "Signature2" for new forms.'
+      )
+    }
+  }, [])
+
   const [defaultValue, setDefaultValue] = React.useState(props.defaultValue)
   const inputField = React.useRef(null)
   const canvas = React.useRef(null)

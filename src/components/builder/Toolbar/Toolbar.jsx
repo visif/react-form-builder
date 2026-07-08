@@ -621,22 +621,23 @@ function _defaultItems() {
       field_name: 'date_picker_',
     },
     {
-      key: 'Signature',
-      canReadOnly: true,
-      name: 'Signature',
-      icon: 'fas fa-pen-square',
-      label: 'Signature',
-      field_name: 'signature_',
-    },
-    {
       key: 'Signature2',
       name: 'Signature',
-      // label: "Signature",
       icon: 'fas fa-signature',
       field_name: 'signature2_',
       position: 'Placeholder Text',
       specificRole: 'specific',
     },
+    // Canvas Signature is deprecated; kept only for loading existing forms.
+    // It is intentionally omitted from the default toolbar.
+    // {
+    //   key: 'Signature',
+    //   canReadOnly: true,
+    //   name: 'Signature (legacy)',
+    //   icon: 'fas fa-pen-square',
+    //   label: 'Signature',
+    //   field_name: 'signature_',
+    // },
     {
       key: 'HyperLink',
       name: 'Web site',

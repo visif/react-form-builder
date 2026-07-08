@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Deprecated
+- Canvas `Signature` toolbar item is removed from the default toolbar. Prefer `Signature2` for new forms. Existing schemas that use `Signature` continue to render; a development-only warning is emitted.
+
 ## [1.0.0] - 2025-10-30
 
 ### 🎉 Major Modernization Release
