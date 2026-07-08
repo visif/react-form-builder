@@ -6,28 +6,46 @@ import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
 
 const Camera = (props) => {
-  const [img, setImg] = React.useState(null)
+  const [img, setImg] = React.useState(props.defaultValue || null)
 
-  const displayImage = React.useCallback((e) => {
-    const { target } = e
-    let file
-    let reader
-
-    if (target.files && target.files.length) {
-      file = target.files[0]
-      // eslint-disable-next-line no-undef
-      reader = new FileReader()
-      reader.readAsDataURL(file)
-
-      reader.onloadend = () => {
-        setImg(reader.result)
+  const publishValue = React.useCallback(
+    (nextValue) => {
+      if (props.handleChange) {
+        const payload =
+          typeof nextValue === 'string'
+            ? nextValue.replace('data:image/png;base64,', '').replace(/^data:image\/[^;]+;base64,/, '')
+            : nextValue || ''
+        props.handleChange(props.data.field_name, payload)
       }
-    }
-  }, [])
+    },
+    [props]
+  )
+
+  const displayImage = React.useCallback(
+    (e) => {
+      const { target } = e
+      let file
+      let reader
+
+      if (target.files && target.files.length) {
+        file = target.files[0]
+        // eslint-disable-next-line no-undef
+        reader = new FileReader()
+        reader.readAsDataURL(file)
+
+        reader.onloadend = () => {
+          setImg(reader.result)
+          publishValue(reader.result)
+        }
+      }
+    },
+    [publishValue]
+  )
 
   const clearImage = React.useCallback(() => {
     setImg(null)
-  }, [])
+    publishValue('')
+  }, [publishValue])
 
   let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
   if (props.data.pageBreakBefore) {
@@ -38,13 +56,12 @@ const Camera = (props) => {
   const fileInputStyle = img ? { display: 'none' } : null
   let sourceDataURL
   if (props.read_only === true && props.defaultValue && props.defaultValue.length > 0) {
-    if (props.defaultValue.indexOf(name > -1)) {
+    if (props.defaultValue.indexOf(name) > -1 || props.defaultValue.indexOf('data:') === 0) {
       sourceDataURL = props.defaultValue
     } else {
       sourceDataURL = `data:image/png;base64,${props.defaultValue}`
     }
   }
-  console.log('sourceDataURL', sourceDataURL)
   return (
     <div className={baseClasses}>
       <ComponentHeader {...props} />

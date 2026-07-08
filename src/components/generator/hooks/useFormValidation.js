@@ -1,63 +1,68 @@
 /**
  * useFormValidation Hook
  *
- * Handles all form validation logic including:
- * - Required field validation (isInvalid)
- * - Correctness validation (isIncorrect)
- * - Full form validation with section support
- * - Signature image extraction
+ * Validates form fields using FormContext as the single source of truth.
  */
 import { useCallback } from 'react'
 
-import ReactDOM from 'react-dom'
-
 import { useFormContext } from '../../../contexts/FormContext'
 
-export const useFormValidation = (props, inputsRef, getItemValue, collectFormItems) => {
+const normalizeCorrectableValue = (item, value) => {
+  if (item.element === 'Rating') {
+    return value == null ? '' : String(value)
+  }
+  if (typeof value === 'string') {
+    return value
+  }
+  if (value != null && typeof value === 'object' && Object.prototype.hasOwnProperty.call(value, 'value')) {
+    return String(value.value ?? '')
+  }
+  if (value == null) {
+    return ''
+  }
+  return String(value)
+}
+
+export const useFormValidation = (props, collectFormItems) => {
   const formContext = useFormContext()
 
-  // Validation: Check if answer is incorrect
   const isIncorrect = useCallback(
     (item) => {
-      let incorrect = false
-      if (item.canHaveAnswer) {
-        const ref = inputsRef.current[item.field_name]
-        if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
-          item.options.forEach((option) => {
-            const $option = ReactDOM.findDOMNode(ref.options[`child_ref_${option.key}`])
-            if (
-              (Object.prototype.hasOwnProperty.call(option, 'correct') && !$option.checked) ||
-              (!Object.prototype.hasOwnProperty.call(option, 'correct') && $option.checked)
-            ) {
-              incorrect = true
-            }
-          })
-        } else {
-          const $item = getItemValue(item, ref)
-          if (item.element === 'Rating') {
-            if ($item.value.toString() !== item.correct) {
-              incorrect = true
-            }
-          } else if ($item.value.toLowerCase() !== item.correct.trim().toLowerCase()) {
-            incorrect = true
-          }
-        }
+      if (!item.canHaveAnswer) {
+        return false
       }
-      return incorrect
+
+      const value = formContext.getValue(item.field_name)
+
+      if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
+        const selectedKeys = Array.isArray(value)
+          ? value.map((option) => (typeof option === 'object' ? option.key : option))
+          : []
+
+        return item.options.some((option) => {
+          const isSelected = selectedKeys.includes(option.key)
+          const shouldBeSelected = Object.prototype.hasOwnProperty.call(option, 'correct')
+          return (shouldBeSelected && !isSelected) || (!shouldBeSelected && isSelected)
+        })
+      }
+
+      const answer = normalizeCorrectableValue(item, value)
+      const expected = String(item.correct ?? '').trim()
+      if (item.element === 'Rating') {
+        return answer !== expected
+      }
+      return answer.toLowerCase() !== expected.toLowerCase()
     },
-    [inputsRef, getItemValue]
+    [formContext]
   )
 
-  // Validation: Check if required field is invalid
   const isInvalid = useCallback(
     (item) => {
       let invalid = false
       if (item.required === true) {
-        // Get value from FormContext - single source of truth
         const value = formContext.getValue(item.field_name)
 
         if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
-          // Check if array has any checked items
           if (!Array.isArray(value) || value.length < 1) {
             invalid = true
           }
@@ -77,13 +82,18 @@ export const useFormValidation = (props, inputsRef, getItemValue, collectFormIte
           if (!Array.isArray(value) || value.length < 1) {
             invalid = true
           }
-        } else {
-          // For all other elements (TextInput, NumberInput, TextArea, Dropdown, DatePicker, etc.)
-          if (value === undefined || value === null || value === '') {
-            invalid = true
-          } else if (typeof value === 'string' && value.trim().length < 1) {
-            invalid = true
+        } else if (item.element === 'Signature') {
+          if (typeof value === 'string') {
+            invalid = value.trim().length < 1
+          } else {
+            invalid = !value || !value.isSigned
           }
+        } else if (item.element === 'Signature2') {
+          invalid = !value || !value.isSigned
+        } else if (value === undefined || value === null || value === '') {
+          invalid = true
+        } else if (typeof value === 'string' && value.trim().length < 1) {
+          invalid = true
         }
       }
       return invalid
@@ -91,33 +101,10 @@ export const useFormValidation = (props, inputsRef, getItemValue, collectFormIte
     [formContext]
   )
 
-  // Extract signature canvas data
-  const getSignatureImg = useCallback(
-    (item) => {
-      const ref = inputsRef.current[item.field_name]
-      if (!ref || !ref.canvas) return // Skip if ref or canvas doesn't exist
-
-      const $canvas_sig = ref.canvas.current
-      if ($canvas_sig) {
-        const base64 = $canvas_sig.toDataURL().replace('data:image/png;base64,', '')
-        const isEmpty = $canvas_sig.isEmpty()
-        const $input_sig = ReactDOM.findDOMNode(ref.inputField.current)
-        if (isEmpty) {
-          $input_sig.value = ''
-        } else {
-          $input_sig.value = base64
-        }
-      }
-    },
-    [inputsRef]
-  )
-
-  // Form validation with section logic
   const validateForm = useCallback(() => {
     const errors = []
     let data_items = props.data
 
-    // re-order items to avoid items inside
     let orderedItems = []
     props.data.forEach((item) => {
       const childItems = props.data.filter((child) => child.parentId === item.id)
@@ -128,7 +115,6 @@ export const useFormValidation = (props, inputsRef, getItemValue, collectFormIte
       }
     })
 
-    // get all input items
     const formItems = collectFormItems(orderedItems)
     const sectionItems = formItems.filter((item) => item.element === 'Section')
 
@@ -174,15 +160,12 @@ export const useFormValidation = (props, inputsRef, getItemValue, collectFormIte
       return errors
     }
 
-    // Validate with special condition when there is any section
     if (sectionItems.length > 0) {
-      // split items into groups by section
       const firstItem = formItems[0]
       let activeSectionKey = firstItem.element === 'Section' ? firstItem.id : ''
       const sectionGroup = {}
       sectionGroup[activeSectionKey] = []
 
-      // group items by section separator
       formItems.forEach((item) => {
         if (item.element === 'Section') {
           activeSectionKey = item.id
@@ -194,7 +177,6 @@ export const useFormValidation = (props, inputsRef, getItemValue, collectFormIte
 
       let activeItems = []
 
-      // find only active section => there is any item with value input
       const reverseKeys = sectionItems.map((item) => item.id).reverse()
       reverseKeys.push('')
       let activeSectionFound = false
@@ -203,7 +185,6 @@ export const useFormValidation = (props, inputsRef, getItemValue, collectFormIte
         const items = sectionGroup[key]
         let fillingItems = items
 
-        // incase of section separator
         if (key && !activeSectionFound) {
           fillingItems = items.find(
             (item) =>
@@ -230,9 +211,6 @@ export const useFormValidation = (props, inputsRef, getItemValue, collectFormIte
         const itemIds = activeItems.map((item) => item.id)
         data_items = props.data.filter((item) => itemIds.includes(item.id))
       } else {
-        // No section has user input yet.
-        // Validate only the initial scope: items before the first section and
-        // items under the first section.
         const firstSectionId = sectionItems[0]?.id
         const initialItems = [
           ...(Array.isArray(sectionGroup['']) ? sectionGroup[''] : []),
@@ -247,10 +225,6 @@ export const useFormValidation = (props, inputsRef, getItemValue, collectFormIte
     }
 
     data_items.forEach((item) => {
-      if (item.element === 'Signature') {
-        getSignatureImg(item)
-      }
-
       if (isInvalid(item)) {
         errors.push(`${item.label || item.position} is required!`)
       }
@@ -261,12 +235,11 @@ export const useFormValidation = (props, inputsRef, getItemValue, collectFormIte
     })
 
     return errors
-  }, [props, collectFormItems, getSignatureImg, isInvalid, isIncorrect])
+  }, [props, collectFormItems, isInvalid, isIncorrect])
 
   return {
     isInvalid,
     isIncorrect,
     validateForm,
-    getSignatureImg,
   }
 }

@@ -79,12 +79,11 @@ import { useFormulaVariables } from './hooks/useFormulaVariables'
 import { useFormValidation } from './hooks/useFormValidation'
 import { renderFormElement } from './utils/formElementRenderer'
 // Utils
-import { convertAnswerData, getItemValue, getVariableValueHelper } from './utils/formHelpers'
+import { convertAnswerData, getVariableValueHelper } from './utils/formHelpers'
 
 const ReactForm = (props: ReactFormGeneratorProps) => {
   // Refs
   const formRef = useRef(null)
-  const inputsRef = useRef({})
 
   // Get form context
   const formContext = useFormContext()
@@ -329,12 +328,7 @@ const ReactForm = (props: ReactFormGeneratorProps) => {
   )
 
   // Custom hooks for specific functionality
-  const { collectFormData, collectFormItems } = useFormDataCollection(
-    props,
-    inputsRef,
-    getItemValue,
-    getEditor
-  )
+  const { collectFormData, collectFormItems } = useFormDataCollection(props, getEditor)
 
   // Draft persistence
   const { draftRestored, handleFormInteraction, clearDraft } = useDraftPersistence(
@@ -342,7 +336,7 @@ const ReactForm = (props: ReactFormGeneratorProps) => {
     collectFormData
   )
 
-  const { validateForm } = useFormValidation(props, inputsRef, getItemValue, collectFormItems)
+  const { validateForm } = useFormValidation(props, collectFormItems)
 
   useFormulaVariables(props, setAnswerData)
 
@@ -452,13 +446,9 @@ const ReactForm = (props: ReactFormGeneratorProps) => {
     formContext,
   }
 
-  const renderRefs = {
-    inputsRef,
-  }
-
   const items = data_items
     .filter((x) => !x.parentId)
-    .map((item) => renderFormElement(item, props, {}, renderHelpers, renderRefs))
+    .map((item) => renderFormElement(item, props, {}, renderHelpers))
 
   const formTokenStyle = {
     display: 'none',

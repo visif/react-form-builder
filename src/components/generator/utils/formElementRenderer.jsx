@@ -36,7 +36,7 @@ const {
 /**
  * Get custom element component
  */
-export const getCustomElement = (item, props, handleChange, getDefaultValue, inputsRef) => {
+export const getCustomElement = (item, props, handleChange, getDefaultValue) => {
   if (!item.component || typeof item.component !== 'function') {
     item.component = Registry.get(item.key)
     if (!item.component) {
@@ -47,12 +47,11 @@ export const getCustomElement = (item, props, handleChange, getDefaultValue, inp
   const inputProps = item.forwardRef && {
     handleChange,
     defaultValue: getDefaultValue(item),
-    ref: (c) => (inputsRef.current[item.field_name] = c),
   }
 
   return (
     <CustomElement
-      mutable={true}
+      mutable
       read_only={props.read_only}
       key={`form_${item.id}`}
       data={item}
@@ -71,20 +70,16 @@ export const getInputElement = (
   getDefaultValue,
   getEditor,
   formContext,
-  inputsRef,
-  getCustomElement
+  getCustomElementFn
 ) => {
   if (item.custom) {
-    return getCustomElement(item, props, handleChange, getDefaultValue, inputsRef)
+    return getCustomElementFn(item, props, handleChange, getDefaultValue)
   }
   const Input = FormElements[item.element]
   return (
     <Input
       handleChange={handleChange}
-      ref={(c) => {
-        inputsRef.current[item.field_name] = c
-      }}
-      mutable={true}
+      mutable
       key={`form_${item.id}`}
       data={item}
       read_only={props.read_only}
@@ -119,27 +114,29 @@ const wrapWithRequiredIndicator = (element, item) => {
   return element
 }
 
-export const getContainerElement = (item, Element, getDataById, getInputElement) => {
+export const getContainerElement = (item, Element, getDataById, getInputElementFn) => {
   const controls = Array.isArray(item.childItems[0])
-    ? item.childItems.map((row) => row.map((x) => {
+    ? item.childItems.map((row) =>
+        row.map((x) => {
           const currentItem = getDataById(x)
           return x && currentItem ? (
-            wrapWithRequiredIndicator(getInputElement(currentItem), currentItem)
+            wrapWithRequiredIndicator(getInputElementFn(currentItem), currentItem)
           ) : (
             <div>&nbsp;</div>
           )
-        }))
+        })
+      )
     : [
         item.childItems.map((x) => {
           const currentItem = getDataById(x)
           return x && currentItem ? (
-            wrapWithRequiredIndicator(getInputElement(currentItem), currentItem)
+            wrapWithRequiredIndicator(getInputElementFn(currentItem), currentItem)
           ) : (
             <div>&nbsp;</div>
           )
         }),
       ]
-  return <Element mutable={true} key={`form_${item.id}`} data={item} controls={controls} />
+  return <Element mutable key={`form_${item.id}`} data={item} controls={controls} />
 }
 
 /**
@@ -147,13 +144,13 @@ export const getContainerElement = (item, Element, getDataById, getInputElement)
  */
 export const getSimpleElement = (item) => {
   const Element = FormElements[item.element]
-  return <Element mutable={true} key={`form_${item.id}`} data={item} />
+  return <Element mutable key={`form_${item.id}`} data={item} />
 }
 
 /**
  * Render form element based on type
  */
-export const renderFormElement = (item, props, handlers, helpers, refs) => {
+export const renderFormElement = (item, props, handlers, helpers) => {
   const {
     handleChange,
     getDefaultValue,
@@ -163,9 +160,10 @@ export const renderFormElement = (item, props, handlers, helpers, refs) => {
     formContext,
   } = helpers
 
-  const { inputsRef } = refs
-
   if (!item) return null
+
+  const customElementRenderer = (customItem) =>
+    getCustomElement(customItem, props, handleChange, getDefaultValue)
 
   switch (item.element) {
     case 'TextInput':
@@ -186,9 +184,7 @@ export const renderFormElement = (item, props, handlers, helpers, refs) => {
         getDefaultValue,
         getEditor,
         formContext,
-        inputsRef,
-        (customItem) =>
-          getCustomElement(customItem, props, handleChange, getDefaultValue, inputsRef)
+        (customItem) => customElementRenderer(customItem)
       )
 
     case 'DataSource':
@@ -197,10 +193,7 @@ export const renderFormElement = (item, props, handlers, helpers, refs) => {
       return (
         <DataSourceElement
           handleChange={handleChange}
-          ref={(c) => {
-            inputsRef.current[item.field_name] = c
-          }}
-          mutable={true}
+          mutable
           key={`form_${item.id}`}
           data={item}
           read_only={props.read_only}
@@ -213,7 +206,7 @@ export const renderFormElement = (item, props, handlers, helpers, refs) => {
     }
 
     case 'CustomElement':
-      return getCustomElement(item, props, handleChange, getDefaultValue, inputsRef)
+      return customElementRenderer(item)
 
     case 'FourColumnRow':
       return getContainerElement(item, FourColumnRow, getDataById, (currentItem) =>
@@ -224,9 +217,7 @@ export const renderFormElement = (item, props, handlers, helpers, refs) => {
           getDefaultValue,
           getEditor,
           formContext,
-          inputsRef,
-          (customItem) =>
-            getCustomElement(customItem, props, handleChange, getDefaultValue, inputsRef)
+          (customItem) => customElementRenderer(customItem)
         )
       )
 
@@ -239,9 +230,7 @@ export const renderFormElement = (item, props, handlers, helpers, refs) => {
           getDefaultValue,
           getEditor,
           formContext,
-          inputsRef,
-          (customItem) =>
-            getCustomElement(customItem, props, handleChange, getDefaultValue, inputsRef)
+          (customItem) => customElementRenderer(customItem)
         )
       )
 
@@ -254,9 +243,7 @@ export const renderFormElement = (item, props, handlers, helpers, refs) => {
           getDefaultValue,
           getEditor,
           formContext,
-          inputsRef,
-          (customItem) =>
-            getCustomElement(customItem, props, handleChange, getDefaultValue, inputsRef)
+          (customItem) => customElementRenderer(customItem)
         )
       )
 
@@ -269,22 +256,20 @@ export const renderFormElement = (item, props, handlers, helpers, refs) => {
           getDefaultValue,
           getEditor,
           formContext,
-          inputsRef,
-          (customItem) =>
-            getCustomElement(customItem, props, handleChange, getDefaultValue, inputsRef)
+          (customItem) => customElementRenderer(customItem)
         )
       )
 
     case 'Signature':
       return (
         <Signature
-          ref={(c) => (inputsRef.current[item.field_name] = c)}
           read_only={props.read_only || item.readOnly}
-          mutable={true}
+          mutable
           key={`form_${item.id}`}
           data={item}
           defaultValue={getDefaultValue(item)}
           editor={getEditor(item)}
+          handleChange={handleChange}
           getActiveUserProperties={props.getActiveUserProperties}
         />
       )
@@ -292,9 +277,8 @@ export const renderFormElement = (item, props, handlers, helpers, refs) => {
     case 'Signature2':
       return (
         <Signature2
-          ref={(c) => (inputsRef.current[item.field_name] = c)}
           read_only={props.read_only || item.readOnly}
-          mutable={true}
+          mutable
           key={`form_${item.id}`}
           data={item}
           defaultValue={getDefaultValue(item)}
@@ -307,10 +291,9 @@ export const renderFormElement = (item, props, handlers, helpers, refs) => {
     case 'Checkboxes':
       return (
         <Checkboxes
-          ref={(c) => (inputsRef.current[item.field_name] = c)}
           read_only={props.read_only}
           handleChange={handleChange}
-          mutable={true}
+          mutable
           key={`form_${item.id}`}
           data={item}
           defaultValue={optionsDefaultValue(item)}
@@ -322,9 +305,8 @@ export const renderFormElement = (item, props, handlers, helpers, refs) => {
     case 'Image':
       return (
         <Image
-          ref={(c) => (inputsRef.current[item.field_name] = c)}
           handleChange={handleChange}
-          mutable={true}
+          mutable
           key={`form_${item.id}`}
           data={item}
           defaultValue={getDefaultValue(item)}
@@ -337,7 +319,7 @@ export const renderFormElement = (item, props, handlers, helpers, refs) => {
       return (
         <Download
           download_path={props.download_path}
-          mutable={true}
+          mutable
           key={`form_${item.id}`}
           data={item}
           editor={getEditor(item)}
@@ -348,22 +330,21 @@ export const renderFormElement = (item, props, handlers, helpers, refs) => {
     case 'Camera':
       return (
         <Camera
-          ref={(c) => (inputsRef.current[item.field_name] = c)}
           read_only={props.read_only || item.readOnly}
-          mutable={true}
+          mutable
           key={`form_${item.id}`}
           data={item}
           defaultValue={getDefaultValue(item)}
           editor={getEditor(item)}
+          handleChange={handleChange}
         />
       )
 
     case 'FileUpload':
       return (
         <FileUpload
-          ref={(c) => (inputsRef.current[item.field_name] = c)}
           read_only={props.read_only || item.readOnly}
-          mutable={true}
+          mutable
           key={`form_${item.id}`}
           data={item}
           defaultValue={getDefaultValue(item)}
@@ -378,9 +359,8 @@ export const renderFormElement = (item, props, handlers, helpers, refs) => {
     case 'FormLink':
       return (
         <FormLink
-          ref={(c) => (inputsRef.current[item.field_name] = c)}
           read_only={props.read_only || item.readOnly}
-          mutable={true}
+          mutable
           key={`form_${item.id}`}
           data={item}
           defaultValue={getDefaultValue(item)}
@@ -397,9 +377,8 @@ export const renderFormElement = (item, props, handlers, helpers, refs) => {
     case 'ImageUpload':
       return (
         <ImageUpload
-          ref={(c) => (inputsRef.current[item.field_name] = c)}
           read_only={props.read_only || item.readOnly}
-          mutable={true}
+          mutable
           key={`form_${item.id}`}
           data={item}
           defaultValue={getDefaultValue(item)}

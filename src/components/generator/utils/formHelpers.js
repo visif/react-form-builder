@@ -3,7 +3,6 @@
  *
  * Small utility functions used throughout the form generator
  */
-import ReactDOM from 'react-dom'
 
 /**
  * Convert answer data from array to object format
@@ -77,64 +76,4 @@ export const getVariableValueHelper = (ansData, items) => {
   })
 
   return variables
-}
-
-/**
- * Extract value from input element (legacy ref-based)
- */
-export const getItemValue = (item, ref) => {
-  let $item = {
-    element: item.element,
-    value: '',
-  }
-  if (item.element === 'Rating') {
-    $item.value = ref.inputField.current.state.rating
-  } else if (item.element === 'Tags') {
-    $item.value = ref.inputField.current.state.value
-  } else if (item.element === 'DatePicker') {
-    $item.value = ref.state.value
-  } else if (item.element === 'Camera') {
-    $item.value = ref.state.img ? ref.state.img.replace('data:image/png;base64,', '') : ''
-  } else if (item.element === 'Table') {
-    $item.value = ref.state.inputs
-  } else if (item.element === 'Signature2' && ref.state.isSigned) {
-    $item.value = {
-      isSigned: ref.state.isSigned,
-      signedPerson: ref.state.signedPerson,
-      signedPersonId: ref.state.signedPersonId,
-      signedDateTime: ref.state.signedDateTime,
-    }
-  } else if (
-    (item.element === 'DataSource' || item.element === 'Dataset') &&
-    ref.state.searchText
-  ) {
-    $item.value = {
-      type: ref.props.data.sourceType,
-      value: ref.state.searchText,
-      selectedItem: ref.state.selectedItem,
-    }
-  } else if (item.element === 'FileUpload') {
-    $item.value = {
-      fileList: ref.state.fileList,
-    }
-  } else if (item.element === 'ImageUpload') {
-    $item.value = {
-      filePath: ref.state.filePath,
-      fileName: ref.state.fileName,
-      blobUrl: ref.state.blobUrl,
-    }
-  } else if (item.element === 'FormulaInput') {
-    $item.value = {
-      formula: ref.state.formula,
-      value: ref.state.value,
-      variables: ref.state.variables,
-    }
-  } else if (ref && ref.inputField && ref.inputField.current) {
-    $item = ReactDOM.findDOMNode(ref.inputField.current)
-    if ($item && typeof $item.value === 'string') {
-      $item.value = $item.value.trim()
-    }
-  }
-
-  return $item
 }

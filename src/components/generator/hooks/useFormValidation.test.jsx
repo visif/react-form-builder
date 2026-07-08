@@ -13,7 +13,7 @@ const createWrapper = (initialValues = {}) => {
 }
 
 describe('useFormValidation', () => {
-  const baseHookArgs = [{ data: [] }, { current: {} }, () => undefined, () => []]
+  const baseHookArgs = [{ data: [] }, () => []]
 
   it('marks empty required text fields as invalid', () => {
     const { result } = renderHook(() => useFormValidation(...baseHookArgs), {
@@ -67,6 +67,30 @@ describe('useFormValidation', () => {
         required: false,
         field_name: 'optional_field',
         element: 'TextInput',
+      })
+    ).toBe(false)
+  })
+
+  it('checks correctness from FormContext values', () => {
+    const { result } = renderHook(() => useFormValidation(...baseHookArgs), {
+      wrapper: createWrapper({ answer_field: 'wrong' }),
+    })
+
+    expect(
+      result.current.isIncorrect({
+        canHaveAnswer: true,
+        field_name: 'answer_field',
+        element: 'TextInput',
+        correct: 'right',
+      })
+    ).toBe(true)
+
+    expect(
+      result.current.isIncorrect({
+        canHaveAnswer: true,
+        field_name: 'answer_field',
+        element: 'TextInput',
+        correct: 'wrong',
       })
     ).toBe(false)
   })

@@ -1,46 +1,96 @@
 /**
  * useFormDataCollection Hook
  *
- * Handles all form data collection logic including:
- * - Collecting data from individual form elements
- * - Collecting all form data for submission
- * - Collecting form items with values for validation
+ * Collects form values from FormContext (single source of truth).
+ * Fields never touched by the user get element-specific empty defaults
+ * so submission payloads remain complete.
  */
 import { useCallback } from 'react'
 
-import ReactDOM from 'react-dom'
-
 import { useFormContext } from '../../../contexts/FormContext'
 
-export const useFormDataCollection = (props, inputsRef, getItemValue, getEditor) => {
+const DISPLAY_ONLY_ELEMENTS = [
+  'Header',
+  'HeaderBar',
+  'Label',
+  'Paragraph',
+  'LineBreak',
+  'HyperLink',
+  'Section',
+  'Download',
+  'Image',
+  'FormLink',
+]
+
+const CONTAINER_ELEMENTS = [
+  'TwoColumnRow',
+  'ThreeColumnRow',
+  'FourColumnRow',
+  'DynamicColumnRow',
+]
+
+const getEmptyDefaultValue = (item) => {
+  if (item.element === 'Checkboxes' || item.element === 'RadioButtons' || item.element === 'Tags') {
+    return []
+  }
+  if (item.element === 'FileUpload') {
+    return { fileList: [] }
+  }
+  if (item.element === 'ImageUpload') {
+    return { filePath: '' }
+  }
+  if (item.element === 'Signature' || item.element === 'Signature2') {
+    return { isSigned: false }
+  }
+  if (item.element === 'Table') {
+    return []
+  }
+  if (item.element === 'FormulaInput') {
+    return { formula: item.formula || '', value: '', variables: {} }
+  }
+  return ''
+}
+
+const hasCollectedValue = (item, contextValue) => {
+  if (item.element === 'Tags') {
+    return Array.isArray(contextValue) && contextValue.length > 0
+  }
+  if (item.element === 'FileUpload') {
+    return contextValue?.fileList && contextValue.fileList.length > 0
+  }
+  if (item.element === 'ImageUpload') {
+    return !!contextValue?.filePath
+  }
+  if (item.element === 'Signature2') {
+    return !!contextValue?.isSigned
+  }
+  if (item.element === 'Signature') {
+    return typeof contextValue === 'string' ? contextValue.length > 0 : !!contextValue?.isSigned
+  }
+  if (item.element === 'DataSource' || item.element === 'Dataset') {
+    return !!contextValue?.value
+  }
+  if (item.element === 'Table') {
+    return Array.isArray(contextValue) && contextValue.some((row) => row.some((val) => !!val))
+  }
+  if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
+    return Array.isArray(contextValue) && contextValue.length > 0
+  }
+  if (item.element === 'FormulaInput') {
+    return contextValue?.value !== undefined && contextValue?.value !== ''
+  }
+  return !!contextValue
+}
+
+export const useFormDataCollection = (props, getEditor) => {
   const formContext = useFormContext()
 
-  // Collect data from single form element
   const collect = useCallback(
     (item) => {
-      // Skip display-only elements that don't have field values
-      const displayOnlyElements = [
-        'Header',
-        'HeaderBar',
-        'Label',
-        'Paragraph',
-        'LineBreak',
-        'HyperLink',
-        'Section',
-        'Download',
-        'Image',
-        'FormLink',
-      ]
-
-      // Skip container/layout elements that don't have form values
-      const containerElements = [
-        'TwoColumnRow',
-        'ThreeColumnRow',
-        'FourColumnRow',
-        'DynamicColumnRow',
-      ]
-
-      if (displayOnlyElements.includes(item.element) || containerElements.includes(item.element)) {
+      if (
+        DISPLAY_ONLY_ELEMENTS.includes(item.element) ||
+        CONTAINER_ELEMENTS.includes(item.element)
+      ) {
         return null
       }
 
@@ -49,127 +99,23 @@ export const useFormDataCollection = (props, inputsRef, getItemValue, getEditor)
         custom_name: item.custom_name || item.field_name,
       }
 
-      // Try to get value from context first
       const contextValue = formContext.getValue(item.field_name)
-      const ref = inputsRef.current[item.field_name]
-
       const activeUser = props.getActiveUserProperties ? props.getActiveUserProperties() : null
       const oldEditor = getEditor(item)
 
-      // If we have a context value, use it (this is the new path)
       if (contextValue !== undefined) {
         itemData.value = contextValue
-
-        // Determine editor based on element type and value
-        let hasValue = false
-        if (item.element === 'Tags') {
-          hasValue = Array.isArray(contextValue) && contextValue.length > 0
-        } else if (item.element === 'FileUpload') {
-          hasValue = contextValue?.fileList && contextValue.fileList.length > 0
-        } else if (item.element === 'ImageUpload') {
-          hasValue = !!contextValue?.filePath
-        } else if (item.element === 'Signature2') {
-          hasValue = !!contextValue?.isSigned
-        } else if (item.element === 'DataSource' || item.element === 'Dataset') {
-          hasValue = !!contextValue?.value
-        } else if (item.element === 'Table') {
-          hasValue =
-            Array.isArray(contextValue) && contextValue.some((row) => row.some((val) => !!val))
-        } else if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
-          hasValue = Array.isArray(contextValue) && contextValue.length > 0
-        } else if (item.element === 'FormulaInput') {
-          hasValue = contextValue?.value !== undefined && contextValue?.value !== ''
-        } else {
-          hasValue = !!contextValue
-        }
-
-        itemData.editor = oldEditor || (hasValue ? activeUser : null)
+        itemData.editor = oldEditor || (hasCollectedValue(item, contextValue) ? activeUser : null)
         return itemData
       }
 
-      // Otherwise fall back to ref-based collection (legacy path)
-      if ((item.element === 'Checkboxes' || item.element === 'RadioButtons') && !!ref) {
-        const checked_options = []
-
-        item.options.forEach((option) => {
-          const $option = ReactDOM.findDOMNode(ref.options[`child_ref_${option.key}`])
-          if ($option?.checked) {
-            let info = ''
-
-            if (option.info) {
-              const $info = ReactDOM.findDOMNode(ref.infos[`child_ref_${option.key}_info`])
-              info = $info?.value ?? ''
-            }
-
-            checked_options.push({
-              key: option.key,
-              value: option.value,
-              info,
-            })
-          }
-        })
-
-        itemData.value = checked_options
-        itemData.editor = oldEditor || (checked_options.length > 0 ? activeUser : null)
-      } else {
-        if (!ref) {
-          // If no ref exists, still include the field with empty/default value
-          // This ensures all form fields are present in submission data
-          if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
-            itemData.value = []
-          } else if (item.element === 'Tags') {
-            itemData.value = []
-          } else if (item.element === 'FileUpload') {
-            itemData.value = { fileList: [] }
-          } else if (item.element === 'ImageUpload') {
-            itemData.value = { filePath: '' }
-          } else if (item.element === 'Signature' || item.element === 'Signature2') {
-            itemData.value = { isSigned: false }
-          } else if (item.element === 'Table') {
-            itemData.value = []
-          } else if (item.element === 'FormulaInput') {
-            itemData.value = { formula: item.formula || '', value: '', variables: {} }
-          } else {
-            itemData.value = ''
-          }
-          itemData.editor = oldEditor || null
-          return itemData
-        }
-
-        const valueItem = getItemValue(item, ref)
-
-        itemData.value = valueItem.value
-        itemData.editor = oldEditor || (valueItem.value ? activeUser : null)
-        if (item.element === 'Signature2') {
-          itemData.editor = oldEditor || (valueItem.value.isSigned ? activeUser : null)
-        } else if (item.element === 'Tags') {
-          itemData.editor = oldEditor || (Array.isArray(valueItem.value) && valueItem.value.length > 0
-              ? activeUser
-              : null)
-        } else if (
-          (item.element === 'DataSource' || item.element === 'Dataset') &&
-          ref.state.searchText
-        ) {
-          itemData.editor = oldEditor || (valueItem.value.value ? activeUser : null)
-        } else if (item.element === 'FileUpload') {
-          itemData.editor = oldEditor || (valueItem.value.fileList && valueItem.value.fileList.length > 0
-              ? activeUser
-              : null)
-        } else if (item.element === 'ImageUpload') {
-          itemData.editor = oldEditor || (valueItem.value.filePath ? activeUser : null)
-        } else if (item.element === 'Table') {
-          itemData.editor = oldEditor || (valueItem.value.find((itemRow) => itemRow.find((val) => !!val))
-              ? activeUser
-              : null)
-        }
-      }
-
+      itemData.value = getEmptyDefaultValue(item)
+      itemData.editor = oldEditor || null
       return itemData
     },
-    [props, getEditor, getItemValue, formContext, inputsRef]
+    [props, getEditor, formContext]
   )
 
-  // Collect all form data
   const collectFormData = useCallback(
     (data) => {
       const formData = []
@@ -179,27 +125,22 @@ export const useFormDataCollection = (props, inputsRef, getItemValue, getEditor)
           formData.push(item_data)
         }
       })
-
       return formData
     },
     [collect]
   )
 
-  // Collect form items with values
   const collectFormItems = useCallback(
     (data) => {
       const formData = []
       data.forEach((item) => {
         const itemValue = collect(item)
-        const itemData = {
+        formData.push({
           id: item.id,
           element: item.element,
           value: itemValue && itemValue.value,
-        }
-
-        formData.push(itemData)
+        })
       })
-
       return formData
     },
     [collect]

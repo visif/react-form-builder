@@ -6,7 +6,7 @@ import { getSimpleElement, renderFormElement } from './formElementRenderer'
 
 describe('formElementRenderer', () => {
   it('returns null when item is missing', () => {
-    expect(renderFormElement(null, {}, {}, {}, { inputsRef: { current: {} } })).toBeNull()
+    expect(renderFormElement(null, {}, {}, {})).toBeNull()
   })
 
   it('renders simple display elements', () => {
@@ -39,8 +39,7 @@ describe('formElementRenderer', () => {
         optionsDefaultValue: () => [],
         getDataById: () => null,
         formContext: { getAllVariables: () => ({}) },
-      },
-      { inputsRef: { current: {} } }
+      }
     )
 
     const { container } = render(element)
