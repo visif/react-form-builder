@@ -14,9 +14,12 @@ export const convertAnswerData = (answers?: AnswerData | null): FormValues => {
     answers.forEach((x) => {
       if (x.name && x.name.indexOf('tags_') > -1) {
         const tags = Array.isArray(x.value) ? x.value : []
-        result[x.name] = tags.map((y) =>
-          typeof y === 'object' && y !== null && 'value' in y ? (y as { value: unknown }).value : y
-        ) as FormValues[string]
+        result[x.name] = tags.map((y) => {
+          if (typeof y === 'object' && y !== null && 'value' in y) {
+            return (y as { value: unknown }).value
+          }
+          return y
+        }) as FormValues[string]
       } else if (x.name) {
         result[x.name] = x.value
       }
