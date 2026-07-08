@@ -7,7 +7,7 @@ type DebouncedFunction<T extends (...args: unknown[]) => unknown> = ((
 // Simple debounce utility with cancel support
 // Usage: const debouncedFn = debounce(fn, 100)
 // debouncedFn.cancel() to clear pending invocation
-export default function debounce<T extends (...args: unknown[]) => unknown>(
+export default function debounce<T extends(...args: unknown[]) => unknown> (
   fn: T,
   wait = 0
 ): DebouncedFunction<T> {

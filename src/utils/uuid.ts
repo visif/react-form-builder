@@ -68,7 +68,7 @@ const uuidFast = (): string => {
 const uuidCompact = (): string =>
   'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = getRandomInt(16)
-    const v = c == 'x' ? r : (r & 0x3) | 0x8
+    const v = c === 'x' ? r : (r & 0x3) | 0x8
     return v.toString(16)
   })
 
