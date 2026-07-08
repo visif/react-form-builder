@@ -6,8 +6,15 @@
 import { useCallback } from 'react'
 
 import { useFormContext } from '../../../contexts/FormContext'
+import type { FormElementData, FormFieldValue, ReactFormGeneratorProps } from '../../../types/form'
 
-const normalizeCorrectableValue = (item, value) => {
+type CollectedFormItem = {
+  id?: string
+  element?: string
+  value?: unknown
+}
+
+const normalizeCorrectableValue = (item: FormElementData, value: FormFieldValue): string => {
   if (item.element === 'Rating') {
     return value == null ? '' : String(value)
   }
@@ -23,11 +30,14 @@ const normalizeCorrectableValue = (item, value) => {
   return String(value)
 }
 
-export const useFormValidation = (props, collectFormItems) => {
+export const useFormValidation = (
+  props: ReactFormGeneratorProps,
+  collectFormItems: (data: FormElementData[]) => CollectedFormItem[]
+) => {
   const formContext = useFormContext()
 
   const isIncorrect = useCallback(
-    (item) => {
+    (item: FormElementData) => {
       if (!item.canHaveAnswer) {
         return false
       }
@@ -57,7 +67,7 @@ export const useFormValidation = (props, collectFormItems) => {
   )
 
   const isInvalid = useCallback(
-    (item) => {
+    (item: FormElementData) => {
       let invalid = false
       if (item.required === true) {
         const value = formContext.getValue(item.field_name)

@@ -1,15 +1,22 @@
 import { useCallback } from 'react'
 
+import type { FormElementData } from '../types/form'
+
+type SyncChildItems = Array<Array<string | null | undefined>>
+type GetDataById = (id: string) => FormElementData | undefined | null
+type UpdateElement = (element: FormElementData) => void
+type ChangeData = Record<string, unknown>
+
 /**
  * Custom hook for synchronizing changes across columns in a multi-column row
- * @param {Array} childItems - Array of rows with columns containing item IDs
- * @param {Function} getDataById - Function to get item data by ID
- * @param {Function} updateElement - Function to update an element
- * @returns {Function} syncColumnChanges function
  */
-const useSyncColumnChanges = (childItems, getDataById, updateElement) => {
+const useSyncColumnChanges = (
+  childItems: SyncChildItems,
+  getDataById: GetDataById,
+  updateElement: UpdateElement
+) => {
   const syncColumnChanges = useCallback(
-    (rowIndex, columnIndex, elementType, changeData) => {
+    (rowIndex: number, columnIndex: number, elementType: string, changeData: ChangeData) => {
       // Only sync for supported element types
       if (
         ![

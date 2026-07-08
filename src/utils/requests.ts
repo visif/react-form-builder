@@ -6,12 +6,12 @@ const headers = {
   OPTIONS: '',
 }
 
-export function post(url, data) {
+export function post(url: string, data: unknown): Promise<Response> {
   return fetch(url, {
     method: 'POST',
     headers,
     body: JSON.stringify(data),
-  }).then((response) => {
+  }).then((response: Response) => {
     if (!response.ok) {
       throw new Error(`POST ${url} failed with status ${response.status}`)
     }
@@ -19,11 +19,11 @@ export function post(url, data) {
   })
 }
 
-export function get(url) {
+export function get(url: string): Promise<unknown> {
   return fetch(url, {
     method: 'GET',
     headers,
-  }).then((response) => {
+  }).then((response: Response) => {
     if (!response.ok) {
       throw new Error(`GET ${url} failed with status ${response.status}`)
     }

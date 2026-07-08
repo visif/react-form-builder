@@ -8,6 +8,7 @@
 import { useCallback } from 'react'
 
 import { useFormContext } from '../../../contexts/FormContext'
+import type { FormElementData, FormFieldValue, ReactFormGeneratorProps } from '../../../types/form'
 
 const DISPLAY_ONLY_ELEMENTS = [
   'Header',
@@ -29,7 +30,7 @@ const CONTAINER_ELEMENTS = [
   'DynamicColumnRow',
 ]
 
-const getEmptyDefaultValue = (item) => {
+const getEmptyDefaultValue = (item: FormElementData): FormFieldValue => {
   if (item.element === 'Checkboxes' || item.element === 'RadioButtons' || item.element === 'Tags') {
     return []
   }
@@ -51,7 +52,7 @@ const getEmptyDefaultValue = (item) => {
   return ''
 }
 
-const hasCollectedValue = (item, contextValue) => {
+const hasCollectedValue = (item: FormElementData, contextValue: FormFieldValue): boolean => {
   if (item.element === 'Tags') {
     return Array.isArray(contextValue) && contextValue.length > 0
   }
@@ -82,11 +83,14 @@ const hasCollectedValue = (item, contextValue) => {
   return !!contextValue
 }
 
-export const useFormDataCollection = (props, getEditor) => {
+export const useFormDataCollection = (
+  props: ReactFormGeneratorProps,
+  getEditor: (item: FormElementData) => unknown
+) => {
   const formContext = useFormContext()
 
   const collect = useCallback(
-    (item) => {
+    (item: FormElementData) => {
       if (
         DISPLAY_ONLY_ELEMENTS.includes(item.element) ||
         CONTAINER_ELEMENTS.includes(item.element)
@@ -117,8 +121,8 @@ export const useFormDataCollection = (props, getEditor) => {
   )
 
   const collectFormData = useCallback(
-    (data) => {
-      const formData = []
+    (data: FormElementData[] = []) => {
+      const formData: Array<Record<string, unknown>> = []
       data.forEach((item) => {
         const item_data = collect(item)
         if (item_data) {
@@ -131,8 +135,8 @@ export const useFormDataCollection = (props, getEditor) => {
   )
 
   const collectFormItems = useCallback(
-    (data) => {
-      const formData = []
+    (data: FormElementData[] = []) => {
+      const formData: Array<{ id?: string; element?: string; value: unknown }> = []
       data.forEach((item) => {
         const itemValue = collect(item)
         formData.push({

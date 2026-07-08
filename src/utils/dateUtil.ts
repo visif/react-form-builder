@@ -8,7 +8,7 @@ dayjs.extend(buddhistEra)
 const keyDateFormat = 'setting_date_format'
 const keyCalendarType = 'setting_calendar_type'
 
-const dateFormatList = {
+const dateFormatList: Record<string, string> = {
   'dd MMMM yyyy': 'DD MMMM YYYY',
   'dd-MMM-yyyy': 'DD-MMM-YYYY',
   'dd-MMM-yy': 'DD-MMM-YY',
@@ -19,11 +19,12 @@ const dateFormatList = {
   'MMM dd, yyyy': 'MMM DD, YYYY',
 }
 
-export const getDateFormat = () => dateFormatList[localStorage.getItem(keyDateFormat)] || 'DD MMMM YYYY'
+export const getDateFormat = (): string =>
+  dateFormatList[localStorage.getItem(keyDateFormat) || ''] || 'DD MMMM YYYY'
 
-export const getCalendarType = () => localStorage.getItem(keyCalendarType) || 'EN'
+export const getCalendarType = (): string => localStorage.getItem(keyCalendarType) || 'EN'
 
-export const formatDate = (date) => {
+export const formatDate = (date?: string | number | Date | dayjs.Dayjs | null): string => {
   if (!date) return ''
 
   const format = getDateFormat()
@@ -31,6 +32,6 @@ export const formatDate = (date) => {
   if (getCalendarType() === 'EN') {
     return dayjs(date).format(format)
   }
-    // Use Buddhist Era (BBBB) formatting
-    return dayjs(date).format(format.replace('YYYY', 'BBBB'))
+  // Use Buddhist Era (BBBB) formatting
+  return dayjs(date).format(format.replace('YYYY', 'BBBB'))
 }

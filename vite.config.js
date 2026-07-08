@@ -12,7 +12,20 @@ export default defineConfig({
   plugins: [
     react(),
     dts({
-      include: ['src/index.tsx', 'src/types/**/*.ts', 'src/constants/**/*.ts', 'src/utils/registry.ts', 'src/utils/multicolumnField.ts', 'src/contexts/**/*.tsx', 'src/components/builder/ReactFormBuilder.tsx', 'src/components/generator/ReactFormGenerator.tsx'],
+      include: [
+        'src/index.tsx',
+        'src/types/**/*.ts',
+        'src/constants/**/*.ts',
+        'src/utils/**/*.ts',
+        'src/hooks/**/*.ts',
+        'src/contexts/**/*.tsx',
+        'src/components/builder/ReactFormBuilder.tsx',
+        'src/components/generator/ReactFormGenerator.tsx',
+        'src/components/generator/utils/formHelpers.ts',
+        'src/components/generator/hooks/useFormDataCollection.ts',
+        'src/components/generator/hooks/useFormValidation.ts',
+      ],
+      exclude: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'src/test/**'],
       rollupTypes: true,
       tsconfigPath: './tsconfig.json',
     }),
