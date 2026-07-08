@@ -69,6 +69,8 @@ TypeScript declaration files are published in `dist/index.d.ts`.
 
 ## Props
 
+CamelCase props are preferred. Legacy snake_case aliases still work; when both are passed, camelCase wins.
+
 ### ReactFormBuilder
 
 | Prop | Type | Description |
@@ -76,18 +78,21 @@ TypeScript declaration files are published in `dist/index.d.ts`.
 | `onPost` | `Function` | Called with form data on save |
 | `url` | `string` | URL to load/save form data |
 | `toolbarItems` | `Array` | Custom toolbar items |
+| `showDescription` | `boolean` | Show toolbar item descriptions (`show_description`) |
 
 ### ReactFormGenerator
 
 | Prop | Type | Description |
 |------|------|-------------|
 | `data` | `Array` | Form schema from the builder |
-| `answer_data` | `Array` | Pre-filled answers |
+| `answerData` | `Array\|Object` | Pre-filled answers (`answer_data`) |
 | `onSubmit` | `Function` | Submit handler |
-| `read_only` | `boolean` | Disable all inputs |
-| `hide_actions` | `boolean` | Hide submit/cancel buttons |
-| `action_name` | `string` | Submit button text (default: "Submit") |
-| `skip_validations` | `boolean` | Skip validation on submit |
+| `readOnly` | `boolean` | Disable all inputs (`read_only`) |
+| `hideActions` | `boolean` | Hide submit/cancel buttons (`hide_actions`) |
+| `actionName` | `string` | Submit button text (`action_name`, default: "Submit") |
+| `skipValidations` | `boolean` | Skip validation on submit (`skip_validations`) |
+| `formAction` | `string` | Native form action URL (`form_action`) |
+| `formMethod` | `string` | Native form method (`form_method`) |
 
 ## Development
 

@@ -51,7 +51,9 @@ export type ReactFormBuilderProps = {
   data?: FormElementData[]
   toolbarItems?: ToolbarItem[]
   customToolbarItems?: ToolbarItem[]
+  /** @deprecated Prefer `showDescription` */
   show_description?: boolean
+  showDescription?: boolean
   editMode?: boolean
   editElement?: FormElementData | null
   locale?: string
@@ -72,21 +74,47 @@ export type ReactFormBuilderProps = {
 
 export type ReactFormGeneratorProps = {
   data?: FormElementData[]
+  /** @deprecated Prefer `formAction` */
   form_action?: string
+  formAction?: string
+  /** @deprecated Prefer `formMethod` */
   form_method?: string
+  formMethod?: string
+  /** @deprecated Prefer `actionName` */
   action_name?: string
-  back_action?: string
-  back_name?: string
-  onSubmit?: (data: Record<string, unknown>, parentElementId?: unknown) => void
-  answer_data?: AnswerData
-  parentElementId?: unknown
   actionName?: string
+  /** @deprecated Prefer `backAction` */
+  back_action?: string
+  backAction?: string
+  /** @deprecated Prefer `backName` */
+  back_name?: string
+  backName?: string
+  onSubmit?: (data: Record<string, unknown>, parentElementId?: unknown) => void
+  /** @deprecated Prefer `answerData` */
+  answer_data?: AnswerData
+  answerData?: AnswerData
+  parentElementId?: unknown
+  /** @deprecated Prefer `taskId` */
   task_id?: number
+  taskId?: number
+  /** @deprecated Prefer `authenticityToken` */
   authenticity_token?: string
+  authenticityToken?: string
+  /** @deprecated Prefer `hideActions` */
   hide_actions?: boolean
+  hideActions?: boolean
+  /** @deprecated Prefer `skipValidations` */
   skip_validations?: boolean
+  skipValidations?: boolean
+  /** @deprecated Prefer `displayShort` */
   display_short?: boolean
+  displayShort?: boolean
+  /** @deprecated Prefer `readOnly` */
   read_only?: boolean
+  readOnly?: boolean
+  /** @deprecated Prefer `downloadPath` */
+  download_path?: string
+  downloadPath?: string
   variables?: Record<string, unknown>
   submitButton?: ReactElement
   onUpdate?: (data: Record<string, unknown>) => void
@@ -98,6 +126,9 @@ export type ReactFormGeneratorProps = {
   onUploadImage?: (...args: unknown[]) => unknown
   getFormSource?: (...args: unknown[]) => unknown
   broadcastChange?: (...args: unknown[]) => unknown
+  onSelectChildForm?: (...args: unknown[]) => unknown
+  getFormInfo?: (...args: unknown[]) => unknown
+  form_rev_id?: string | number
 }
 
 export type FormContextValue = {
@@ -141,7 +172,7 @@ export type RegistryApi = {
 export type FormBuildersExport = {
   ReactFormBuilder: ComponentType<ReactFormBuilderProps>
   ReactFormGenerator: ComponentType<ReactFormGeneratorProps> & {
-    clearDraftData: (props: Pick<ReactFormGeneratorProps, 'form_action'>) => void
-    hasDraft: (props: Pick<ReactFormGeneratorProps, 'form_action'>) => boolean
+    clearDraftData: (props: Pick<ReactFormGeneratorProps, 'form_action' | 'formAction'>) => void
+    hasDraft: (props: Pick<ReactFormGeneratorProps, 'form_action' | 'formAction'>) => boolean
   }
 }

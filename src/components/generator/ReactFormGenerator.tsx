@@ -66,6 +66,7 @@ import { Button } from 'antd'
 import FORM_BUILDER_VERSION from '../../constants/version'
 import { FormProvider, useFormContext } from '../../contexts/FormContext'
 import type { ReactFormGeneratorProps } from '../../types/form'
+import { withGeneratorLegacyKeys } from '../../utils/propAliases'
 import FormValidator from './FormValidator'
 import {
   clearDraftData,
@@ -81,7 +82,8 @@ import { renderFormElement } from './utils/formElementRenderer'
 // Utils
 import { convertAnswerData, getVariableValueHelper } from './utils/formHelpers'
 
-const ReactForm = (props: ReactFormGeneratorProps) => {
+const ReactForm = (incomingProps: ReactFormGeneratorProps) => {
+  const props = withGeneratorLegacyKeys(incomingProps)
   // Refs
   const formRef = useRef(null)
 
@@ -501,7 +503,8 @@ const ReactForm = (props: ReactFormGeneratorProps) => {
 }
 
 // Wrapper component that provides FormContext
-const ReactFormWithContext = (props: ReactFormGeneratorProps) => {
+const ReactFormWithContext = (incomingProps: ReactFormGeneratorProps) => {
+  const props = withGeneratorLegacyKeys(incomingProps)
   // Convert answer_data to initial values for context
   // answer_data can be in array format [{name: 'field_name', value: 'value'}]
   // or object format {field_name: 'value'}

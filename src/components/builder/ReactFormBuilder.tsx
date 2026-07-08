@@ -59,10 +59,12 @@ import { HTML5Backend } from 'react-dnd-html5-backend'
 
 import FORM_BUILDER_VERSION from '../../constants/version'
 import type { ReactFormBuilderProps } from '../../types/form'
+import { withBuilderLegacyKeys } from '../../utils/propAliases'
 import Preview from './Preview/Preview'
 import Toolbar from './Toolbar/Toolbar'
 
-const ReactFormBuilder = (props: ReactFormBuilderProps) => {
+const ReactFormBuilder = (incomingProps: ReactFormBuilderProps) => {
+  const props = withBuilderLegacyKeys(incomingProps)
   const [editMode, setEditMode] = React.useState(false)
   const [editElement, setEditElement] = React.useState(null)
 

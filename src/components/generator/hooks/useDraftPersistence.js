@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { withGeneratorLegacyKeys } from '../../../utils/propAliases'
 import { convertAnswerData } from '../utils/formHelpers'
 
 const DRAFT_AUTOSAVE_INTERVAL = 30 * 1000 // 30 seconds
 
-export const buildDraftStorageKey = (props) => {
+export const buildDraftStorageKey = (incomingProps) => {
+  const props = withGeneratorLegacyKeys(incomingProps || {})
   if (props.draftStorageKey) {
     return props.draftStorageKey
   }
