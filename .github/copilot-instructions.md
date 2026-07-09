@@ -34,12 +34,9 @@ State is managed via `useReducer` + `createContext` in [`src/contexts/FormBuilde
 ```bash
 yarn                 # install dependencies
 yarn dev             # start Vite dev server (entry: src/dev.jsx)
-yarn build           # Vite library build → dist/app.es.js + dist/app.umd.js
-yarn build:style     # compile SCSS → dist/app.css
-yarn build:lib       # build + build:style
+yarn build           # library build → dist/app.es.js, dist/app.umd.js, dist/app.css
 yarn lint            # ESLint (src/)
 yarn test            # Vitest
-yarn format          # Prettier over src/**
 ```
 
 CI runs lint, test, and build on push/PR via [`.github/workflows/ci.yml`](../.github/workflows/ci.yml).
@@ -60,7 +57,7 @@ CI runs lint, test, and build on push/PR via [`.github/workflows/ci.yml`](../.gi
 - **react-quill-new** powers rich-text editing inside form elements.
 - **hot-formula-parser** is used by `FormulaInput`.
 - Published to GitHub Packages registry as `@visif/form-builder`; configure `.npmrc` with `@visif:registry=https://npm.pkg.github.com` and `//npm.pkg.github.com/:_authToken=<TOKEN_WITH_write:packages>`.
-- Publish with `npm publish` (uses `prepublishOnly` to build artifacts before publishing).
+- Publish with `yarn build` then `npm publish` (build artifacts in `dist/` first).
 
 ## Security
 

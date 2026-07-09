@@ -106,7 +106,7 @@ yarn install
 yarn dev        # Vite playground
 yarn lint       # ESLint
 yarn test       # Vitest
-yarn build:lib  # Production build + styles
+yarn build      # Production build (JS + CSS in dist/)
 ```
 
 ## Local Linking (use in another project without publishing)
@@ -118,7 +118,7 @@ Use `npm link` to consume this package locally from a host project during develo
 In this repo, build the library and register it as a global symlink:
 
 ```bash
-npm run build:lib
+npm run build
 npm link
 ```
 
@@ -135,7 +135,7 @@ npm link @visif/form-builder
 After editing source files in this repo, re-run the build to propagate changes:
 
 ```bash
-npm run build:lib
+npm run build
 ```
 
 ### 4. Unlink when done
@@ -151,7 +151,7 @@ npm unlink
 ## Build & Publish
 
 ```bash
-npm run build:lib
+npm run build
 npm version patch
 npm publish
 ```

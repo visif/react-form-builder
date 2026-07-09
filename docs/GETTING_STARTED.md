@@ -151,13 +151,10 @@ See [examples/README.md](./examples/README.md) for all available examples.
 npm install --legacy-peer-deps
 
 # Start dev server (Vite)
-npm start
+npm run dev
 
-# Build library
+# Build library (JS + CSS → dist/)
 npm run build
-
-# Build styles
-npm run build:style
 ```
 
 ---

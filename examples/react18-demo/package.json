@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "predev": "yarn --cwd ../.. build:lib",
+    "predev": "yarn --cwd ../.. build",
     "dev": "vite",
-    "prebuild": "yarn --cwd ../.. build:lib",
+    "prebuild": "yarn --cwd ../.. build",
     "build": "vite build",
     "preview": "vite preview"
   },
