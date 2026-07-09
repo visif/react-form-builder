@@ -1,0 +1,12 @@
+---
+description: HTML sanitization and safe rendering
+globs: src/**/*
+alwaysApply: false
+---
+
+# Security
+
+User-supplied or rich-text HTML must be sanitized with `src/utils/xss.ts` before render.
+
+- Do not use `dangerouslySetInnerHTML` without passing content through the xss utility
+- When adding new HTML rendering paths, add or extend tests in `src/utils/xss.test.ts`

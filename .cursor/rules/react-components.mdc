@@ -1,0 +1,17 @@
+---
+description: React component and state patterns for this library
+globs: src/**/*.{tsx,ts,jsx,js}
+alwaysApply: false
+---
+
+# Component patterns
+
+- Functional components + hooks only
+- Use `immutability-helper` for context/reducer updates
+- `useCallback` for handlers passed to children
+- New public API: TypeScript; legacy form elements can stay JSX until touched
+- ElementEditor sub-logic: `configs/`, `editors/`, `hooks/`, `utils/` under ElementEditor
+- Custom fields: `Registry.register(name, Component)` in `src/utils/registry.ts`
+- Props: support camelCase aliases via `src/utils/propAliases.ts` (keep snake_case working)
+- Drag-and-drop: react-dnd v16 hooks (`useDrag`, `useDrop`)
+- UI: Ant Design v6 — match existing Ant patterns in neighboring files

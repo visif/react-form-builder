@@ -1,0 +1,28 @@
+---
+description: Core project context for @visif/form-builder library
+alwaysApply: true
+---
+
+# @visif/form-builder
+
+Publishable React 18 library. Source: `src/` → `dist/` via `yarn build`.
+
+## Layers
+
+- `src/components/builder/` — designer (ReactFormBuilder)
+- `src/components/generator/` — renderer (ReactFormGenerator)
+- `src/components/form-elements/` — shared fields
+
+State: FormBuilderContext + FormContext. Form values via FormContext only.
+
+## Tooling
+
+- Yarn v1 (not npm install)
+- `yarn dev` / `yarn build` / `yarn lint` / `yarn test`
+- Peers: react, react-dom >= 18 (externalized in Vite build)
+
+## Do not
+
+- Reintroduce class components or ref-based form value collection
+- Pin react/react-dom as direct dependencies in library code
+- Edit `dist/` by hand or add unrelated docs/commits

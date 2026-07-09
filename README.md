@@ -109,6 +109,8 @@ yarn test       # Vitest
 yarn build      # Production build (JS + CSS in dist/)
 ```
 
+For architecture, conventions, and AI agent context, see [AGENTS.md](./AGENTS.md).
+
 ## Local Linking (use in another project without publishing)
 
 Use `npm link` to consume this package locally from a host project during development.

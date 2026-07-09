@@ -1,6 +1,6 @@
 # Migration Progress Log
 
-> **Historical archive (2025).** Migration to React 18 + Vite is complete. For current development workflow, testing, and TypeScript public API details, see [README.md](../README.md) and [.github/copilot-instructions.md](../.github/copilot-instructions.md).
+> **Historical archive (2025).** Migration to React 18 + Vite is complete. For current development workflow, testing, and TypeScript public API details, see [README.md](../README.md) and [AGENTS.md](../AGENTS.md).
 
 ## Phase 1: Setup & Dependencies Audit ✅ COMPLETED
 **Date**: October 27-28, 2025
