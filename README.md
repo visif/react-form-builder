@@ -107,21 +107,31 @@ yarn dev        # Vite playground
 yarn lint       # ESLint
 yarn test       # Vitest
 yarn build      # Production build (JS + CSS in dist/)
+yarn link:local # Build + register yarn link (for parent projects)
 ```
 
 For architecture, conventions, and AI agent context, see [AGENTS.md](./AGENTS.md).
 
-## Local Linking (use in another project without publishing)
+## Local development in migration-vdc
+
+To test this library inside the **migration-vdc** parent project (dev only, not publish), see [docs/LOCAL_DEV_CONSUMER.md](./docs/LOCAL_DEV_CONSUMER.md).
+
+That guide covers:
+
+- `file:` dependency or `yarn link`
+- A dev-only label banner you add in **migration-vdc** (not in this library)
+- Scripts to rebuild `dist/` before running the parent app
+
+## Local Linking (other host projects)
 
 Use `npm link` to consume this package locally from a host project during development.
 
 ### 1. Build and register the link
 
-In this repo, build the library and register it as a global symlink:
+In this repo, build and register the link:
 
 ```bash
-npm run build
-npm link
+yarn link:local
 ```
 
 ### 2. Link into host project

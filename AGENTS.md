@@ -32,10 +32,13 @@ Use **Yarn v1** only. Keep `yarn.lock` as the lockfile.
 ```bash
 yarn              # install
 yarn dev          # Vite playground (src/dev.jsx)
-yarn build        # dist/app.es.js, dist/app.umd.js, dist/app.css, .d.ts
+yarn build        # dist/ for publish or local linking
+yarn link:local   # build + yarn link (for migration-vdc dev)
 yarn lint         # ESLint
 yarn test         # Vitest
 ```
+
+Parent project (**migration-vdc**) local dev: [docs/LOCAL_DEV_CONSUMER.md](./docs/LOCAL_DEV_CONSUMER.md).
 
 CI (`.github/workflows/ci.yml`) runs lint → test → build on push/PR.
 
