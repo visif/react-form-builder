@@ -55,15 +55,24 @@ const buddhistConfig = {
     getShortMonths: (locale) => dayjs().locale('th').localeData().monthsShort(),
     format: (locale, date, format) => {
       const yearInBE = date.year() + 543;
-      const yearPart = format.includes('YYYY') ? yearInBE.toString() : yearInBE.toString().slice(-2);
+      const yearPart = format.includes('YYYY') || format.includes('BBBB')
+        ? yearInBE.toString()
+        : yearInBE.toString().slice(-2);
       const monthFull = THAI_MONTHS_FULL[date.month()];
       const monthShort = THAI_MONTHS_SHORT[date.month()];
       const monthNumber = date.format('MM');
       const dayPadded = date.format('DD');  // "01" .. "31"
       const dayNum = date.format('D');      // "1"  .. "31"
+      const hour24 = date.format('HH');
+      const hour12 = date.format('hh');
+      const minute = date.format('mm');
+      const second = date.format('ss');
+      const ampmUpper = date.format('A');
+      const ampmLower = date.format('a');
 
-      // FIX: handle single 'D' token (used by rc-picker for calendar day cells)
-      // Replace longer tokens first to avoid partial collisions
+      // Replace longer tokens first to avoid partial collisions.
+      // Time tokens must be handled here too — otherwise datetime masks like
+      // "DD/MM/YY HH:mm" render as "24/07/69 HH:mm" with literal HH:mm.
       let formattedDate = format
         .replace('MMMM', monthFull)
         .replace('MMM', monthShort)
@@ -73,7 +82,13 @@ const buddhistConfig = {
         .replace('BBBB', yearPart)
         .replace(/(?<!B)BB(?!B)/g, yearPart.slice(-2))
         .replace('YYYY', yearPart)
-        .replace(/(?<!Y)YY(?!Y)/g, yearPart.slice(-2)); // standalone YY only
+        .replace(/(?<!Y)YY(?!Y)/g, yearPart.slice(-2)) // standalone YY only
+        .replace('HH', hour24)
+        .replace('hh', hour12)
+        .replace('mm', minute)
+        .replace('ss', second)
+        .replace('A', ampmUpper)
+        .replace('a', ampmLower);
 
       // rc-picker requests single-token formats (e.g. "D") for calendar cells.
       if (formattedDate === format) {
