@@ -2,6 +2,7 @@ import React from 'react'
 import Lightbox from 'react-image-lightbox'
 import 'react-image-lightbox/style.css'
 import ComponentHeader from './component-header'
+import ComponentLabel from './component-label'
 
 const isBrowserUrl = (value) => !!value && /^(https?:|blob:|data:)/i.test(value)
 
@@ -196,6 +197,7 @@ class ImageUpload extends React.Component {
       >
         <ComponentHeader {...this.props} />
         <div className={this.props.data.isShowLabel !== false ? 'form-group' : ''}>
+          <ComponentLabel {...this.props} />
           <div style={{ position: 'relative' }}>
             {previewSrc ? (
               <img

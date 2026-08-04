@@ -683,7 +683,8 @@ export default class FormElementsEdit extends React.Component {
         )}
 
         {(this.props.element?.label != null ||
-          this.props.element.element === 'Signature2') && (
+          this.props.element.element === 'Signature2' ||
+          this.props.element.element === 'ImageUpload') && (
           <div className="form-group">
             {this.props.element.element !== 'Signature2' && (
               <>
@@ -932,7 +933,8 @@ export default class FormElementsEdit extends React.Component {
               />
             </div>
           )}
-        {this.props.element.hasOwnProperty('header') && (
+        {this.props.element.hasOwnProperty('header') &&
+          this.props.element.element !== 'ImageUpload' && (
           <div className="form-group">
             <label className="control-label" htmlFor="header">
               Section Header
