@@ -1,12 +1,9 @@
 import React from 'react'
 import { DragSource } from 'react-dnd'
+import { DragOutlined } from '@ant-design/icons'
 import ItemTypes from '../ItemTypes'
 
 const style = {
-  // display: 'inline-block',
-  // border: '1px dashed gray',
-  // padding: '0.5rem 1rem',
-  // backgroundColor: 'white',
   cursor: 'move',
 }
 
@@ -30,8 +27,8 @@ const gripSource = {
 const Grip = ({ connectDragSource }) =>
   connectDragSource(
     <div className="btn is-isolated" style={style}>
-      <i className="is-isolated fas fa-grip-vertical"></i>
-    </div>
+      <DragOutlined className="vdc-ant-form-builder-icon is-isolated" />
+    </div>,
   )
 
 export default DragSource(ItemTypes.BOX, gripSource, (connect) => ({

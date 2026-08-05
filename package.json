@@ -60,7 +60,8 @@
     "react-signature-canvas": "^1.0.3",
     "react-textarea-autosize": "^8.3.4",
     "sass": "^1.55.0",
-    "xss": "^1.0.8"
+    "xss": "^1.0.8",
+    "@ant-design/icons": "^5.6.1"
   },
   "peerDependencies": {
     "react": ">=16.8.6",

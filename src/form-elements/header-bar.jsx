@@ -2,6 +2,7 @@
  * <HeaderBar />
  */
 import React from 'react'
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons'
 import Grip from '../multi-column/grip'
 
 export default class HeaderBar extends React.Component {
@@ -13,16 +14,19 @@ export default class HeaderBar extends React.Component {
           {this.props.data.element !== 'LineBreak' && (
             <div
               className="btn is-isolated"
-              onClick={this.props.editModeOn?.bind(this.props.parent, this.props.data)}
+              onClick={this.props.editModeOn?.bind(
+                this.props.parent,
+                this.props.data,
+              )}
             >
-              <i className="is-isolated fas fa-edit"></i>
+              <EditOutlined className="vdc-ant-form-builder-icon is-isolated" />
             </div>
           )}
           <div
             className="btn is-isolated"
             onClick={this.props.onDestroy?.bind(this, this.props.data)}
           >
-            <i className="is-isolated fas fa-trash"></i>
+            <DeleteOutlined className="vdc-ant-form-builder-icon is-isolated" />
           </div>
           {!this.props.data.isContainer && (
             <Grip

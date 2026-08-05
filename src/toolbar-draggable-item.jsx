@@ -5,6 +5,7 @@ import React from 'react'
 import { DragSource } from 'react-dnd'
 import ItemTypes from './ItemTypes'
 import ID from './UUID'
+import { renderAntIcon } from './ant-icons'
 
 const cardSource = {
   beginDrag(props) {
@@ -23,9 +24,9 @@ class ToolbarItem extends React.Component {
     if (!connectDragSource) return null
     return connectDragSource(
       <li onClick={onClick}>
-        <i className={data.icon}></i>
+        {renderAntIcon(data.icon)}
         {data.name}
-      </li>
+      </li>,
     )
   }
 }
