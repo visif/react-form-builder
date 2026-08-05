@@ -256,8 +256,16 @@
         margin: 5px;
         padding: 10px;
         border: 1px dashed #ddd;
-        i {
-          margin: 0 15px 0 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        // Legacy Font Awesome <i> icons; Ant Design icons render as .anticon
+        i,
+        .anticon,
+        .vdc-ant-form-builder-icon {
+          margin: 0;
+          flex-shrink: 0;
         }
       }
     }

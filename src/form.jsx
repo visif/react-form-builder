@@ -530,7 +530,9 @@ export default class ReactForm extends React.Component {
   }
 
   handleSubmit(e) {
-    e.preventDefault()
+    if (e && typeof e.preventDefault === 'function') {
+      e.preventDefault()
+    }
 
     const { onSubmit } = this.props
 
@@ -688,6 +690,13 @@ export default class ReactForm extends React.Component {
     if (!this._draftStarted) {
       this._startDraftAutosave()
     }
+  }
+
+  // Signature2 uses click (not change/input), so draft would otherwise never
+  // start — and even after start, the next interval save is up to 30s later.
+  _handleSignature2Change = () => {
+    this._handleFormInteraction()
+    this._saveDraft()
   }
 
   _getDraftStorageKey() {
@@ -854,6 +863,7 @@ export default class ReactForm extends React.Component {
     return (
       <Input
         handleChange={this.handleChange}
+        onSignChange={this._handleSignature2Change}
         ref={(c) => {
           this.inputs[item.field_name] = c
         }}
@@ -1053,6 +1063,7 @@ export default class ReactForm extends React.Component {
                 defaultValue={this._getDefaultValue(item)}
                 getActiveUserProperties={this.props.getActiveUserProperties}
                 editor={this._getEditor(item)}
+                onSignChange={this._handleSignature2Change}
               />
             )
           case 'Checkboxes':

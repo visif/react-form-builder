@@ -85,25 +85,37 @@ class Signature2 extends React.Component {
 
     const position = `${this.props.data.position}`.toLocaleLowerCase().trim()
 
+    const notifySignedChange = () => {
+      if (typeof this.props.onSignChange === 'function') {
+        this.props.onSignChange()
+      }
+    }
+
     if (
       this.props.data.specificRole === 'specific' &&
       roleLists.find((item) => `${item}`.toLocaleLowerCase().trim() === position)
     ) {
-      this.setState((current) => ({
-        ...current,
-        isSigned: !current.isSigned,
-        signedPerson: !current.isSigned ? userProperties.name : '',
-        signedPersonId: !current.isSigned ? userProperties.userId : '',
-        signedDateTime: !current.isSigned ? dayjs().utc(true) : null,
-      }))
+      this.setState(
+        (current) => ({
+          ...current,
+          isSigned: !current.isSigned,
+          signedPerson: !current.isSigned ? userProperties.name : '',
+          signedPersonId: !current.isSigned ? userProperties.userId : '',
+          signedDateTime: !current.isSigned ? dayjs().utc(true) : null,
+        }),
+        notifySignedChange
+      )
     } else if (this.props.data.specificRole === 'notSpecific') {
-      this.setState((current) => ({
-        ...current,
-        isSigned: !current.isSigned,
-        signedPerson: !current.isSigned ? userProperties.name : '',
-        signedPersonId: !current.isSigned ? userProperties.userId : '',
-        signedDateTime: !current.isSigned ? dayjs().utc(true) : null,
-      }))
+      this.setState(
+        (current) => ({
+          ...current,
+          isSigned: !current.isSigned,
+          signedPerson: !current.isSigned ? userProperties.name : '',
+          signedPersonId: !current.isSigned ? userProperties.userId : '',
+          signedDateTime: !current.isSigned ? dayjs().utc(true) : null,
+        }),
+        notifySignedChange
+      )
     } else {
       if (!this.state.isError) {
         this.setState({
