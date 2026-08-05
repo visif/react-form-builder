@@ -746,6 +746,22 @@ export default class ReactForm extends React.Component {
     this._clearDraft()
   }
 
+  /**
+   * Public method – flush current field values to localStorage without submitting.
+   * Used when the user leaves via "Don't Save" but still wants a recoverable draft.
+   */
+  saveDraft = () => {
+    if (this.props.read_only) return
+    this._draftCleared = false
+    if (!this._draftStarted) {
+      this._draftStarted = true
+      this._draftInterval = setInterval(() => {
+        this._saveDraft()
+      }, DRAFT_AUTOSAVE_INTERVAL)
+    }
+    this._saveDraft()
+  }
+
   handleClearDraft = () => {
     this._clearDraft()
   }
