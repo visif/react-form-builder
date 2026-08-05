@@ -1,4 +1,5 @@
 import React from 'react'
+import { DeleteOutlined } from '@ant-design/icons'
 import Lightbox from 'react-image-lightbox'
 import 'react-image-lightbox/style.css'
 import ComponentHeader from './component-header'
@@ -177,7 +178,7 @@ class ImageUpload extends React.Component {
       canEditImage = false
     }
 
-    const showUploadOrReplace = resolveDone && canEditImage
+    const showUpload = resolveDone && canEditImage && !hasValue
     const showRemove = resolveDone && canEditImage && hasValue
     const actionStyle = {
       display: 'inline-block',
@@ -223,7 +224,7 @@ class ImageUpload extends React.Component {
               </div>
             ) : null}
           </div>
-          {(showUploadOrReplace || showRemove) && (
+          {(showUpload || showRemove) && (
             <div style={{ marginTop: 8 }}>
               <input
                 ref={this.inputField}
@@ -234,7 +235,7 @@ class ImageUpload extends React.Component {
                 style={{ display: 'none' }}
                 onChange={this.uploadImageFile}
               />
-              {showUploadOrReplace && (
+              {showUpload && (
                 <a
                   href=""
                   className="btn btn-secondary"
@@ -244,20 +245,26 @@ class ImageUpload extends React.Component {
                     e.preventDefault()
                   }}
                 >
-                  {hasValue ? 'Replace Image' : 'Upload Image'}
+                  Upload Image
                 </a>
               )}
               {showRemove && (
                 <a
                   href=""
-                  className="btn btn-secondary"
-                  style={actionStyle}
+                  title="Remove Image"
+                  style={{
+                    ...actionStyle,
+                    color: '#ff4d4f',
+                    fontSize: 18,
+                    lineHeight: 1,
+                    verticalAlign: 'middle',
+                  }}
                   onClick={(e) => {
                     e.preventDefault()
                     this.onRemoveImage()
                   }}
                 >
-                  Remove Image
+                  <DeleteOutlined />
                 </a>
               )}
             </div>
