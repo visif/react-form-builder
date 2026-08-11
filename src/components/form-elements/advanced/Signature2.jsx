@@ -102,6 +102,9 @@ const Signature2 = (props) => {
           signedDateTime: newSignedDateTime,
         })
       }
+      if (typeof props.onSignChange === 'function') {
+        props.onSignChange()
+      }
     } else if (props.data.specificRole === 'notSpecific') {
       const newIsSigned = !isSigned
       const newSignedPerson = !isSigned ? userProperties.name : ''
@@ -121,6 +124,9 @@ const Signature2 = (props) => {
           signedPersonId: newSignedPersonId,
           signedDateTime: newSignedDateTime,
         })
+      }
+      if (typeof props.onSignChange === 'function') {
+        props.onSignChange()
       }
     } else {
       if (!isError) {

@@ -120,12 +120,31 @@ export const useDraftPersistence = (props, collectFormData) => {
     }, DRAFT_AUTOSAVE_INTERVAL)
   }, [saveDraft])
 
+  /**
+   * Public flush – start autosave if needed, then write current values now.
+   * Used by host apps (e.g. Don't Save) via ref.saveDraft().
+   */
+  const flushDraft = useCallback(() => {
+    if (propsRef.current.read_only) return
+    draftClearedRef.current = false
+    if (!draftStartedRef.current) {
+      startDraftAutosave()
+    }
+    saveDraft()
+  }, [saveDraft, startDraftAutosave])
+
   // ── Handler to attach to <form onChange / onInput> ──────────────────
   const handleFormInteraction = useCallback(() => {
     if (!draftStartedRef.current) {
       startDraftAutosave()
     }
   }, [startDraftAutosave])
+
+  // Signature2 uses click (not change/input), so start + flush immediately
+  const handleSignature2Change = useCallback(() => {
+    handleFormInteraction()
+    saveDraft()
+  }, [handleFormInteraction, saveDraft])
 
   // ── Clear draft ─────────────────────────────────────────────────────
   const clearDraft = useCallback(() => {
@@ -164,6 +183,10 @@ export const useDraftPersistence = (props, collectFormData) => {
     draftRestored,
     /** Attach to <form onChange / onInput> to lazily start autosave */
     handleFormInteraction,
+    /** Signature2 click → start autosave + flush immediately */
+    handleSignature2Change,
+    /** Public flush for host apps (ref.saveDraft) */
+    saveDraft: flushDraft,
     /** Clear the draft (call on submit success or user action) */
     clearDraft,
   }

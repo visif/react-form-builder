@@ -59,7 +59,14 @@
  * @since 0.1.0
  * @requires hot-formula-parser for formula fields
  */
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react'
 
 import { Button } from 'antd'
 
@@ -82,7 +89,7 @@ import { renderFormElement } from './utils/formElementRenderer'
 // Utils
 import { convertAnswerData, getVariableValueHelper } from './utils/formHelpers'
 
-const ReactForm = (incomingProps: ReactFormGeneratorProps) => {
+const ReactForm = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
   const props = withGeneratorLegacyKeys(incomingProps)
   // Refs
   const formRef = useRef(null)
@@ -333,10 +340,13 @@ const ReactForm = (incomingProps: ReactFormGeneratorProps) => {
   const { collectFormData, collectFormItems } = useFormDataCollection(props, getEditor)
 
   // Draft persistence
-  const { draftRestored, handleFormInteraction, clearDraft } = useDraftPersistence(
-    props,
-    collectFormData
-  )
+  const {
+    draftRestored,
+    handleFormInteraction,
+    handleSignature2Change,
+    saveDraft,
+    clearDraft,
+  } = useDraftPersistence(props, collectFormData)
 
   const { validateForm } = useFormValidation(props, collectFormItems)
 
@@ -345,7 +355,9 @@ const ReactForm = (incomingProps: ReactFormGeneratorProps) => {
   // Form submission handler
   const handleSubmit = useCallback(
     (e) => {
-      e.preventDefault()
+      if (e && typeof e.preventDefault === 'function') {
+        e.preventDefault()
+      }
 
       const { onSubmit } = props
 
@@ -384,6 +396,16 @@ const ReactForm = (incomingProps: ReactFormGeneratorProps) => {
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [props, collectFormData, validateForm, clearDraft]
+  )
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      saveDraft,
+      handleSubmit,
+      clearDraft,
+    }),
+    [saveDraft, handleSubmit, clearDraft]
   )
 
   const handleClearDraft = useCallback(() => {
@@ -441,6 +463,7 @@ const ReactForm = (incomingProps: ReactFormGeneratorProps) => {
   // Prepare helpers for rendering
   const renderHelpers = {
     handleChange,
+    handleSignature2Change,
     getDefaultValue,
     getEditor,
     optionsDefaultValue,
@@ -500,10 +523,12 @@ const ReactForm = (incomingProps: ReactFormGeneratorProps) => {
       </div>
     </div>
   )
-}
+})
+
+ReactForm.displayName = 'ReactForm'
 
 // Wrapper component that provides FormContext
-const ReactFormWithContext = (incomingProps: ReactFormGeneratorProps) => {
+const ReactFormWithContext = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
   const props = withGeneratorLegacyKeys(incomingProps)
   // Convert answer_data to initial values for context
   // answer_data can be in array format [{name: 'field_name', value: 'value'}]
@@ -512,10 +537,12 @@ const ReactFormWithContext = (incomingProps: ReactFormGeneratorProps) => {
 
   return (
     <FormProvider initialValues={initialValues}>
-      <ReactForm {...props} />
+      <ReactForm {...props} ref={ref} />
     </FormProvider>
   )
-}
+})
+
+ReactFormWithContext.displayName = 'ReactFormGenerator'
 
 /**
  * Static helper – clear a draft without a component ref:

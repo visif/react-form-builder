@@ -153,6 +153,7 @@ export const getSimpleElement = (item) => {
 export const renderFormElement = (item, props, handlers, helpers) => {
   const {
     handleChange,
+    handleSignature2Change,
     getDefaultValue,
     getEditor,
     optionsDefaultValue,
@@ -285,6 +286,7 @@ export const renderFormElement = (item, props, handlers, helpers) => {
           getActiveUserProperties={props.getActiveUserProperties}
           editor={getEditor(item)}
           handleChange={handleChange}
+          onSignChange={handleSignature2Change}
         />
       )
 
@@ -384,6 +386,7 @@ export const renderFormElement = (item, props, handlers, helpers) => {
           defaultValue={getDefaultValue(item)}
           handleChange={handleChange}
           onUploadImage={props.onUploadImage}
+          resolveImageUrl={props.resolveImageUrl}
           editor={getEditor(item)}
           getActiveUserProperties={props.getActiveUserProperties}
         />

@@ -124,11 +124,16 @@ export type ReactFormGeneratorProps = {
   onUploadFile?: (...args: unknown[]) => unknown
   onDownloadFile?: (...args: unknown[]) => unknown
   onUploadImage?: (...args: unknown[]) => unknown
+  resolveImageUrl?: (filePath: string) => Promise<string> | string
   getFormSource?: (...args: unknown[]) => unknown
   broadcastChange?: (...args: unknown[]) => unknown
   onSelectChildForm?: (...args: unknown[]) => unknown
   getFormInfo?: (...args: unknown[]) => unknown
   form_rev_id?: string | number
+  draftStorageKey?: string
+  draftStorageUserId?: string | number
+  task_id?: string | number
+  parentElementId?: unknown
 }
 
 export type FormContextValue = {
@@ -167,6 +172,12 @@ export type RegistryApi = {
   register: (name: string, entry: ComponentType<unknown> | Record<string, unknown>) => RegistryApi
   get: (name: string) => ComponentType<unknown> | Record<string, unknown> | undefined
   list: () => string[]
+}
+
+export type ReactFormGeneratorHandle = {
+  saveDraft: () => void
+  handleSubmit: (e?: { preventDefault?: () => void } | null) => void
+  clearDraft: () => void
 }
 
 export type FormBuildersExport = {

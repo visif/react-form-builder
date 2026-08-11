@@ -4,6 +4,9 @@ import { DeleteOutlined, UploadOutlined } from '@ant-design/icons'
 import { Button, Image, Modal } from 'antd'
 
 import ComponentHeader from '../shared/ComponentHeader'
+import ComponentLabel from '../shared/ComponentLabel'
+
+const isBrowserUrl = (value) => !!value && /^(https?:|blob:|data:)/i.test(value)
 
 const ImageUpload = (props) => {
   const inputField = React.useRef(null)
@@ -11,11 +14,15 @@ const ImageUpload = (props) => {
   const initFilePath = props.defaultValue && props.defaultValue.filePath
   const initFileName = props.defaultValue && props.defaultValue.fileName
   const initBlobUrl = props.defaultValue && props.defaultValue.blobUrl
+  const initialDisplay =
+    isBrowserUrl(initBlobUrl) || isBrowserUrl(initFilePath) ? initBlobUrl || initFilePath : ''
 
   const [defaultValue, setDefaultValue] = React.useState(props.defaultValue)
   const [filePath, setFilePath] = React.useState(initFilePath)
   const [fileName, setFileName] = React.useState(initFileName)
   const [blobUrl, setBlobUrl] = React.useState(initBlobUrl)
+  const [displayUrl, setDisplayUrl] = React.useState(initialDisplay)
+  const [resolveDone, setResolveDone] = React.useState(!!initialDisplay || !initFilePath)
   const [isOpen, setIsOpen] = React.useState(false)
   const [containerSize, setContainerSize] = React.useState({
     width: (props.defaultValue && props.defaultValue.width) || null,
@@ -23,7 +30,7 @@ const ImageUpload = (props) => {
   })
   const containerRef = React.useRef(null)
   const shouldObserveResize =
-    !!(blobUrl || filePath) && containerSize.width != null && containerSize.height != null
+    !!(displayUrl || filePath) && containerSize.width != null && containerSize.height != null
 
   // Observe user-initiated resizes; guard against re-render-triggered re-fires
   React.useEffect(() => {
@@ -57,23 +64,80 @@ const ImageUpload = (props) => {
   }, [filePath, fileName, blobUrl, containerSize, props.handleChange, props.data?.field_name])
 
   React.useEffect(() => {
-    console.log('ImageUpload >> useEffect (prop sync)')
-    console.log(props.defaultValue)
     if (props.defaultValue && JSON.stringify(props.defaultValue) !== JSON.stringify(defaultValue)) {
       const newFilePath = props.defaultValue && props.defaultValue.filePath
       const newFileName = props.defaultValue && props.defaultValue.fileName
       const newBlobUrl = props.defaultValue && props.defaultValue.blobUrl
+      const nextDisplay =
+        isBrowserUrl(newBlobUrl) || isBrowserUrl(newFilePath) ? newBlobUrl || newFilePath : ''
 
       setDefaultValue(props.defaultValue)
       setFilePath(newFilePath)
       setFileName(newFileName)
       setBlobUrl(newBlobUrl)
+      setDisplayUrl(nextDisplay)
+      setResolveDone(!!nextDisplay || !newFilePath)
       setContainerSize({
         width: props.defaultValue.width || null,
         height: props.defaultValue.height || null,
       })
     }
   }, [props.defaultValue, defaultValue])
+
+  React.useEffect(() => {
+    let cancelled = false
+
+    const resolveDisplayUrl = async () => {
+      // Fresh same-session blob previews are fine; saved blob: URLs from prior
+      // sessions are dead and must not block resolving filePath.
+      if (isBrowserUrl(blobUrl) && String(blobUrl).startsWith('blob:') && !filePath) {
+        if (!cancelled) {
+          setDisplayUrl(blobUrl)
+          setResolveDone(true)
+        }
+        return
+      }
+      if (isBrowserUrl(filePath)) {
+        if (!cancelled) {
+          setDisplayUrl(filePath)
+          setResolveDone(true)
+        }
+        return
+      }
+      if (isBrowserUrl(blobUrl) && !String(blobUrl).startsWith('blob:')) {
+        if (!cancelled) {
+          setDisplayUrl(blobUrl)
+          setResolveDone(true)
+        }
+        return
+      }
+      if (!filePath || typeof props.resolveImageUrl !== 'function') {
+        if (!cancelled) {
+          setDisplayUrl('')
+          setResolveDone(true)
+        }
+        return
+      }
+      try {
+        const resolved = await props.resolveImageUrl(filePath)
+        if (!cancelled) {
+          setDisplayUrl(resolved || '')
+          setResolveDone(true)
+        }
+      } catch (error) {
+        console.log('resolveImageUrl failed', error)
+        if (!cancelled) {
+          setDisplayUrl('')
+          setResolveDone(true)
+        }
+      }
+    }
+
+    resolveDisplayUrl()
+    return () => {
+      cancelled = true
+    }
+  }, [filePath, blobUrl, props.resolveImageUrl])
 
   const onRemoveImage = React.useCallback(() => {
     Modal.confirm({
@@ -83,6 +147,8 @@ const ImageUpload = (props) => {
         setFilePath('')
         setFileName('')
         setBlobUrl('')
+        setDisplayUrl('')
+        setResolveDone(true)
         setContainerSize({ width: null, height: null })
       },
     })
@@ -126,38 +192,63 @@ const ImageUpload = (props) => {
       console.log('Uploading image .....')
       const extension = `${file.name}`.substring(file.name.lastIndexOf('.'))
       const uploadedPath = await props.onUploadImage(file)
+      if (!uploadedPath) {
+        return
+      }
 
       const newBlobUrl = URL.createObjectURL(file)
 
       setFileName(file.name)
       setBlobUrl(newBlobUrl)
+      setDisplayUrl(newBlobUrl)
+      setResolveDone(true)
       setFilePath(`${uploadedPath}${extension}`)
     },
     [props.onUploadImage]
   )
 
   const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()
+  const rawEditor = props.editor
+  const savedEditor = Array.isArray(rawEditor) ? rawEditor[0] : rawEditor
+  const hasValue = !!(filePath || blobUrl)
+  const previewSrc =
+    displayUrl ||
+    (isBrowserUrl(blobUrl) && String(blobUrl).startsWith('blob:') ? blobUrl : '')
+  const isReadOnly = !!(props.read_only || (props.data && props.data.readOnly))
 
-  const savedEditor = props.editor
-  let isSameEditor = true
-  if (savedEditor && savedEditor.userId && !!userProperties) {
-    isSameEditor =
-      userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
+  // Empty field: anyone who can fill the form may upload.
+  // Existing image: only the uploader (editor) or DCC may remove.
+  let canEditImage = !isReadOnly
+  if (hasValue && savedEditor && savedEditor.userId != null && userProperties) {
+    const sameUploader = String(userProperties.userId) === String(savedEditor.userId)
+    const isDcc = userProperties.hasDCCRole === true
+    canEditImage = !isReadOnly && (sameUploader || isDcc)
+  } else if (hasValue && savedEditor && savedEditor.userId != null && !userProperties) {
+    canEditImage = false
   }
+
+  const showUpload = resolveDone && canEditImage && !hasValue
+  const showRemove = resolveDone && canEditImage && hasValue
+  const tooltipText =
+    savedEditor && savedEditor.name && hasValue ? `Uploaded by: ${savedEditor.name}` : ''
 
   const hasExplicitWidth = containerSize.width != null
   const hasExplicitHeight = containerSize.height != null
 
   return (
-    <div className={`SortableItem rfb-item${props.data.pageBreakBefore ? ' alwaysbreak' : ''}`}>
+    <div
+      className={`SortableItem rfb-item${props.data.pageBreakBefore ? ' alwaysbreak' : ''}`}
+      title={tooltipText}
+    >
       <ComponentHeader {...props} />
       <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
+        <ComponentLabel {...props} />
         <div
           ref={containerRef}
           style={{
             position: 'relative',
-            display: blobUrl || filePath ? 'inline-block' : 'block',
-            resize: blobUrl || filePath ? 'both' : 'none',
+            display: previewSrc ? 'inline-block' : 'block',
+            resize: previewSrc ? 'both' : 'none',
             overflow: 'hidden',
             minWidth: 80,
             minHeight: 60,
@@ -166,10 +257,11 @@ const ImageUpload = (props) => {
             ...(containerSize.height && { height: containerSize.height }),
           }}
         >
-          {filePath && (
+          {showRemove && (
             <Button
               type="text"
               danger
+              title="Remove Image"
               icon={<DeleteOutlined />}
               onClick={onRemoveImage}
               style={{
@@ -180,7 +272,7 @@ const ImageUpload = (props) => {
               }}
             />
           )}
-          {(blobUrl || filePath) && (
+          {previewSrc ? (
             <Image
               onLoad={handleImageLoad}
               style={{
@@ -190,13 +282,28 @@ const ImageUpload = (props) => {
                 display: 'block',
                 objectFit: 'contain',
               }}
-              src={blobUrl || filePath}
+              src={previewSrc}
               preview={{
                 visible: isOpen,
                 onVisibleChange: (visible) => setIsOpen(visible),
+                zIndex: 2000,
               }}
             />
-          )}
+          ) : filePath && !resolveDone ? (
+            <div
+              className="no-image"
+              style={{
+                minHeight: 80,
+                border: '1px dashed #d9d9d9',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#999',
+              }}
+            >
+              Loading image...
+            </div>
+          ) : null}
         </div>
         <div>
           <input
@@ -208,10 +315,9 @@ const ImageUpload = (props) => {
             style={{ display: 'none' }}
             onChange={uploadImageFile}
           />
-          {!filePath && (
+          {showUpload && (
             <Button
               icon={<UploadOutlined />}
-              disabled={!isSameEditor}
               onClick={(e) => {
                 inputField && inputField.current.click()
                 e.preventDefault()

@@ -93,7 +93,10 @@ export const buildFieldConfigs = ({
 
     // Label editor (for most input elements)
     {
-      condition: () => 'label' in props.element || props.element.element === 'Signature2',
+      condition: () =>
+        'label' in props.element ||
+        props.element.element === 'Signature2' ||
+        props.element.element === 'ImageUpload',
       component: LabelEditor,
       props: {
         element: props.element,
@@ -146,7 +149,7 @@ export const buildFieldConfigs = ({
 
     // Section header field
     {
-      condition: () => 'header' in props.element,
+      condition: () => 'header' in props.element && props.element.element !== 'ImageUpload',
       component: TextFieldEditor,
       props: {
         id: 'header',

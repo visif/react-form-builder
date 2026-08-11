@@ -197,6 +197,11 @@ const DatePicker = (props) => {
       return localDate.format(mask.replace('YYYY', 'BBBB'))
   }, [])
 
+  const getPickerFormat = React.useCallback(() => {
+    const calendarType = getCalendarType()
+    return calendarType === 'EN' ? formatMask : formatMask.replace(/YYYY/g, 'BBBB')
+  }, [formatMask])
+
   const { showTimeSelect, showTimeSelectOnly } = props.data
   const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()
 
@@ -246,6 +251,8 @@ const DatePicker = (props) => {
     ? 'form-group is-isolated'
     : 'form-group'
 
+  const pickerPopupStyles = { popup: { root: { zIndex: 2100 } } }
+
   return (
     <div className={baseClasses}>
       <ComponentHeader {...props} />
@@ -270,12 +277,13 @@ const DatePicker = (props) => {
               onChange={handleChange}
               value={value ? dayjs(value) : null}
               className="form-control bold-date-picker"
-              format={(val) => formatDate(val, formatMask)}
+              format={getPickerFormat()}
               showTime={showTimeSelect ? { format: 'HH:mm', showSecond: false } : null}
               disabled={!isSameEditor || loading}
               placeholder={placeholder}
               style={{ display: 'inline-block', width: 'auto' }}
               getPopupContainer={getPickerPopupContainer}
+              styles={pickerPopupStyles}
             />
           ) : (
             <AntTimePicker
@@ -290,6 +298,7 @@ const DatePicker = (props) => {
               format="HH:mm"
               minuteStep={1}
               getPopupContainer={getPickerPopupContainer}
+              styles={pickerPopupStyles}
             />
           )}
         </div>
