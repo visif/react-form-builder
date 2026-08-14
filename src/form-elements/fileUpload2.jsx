@@ -1,6 +1,6 @@
 import React from 'react'
-import { DeleteOutlined } from '@ant-design/icons'
 import ComponentHeader from './component-header'
+import FormDeleteButton from './form-delete-button'
 
 const getSavedEditor = (editor) => (Array.isArray(editor) ? editor[0] : editor)
 
@@ -192,26 +192,12 @@ class FileUpload extends React.Component {
                         {file.originalName}
                       </span>
                       {canEdit && (
-                        <button
-                          type="button"
+                        <FormDeleteButton
                           title="Delete file"
-                          aria-label="Delete file"
-                          style={{
-                            cursor: 'pointer',
-                            color: '#ff4d4f',
-                            background: 'transparent',
-                            border: 'none',
-                            padding: 4,
-                            lineHeight: 1,
-                            fontSize: 18,
-                            flexShrink: 0,
-                          }}
                           onClick={() => {
                             this.onRemoveFile(file)
                           }}
-                        >
-                          <DeleteOutlined />
-                        </button>
+                        />
                       )}
                     </li>
                   )

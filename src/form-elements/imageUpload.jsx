@@ -1,6 +1,6 @@
 import React from 'react'
-import { DeleteOutlined } from '@ant-design/icons'
 import Lightbox from 'react-image-lightbox'
+import FormDeleteButton from './form-delete-button'
 import 'react-image-lightbox/style.css'
 import ComponentHeader from './component-header'
 import ComponentLabel from './component-label'
@@ -249,23 +249,10 @@ class ImageUpload extends React.Component {
                 </a>
               )}
               {showRemove && (
-                <a
-                  href=""
+                <FormDeleteButton
                   title="Remove Image"
-                  style={{
-                    ...actionStyle,
-                    color: '#ff4d4f',
-                    fontSize: 18,
-                    lineHeight: 1,
-                    verticalAlign: 'middle',
-                  }}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    this.onRemoveImage()
-                  }}
-                >
-                  <DeleteOutlined />
-                </a>
+                  onClick={() => this.onRemoveImage()}
+                />
               )}
             </div>
           )}
