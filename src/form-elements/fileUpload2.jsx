@@ -1,6 +1,27 @@
 import React from 'react'
 import ComponentHeader from './component-header'
 
+const getSavedEditor = (editor) => (Array.isArray(editor) ? editor[0] : editor)
+
+const TrashIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    width="16"
+    height="16"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+    <path d="M10 11v6M14 11v6" />
+    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+  </svg>
+)
+
 class FileUpload extends React.Component {
   constructor(props) {
     super(props)
@@ -12,6 +33,14 @@ class FileUpload extends React.Component {
       defaultValue: props.defaultValue && props.defaultValue.fileList,
       fileList: [...fileList],
     }
+  }
+
+  canEditFiles = () => {
+    const isReadOnly = !!(
+      this.props.read_only ||
+      (this.props.data && this.props.data.readOnly)
+    )
+    return !isReadOnly
   }
 
   static getDerivedStateFromProps = (props, state) => {
@@ -84,22 +113,7 @@ class FileUpload extends React.Component {
   }
 
   onRemoveFile = (file) => {
-    // Check if user is the same editor before allowing deletion
-    const userProperties =
-      this.props.getActiveUserProperties && this.props.getActiveUserProperties()
-
-    const savedEditor = this.props.editor
-    const hasValue = this.state.fileList && this.state.fileList.length > 0
-
-    // Allow editing if no value exists OR if user is the same editor
-    let isSameEditor = true
-    if (savedEditor && savedEditor.userId && hasValue && !!userProperties) {
-      isSameEditor =
-        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
-    }
-
-    // Only allow deletion if user is the same editor
-    if (!isSameEditor) {
+    if (!this.canEditFiles()) {
       console.log('User not authorized to delete file')
       return
     }
@@ -115,23 +129,17 @@ class FileUpload extends React.Component {
   }
 
   render() {
-    const userProperties =
-      this.props.getActiveUserProperties && this.props.getActiveUserProperties()
-
-    const savedEditor = this.props.editor
+    const savedEditor = getSavedEditor(this.props.editor)
     const hasValue = this.state.fileList && this.state.fileList.length > 0
+    const canEdit = this.canEditFiles()
 
-    // Allow editing if no value exists OR if user is the same editor
-    let isSameEditor = true
-    if (savedEditor && savedEditor.userId && hasValue && !!userProperties) {
-      isSameEditor =
-        userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
-    }
-
-    // Create tooltip text showing editor name
-    const files = this.state.fileList ? this.state.fileList.map(f => f.originalName).join(', ') : '';
+    const files = this.state.fileList
+      ? this.state.fileList.map((f) => f.originalName).join(', ')
+      : ''
     const tooltipText =
-      savedEditor && savedEditor.name && hasValue ? `${files}\nEdited by: ${savedEditor.name}` : ''
+      savedEditor && savedEditor.name && hasValue
+        ? `${files}\nEdited by: ${savedEditor.name}`
+        : ''
 
     return (
       <div
@@ -152,7 +160,7 @@ class FileUpload extends React.Component {
               title=" "
               style={{ display: 'none' }}
               onChange={this.onUploadMultipleFiles}
-              disabled={!isSameEditor}
+              disabled={!canEdit}
             />
             <a
               href="#"
@@ -160,6 +168,9 @@ class FileUpload extends React.Component {
               className="btn btn-secondary"
               onClick={(e) => {
                 e.preventDefault()
+                if (!canEdit) {
+                  return
+                }
                 this.inputField && this.inputField.current.click()
               }}
             >
@@ -172,6 +183,7 @@ class FileUpload extends React.Component {
                   maxWidth: '450px',
                   flexDirection: 'column',
                   marginTop: '1rem',
+                  paddingLeft: 0,
                 }}
               >
                 {this.state.fileList.map((file, index) => {
@@ -181,11 +193,15 @@ class FileUpload extends React.Component {
                       style={{
                         listStyleType: 'none',
                         fontSize: 16,
-                        display: 'block',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 8,
+                        width: '100%',
                       }}
                     >
                       <span
-                        style={{ float: 'left', cursor: 'pointer' }}
+                        style={{ cursor: 'pointer', flex: 1, minWidth: 0 }}
                         onClick={() => {
                           this.onDownloadFile(file)
                         }}
@@ -193,20 +209,26 @@ class FileUpload extends React.Component {
                         <span style={{ marginRight: 4 }}>{index + 1}.</span>{' '}
                         {file.originalName}
                       </span>
-                      {/* Only show delete button if user is the same editor */}
-                      {isSameEditor && (
-                        <span
+                      {canEdit && (
+                        <button
+                          type="button"
+                          title="Delete file"
+                          aria-label="Delete file"
                           style={{
-                            float: 'right',
                             cursor: 'pointer',
-                            marginTop: 4,
+                            color: '#ff4d4f',
+                            background: 'transparent',
+                            border: 'none',
+                            padding: 4,
+                            lineHeight: 1,
+                            flexShrink: 0,
                           }}
                           onClick={() => {
                             this.onRemoveFile(file)
                           }}
                         >
-                          <i className="fas fa-trash"></i>
-                        </span>
+                          <TrashIcon />
+                        </button>
                       )}
                     </li>
                   )
