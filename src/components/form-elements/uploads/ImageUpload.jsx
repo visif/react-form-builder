@@ -1,10 +1,11 @@
 import React from 'react'
 
-import { DeleteOutlined, UploadOutlined } from '@ant-design/icons'
+import { UploadOutlined } from '@ant-design/icons'
 import { Button, Image, Modal } from 'antd'
 
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
+import FormDeleteButton from '../shared/FormDeleteButton'
 
 const isBrowserUrl = (value) => !!value && /^(https?:|blob:|data:)/i.test(value)
 
@@ -258,19 +259,16 @@ const ImageUpload = (props) => {
           }}
         >
           {showRemove && (
-            <Button
-              type="text"
-              danger
-              title="Remove Image"
-              icon={<DeleteOutlined />}
-              onClick={onRemoveImage}
+            <div
               style={{
                 position: 'absolute',
                 top: 8,
                 right: 8,
                 zIndex: 1,
               }}
-            />
+            >
+              <FormDeleteButton title="Remove Image" onClick={onRemoveImage} />
+            </div>
           )}
           {previewSrc ? (
             <Image

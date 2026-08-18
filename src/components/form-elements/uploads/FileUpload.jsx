@@ -1,9 +1,12 @@
 import React from 'react'
 
-import { DeleteOutlined, DownloadOutlined, UploadOutlined } from '@ant-design/icons'
+import { DownloadOutlined, UploadOutlined } from '@ant-design/icons'
 import { Button, List } from 'antd'
 
 import ComponentHeader from '../shared/ComponentHeader'
+import FormDeleteButton from '../shared/FormDeleteButton'
+
+const getSavedEditor = (editor) => (Array.isArray(editor) ? editor[0] : editor)
 
 const FileUpload = (props) => {
   const inputField = React.useRef(null)
@@ -14,6 +17,11 @@ const FileUpload = (props) => {
     props.defaultValue && props.defaultValue.fileList
   )
   const [fileList, setFileList] = React.useState([...initFileList])
+
+  const canEditFiles = React.useCallback(() => {
+    const isReadOnly = !!(props.read_only || (props.data && props.data.readOnly))
+    return !isReadOnly
+  }, [props.read_only, props.data])
 
   // Sync fileList to FormContext so submission and validation pick it up
   React.useEffect(() => {
@@ -91,18 +99,7 @@ const FileUpload = (props) => {
 
   const onRemoveFile = React.useCallback(
     (file) => {
-      // Check if user is the same editor before allowing deletion
-      const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()
-
-      const savedEditor = props.editor
-      let isSameEditor = true
-      if (savedEditor && savedEditor.userId && !!userProperties) {
-        isSameEditor =
-          userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
-      }
-
-      // Only allow deletion if user is the same editor
-      if (!isSameEditor) {
+      if (!canEditFiles()) {
         console.log('User not authorized to delete file')
         return
       }
@@ -112,20 +109,21 @@ const FileUpload = (props) => {
         return [...remainList]
       })
     },
-    [props.getActiveUserProperties, props.editor]
+    [canEditFiles]
   )
 
-  const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()
-
-  const savedEditor = props.editor
-  let isSameEditor = true
-  if (savedEditor && savedEditor.userId && !!userProperties) {
-    isSameEditor =
-      userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
-  }
+  const savedEditor = getSavedEditor(props.editor)
+  const hasValue = fileList && fileList.length > 0
+  const canEdit = canEditFiles()
+  const files = fileList ? fileList.map((f) => f.originalName).join(', ') : ''
+  const tooltipText =
+    savedEditor && savedEditor.name && hasValue ? `${files}\nEdited by: ${savedEditor.name}` : ''
 
   return (
-    <div className={`SortableItem rfb-item${props.data.pageBreakBefore ? ' alwaysbreak' : ''}`}>
+    <div
+      className={`SortableItem rfb-item${props.data.pageBreakBefore ? ' alwaysbreak' : ''}`}
+      title={tooltipText}
+    >
       <ComponentHeader {...props} />
       <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
         <div>
@@ -137,15 +135,18 @@ const FileUpload = (props) => {
             title=" "
             style={{ display: 'none' }}
             onChange={onUploadMultipleFiles}
-            disabled={!isSameEditor}
+            disabled={!canEdit}
           />
           <Button
             icon={<UploadOutlined />}
             onClick={(e) => {
               e.preventDefault()
+              if (!canEdit) {
+                return
+              }
               inputField && inputField.current.click()
             }}
-            disabled={!isSameEditor}
+            disabled={!canEdit}
           >
             Upload files
           </Button>
@@ -157,16 +158,13 @@ const FileUpload = (props) => {
               renderItem={(file, index) => (
                 <List.Item
                   actions={
-                    isSameEditor
+                    canEdit
                       ? [
-                        <Button
-                          key="delete"
-                          type="text"
-                          size="small"
-                          danger
-                          icon={<DeleteOutlined />}
-                          onClick={() => onRemoveFile(file)}
-                        />,
+                          <FormDeleteButton
+                            key="delete"
+                            title="Delete file"
+                            onClick={() => onRemoveFile(file)}
+                          />,
                         ]
                       : []
                   }
@@ -178,9 +176,7 @@ const FileUpload = (props) => {
                     onClick={() => onDownloadFile(file)}
                     style={{ padding: 0 }}
                   >
-                    {index + 1}
-                    .
-                    {file.originalName}
+                    {index + 1}.{file.originalName}
                   </Button>
                 </List.Item>
               )}
