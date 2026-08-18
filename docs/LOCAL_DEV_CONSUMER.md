@@ -14,14 +14,14 @@ In **migration-vdc** `package.json`, point at the sibling repo (adjust path if n
 }
 ```
 
-Then install and rebuild the library when it changes:
+Then install and rebuild the library when it changes. Use **`build:local`** so the orange notice banner is included:
 
 ```bash
 # migration-vdc
 yarn install
 
 # after editing migration-react-form-builder
-yarn --cwd ../migration-react-form-builder build
+yarn --cwd ../migration-react-form-builder build:local
 ```
 
 **Before publish / CI:** restore the registry version:
@@ -42,6 +42,8 @@ In **migration-react-form-builder**:
 yarn link:local
 ```
 
+(`link:local` runs `build:local` then `yarn link`.)
+
 In **migration-vdc**:
 
 ```bash
@@ -51,7 +53,7 @@ yarn link @visif/form-builder
 After library changes:
 
 ```bash
-yarn --cwd ../migration-react-form-builder build
+yarn --cwd ../migration-react-form-builder build:local
 ```
 
 Unlink when done:
@@ -66,83 +68,26 @@ yarn unlink
 
 ---
 
-## Dev-only label (migration-vdc side)
+## Local-build notice banner
 
-Add a visible banner in the **parent app** so you can tell you are not on the published package. The library itself stays unchanged.
+`yarn build:local` / `yarn link:local` bake in `VITE_LOCAL_BUILD=true`. When that flag is set, `ReactFormBuilder` and `ReactFormGenerator` render a fixed orange badge:
 
-### 1. Env flag (dev only)
+`local @visif/form-builder · v{version}`
 
-`.env.development.local` in **migration-vdc**:
+Publish builds (`yarn build`) never set the flag, so registry packages never show the banner. You can also read `IS_LOCAL_BUILD` from `@visif/form-builder` if the parent app needs to branch on it.
 
-```ini
-VITE_USE_LOCAL_FORM_BUILDER=true
-```
+No parent-app label component is required.
 
-Do not set this in production builds. Vite strips `import.meta.env.DEV` in production.
+---
 
-### 2. Label component
-
-Create e.g. `src/components/LocalFormBuilderDevLabel.jsx` in **migration-vdc**:
-
-```jsx
-import { FORM_BUILDER_VERSION } from '@visif/form-builder'
-
-const LocalFormBuilderDevLabel = () => {
-  if (!import.meta.env.DEV || import.meta.env.VITE_USE_LOCAL_FORM_BUILDER !== 'true') {
-    return null
-  }
-
-  return (
-    <div
-      aria-label="Using local form-builder build"
-      data-dev-local-form-builder
-      style={{
-        position: 'fixed',
-        bottom: 8,
-        right: 8,
-        zIndex: 10000,
-        padding: '4px 10px',
-        borderRadius: 4,
-        fontSize: 11,
-        fontFamily: 'ui-monospace, Menlo, monospace',
-        color: '#fff',
-        backgroundColor: '#b45309',
-        pointerEvents: 'none',
-      }}
-    >
-      local @visif/form-builder · v{FORM_BUILDER_VERSION}
-    </div>
-  )
-}
-
-export default LocalFormBuilderDevLabel
-```
-
-Mount once in your app shell (e.g. root layout):
-
-```jsx
-import LocalFormBuilderDevLabel from './components/LocalFormBuilderDevLabel'
-
-export default function App() {
-  return (
-    <>
-      <LocalFormBuilderDevLabel />
-      {/* rest of app */}
-    </>
-  )
-}
-```
-
-The orange badge only appears when `DEV` + `VITE_USE_LOCAL_FORM_BUILDER=true`. Production builds never show it.
-
-### 3. Optional scripts (migration-vdc)
+## Optional scripts (migration-vdc)
 
 ```json
 {
   "scripts": {
     "dev": "vite",
-    "dev:local-fb": "yarn --cwd ../migration-react-form-builder build && vite",
-    "build:local-fb": "yarn --cwd ../migration-react-form-builder build && vite build"
+    "dev:local-fb": "yarn --cwd ../migration-react-form-builder build:local && vite",
+    "build:local-fb": "yarn --cwd ../migration-react-form-builder build:local && vite build"
   }
 }
 ```
@@ -166,6 +111,6 @@ import '@visif/form-builder/dist/app.css'
 | Step | migration-vdc | migration-react-form-builder |
 |------|---------------|------------------------------|
 | Wire dependency | `file:../…` or `yarn link` | `yarn link:local` (link only) |
-| Rebuild after edits | restart dev server if needed | `yarn build` |
-| Dev label | `.env.development.local` + `LocalFormBuilderDevLabel` | — |
-| Publish / prod | registry version, no env flag | `yarn build` → `npm publish` |
+| Rebuild after edits | restart dev server if needed | `yarn build:local` |
+| Notice banner | automatic when using local build | baked in by `build:local` |
+| Publish / prod | registry version | `yarn build` → `npm publish` |

@@ -23,4 +23,4 @@ yarn build
 
 `yarn build` also rebuilds library artifacts first via `prebuild`.
 
-For testing inside **migration-vdc** with a dev-only label, see [../../docs/LOCAL_DEV_CONSUMER.md](../../docs/LOCAL_DEV_CONSUMER.md).
+For testing inside **migration-vdc**, use `yarn build:local` / `yarn link:local` so the in-library notice banner appears. See [../../docs/LOCAL_DEV_CONSUMER.md](../../docs/LOCAL_DEV_CONSUMER.md).

@@ -74,6 +74,7 @@ import FORM_BUILDER_VERSION from '../../constants/version'
 import { FormProvider, useFormContext } from '../../contexts/FormContext'
 import type { ReactFormGeneratorProps } from '../../types/form'
 import { withGeneratorLegacyKeys } from '../../utils/propAliases'
+import LocalBuildBanner from '../shared/LocalBuildBanner'
 import FormValidator from './FormValidator'
 import {
   clearDraftData,
@@ -483,6 +484,7 @@ const ReactForm = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
 
   return (
     <div>
+      <LocalBuildBanner />
       <FormValidator />
       <div
         className="react-form-builder-form"

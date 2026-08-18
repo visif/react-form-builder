@@ -18,8 +18,8 @@ State: FormBuilderContext + FormContext. Form values via FormContext only.
 ## Tooling
 
 - Yarn v1 (not npm install)
-- `yarn dev` / `yarn build` / `yarn link:local` / `yarn lint` / `yarn test`
-- migration-vdc local dev: see `docs/LOCAL_DEV_CONSUMER.md` (label lives in parent app, not library)
+- `yarn dev` / `yarn build` / `yarn build:local` / `yarn link:local` / `yarn lint` / `yarn test`
+- migration-vdc local dev: see `docs/LOCAL_DEV_CONSUMER.md` (local builds show an in-library notice banner)
 - Peers: react, react-dom >= 18 (externalized in Vite build)
 
 ## Do not

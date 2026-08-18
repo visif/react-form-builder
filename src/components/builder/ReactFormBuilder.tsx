@@ -60,6 +60,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend'
 import FORM_BUILDER_VERSION from '../../constants/version'
 import type { ReactFormBuilderProps } from '../../types/form'
 import { withBuilderLegacyKeys } from '../../utils/propAliases'
+import LocalBuildBanner from '../shared/LocalBuildBanner'
 import Preview from './Preview/Preview'
 import Toolbar from './Toolbar/Toolbar'
 
@@ -102,6 +103,7 @@ const ReactFormBuilder = (incomingProps: ReactFormBuilderProps) => {
 
   return (
     <DndProvider backend={HTML5Backend}>
+      <LocalBuildBanner />
       <div
         className="react-form-builder clearfix"
         style={{ height: '100%' }}

@@ -23,7 +23,7 @@ Three layers:
 
 **Registry:** Custom elements register via `Registry` singleton (`src/utils/registry.ts`). `Registry.register(name, Component)` throws on duplicates.
 
-**Public API:** `src/index.tsx` exports `ReactFormBuilder`, `ReactFormGenerator`, `Registry`, `FORM_BUILDER_VERSION`. Types in `src/types/form.ts`.
+**Public API:** `src/index.tsx` exports `ReactFormBuilder`, `ReactFormGenerator`, `Registry`, `FORM_BUILDER_VERSION`, `IS_LOCAL_BUILD`. Types in `src/types/form.ts`.
 
 ## Commands
 
@@ -32,8 +32,9 @@ Use **Yarn v1** only. Keep `yarn.lock` as the lockfile.
 ```bash
 yarn              # install
 yarn dev          # Vite playground (src/dev.jsx)
-yarn build        # dist/ for publish or local linking
-yarn link:local   # build + yarn link (for migration-vdc dev)
+yarn build        # dist/ for publish
+yarn build:local  # same as build with VITE_LOCAL_BUILD=true (orange badge in builder/generator)
+yarn link:local   # build:local + yarn link (for migration-vdc; includes local notice banner)
 yarn lint         # ESLint
 yarn test         # Vitest
 ```

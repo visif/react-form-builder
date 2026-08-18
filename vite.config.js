@@ -8,6 +8,9 @@ export default defineConfig({
     'import.meta.env.VITE_FORM_BUILDER_VERSION': JSON.stringify(
       process.env.npm_package_version || '0.0.1'
     ),
+    'import.meta.env.VITE_LOCAL_BUILD': JSON.stringify(
+      process.env.VITE_LOCAL_BUILD === 'true' ? 'true' : 'false'
+    ),
   },
   plugins: [
     react(),

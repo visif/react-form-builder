@@ -64,6 +64,7 @@ Registry.register('MyWidget', MyWidgetComponent)
 | `ReactFormGenerator` | Form renderer with validation |
 | `Registry` | Register custom form elements |
 | `FORM_BUILDER_VERSION` | Current package version string |
+| `IS_LOCAL_BUILD` | `true` when dist was built with `yarn build:local` / `yarn link:local` |
 
 TypeScript declaration files are published in `dist/index.d.ts`.
 
@@ -103,11 +104,12 @@ CamelCase props are preferred. Legacy snake_case aliases still work; when both a
 
 ```bash
 yarn install
-yarn dev        # Vite playground
-yarn lint       # ESLint
-yarn test       # Vitest
-yarn build      # Production build (JS + CSS in dist/)
-yarn link:local # Build + register yarn link (for parent projects)
+yarn dev         # Vite playground
+yarn lint        # ESLint
+yarn test        # Vitest
+yarn build       # Production build (JS + CSS in dist/)
+yarn build:local # Same as build, with local-dev notice banner baked in
+yarn link:local  # build:local + yarn link (for parent projects)
 ```
 
 For architecture, conventions, and AI agent context, see [AGENTS.md](./AGENTS.md).
@@ -119,7 +121,7 @@ To test this library inside the **migration-vdc** parent project (dev only, not 
 That guide covers:
 
 - `file:` dependency or `yarn link`
-- A dev-only label banner you add in **migration-vdc** (not in this library)
+- Orange notice banner baked into `build:local` / `link:local` (not present in publish builds)
 - Scripts to rebuild `dist/` before running the parent app
 
 ## Local Linking (other host projects)
