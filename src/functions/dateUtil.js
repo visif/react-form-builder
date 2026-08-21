@@ -31,11 +31,13 @@ export const formatDate = (date) => {
   if (!date) return ''
 
   const format = getDateFormat()
+  // Signatures store local clock time as UTC (dayjs().utc(true) → ...Z).
+  // Parse as UTC so a saved ISO string does not shift by the browser offset.
+  const utcDate = dayjs.utc(date)
 
   if (getCalendarType() === 'EN') {
-    return dayjs(date).utc(true).format(format)
+    return utcDate.format(format)
   } else {
-    // Use Buddhist Era (BBBB) formatting
-    return dayjs(date).utc(true).format(format.replace('YYYY', 'BBBB'))
+    return utcDate.format(format.replace('YYYY', 'BBBB'))
   }
 }
