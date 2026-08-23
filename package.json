@@ -117,6 +117,7 @@
     "serve:api": "node server/index.js",
     "pretranspile": "rimraf lib",
     "transpile": "babel --out-dir lib src --copy-files",
+    "test": "babel src/dynamic-column-row-names.js --out-file lib/dynamic-column-row-names.js && node --test test/dynamic-column-row-names.test.cjs",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
   }
 }

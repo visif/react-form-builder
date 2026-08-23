@@ -5,6 +5,7 @@ import React from 'react'
 import store from './stores/store'
 import ToolbarItem from './toolbar-draggable-item'
 import ID from './UUID'
+import { nextDynamicColumnRowUniqueName } from './dynamic-column-row-names'
 
 function isDefaultItem(item) {
   const keys = Object.keys(item)
@@ -533,6 +534,10 @@ export default class Toolbar extends React.Component {
       }
       elementOptions.rows = item.rows || 3
       elementOptions.allowSync = item.allowSync !== undefined ? item.allowSync : true
+      if (item.key === 'DynamicColumnRow') {
+        const existing = this.state.store?.payload?.data || []
+        elementOptions.uniqueName = nextDynamicColumnRowUniqueName(existing)
+      }
     }
 
     if (item.key === 'Section') {

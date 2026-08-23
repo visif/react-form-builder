@@ -17,6 +17,13 @@ import FixedRowList from './fixed-row-list'
 import { get } from './stores/requests'
 import './styles/draft-align.css'
 import ID from './UUID'
+import {
+  defaultCellName,
+  isUniqueNameTaken,
+  nextDynamicColumnRowUniqueName,
+  sanitizeUniqueName,
+  templateTagPreview,
+} from './dynamic-column-row-names'
 
 const toolbar = {
   options: ['inline', 'list', 'textAlign', 'fontSize', 'link', 'colorPicker', 'history'],
@@ -249,6 +256,51 @@ export default class FormElementsEdit extends React.Component {
         }
       }
     )
+  }
+
+  formDesignData() {
+    return this.props.preview?.state?.data || []
+  }
+
+  onUniqueNameChange = (e) => {
+    const this_element = { ...(this.latestElement || this.state.element) }
+    this_element.uniqueName = e.target.value
+    this.latestElement = this_element
+    this.setState({ element: this_element, dirty: true })
+  }
+
+  onUniqueNameBlur = () => {
+    const this_element = { ...(this.latestElement || this.state.element) }
+    const sanitized = sanitizeUniqueName(this_element.uniqueName)
+    const others = this.formDesignData()
+    const fallback = nextDynamicColumnRowUniqueName(
+      others.filter((item) => item && item.id !== this_element.id)
+    )
+    this_element.uniqueName = sanitized || fallback
+    this.latestElement = this_element
+    this.setState({ element: this_element, dirty: true }, () => this.updateElement())
+  }
+
+  onCellNameChange = (e) => {
+    const this_element = { ...(this.latestElement || this.state.element) }
+    this_element.cellName = e.target.value
+    this.latestElement = this_element
+    this.setState({ element: this_element, dirty: true })
+  }
+
+  onCellNameBlur = () => {
+    const this_element = { ...(this.latestElement || this.state.element) }
+    const fallback = defaultCellName(this_element.row, this_element.col)
+    const sanitized = sanitizeUniqueName(this_element.cellName)
+    if (!sanitized) {
+      this_element.cellName = fallback
+      this_element.cellNameCustom = false
+    } else {
+      this_element.cellName = sanitized
+      this_element.cellNameCustom = sanitized !== fallback
+    }
+    this.latestElement = this_element
+    this.setState({ element: this_element, dirty: true }, () => this.updateElement())
   }
 
   getEditorStateFrom(element, key) {
@@ -566,6 +618,68 @@ export default class FormElementsEdit extends React.Component {
             onClick={this.props.manualEditModeOff}
           />
         </div>
+        {this.props.element.element === 'DynamicColumnRow' && (
+          <div className="form-group">
+            <label className="control-label" htmlFor="dcrUniqueName">
+              Unique name
+            </label>
+            <input
+              id="dcrUniqueName"
+              type="text"
+              className="form-control"
+              value={this.state.element.uniqueName || ''}
+              placeholder={nextDynamicColumnRowUniqueName(
+                this.formDesignData().filter(
+                  (item) => item && item.id !== this.props.element.id
+                )
+              )}
+              onChange={this.onUniqueNameChange}
+              onBlur={this.onUniqueNameBlur}
+            />
+            {isUniqueNameTaken(
+              this.formDesignData(),
+              this.state.element.uniqueName,
+              this.props.element.id
+            ) && (
+              <p className="help-block" style={{ color: '#c0392b' }}>
+                Unique name must be unique among Dynamic Column Rows on this form.
+              </p>
+            )}
+            <p className="help-block">
+              Required. Used in template tags such as #Inspection_r1c1#.
+            </p>
+          </div>
+        )}
+        {this.props.element.parentId &&
+          this.props.preview &&
+          typeof this.props.preview.getDataById === 'function' &&
+          this.props.preview.getDataById(this.props.element.parentId)?.element ===
+            'DynamicColumnRow' && (
+            <div className="form-group">
+              <label className="control-label" htmlFor="dcrCellName">
+                Unique name
+              </label>
+              <input
+                id="dcrCellName"
+                type="text"
+                className="form-control"
+                value={
+                  this.state.element.cellName ||
+                  defaultCellName(this.state.element.row, this.state.element.col)
+                }
+                onChange={this.onCellNameChange}
+                onBlur={this.onCellNameBlur}
+              />
+              <p className="help-block">
+                Template tag:{' '}
+                {templateTagPreview(
+                  this.props.preview.getDataById(this.props.element.parentId)?.uniqueName,
+                  this.state.element.cellName ||
+                    defaultCellName(this.state.element.row, this.state.element.col)
+                )}
+              </p>
+            </div>
+          )}
         {this.props.element.hasOwnProperty('content') &&
           this.props.element.content != null && (
             <div className="form-group">
