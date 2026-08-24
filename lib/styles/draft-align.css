@@ -36,16 +36,21 @@
   display: none !important;
 }
 
-.color-picker-popup-left {
-  left: auto !important;
-  right: 0 !important;
+.color-picker-popup-right {
+  left: 100% !important;
+  right: auto !important;
   transform: none !important;
   max-width: calc(100vw - 24px) !important;
   z-index: 1060 !important;
 }
 
-.link-popup-left {
-  left: auto !important;
-  right: 100% !important;
+.link-popup-right {
+  left: 100% !important;
+  right: auto !important;
   transform: none !important;
+  /* rdw default uses a fixed height that clips the white background below the inputs */
+  height: auto !important;
+  min-height: 205px;
+  overflow: visible !important;
+  z-index: 1060 !important;
 }

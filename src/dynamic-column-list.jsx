@@ -26,12 +26,12 @@ const columnNameToolbar = {
     options: ['bold', 'italic', 'underline', 'superscript', 'subscript'],
   },
   link: {
-    popupClassName: 'link-popup-left',
+    popupClassName: 'link-popup-right',
   },
   colorPicker: {
     className: 'rainbow-color-picker',
     component: undefined,
-    popupClassName: 'color-picker-popup-left',
+    popupClassName: 'color-picker-popup-right',
     colors: [
       'rgb(97,189,109)', 'rgb(26,188,156)', 'rgb(84,172,210)', 'rgb(44,130,201)',
       'rgb(147,101,184)', '#FF00BF', 'rgb(71,85,119)', 'rgb(204,204,204)', 'rgb(65,168,95)',

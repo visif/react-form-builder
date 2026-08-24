@@ -2,18 +2,33 @@
  * Unique names for Dynamic Column Row export tags: #tableName_cellName#
  */
 
-export function sanitizeUniqueName(text) {
+function stripNameMarkup(text) {
   if (text == null) {
     return ''
   }
-  const stripped = `${text}`
+  return `${text}`
     .replace(/<[^>]*>/g, ' ')
     .replace(/#/g, '')
     .replace(/&nbsp;/gi, ' ')
-  return stripped
-    .replace(/[^A-Za-z0-9]+/g, '_')
+}
+
+function collapseSeparators(text) {
+  return text
     .replace(/_+/g, '_')
     .replace(/^_|_$/g, '')
+}
+
+/** Table unique names stay ASCII (template / export compatibility). */
+export function sanitizeUniqueName(text) {
+  return collapseSeparators(stripNameMarkup(text).replace(/[^A-Za-z0-9]+/g, '_'))
+}
+
+/**
+ * Cell unique names: keep letters/numbers from any language (incl. Thai);
+ * strip # / HTML; turn other runs into _.
+ */
+export function sanitizeCellName(text) {
+  return collapseSeparators(stripNameMarkup(text).replace(/[^\p{L}\p{N}]+/gu, '_'))
 }
 
 export function defaultCellName(row, col) {
@@ -22,6 +37,17 @@ export function defaultCellName(row, col) {
   const rowNum = Number.isFinite(rowIndex) ? rowIndex + 1 : 1
   const colNum = Number.isFinite(colIndex) ? colIndex + 1 : 1
   return `r${rowNum}c${colNum}`
+}
+
+export function effectiveCellName(child) {
+  if (!child) {
+    return defaultCellName(null, null)
+  }
+  const named = sanitizeCellName(child.cellName)
+  if (named) {
+    return named
+  }
+  return defaultCellName(child.row, child.col)
 }
 
 export function isAutoCellName(name, row, col) {
@@ -85,8 +111,23 @@ export function isUniqueNameTaken(data, uniqueName, exceptId) {
   )
 }
 
+/** True when another cell in the same Dynamic Column Row table already uses this name. */
+export function isCellNameTaken(data, parentId, cellName, exceptId) {
+  const wanted = sanitizeCellName(cellName)
+  if (!wanted || !parentId) {
+    return false
+  }
+  return (Array.isArray(data) ? data : []).some(
+    (item) =>
+      item &&
+      item.parentId === parentId &&
+      item.id !== exceptId &&
+      effectiveCellName(item) === wanted
+  )
+}
+
 export function templateTagPreview(tableUniqueName, cellName) {
   const table = sanitizeUniqueName(tableUniqueName) || 'DynamicColumnRow1'
-  const cell = sanitizeUniqueName(cellName) || 'r1c1'
+  const cell = sanitizeCellName(cellName) || 'r1c1'
   return `#${table}_${cell}#`
 }

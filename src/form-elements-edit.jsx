@@ -19,8 +19,10 @@ import './styles/draft-align.css'
 import ID from './UUID'
 import {
   defaultCellName,
+  isCellNameTaken,
   isUniqueNameTaken,
   nextDynamicColumnRowUniqueName,
+  sanitizeCellName,
   sanitizeUniqueName,
   templateTagPreview,
 } from './dynamic-column-row-names'
@@ -33,12 +35,12 @@ const toolbar = {
     options: ['bold', 'italic', 'underline', 'superscript', 'subscript'],
   },
   link: {
-    popupClassName: 'link-popup-left', // Add this to position the link popup to the left
+    popupClassName: 'link-popup-right', // Open to the right so left sidebar does not clip it
   },
   colorPicker: {
     className: 'rainbow-color-picker', // Add this custom class
     component: undefined,
-    popupClassName: 'color-picker-popup-left', // Add this to position the popup to the left
+    popupClassName: 'color-picker-popup-right', // Open to the right so left sidebar does not clip it
     colors: [
       'rgb(97,189,109)',
       'rgb(26,188,156)',
@@ -291,7 +293,7 @@ export default class FormElementsEdit extends React.Component {
   onCellNameBlur = () => {
     const this_element = { ...(this.latestElement || this.state.element) }
     const fallback = defaultCellName(this_element.row, this_element.col)
-    const sanitized = sanitizeUniqueName(this_element.cellName)
+    const sanitized = sanitizeCellName(this_element.cellName)
     if (!sanitized) {
       this_element.cellName = fallback
       this_element.cellNameCustom = false
@@ -657,7 +659,7 @@ export default class FormElementsEdit extends React.Component {
             'DynamicColumnRow' && (
             <div className="form-group">
               <label className="control-label" htmlFor="dcrCellName">
-                Unique name
+                Cell unique name
               </label>
               <input
                 id="dcrCellName"
@@ -670,7 +672,19 @@ export default class FormElementsEdit extends React.Component {
                 onChange={this.onCellNameChange}
                 onBlur={this.onCellNameBlur}
               />
+              {isCellNameTaken(
+                this.formDesignData(),
+                this.props.element.parentId,
+                this.state.element.cellName ||
+                  defaultCellName(this.state.element.row, this.state.element.col),
+                this.props.element.id
+              ) && (
+                <p className="help-block" style={{ color: '#c0392b' }}>
+                  Cell unique name must be unique within this table.
+                </p>
+              )}
               <p className="help-block">
+                Default is r{'{'}row{'}'}c{'{'}col{'}'} (e.g. r1c1). Any language is allowed.
                 Template tag:{' '}
                 {templateTagPreview(
                   this.props.preview.getDataById(this.props.element.parentId)?.uniqueName,
