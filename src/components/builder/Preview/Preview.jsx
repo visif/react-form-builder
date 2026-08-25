@@ -33,6 +33,11 @@ import { useDrop } from 'react-dnd'
 import ItemTypes from '../../../constants/itemTypes'
 import store from '../../../contexts/FormBuilderContext'
 import useUndoRedo, { ACTION } from '../../../hooks/useUndoRedo'
+import {
+  applyAutoCellName,
+  applyAutoCellNamesAfterSwap,
+  defaultCellName,
+} from '../../../utils/dynamic-column-row-names'
 import FormElementsEdit from '../ElementEditor/FormElementsEdit'
 import SortableFormElements from './SortableFormElements'
 
@@ -213,6 +218,10 @@ const Preview = (props) => {
     child.row = row
     child.col = col
 
+    if (item.element === 'DynamicColumnRow') {
+      applyAutoCellNamesAfterSwap(child, row, col, oldItem, oldRow, oldCol)
+    }
+
     store.dispatch('updateOrder', data)
     return true
   }
@@ -240,6 +249,7 @@ const Preview = (props) => {
     // Set hideLabel to true ONLY for elements in Dynamic Columns, not other column types
     if (item.element === 'DynamicColumnRow') {
       child.hideLabel = true
+      applyAutoCellName(child, row, col)
     } else if (item.element?.includes('ColumnRow')) {
       if (child.hideLabel === true) {
         delete child.hideLabel
@@ -291,7 +301,13 @@ const Preview = (props) => {
             parentIndex: updatedData.indexOf(item),
 
             // Only hide labels in DynamicColumnRow, not other column types
-            ...(item.element === 'DynamicColumnRow' ? { hideLabel: true } : {}),
+            ...(item.element === 'DynamicColumnRow'
+              ? {
+                  hideLabel: true,
+                  cellName: defaultCellName(rowIndex, col),
+                  cellNameCustom: false,
+                }
+              : {}),
 
             // Copy specific type-related properties from the original element
             // but leave data fields empty or with defaults

@@ -59,6 +59,7 @@ import PropTypes from 'prop-types'
 import { Typography } from 'antd'
 
 import store from '../../../contexts/FormBuilderContext'
+import { nextDynamicColumnRowUniqueName } from '../../../utils/dynamic-column-row-names'
 import ID from '../../../utils/uuid'
 import ToolbarItem from './ToolbarDraggableItem'
 
@@ -229,6 +230,11 @@ const Toolbar = (props) => {
         elementOptions.rows = item.rows || 3
       }
 
+      if (item.key === 'DynamicColumnRow') {
+        const existing = state.store?.payload?.data || []
+        elementOptions.uniqueName = nextDynamicColumnRowUniqueName(existing)
+      }
+
       if (item.key === 'Section') {
         elementOptions.header = 'Placeholder Text'
       }
@@ -258,7 +264,7 @@ const Toolbar = (props) => {
 
       return elementOptions
     },
-    [props.showDescription]
+    [props.showDescription, state.store]
   )
 
   const _onClick = React.useCallback(

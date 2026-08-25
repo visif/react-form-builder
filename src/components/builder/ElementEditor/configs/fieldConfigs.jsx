@@ -1,3 +1,10 @@
+import {
+  defaultCellName,
+  isCellNameTaken,
+  isUniqueNameTaken,
+  nextDynamicColumnRowUniqueName,
+  templateTagPreview,
+} from '../../../../utils/dynamic-column-row-names'
 import DynamicColumnList from '../DynamicColumnList'
 import DynamicOptionList from '../DynamicOptionList'
 import DataSourceEditor from '../editors/specific/DataSourceEditor'
@@ -24,6 +31,11 @@ export const buildFieldConfigs = ({
   onUploadFile,
   editElementProp,
   onContentChange,
+  onUniqueNameChange,
+  onUniqueNameBlur,
+  onCellNameChange,
+  onCellNameBlur,
+  formDesignData,
   updateElement,
 }) => {
   const {
@@ -34,7 +46,72 @@ export const buildFieldConfigs = ({
     canHaveDefaultValue,
   } = props.element
 
+  const designData = typeof formDesignData === 'function' ? formDesignData() : []
+  const parentElement =
+    props.element.parentId && typeof props.preview?.getDataById === 'function'
+      ? props.preview.getDataById(props.element.parentId)
+      : null
+  const cellNameValue = element.cellName || defaultCellName(element.row, element.col)
+
   return [
+    // Dynamic Column Row table unique name
+    {
+      condition: () => props.element.element === 'DynamicColumnRow',
+      component: TextFieldEditor,
+      props: {
+        id: 'dcrUniqueName',
+        label: 'Unique name',
+        value: element.uniqueName || '',
+        placeholder: nextDynamicColumnRowUniqueName(
+          designData.filter((item) => item && item.id !== props.element.id)
+        ),
+        onChange: onUniqueNameChange,
+        onBlur: onUniqueNameBlur,
+        helpText: (
+          <>
+            {isUniqueNameTaken(designData, element.uniqueName, props.element.id) && (
+              <span style={{ color: '#c0392b', display: 'block' }}>
+                Unique name must be unique among Dynamic Column Rows on this form.
+              </span>
+            )}
+            <span>Required. Used in template tags such as #Inspection_r1c1#.</span>
+          </>
+        ),
+      },
+    },
+
+    // Cell unique name when editing a child of Dynamic Column Row
+    {
+      condition: () =>
+        !!props.element.parentId && parentElement?.element === 'DynamicColumnRow',
+      component: TextFieldEditor,
+      props: {
+        id: 'dcrCellName',
+        label: 'Cell unique name',
+        value: cellNameValue,
+        onChange: onCellNameChange,
+        onBlur: onCellNameBlur,
+        helpText: (
+          <>
+            {isCellNameTaken(
+              designData,
+              props.element.parentId,
+              cellNameValue,
+              props.element.id
+            ) && (
+              <span style={{ color: '#c0392b', display: 'block' }}>
+                Cell unique name must be unique within this table.
+              </span>
+            )}
+            <span>
+              Default is r{'{'}row{'}'}c{'{'}col{'}'} (e.g. r1c1). Any language is allowed.
+              Template tag: {templateTagPreview(parentElement?.uniqueName, cellNameValue)}
+            </span>
+          </>
+        ),
+      },
+    },
+
     // Rich text content editor (for Paragraph, Header, etc.)
     {
       condition: () => 'content' in props.element,

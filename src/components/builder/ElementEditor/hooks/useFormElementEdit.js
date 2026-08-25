@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import {
+  defaultCellName,
+  nextDynamicColumnRowUniqueName,
+  sanitizeCellName,
+  sanitizeUniqueName,
+} from '../../../../utils/dynamic-column-row-names'
+
 /**
  * Custom hook for managing form element editing state and operations
  * Handles element updates, form data loading, and debounced saves
@@ -20,6 +27,11 @@ export const useFormElementEdit = (props) => {
   useEffect(() => {
     elementRef.current = element
   }, [element])
+
+  const formDesignData = useCallback(
+    () => props.preview?.state?.data || [],
+    [props.preview]
+  )
 
   // Debounce utility
   const debounce = useCallback((fn, ms) => {
@@ -104,11 +116,67 @@ export const useFormElementEdit = (props) => {
         props.updateElement.call(props.preview, this_element)
         setDirty(false)
       } else if (debouncedPushRef.current) {
-          debouncedPushRef.current()
-        }
+        debouncedPushRef.current()
+      }
     },
     [element, formDataSource, props]
   )
+
+  const onUniqueNameChange = useCallback(
+    (e) => {
+      const this_element = { ...elementRef.current, uniqueName: e.target.value }
+      props.element.uniqueName = e.target.value
+      setElement(this_element)
+      elementRef.current = this_element
+      setDirty(true)
+    },
+    [props.element]
+  )
+
+  const onUniqueNameBlur = useCallback(() => {
+    const this_element = { ...elementRef.current }
+    const sanitized = sanitizeUniqueName(this_element.uniqueName)
+    const others = formDesignData()
+    const fallback = nextDynamicColumnRowUniqueName(
+      others.filter((item) => item && item.id !== this_element.id)
+    )
+    this_element.uniqueName = sanitized || fallback
+    props.element.uniqueName = this_element.uniqueName
+    setElement(this_element)
+    elementRef.current = this_element
+    setDirty(true)
+    updateElement()
+  }, [formDesignData, props.element, updateElement])
+
+  const onCellNameChange = useCallback(
+    (e) => {
+      const this_element = { ...elementRef.current, cellName: e.target.value }
+      props.element.cellName = e.target.value
+      setElement(this_element)
+      elementRef.current = this_element
+      setDirty(true)
+    },
+    [props.element]
+  )
+
+  const onCellNameBlur = useCallback(() => {
+    const this_element = { ...elementRef.current }
+    const fallback = defaultCellName(this_element.row, this_element.col)
+    const sanitized = sanitizeCellName(this_element.cellName)
+    if (!sanitized) {
+      this_element.cellName = fallback
+      this_element.cellNameCustom = false
+    } else {
+      this_element.cellName = sanitized
+      this_element.cellNameCustom = sanitized !== fallback
+    }
+    props.element.cellName = this_element.cellName
+    props.element.cellNameCustom = this_element.cellNameCustom
+    setElement(this_element)
+    elementRef.current = this_element
+    setDirty(true)
+    updateElement()
+  }, [props.element, updateElement])
 
   // Handle rich text content changes
   const onContentChange = useCallback(
@@ -175,8 +243,13 @@ export const useFormElementEdit = (props) => {
     dirty,
     formDataSource,
     activeForm,
+    formDesignData,
     editElementProp,
     onContentChange,
+    onUniqueNameChange,
+    onUniqueNameBlur,
+    onCellNameChange,
+    onCellNameBlur,
     updateElement,
     setElement,
     setDirty,

@@ -8,7 +8,13 @@
  * - Handling element deletion
  */
 import { useCallback } from 'react'
+
 import store from '../../../../contexts/FormBuilderContext'
+import {
+  applyAutoCellName,
+  applyAutoCellNamesAfterSwap,
+  defaultCellName,
+} from '../../../../utils/dynamic-column-row-names'
 
 export const useElementManagement = (data, setData, seq) => {
   // Get element by ID from data array
@@ -87,6 +93,10 @@ export const useElementManagement = (data, setData, seq) => {
       child.row = row
       child.col = col
 
+      if (item.element === 'DynamicColumnRow') {
+        applyAutoCellNamesAfterSwap(child, row, col, oldItem, oldRow, oldCol)
+      }
+
       store.dispatch('updateOrder', data)
       return true
     },
@@ -118,6 +128,7 @@ export const useElementManagement = (data, setData, seq) => {
       // Set hideLabel to true ONLY for elements in Dynamic Columns, not other column types
       if (item.element === 'DynamicColumnRow') {
         child.hideLabel = true
+        applyAutoCellName(child, row, col)
       } else if (item.element?.includes('ColumnRow')) {
         if (child.hideLabel === true) {
           delete child.hideLabel
@@ -169,7 +180,13 @@ export const useElementManagement = (data, setData, seq) => {
               parentIndex: updatedData.indexOf(item),
 
               // Only hide labels in DynamicColumnRow, not other column types
-              ...(item.element === 'DynamicColumnRow' ? { hideLabel: true } : {}),
+              ...(item.element === 'DynamicColumnRow'
+                ? {
+                    hideLabel: true,
+                    cellName: defaultCellName(rowIndex, col),
+                    cellNameCustom: false,
+                  }
+                : {}),
 
               // Copy specific type-related properties from the original element
               // but leave data fields empty or with defaults

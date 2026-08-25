@@ -29,6 +29,11 @@ const FormElementsEdit = (props) => {
     activeForm,
     editElementProp,
     onContentChange,
+    onUniqueNameChange,
+    onUniqueNameBlur,
+    onCellNameChange,
+    onCellNameBlur,
+    formDesignData,
     updateElement,
     setElement,
   } = useFormElementEdit(props)
@@ -60,6 +65,11 @@ const FormElementsEdit = (props) => {
         onUploadFile,
         editElementProp,
         onContentChange,
+        onUniqueNameChange,
+        onUniqueNameBlur,
+        onCellNameChange,
+        onCellNameBlur,
+        formDesignData,
         updateElement,
       }),
     [
@@ -71,6 +81,11 @@ const FormElementsEdit = (props) => {
       onUploadFile,
       editElementProp,
       onContentChange,
+      onUniqueNameChange,
+      onUniqueNameBlur,
+      onCellNameChange,
+      onCellNameBlur,
+      formDesignData,
       updateElement,
     ]
   )
