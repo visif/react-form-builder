@@ -944,7 +944,14 @@ export default class ReactForm extends React.Component {
 
   getSimpleElement(item) {
     const Element = FormElements[item.element]
-    return <Element mutable={true} key={`form_${item.id}`} data={item} />
+    return (
+      <Element
+        mutable={true}
+        key={`form_${item.id}`}
+        data={item}
+        generateSectionID={this.props.generateSectionID}
+      />
+    )
   }
 
   getCustomElement(item) {

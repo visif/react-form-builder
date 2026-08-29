@@ -37,8 +37,22 @@ class Header extends React.Component {
       baseClasses += ' alwaysbreak'
     }
 
+    const rawContent = String(this.props.data.content || '')
+      .replace(/<[^>]+>/g, '')
+      .trim()
+    const generateSectionID = this.props.generateSectionID
+    const sectionId =
+      typeof generateSectionID === 'function' && rawContent
+        ? generateSectionID(rawContent)
+        : undefined
+
     return (
-      <div className={baseClasses}>
+      <div
+        className={baseClasses}
+        id={sectionId}
+        data-section={rawContent}
+        title={rawContent}
+      >
         <ComponentHeader {...this.props} />
         <h3
           className={classNames}

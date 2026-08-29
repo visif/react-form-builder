@@ -8,8 +8,18 @@ export default class Section extends React.Component {
       baseClasses += ' alwaysbreak'
     }
 
+    const header = this.props.data.header || ''
+    const generateSectionID = this.props.generateSectionID
+    const sectionId =
+      typeof generateSectionID === 'function' ? generateSectionID(header) : header
+
     return (
-      <div className={baseClasses} id={this.props.data.header}>
+      <div
+        className={baseClasses}
+        id={sectionId}
+        data-section={header}
+        title={header}
+      >
         <ComponentHeader {...this.props} />
         <h5>{this.props.data.header}</h5>
         <hr />
