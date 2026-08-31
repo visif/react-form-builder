@@ -79,6 +79,11 @@ describe('dynamic-column-row-names', () => {
     assert.equal(names.templateTagPreview('Inspection', 'จำนวน'), '#Inspection_จำนวน#')
   })
 
+  it('previews a column fill-down template tag', () => {
+    assert.equal(names.templateColumnTagPreview('WorkHistory', 0), '#WorkHistory_c1#')
+    assert.equal(names.templateColumnTagPreview('', 1), '#DynamicColumnRow1_c2#')
+  })
+
   it('refreshes auto cell names after a swap and keeps custom names', () => {
     const moving = { cellName: 'r1c1', cellNameCustom: false }
     const displaced = { cellName: 'qty', cellNameCustom: true }

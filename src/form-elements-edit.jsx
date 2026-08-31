@@ -24,7 +24,7 @@ import {
   nextDynamicColumnRowUniqueName,
   sanitizeCellName,
   sanitizeUniqueName,
-  templateTagPreview,
+  templateColumnTagPreview,
 } from './dynamic-column-row-names'
 
 const toolbar = {
@@ -648,7 +648,7 @@ export default class FormElementsEdit extends React.Component {
               </p>
             )}
             <p className="help-block">
-              Required. Used in template tags such as #Inspection_r1c1#.
+              Required. Used in template tags such as #WorkHistory_c1#.
             </p>
           </div>
         )}
@@ -686,10 +686,9 @@ export default class FormElementsEdit extends React.Component {
               <p className="help-block">
                 Default is r{'{'}row{'}'}c{'{'}col{'}'} (e.g. r1c1). Any language is allowed.
                 Template tag:{' '}
-                {templateTagPreview(
+                {templateColumnTagPreview(
                   this.props.preview.getDataById(this.props.element.parentId)?.uniqueName,
-                  this.state.element.cellName ||
-                    defaultCellName(this.state.element.row, this.state.element.col)
+                  this.state.element.col
                 )}
               </p>
             </div>

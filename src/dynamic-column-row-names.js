@@ -131,3 +131,11 @@ export function templateTagPreview(tableUniqueName, cellName) {
   const cell = sanitizeCellName(cellName) || 'r1c1'
   return `#${table}_${cell}#`
 }
+
+/** Print fill-down tag: #WorkHistory_c1# (1-based column index). */
+export function templateColumnTagPreview(tableUniqueName, col) {
+  const table = sanitizeUniqueName(tableUniqueName) || 'DynamicColumnRow1'
+  const colIndex = Number(col)
+  const colNum = Number.isFinite(colIndex) ? colIndex + 1 : 1
+  return `#${table}_c${colNum}#`
+}
