@@ -139,3 +139,36 @@ export function templateColumnTagPreview(tableUniqueName, col) {
   const colNum = Number.isFinite(colIndex) ? colIndex + 1 : 1
   return `#${table}_c${colNum}#`
 }
+
+/**
+ * SubForm tag prefix: uniqueName, then Display Label, then field_name.
+ * Empty means the table is on the master form (no prefix).
+ */
+export function subFormName(formLink) {
+  if (!formLink) {
+    return ''
+  }
+  const fromUnique = sanitizeCellName(formLink.uniqueName)
+  if (fromUnique) {
+    return fromUnique
+  }
+  const fromLabel = sanitizeCellName(formLink.label)
+  if (fromLabel) {
+    return fromLabel
+  }
+  return sanitizeCellName(formLink.field_name)
+}
+
+/** #SubFormName_table_cN# when a SubForm prefix is present; otherwise #table_cN#. */
+export function templateSubFormColumnTagPreview(formLink, tableUniqueName, col) {
+  const columnTag = templateColumnTagPreview(tableUniqueName, col)
+  const prefix = subFormName(formLink)
+  if (!prefix) {
+    return columnTag
+  }
+  const body = columnTag.slice(1, -1)
+  if (body === prefix || body.startsWith(`${prefix}_`)) {
+    return columnTag
+  }
+  return `#${prefix}_${body}#`
+}

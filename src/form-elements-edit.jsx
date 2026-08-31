@@ -25,6 +25,7 @@ import {
   sanitizeCellName,
   sanitizeUniqueName,
   templateColumnTagPreview,
+  templateSubFormColumnTagPreview,
 } from './dynamic-column-row-names'
 
 const toolbar = {
@@ -279,6 +280,20 @@ export default class FormElementsEdit extends React.Component {
       others.filter((item) => item && item.id !== this_element.id)
     )
     this_element.uniqueName = sanitized || fallback
+    this.latestElement = this_element
+    this.setState({ element: this_element, dirty: true }, () => this.updateElement())
+  }
+
+  onSubFormNameChange = (e) => {
+    const this_element = { ...(this.latestElement || this.state.element) }
+    this_element.uniqueName = e.target.value
+    this.latestElement = this_element
+    this.setState({ element: this_element, dirty: true })
+  }
+
+  onSubFormNameBlur = () => {
+    const this_element = { ...(this.latestElement || this.state.element) }
+    this_element.uniqueName = sanitizeCellName(this_element.uniqueName)
     this.latestElement = this_element
     this.setState({ element: this_element, dirty: true }, () => this.updateElement())
   }
@@ -648,7 +663,8 @@ export default class FormElementsEdit extends React.Component {
               </p>
             )}
             <p className="help-block">
-              Required. Used in template tags such as #WorkHistory_c1#.
+              Required. Used in template tags such as #WorkHistory_c1#. On a master form,
+              tables inside a SubForm use #SubFormName_WorkHistory_c1#.
             </p>
           </div>
         )}
@@ -1299,6 +1315,23 @@ export default class FormElementsEdit extends React.Component {
         )}
         {this.props.element.element === 'FormLink' && (
           <div className="form-group">
+            <label className="control-label" htmlFor="formLinkSubFormName">
+              Subform name
+            </label>
+            <input
+              id="formLinkSubFormName"
+              type="text"
+              className="form-control"
+              value={this.state.element.uniqueName || ''}
+              placeholder="Optional. Default is the Display Label."
+              onChange={this.onSubFormNameChange}
+              onBlur={this.onSubFormNameBlur}
+            />
+            <p className="help-block">
+              Prefix for Dynamic Column Row tags from this SubForm, e.g.{' '}
+              {templateSubFormColumnTagPreview(this.state.element, 'DynamicColumnRow1', 0)}.
+              Tags without a Subform name belong to the master form.
+            </p>
             <label className="control-label" htmlFor="formLinkSource">
               Select Form
             </label>

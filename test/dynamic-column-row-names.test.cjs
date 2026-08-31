@@ -84,6 +84,23 @@ describe('dynamic-column-row-names', () => {
     assert.equal(names.templateColumnTagPreview('', 1), '#DynamicColumnRow1_c2#')
   })
 
+  it('builds a subform-prefixed column tag and leaves master tags unprefixed', () => {
+    assert.equal(
+      names.templateSubFormColumnTagPreview(
+        { label: '<p>Quality Change Control Checklist</p>' },
+        'DynamicColumnRow1',
+        0
+      ),
+      '#Quality_Change_Control_Checklist_DynamicColumnRow1_c1#'
+    )
+    assert.equal(
+      names.templateSubFormColumnTagPreview({ uniqueName: 'Quality' }, '', 0),
+      '#Quality_DynamicColumnRow1_c1#'
+    )
+    assert.equal(names.templateSubFormColumnTagPreview(null, 'WorkHistory', 0), '#WorkHistory_c1#')
+    assert.equal(names.subFormName({ label: 'Safety & Environment' }), 'Safety_Environment')
+  })
+
   it('refreshes auto cell names after a swap and keeps custom names', () => {
     const moving = { cellName: 'r1c1', cellNameCustom: false }
     const displaced = { cellName: 'qty', cellNameCustom: true }
