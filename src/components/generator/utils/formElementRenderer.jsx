@@ -142,9 +142,16 @@ export const getContainerElement = (item, Element, getDataById, getInputElementF
 /**
  * Get simple display element
  */
-export const getSimpleElement = (item) => {
+export const getSimpleElement = (item, props = {}) => {
   const Element = FormElements[item.element]
-  return <Element mutable key={`form_${item.id}`} data={item} />
+  return (
+    <Element
+      mutable
+      key={`form_${item.id}`}
+      data={item}
+      generateSectionID={props.generateSectionID}
+    />
+  )
 }
 
 /**
@@ -393,6 +400,6 @@ export const renderFormElement = (item, props, handlers, helpers) => {
       )
 
     default:
-      return getSimpleElement(item)
+      return getSimpleElement(item, props)
   }
 }

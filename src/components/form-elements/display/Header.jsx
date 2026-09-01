@@ -12,8 +12,17 @@ const Header = (props) => {
     baseClasses += ' alwaysbreak'
   }
 
+  const rawContent = String(props.data.content || '')
+    .replace(/<[^>]+>/g, '')
+    .trim()
+  const { generateSectionID } = props
+  const sectionId =
+    typeof generateSectionID === 'function' && rawContent
+      ? generateSectionID(rawContent)
+      : undefined
+
   return (
-    <div className={baseClasses}>
+    <div className={baseClasses} id={sectionId} data-section={rawContent} title={rawContent}>
       <ComponentHeader {...props} />
       <Title
         level={3}

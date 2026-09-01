@@ -129,6 +129,8 @@ export type ReactFormGeneratorProps = {
   broadcastChange?: (...args: unknown[]) => unknown
   onSelectChildForm?: (...args: unknown[]) => unknown
   getFormInfo?: (...args: unknown[]) => unknown
+  /** Optional id generator for Section / Header anchors in the rendered form */
+  generateSectionID?: (label: string) => string
   form_rev_id?: string | number
   draftStorageKey?: string
   draftStorageUserId?: string | number

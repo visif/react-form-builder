@@ -10,8 +10,12 @@ const Section = (props) => {
     baseClasses += ' alwaysbreak'
   }
 
+  const header = props.data.header || ''
+  const { generateSectionID } = props
+  const sectionId = typeof generateSectionID === 'function' ? generateSectionID(header) : header
+
   return (
-    <div className={baseClasses} id={props.data.header}>
+    <div className={baseClasses} id={sectionId} data-section={header} title={header}>
       <ComponentHeader {...props} />
       <h5 className="rfb-section-title">{props.data.header}</h5>
       <hr className="rfb-section-divider" />
@@ -25,6 +29,7 @@ Section.propTypes = {
     isShowLabel: PropTypes.bool,
     pageBreakBefore: PropTypes.bool,
   }).isRequired,
+  generateSectionID: PropTypes.func,
 }
 
 export default Section

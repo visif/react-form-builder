@@ -3,7 +3,8 @@ import {
   isCellNameTaken,
   isUniqueNameTaken,
   nextDynamicColumnRowUniqueName,
-  templateTagPreview,
+  templateColumnTagPreview,
+  templateSubFormColumnTagPreview,
 } from '../../../../utils/dynamic-column-row-names'
 import DynamicColumnList from '../DynamicColumnList'
 import DynamicOptionList from '../DynamicOptionList'
@@ -35,6 +36,8 @@ export const buildFieldConfigs = ({
   onUniqueNameBlur,
   onCellNameChange,
   onCellNameBlur,
+  onSubFormNameChange,
+  onSubFormNameBlur,
   formDesignData,
   updateElement,
 }) => {
@@ -74,7 +77,10 @@ export const buildFieldConfigs = ({
                 Unique name must be unique among Dynamic Column Rows on this form.
               </span>
             )}
-            <span>Required. Used in template tags such as #Inspection_r1c1#.</span>
+            <span>
+              Required. Used in template tags such as #WorkHistory_c1#. On a master form, tables
+              inside a SubForm use #SubFormName_WorkHistory_c1#.
+            </span>
           </>
         ),
       },
@@ -105,7 +111,7 @@ export const buildFieldConfigs = ({
             )}
             <span>
               Default is r{'{'}row{'}'}c{'{'}col{'}'} (e.g. r1c1). Any language is allowed.
-              Template tag: {templateTagPreview(parentElement?.uniqueName, cellNameValue)}
+              Template tag: {templateColumnTagPreview(parentElement?.uniqueName, element.col)}
             </span>
           </>
         ),
@@ -344,6 +350,13 @@ export const buildFieldConfigs = ({
         activeForm,
         onChange: editElementProp,
         onBlur: updateElement,
+        onSubFormNameChange,
+        onSubFormNameBlur,
+        subFormTagPreview: templateSubFormColumnTagPreview(
+          element,
+          'DynamicColumnRow1',
+          0
+        ),
       },
     },
   ]

@@ -9,6 +9,9 @@ import {
   nextDynamicColumnRowUniqueName,
   sanitizeCellName,
   sanitizeUniqueName,
+  subFormName,
+  templateColumnTagPreview,
+  templateSubFormColumnTagPreview,
   templateTagPreview,
 } from './dynamic-column-row-names'
 
@@ -63,6 +66,26 @@ describe('dynamic-column-row-names', () => {
   it('previews a template tag', () => {
     expect(templateTagPreview('Inspection', 'qty')).toBe('#Inspection_qty#')
     expect(templateTagPreview('Inspection', 'จำนวน')).toBe('#Inspection_จำนวน#')
+  })
+
+  it('previews a column fill-down template tag', () => {
+    expect(templateColumnTagPreview('WorkHistory', 0)).toBe('#WorkHistory_c1#')
+    expect(templateColumnTagPreview('', 1)).toBe('#DynamicColumnRow1_c2#')
+  })
+
+  it('builds a subform-prefixed column tag and leaves master tags unprefixed', () => {
+    expect(
+      templateSubFormColumnTagPreview(
+        { label: '<p>Quality Change Control Checklist</p>' },
+        'DynamicColumnRow1',
+        0
+      )
+    ).toBe('#Quality_Change_Control_Checklist_DynamicColumnRow1_c1#')
+    expect(templateSubFormColumnTagPreview({ uniqueName: 'Quality' }, '', 0)).toBe(
+      '#Quality_DynamicColumnRow1_c1#'
+    )
+    expect(templateSubFormColumnTagPreview(null, 'WorkHistory', 0)).toBe('#WorkHistory_c1#')
+    expect(subFormName({ label: 'Safety & Environment' })).toBe('Safety_Environment')
   })
 
   it('refreshes auto cell names after a swap and keeps custom names', () => {

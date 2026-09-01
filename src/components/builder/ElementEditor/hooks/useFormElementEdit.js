@@ -178,6 +178,27 @@ export const useFormElementEdit = (props) => {
     updateElement()
   }, [props.element, updateElement])
 
+  const onSubFormNameChange = useCallback(
+    (e) => {
+      const this_element = { ...elementRef.current, uniqueName: e.target.value }
+      props.element.uniqueName = e.target.value
+      setElement(this_element)
+      elementRef.current = this_element
+      setDirty(true)
+    },
+    [props.element]
+  )
+
+  const onSubFormNameBlur = useCallback(() => {
+    const this_element = { ...elementRef.current }
+    this_element.uniqueName = sanitizeCellName(this_element.uniqueName)
+    props.element.uniqueName = this_element.uniqueName
+    setElement(this_element)
+    elementRef.current = this_element
+    setDirty(true)
+    updateElement()
+  }, [props.element, updateElement])
+
   // Handle rich text content changes
   const onContentChange = useCallback(
     (property, html) => {
@@ -250,6 +271,8 @@ export const useFormElementEdit = (props) => {
     onUniqueNameBlur,
     onCellNameChange,
     onCellNameBlur,
+    onSubFormNameChange,
+    onSubFormNameBlur,
     updateElement,
     setElement,
     setDirty,
