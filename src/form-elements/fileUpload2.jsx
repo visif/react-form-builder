@@ -1,8 +1,13 @@
 import React from 'react'
+import Lightbox from 'react-image-lightbox'
 import ComponentHeader from './component-header'
 import FormDeleteButton from './form-delete-button'
+import 'react-image-lightbox/style.css'
 
 const getSavedEditor = (editor) => (Array.isArray(editor) ? editor[0] : editor)
+const isImageFileName = (name) =>
+  /\.(jpe?g|png|gif|webp|bmp)$/i.test(`${name || ''}`)
+const filePreviewKey = (file) => file.fileName || file.originalName || ''
 
 class FileUpload extends React.Component {
   constructor(props) {
@@ -14,6 +19,8 @@ class FileUpload extends React.Component {
     this.state = {
       defaultValue: props.defaultValue && props.defaultValue.fileList,
       fileList: [...fileList],
+      previews: {},
+      lightboxSrc: '',
     }
   }
 
@@ -26,8 +33,6 @@ class FileUpload extends React.Component {
   }
 
   static getDerivedStateFromProps = (props, state) => {
-    console.log('FileUpload >> getDerivedStateFromProps')
-    console.log(props.defaultValue)
     if (
       props.defaultValue &&
       JSON.stringify(props.defaultValue.fileList) !== JSON.stringify(state.defaultValue)
@@ -36,10 +41,52 @@ class FileUpload extends React.Component {
       return {
         defaultValue: props.defaultValue && props.defaultValue.fileList,
         fileList: [...fileList],
+        previews: {},
       }
     }
 
-    return state
+    return null
+  }
+
+  componentDidMount() {
+    this.resolvePreviews()
+  }
+
+  componentDidUpdate(_prevProps, prevState) {
+    if (prevState.fileList !== this.state.fileList) {
+      this.resolvePreviews()
+    }
+  }
+
+  resolvePreviews = async () => {
+    if (typeof this.props.resolveImageUrl !== 'function') {
+      return
+    }
+    const nextPreviews = {}
+    for (const file of this.state.fileList || []) {
+      const displayName = file.originalName || file.fileName
+      if (!isImageFileName(displayName) && !isImageFileName(file.fileName)) {
+        continue
+      }
+      const candidates = [file.fileName, file.originalName].filter(Boolean)
+      let url = ''
+      for (const candidate of candidates) {
+        try {
+          url = (await this.props.resolveImageUrl(candidate)) || ''
+        } catch {
+          url = ''
+        }
+        if (url) {
+          break
+        }
+      }
+      if (url) {
+        nextPreviews[filePreviewKey(file)] = url
+      }
+    }
+    if (this.state.fileList) {
+      this.setState({ previews: nextPreviews })
+    }
   }
 
   uploadAttachFile = async (file) => {
@@ -65,17 +112,22 @@ class FileUpload extends React.Component {
 
     const newFileList = Array.from(event.target.files)
     const newResponse = []
+    const newPreviews = {}
     for (let i = 0; i < newFileList.length; i = i + 1) {
       const currentFile = newFileList[i]
       const response = await this.uploadAttachFile(currentFile)
       if (response) {
         newResponse.push(response)
+        if (currentFile.type && currentFile.type.startsWith('image/')) {
+          newPreviews[filePreviewKey(response)] = URL.createObjectURL(currentFile)
+        }
       }
     }
 
     this.setState((current) => {
       return {
         fileList: [...current.fileList, ...newResponse],
+        previews: { ...current.previews, ...newPreviews },
       }
     })
   }
@@ -159,6 +211,39 @@ class FileUpload extends React.Component {
               Upload files
             </a>
             {this.state.fileList && this.state.fileList.length > 0 && (
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: 8,
+                  marginTop: 12,
+                }}
+              >
+                {this.state.fileList.map((file, index) => {
+                  const previewSrc = this.state.previews[filePreviewKey(file)]
+                  if (!previewSrc) {
+                    return null
+                  }
+                  return (
+                    <img
+                      key={`preview-${index}`}
+                      src={previewSrc}
+                      alt={file.originalName || file.fileName}
+                      style={{
+                        width: 120,
+                        height: 120,
+                        objectFit: 'contain',
+                        cursor: 'pointer',
+                        border: '1px solid #d9d9d9',
+                        background: '#fafafa',
+                      }}
+                      onClick={() => this.setState({ lightboxSrc: previewSrc })}
+                    />
+                  )
+                })}
+              </div>
+            )}
+            {this.state.fileList && this.state.fileList.length > 0 && (
               <ul
                 style={{
                   display: 'flex',
@@ -206,6 +291,16 @@ class FileUpload extends React.Component {
             )}
           </div>
         </div>
+        {this.state.lightboxSrc && (
+          <Lightbox
+            mainSrc={this.state.lightboxSrc}
+            reactModalStyle={{
+              overlay: { zIndex: 11000 },
+              content: { zIndex: 11000 },
+            }}
+            onCloseRequest={() => this.setState({ lightboxSrc: '' })}
+          />
+        )}
       </div>
     )
   }

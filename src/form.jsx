@@ -44,6 +44,55 @@ const convert = (answers) => {
   return answers || {}
 }
 
+const isFileFieldKey = (key) => {
+  const lower = `${key || ''}`.toLowerCase()
+  return (
+    lower.startsWith('fileimage_') ||
+    lower.startsWith('fileupload_') ||
+    lower.startsWith('imageupload_')
+  )
+}
+
+const stripDeadBlobFromValue = (value) => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return value
+  }
+  if (typeof value.blobUrl === 'string' && value.blobUrl.startsWith('blob:')) {
+    return { ...value, blobUrl: '' }
+  }
+  return value
+}
+
+const hasServerFileValue = (value) => {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+  if (value.filePath) {
+    return true
+  }
+  return Array.isArray(value.fileList) && value.fileList.length > 0
+}
+
+const mergeAnswerData = (serverAnswers, draft) => {
+  const server = {}
+  Object.entries(serverAnswers || {}).forEach(([key, value]) => {
+    server[key] = isFileFieldKey(key) ? stripDeadBlobFromValue(value) : value
+  })
+  if (!draft) {
+    return server
+  }
+  const merged = { ...server }
+  Object.entries(draft).forEach(([key, value]) => {
+    if (isFileFieldKey(key) && hasServerFileValue(server[key])) {
+      return
+    }
+    merged[key] = isFileFieldKey(key) ? stripDeadBlobFromValue(value) : value
+  })
+  return merged
+}
+
+const serializeAnswerData = (answers) => JSON.stringify(answers || {})
+
 const DRAFT_AUTOSAVE_INTERVAL = 30 * 1000 // 30 seconds
 
 const buildDraftStorageKey = (props) => {
@@ -119,9 +168,10 @@ export default class ReactForm extends React.Component {
     this.handleVariableChange = this.handleVariableChange.bind(this)
     const ansData = convert(props.answer_data)
     const draft = readDraftFromStorage(props)
-    const mergedData = draft ? { ...ansData, ...draft } : ansData
+    const mergedData = mergeAnswerData(ansData, draft)
     this.state = {
       answerData: mergedData,
+      answerDataSerialized: serializeAnswerData(ansData),
       variables: this._getVariableValue(mergedData, props.data),
       draftRestored: !!draft,
     }
@@ -157,13 +207,18 @@ export default class ReactForm extends React.Component {
     }
   }
 
-  static getDerivedStateFromProps(props) {
+  static getDerivedStateFromProps(props, state) {
     const ansData = convert(props.answer_data)
+    const serialized = serializeAnswerData(ansData)
+    if (state && serialized === state.answerDataSerialized) {
+      return null
+    }
     const draft = readDraftFromStorage(props)
-    const mergedData = draft ? { ...ansData, ...draft } : ansData
+    const mergedData = mergeAnswerData(ansData, draft)
 
     return {
       answerData: mergedData,
+      answerDataSerialized: serialized,
       variables: ReactForm.prototype._getVariableValue.call(
         { props },
         mergedData,
@@ -289,10 +344,13 @@ export default class ReactForm extends React.Component {
         fileList: ref.state.fileList,
       }
     } else if (item.element === 'ImageUpload') {
+      const blobUrl = ref.state.blobUrl
       $item.value = {
         filePath: ref.state.filePath,
         fileName: ref.state.fileName,
-        blobUrl: ref.state.blobUrl,
+        // blob: URLs die when the tab closes; never persist them as the preview.
+        blobUrl:
+          blobUrl && String(blobUrl).startsWith('blob:') ? '' : blobUrl || '',
       }
     } else if (item.element === 'FormulaInput') {
       $item.value = {
@@ -707,7 +765,7 @@ export default class ReactForm extends React.Component {
     if (typeof window === 'undefined' || !window.localStorage) return
     try {
       const formData = this._collectFormData(this.props.data)
-      const draft = convert(formData)
+      const draft = mergeAnswerData(convert(formData), null)
       window.localStorage.setItem(this._getDraftStorageKey(), JSON.stringify(draft))
     } catch (_) {
       // Ignore quota / security errors
@@ -734,6 +792,7 @@ export default class ReactForm extends React.Component {
     this.setState({
       draftRestored: false,
       answerData: ansData,
+      answerDataSerialized: serializeAnswerData(ansData),
       variables: this._getVariableValue(ansData, this.props.data),
     })
   }
@@ -1150,6 +1209,7 @@ export default class ReactForm extends React.Component {
                 defaultValue={this._getDefaultValue(item)}
                 onUploadFile={this.props.onUploadFile}
                 onDownloadFile={this.props.onDownloadFile}
+                resolveImageUrl={this.props.resolveImageUrl}
                 editor={this._getEditor(item)}
                 getActiveUserProperties={this.props.getActiveUserProperties}
               />
@@ -1182,6 +1242,7 @@ export default class ReactForm extends React.Component {
                 data={item}
                 defaultValue={this._getDefaultValue(item)}
                 onUploadImage={this.props.onUploadImage}
+                resolveImageUrl={this.props.resolveImageUrl}
                 editor={this._getEditor(item)}
                 getActiveUserProperties={this.props.getActiveUserProperties}
               />

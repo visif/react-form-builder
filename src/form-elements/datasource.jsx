@@ -1,6 +1,20 @@
 import React from 'react'
+import ReactDOM from 'react-dom'
 import ComponentHeader from './component-header'
 import ComponentLabel from './component-label'
+
+const DROPDOWN_MAX_HEIGHT = 250
+
+const toSourceList = (data) => (Array.isArray(data) ? data : [])
+
+const matchSourceList = (sourceList, value) => {
+  const list = toSourceList(sourceList)
+  if (value === undefined || value === null || `${value}`.trim() === '') {
+    return list
+  }
+  const query = `${value}`.toLocaleLowerCase()
+  return list.filter((item) => `${item.name}`.toLocaleLowerCase().includes(query))
+}
 
 class DataSource extends React.Component {
   constructor(props) {
@@ -9,6 +23,7 @@ class DataSource extends React.Component {
     this.mounted = false
     this.syncInProgress = false // Flag to prevent infinite sync loops
     this.lastSyncTimestamp = 0 // Timestamp to prevent rapid sync cycles
+    this.blurTimer = null
 
     const defaultValue = props.defaultValue || {}
 
@@ -19,6 +34,7 @@ class DataSource extends React.Component {
       selectedItem: defaultValue.selectedItem,
       defaultSelectedItem: defaultValue.selectedItem,
       isShowingList: false,
+      dropdownStyle: null,
       sourceType: props.data.sourceType,
       getDataSource: props.getDataSource,
       loading: true,
@@ -33,6 +49,8 @@ class DataSource extends React.Component {
 
   componentWillUnmount() {
     this.mounted = false
+    this.clearBlurTimer()
+    this.detachPositionListeners()
   }
 
   checkForValue = (attempt = 0) => {
@@ -93,9 +111,10 @@ class DataSource extends React.Component {
       try {
         const data = await this.props.getDataSource(this.props.data)
         if (this.mounted) {
+          const sourceList = toSourceList(data)
           this.setState({
-            sourceList: data,
-            matchedList: data,
+            sourceList,
+            matchedList: matchSourceList(sourceList, this.state.searchText),
           })
         }
       } catch (error) {
@@ -184,27 +203,88 @@ class DataSource extends React.Component {
     }
   }
 
-  handleInputFocus = () => {
+  clearBlurTimer = () => {
+    if (this.blurTimer) {
+      clearTimeout(this.blurTimer)
+      this.blurTimer = null
+    }
+  }
+
+  getInputElement = () => this.inputField.current
+
+  updateDropdownPosition = () => {
+    const input = this.getInputElement()
+    if (!input || typeof window === 'undefined') {
+      return
+    }
+    const rect = input.getBoundingClientRect()
+    const spaceBelow = window.innerHeight - rect.bottom
+    const spaceAbove = rect.top
+    const openUp = spaceBelow < DROPDOWN_MAX_HEIGHT && spaceAbove > spaceBelow
+    const maxHeight = Math.max(
+      80,
+      Math.min(DROPDOWN_MAX_HEIGHT, (openUp ? spaceAbove : spaceBelow) - 8)
+    )
     this.setState({
-      isShowingList: true,
+      dropdownStyle: {
+        position: 'fixed',
+        left: rect.left,
+        width: rect.width,
+        top: openUp ? undefined : rect.bottom,
+        bottom: openUp ? window.innerHeight - rect.top : undefined,
+        maxHeight,
+        zIndex: 10050,
+        overflowY: 'auto',
+        backgroundColor: '#fff',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+      },
     })
   }
 
+  attachPositionListeners = () => {
+    if (this.positionListenersAttached || typeof window === 'undefined') {
+      return
+    }
+    this.positionListenersAttached = true
+    this.onReposition = () => {
+      if (this.state.isShowingList) {
+        this.updateDropdownPosition()
+      }
+    }
+    window.addEventListener('resize', this.onReposition)
+    window.addEventListener('scroll', this.onReposition, true)
+  }
+
+  detachPositionListeners = () => {
+    if (!this.positionListenersAttached || typeof window === 'undefined') {
+      return
+    }
+    this.positionListenersAttached = false
+    window.removeEventListener('resize', this.onReposition)
+    window.removeEventListener('scroll', this.onReposition, true)
+  }
+
+  handleInputFocus = () => {
+    this.clearBlurTimer()
+    this.updateDropdownPosition()
+    this.setState({ isShowingList: true })
+    this.attachPositionListeners()
+  }
+
   handleInputBlur = () => {
-    setTimeout(() => {
-      this.setState({
-        isShowingList: false,
-      })
+    this.clearBlurTimer()
+    this.blurTimer = setTimeout(() => {
+      if (this.mounted) {
+        this.setState({ isShowingList: false })
+        this.detachPositionListeners()
+      }
     }, 200)
   }
 
   debounceOnChange = (value) => {
-    const matchData = this.state.sourceList.filter((item) =>
-      `${item.name}`.toLocaleLowerCase().includes(`${value}`.toLocaleLowerCase())
-    )
     this.setState({
       searchText: value,
-      matchedList: matchData,
+      matchedList: matchSourceList(this.state.sourceList, value),
     })
   }
 
@@ -225,6 +305,7 @@ class DataSource extends React.Component {
         searchText: item.name,
         isShowingList: false,
       })
+      this.detachPositionListeners()
       return
     }
 
@@ -233,9 +314,10 @@ class DataSource extends React.Component {
       searchText: item.name,
       isShowingList: false,
     })
+    this.detachPositionListeners()
 
     // Only notify parent about user-initiated selections, not sync updates
-    if (this.props.data.parentId && this.props.onElementChange && !this.state.loading) {
+    if (this.props.data.parentId && this.props.onElementChange) {
       this.lastSyncTimestamp = currentTime
       this.props.onElementChange({
         ...this.props.data,
@@ -296,21 +378,56 @@ class DataSource extends React.Component {
       type: 'text',
       className: 'form-control',
       name: this.props.data.field_name,
-      value: this.state.searchText,
+      value: this.state.searchText || '',
+      ref: this.inputField,
     }
     if (tooltipText) {
       props.title = tooltipText
-    }
-
-    if (this.props.mutable) {
-      props.defaultValue = this.props.defaultValue
-      props.ref = this.inputField
     }
 
     let baseClasses = `${this.props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
     if (this.props.data.pageBreakBefore) {
       baseClasses += ' alwaysbreak'
     }
+
+    const optionStyle = {
+      position: 'relative',
+      display: 'block',
+      padding: '0.75rem 1.25rem',
+      marginBottom: -1,
+      backgroundColor: '#fff',
+      border: '1px solid rgba(0, 0, 0, 0.125)',
+    }
+    const matchedList = this.state.matchedList || []
+    const dropdown =
+      this.state.isShowingList && this.state.dropdownStyle && typeof document !== 'undefined'
+        ? ReactDOM.createPortal(
+            <div
+              style={this.state.dropdownStyle}
+              onMouseDown={(event) => event.preventDefault()}
+            >
+              {this.state.loading && matchedList.length === 0 && (
+                <div style={{ ...optionStyle, color: '#888' }}>Loading...</div>
+              )}
+              {!this.state.loading && matchedList.length === 0 && (
+                <div style={{ ...optionStyle, color: '#888' }}>No options</div>
+              )}
+              {matchedList.map((item) => (
+                <div
+                  key={item.id}
+                  style={{ ...optionStyle, cursor: 'pointer' }}
+                  onMouseDown={(event) => {
+                    event.preventDefault()
+                    this.handleSelectItem(item)
+                  }}
+                >
+                  {item.name}
+                </div>
+              ))}
+            </div>,
+            document.body
+          )
+        : null
 
     return (
       <div className={baseClasses}>
@@ -327,41 +444,13 @@ class DataSource extends React.Component {
             <div>
               <input
                 {...props}
-                disabled={this.props.read_only || !isSameEditor || this.state.loading}
+                disabled={this.props.read_only || !isSameEditor}
                 onFocus={this.handleInputFocus}
                 onBlur={this.handleInputBlur}
                 onChange={this.handleOnChange}
               />
             </div>
-            <div
-              style={{
-                position: 'absolute',
-                zIndex: 199,
-                top: '100%',
-                left: 0,
-                right: 0,
-                height: 250,
-                overflowY: 'auto',
-                display: this.state.isShowingList ? 'block' : 'none',
-              }}
-            >
-              {(this.state.matchedList || []).map((item) => (
-                <div
-                  key={item.id}
-                  style={{
-                    position: 'relative',
-                    display: 'block',
-                    padding: '0.75rem 1.25rem',
-                    marginBottom: -1,
-                    backgroundColor: '#fff',
-                    border: '1px solid rgba(0, 0, 0, 0.125)',
-                  }}
-                  onClick={() => this.handleSelectItem(item)}
-                >
-                  {item.name}
-                </div>
-              ))}
-            </div>
+            {dropdown}
           </div>
         </div>
       </div>

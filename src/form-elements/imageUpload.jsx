@@ -5,7 +5,20 @@ import 'react-image-lightbox/style.css'
 import ComponentHeader from './component-header'
 import ComponentLabel from './component-label'
 
-const isBrowserUrl = (value) => !!value && /^(https?:|blob:|data:)/i.test(value)
+const isDurableBrowserUrl = (value) => !!value && /^(https?:|data:)/i.test(value)
+const isSameSessionBlobUrl = (value) => !!value && /^blob:/i.test(value)
+const isBrowserUrl = (value) => isDurableBrowserUrl(value) || isSameSessionBlobUrl(value)
+
+/** Saved blob: URLs die with the tab. Only http/data URLs from props are previewable. */
+const durablePreviewFromProps = (filePath, blobUrl) => {
+  if (isDurableBrowserUrl(blobUrl)) {
+    return blobUrl
+  }
+  if (isDurableBrowserUrl(filePath)) {
+    return filePath
+  }
+  return ''
+}
 
 // This only needs to be imported once in your app
 
@@ -17,8 +30,7 @@ class ImageUpload extends React.Component {
     const filePath = props.defaultValue && props.defaultValue.filePath
     const fileName = props.defaultValue && props.defaultValue.fileName
     const blobUrl = props.defaultValue && props.defaultValue.blobUrl
-    const initialDisplay =
-      isBrowserUrl(blobUrl) || isBrowserUrl(filePath) ? blobUrl || filePath : ''
+    const initialDisplay = durablePreviewFromProps(filePath, blobUrl)
 
     this.state = {
       defaultValue: props.defaultValue,
@@ -32,8 +44,6 @@ class ImageUpload extends React.Component {
   }
 
   static getDerivedStateFromProps = (props, state) => {
-    console.log('ImageUpload >> getDerivedStateFromProps')
-    console.log(props.defaultValue)
     if (
       props.defaultValue &&
       JSON.stringify(props.defaultValue) !== JSON.stringify(state.defaultValue)
@@ -41,8 +51,7 @@ class ImageUpload extends React.Component {
       const filePath = props.defaultValue && props.defaultValue.filePath
       const fileName = props.defaultValue && props.defaultValue.fileName
       const blobUrl = props.defaultValue && props.defaultValue.blobUrl
-      const displayUrl =
-        isBrowserUrl(blobUrl) || isBrowserUrl(filePath) ? blobUrl || filePath : ''
+      const displayUrl = durablePreviewFromProps(filePath, blobUrl)
 
       return {
         defaultValue: props.defaultValue,
@@ -260,11 +269,11 @@ class ImageUpload extends React.Component {
         {this.state.isOpen && previewSrc && (
           <Lightbox
             mainSrc={previewSrc}
-            // Form opens inside Ant Design Drawer (z-index ~1000). Default lightbox
-            // overlay is also 1000, so raise it so original-size preview appears on top.
+            // Task drawer overlays and Ant Design Drawer sit well above the
+            // library default (1000). Keep the original-size preview on top.
             reactModalStyle={{
-              overlay: { zIndex: 2000 },
-              content: { zIndex: 2000 },
+              overlay: { zIndex: 11000 },
+              content: { zIndex: 11000 },
             }}
             onCloseRequest={() => this.setState({ isOpen: false })}
           />
