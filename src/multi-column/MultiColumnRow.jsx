@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import React from 'react'
 import ComponentHeader from '../form-elements/component-header'
-import ComponentLabel from '../form-elements/component-label'
+import ComponentLabel, { RequiredBadge } from '../form-elements/component-label'
 import useSyncColumnChanges from '../hooks/useSyncColumnChanges'
 import ItemTypes from '../ItemTypes'
 import Dustbin from './dustbin'
@@ -120,11 +120,7 @@ const MultiColumnRow = (props) => {
                     }}
                   >
                     <span dangerouslySetInnerHTML={{ __html: stripPTags(column.text) }} />
-                    {column.required && (
-                      <span className="label-required badge badge-danger ml-1">
-                        Required
-                      </span>
-                    )}
+                    {column.required && <RequiredBadge />}
                   </th>
                 ))}
               </tr>
@@ -170,15 +166,6 @@ const MultiColumnRow = (props) => {
                     }
                   }
 
-                  const childItem =
-                    getDataById && item
-                      ? getDataById(item)
-                      : null
-                  const showRequiredBadge =
-                    data.element === 'DynamicColumnRow' &&
-                    childItem?.required === true &&
-                    childItem?.displayLabelInColumn !== true
-
                   return (
                     <td
                       key={`${rowIndex}_${columnIndex}_${item || '_'}`}
@@ -192,14 +179,6 @@ const MultiColumnRow = (props) => {
                         // overflow: 'hidden',
                       }}
                     >
-                      {showRequiredBadge && !controls && (
-                        <span
-                          className="label-required badge badge-danger"
-                          style={{ display: 'inline-block', marginBottom: 4 }}
-                        >
-                          Required
-                        </span>
-                      )}
                       {controls ? (
                         controls[rowIndex]?.[columnIndex]
                       ) : (

@@ -10,15 +10,30 @@ const stripPTags = (html) => {
   return html.replace(/<p>/gi, '').replace(/<\/p>/gi, '').trim()
 }
 
-const RequiredBadge = () => (
-  <span className="label-required badge badge-danger">Required</span>
+export const REQUIRED_BADGE_STYLE = {
+  display: 'inline-block',
+  margin: '0 0 4px 0',
+  padding: '2px 6px',
+  fontSize: 11,
+  fontWeight: 700,
+  lineHeight: 1.2,
+  color: '#fff',
+  backgroundColor: '#dc3545',
+  borderRadius: 4,
+  verticalAlign: 'middle',
+}
+
+export const RequiredBadge = () => (
+  <span className="label-required badge badge-danger" style={REQUIRED_BADGE_STYLE}>
+    Required
+  </span>
 )
+
+const isRequiredValue = (value) => value === true || value === 'true'
 
 const ComponentLabel = (props) => {
   const hasRequiredLabel =
-    Object.prototype.hasOwnProperty.call(props.data || {}, 'required') &&
-    props.data.required === true &&
-    !props.read_only
+    isRequiredValue(props.data?.required) && !props.read_only
 
   const hideLabelSetting =
     (props.data.isShowLabel !== undefined && props.data.isShowLabel === false) ||

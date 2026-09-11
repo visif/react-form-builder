@@ -965,44 +965,34 @@ export default class ReactForm extends React.Component {
   }
 
   getContainerElement(item, Element) {
-    const isDynamicColumnRow = item.element === 'DynamicColumnRow'
-    const readOnly = !!this.props.read_only
-    const renderCell = (x) => {
-      const currentItem = this.getDataById(x)
-      if (!(x && currentItem)) {
-        return <div>&nbsp;</div>
-      }
-      const control = this.getInputElement(currentItem)
-      if (
-        isDynamicColumnRow &&
-        currentItem.required === true &&
-        currentItem.displayLabelInColumn !== true &&
-        !readOnly &&
-        !currentItem.readOnly
-      ) {
-        return (
-          <>
-            <span
-              className="label-required badge badge-danger"
-              style={{ display: 'inline-block', marginBottom: 4 }}
-            >
-              Required
-            </span>
-            {control}
-          </>
-        )
-      }
-      return control
-    }
     const controls = Array.isArray(item.childItems[0])
-      ? item.childItems.map((row) => row.map(renderCell))
-      : [item.childItems.map(renderCell)]
+      ? item.childItems.map((row) =>
+          row.map((x) => {
+            const currentItem = this.getDataById(x)
+            return x && currentItem ? (
+              this.getInputElement(currentItem)
+            ) : (
+              <div>&nbsp;</div>
+            )
+          }),
+        )
+      : [
+          item.childItems.map((x) => {
+            const currentItem = this.getDataById(x)
+            return x && currentItem ? (
+              this.getInputElement(currentItem)
+            ) : (
+              <div>&nbsp;</div>
+            )
+          }),
+        ]
     return (
       <Element
         mutable={true}
         key={`form_${item.id}`}
         data={item}
         controls={controls}
+        getDataById={this.getDataById}
         getFormInfo={this.props.getFormInfo}
         getFormSource={this.props.getFormSource}
         onSelectChildForm={this.props.onSelectChildForm}
