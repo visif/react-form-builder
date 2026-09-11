@@ -23,17 +23,73 @@ export const REQUIRED_BADGE_STYLE = {
   verticalAlign: 'middle',
 }
 
+export const REQUIRED_ASTERISK_STYLE = {
+  color: '#dc3545',
+  fontWeight: 700,
+  fontSize: 16,
+  lineHeight: 1,
+  margin: 0,
+}
+
+export const DCR_REQUIRED_MARK_STYLE = {
+  position: 'absolute',
+  left: 6,
+  top: '50%',
+  transform: 'translateY(-50%)',
+  zIndex: 30,
+  margin: 0,
+  padding: 0,
+  width: 'auto',
+  height: 'auto',
+  display: 'block',
+  color: '#dc3545',
+  fontWeight: 700,
+  fontSize: 16,
+  lineHeight: 1,
+  pointerEvents: 'none',
+}
+
 export const RequiredBadge = () => (
   <span className="label-required badge badge-danger" style={REQUIRED_BADGE_STYLE}>
     Required
   </span>
 )
 
+export const RequiredAsterisk = () => (
+  <span
+    className="rfb-required-asterisk"
+    style={REQUIRED_ASTERISK_STYLE}
+    aria-label="Required"
+  >
+    *
+  </span>
+)
+
 const isRequiredValue = (value) => value === true || value === 'true'
+
+const isDynamicColumnChild = (data, mutable) => {
+  if (!data?.parentId || data.row === undefined || data.col === undefined) {
+    return false
+  }
+  const parent =
+    mutable && typeof mutable.getDataById === 'function'
+      ? mutable.getDataById(data.parentId)
+      : null
+  if (parent?.element) {
+    return parent.element === 'DynamicColumnRow'
+  }
+  return data.hideLabel === true
+}
 
 const ComponentLabel = (props) => {
   const hasRequiredLabel =
     isRequiredValue(props.data?.required) && !props.read_only
+  const inDynamicColumn = isDynamicColumnChild(props.data, props.mutable)
+  const requiredMark = inDynamicColumn ? (
+    <RequiredAsterisk />
+  ) : (
+    <RequiredBadge />
+  )
 
   const hideLabelSetting =
     (props.data.isShowLabel !== undefined && props.data.isShowLabel === false) ||
@@ -61,8 +117,11 @@ const ComponentLabel = (props) => {
       return null
     }
     return (
-      <label className={props.className || ''}>
-        <RequiredBadge />
+      <label
+        className={`${props.className || ''} rfb-dcr-required-mark`.trim()}
+        style={DCR_REQUIRED_MARK_STYLE}
+      >
+        {requiredMark}
       </label>
     )
   }
@@ -77,7 +136,7 @@ const ComponentLabel = (props) => {
   return (
     <label className={props.className || ''}>
       <span dangerouslySetInnerHTML={{ __html: labelText }} />
-      {hasRequiredLabel && <RequiredBadge />}
+      {hasRequiredLabel && requiredMark}
     </label>
   )
 }

@@ -32,7 +32,9 @@ const MultiColumnRow = (props) => {
   } = props
 
   const { childItems = [], pageBreakBefore } = data
-  const baseClasses = `SortableItem rfb-item ${pageBreakBefore ? 'alwaysbreak' : ''}`
+  const baseClasses = `SortableItem rfb-item ${pageBreakBefore ? 'alwaysbreak' : ''}${
+    data.element === 'DynamicColumnRow' ? ' rfb-dcr' : ''
+  }`
 
   // Check if row labels are defined in data
   const hasRowLabels = Array.isArray(data.rowLabels) && data.rowLabels.length > 0
