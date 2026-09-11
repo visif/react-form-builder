@@ -34,8 +34,8 @@ export const REQUIRED_ASTERISK_STYLE = {
 export const DCR_REQUIRED_MARK_STYLE = {
   position: 'absolute',
   left: 6,
-  top: '50%',
-  transform: 'translateY(-50%)',
+  top: 0,
+  transform: 'translateY(-100%)',
   zIndex: 30,
   margin: 0,
   padding: 0,
