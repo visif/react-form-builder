@@ -170,6 +170,15 @@ const MultiColumnRow = (props) => {
                     }
                   }
 
+                  const childItem =
+                    getDataById && item
+                      ? getDataById(item)
+                      : null
+                  const showRequiredBadge =
+                    data.element === 'DynamicColumnRow' &&
+                    childItem?.required === true &&
+                    childItem?.displayLabelInColumn !== true
+
                   return (
                     <td
                       key={`${rowIndex}_${columnIndex}_${item || '_'}`}
@@ -183,6 +192,14 @@ const MultiColumnRow = (props) => {
                         // overflow: 'hidden',
                       }}
                     >
+                      {showRequiredBadge && !controls && (
+                        <span
+                          className="label-required badge badge-danger"
+                          style={{ display: 'inline-block', marginBottom: 4 }}
+                        >
+                          Required
+                        </span>
+                      )}
                       {controls ? (
                         controls[rowIndex]?.[columnIndex]
                       ) : (
