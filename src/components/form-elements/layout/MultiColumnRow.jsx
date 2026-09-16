@@ -4,7 +4,7 @@ import React from 'react'
 import ItemTypes from '../../../constants/itemTypes'
 import useSyncColumnChanges from '../../../hooks/useSyncColumnChanges'
 import ComponentHeader from '../shared/ComponentHeader'
-import ComponentLabel from '../shared/ComponentLabel'
+import ComponentLabel, { RequiredBadge } from '../shared/ComponentLabel'
 import Dustbin from './dustbin'
 
 const accepts = [ItemTypes.BOX, ItemTypes.CARD]
@@ -33,7 +33,9 @@ const MultiColumnRow = (props) => {
   } = props
 
   const { childItems = [], pageBreakBefore } = data
-  const baseClasses = `SortableItem rfb-item ${pageBreakBefore ? 'alwaysbreak' : ''}`
+  const baseClasses = `SortableItem rfb-item ${pageBreakBefore ? 'alwaysbreak' : ''}${
+    data.element === 'DynamicColumnRow' ? ' rfb-dcr' : ''
+  }`
 
   // Check if row labels are defined in data
   const hasRowLabels = Array.isArray(data.rowLabels) && data.rowLabels.length > 0
@@ -107,9 +109,7 @@ const MultiColumnRow = (props) => {
                     }}
                   >
                     <span dangerouslySetInnerHTML={{ __html: stripPTags(column.text) }} />
-                    {column.required && (
-                      <span className="label-required badge badge-danger ml-1">Required</span>
-                    )}
+                    {column.required && <RequiredBadge />}
                   </th>
                 ))}
               </tr>
@@ -170,41 +170,23 @@ const MultiColumnRow = (props) => {
                       {controls ? (
                         controls[rowIndex]?.[columnIndex]
                       ) : (
-                        <>
-                          {(() => {
-                            const childItem =
-                              getDataById && getDataById(childItems[rowIndex][columnIndex])
-                            return childItem?.required === true && childItem?.hideLabel === true ? (
-                              <span
-                                style={{
-                                  color: 'red',
-                                  fontSize: '11px',
-                                  display: 'block',
-                                  marginBottom: '4px',
-                                }}
-                              >
-                                * Required
-                              </span>
-                            ) : null
-                          })()}
-                          <Dustbin
-                            style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}
-                            data={data}
-                            accepts={accepts}
-                            items={childItems[rowIndex]}
-                            row={rowIndex}
-                            col={columnIndex}
-                            parentIndex={index}
-                            editModeOn={editModeOn}
-                            _onDestroy={() => removeChild(data, rowIndex, columnIndex)}
-                            getDataById={getDataById}
-                            setAsChild={setAsChild}
-                            seq={seq}
-                            syncColumnChanges={syncColumnChanges}
-                            updateElement={updateElement}
-                            {...props}
-                          />
-                        </>
+                        <Dustbin
+                          style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}
+                          data={data}
+                          accepts={accepts}
+                          items={childItems[rowIndex]}
+                          row={rowIndex}
+                          col={columnIndex}
+                          parentIndex={index}
+                          editModeOn={editModeOn}
+                          _onDestroy={() => removeChild(data, rowIndex, columnIndex)}
+                          getDataById={getDataById}
+                          setAsChild={setAsChild}
+                          seq={seq}
+                          syncColumnChanges={syncColumnChanges}
+                          updateElement={updateElement}
+                          {...props}
+                        />
                       )}
                     </td>
                   )

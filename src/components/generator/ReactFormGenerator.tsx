@@ -79,6 +79,7 @@ import FormValidator from './FormValidator'
 import {
   clearDraftData,
   hasDraft,
+  mergeAnswerData,
   readDraftFromStorage,
   useDraftPersistence,
 } from './hooks/useDraftPersistence'
@@ -102,14 +103,14 @@ const ReactForm = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
   const [answerData, setAnswerData] = useState(() => {
     const ansData = convertAnswerData(props.answer_data)
     const draft = readDraftFromStorage(props)
-    return draft ? { ...ansData, ...draft } : ansData
+    return mergeAnswerData(ansData, draft)
   })
 
   // Initialize variables in context
   useEffect(() => {
     const ansData = convertAnswerData(props.answer_data)
     const draft = readDraftFromStorage(props)
-    const merged = draft ? { ...ansData, ...draft } : ansData
+    const merged = mergeAnswerData(ansData, draft)
     const initialVariables = getVariableValueHelper(merged, props.data)
     formContext.setAllVariables(initialVariables)
   }, []) // Only on mount
@@ -118,7 +119,7 @@ const ReactForm = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
   useEffect(() => {
     const ansData = convertAnswerData(props.answer_data)
     const draft = readDraftFromStorage(props)
-    const merged = draft ? { ...ansData, ...draft } : ansData
+    const merged = mergeAnswerData(ansData, draft)
     setAnswerData(merged)
     const newVariables = getVariableValueHelper(merged, props.data)
     formContext.setAllVariables(newVariables)

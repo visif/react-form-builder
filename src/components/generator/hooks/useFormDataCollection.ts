@@ -108,7 +108,17 @@ export const useFormDataCollection = (
       const oldEditor = getEditor(item)
 
       if (contextValue !== undefined) {
-        itemData.value = contextValue
+        let value = contextValue
+        if (
+          value &&
+          typeof value === 'object' &&
+          !Array.isArray(value) &&
+          typeof value.blobUrl === 'string' &&
+          value.blobUrl.startsWith('blob:')
+        ) {
+          value = { ...value, blobUrl: '' }
+        }
+        itemData.value = value
         itemData.editor = oldEditor || (hasCollectedValue(item, contextValue) ? activeUser : null)
         return itemData
       }

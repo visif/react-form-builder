@@ -8,6 +8,13 @@ import ComponentLabel from '../shared/ComponentLabel'
 import FormDeleteButton from '../shared/FormDeleteButton'
 
 const isBrowserUrl = (value) => !!value && /^(https?:|blob:|data:)/i.test(value)
+const isDurableBrowserUrl = (value) => !!value && /^(https?:|data:)/i.test(value)
+
+const durablePreviewFromProps = (filePath, blobUrl) => {
+  if (isDurableBrowserUrl(blobUrl)) return blobUrl
+  if (isDurableBrowserUrl(filePath)) return filePath
+  return ''
+}
 
 const ImageUpload = (props) => {
   const inputField = React.useRef(null)
@@ -15,8 +22,7 @@ const ImageUpload = (props) => {
   const initFilePath = props.defaultValue && props.defaultValue.filePath
   const initFileName = props.defaultValue && props.defaultValue.fileName
   const initBlobUrl = props.defaultValue && props.defaultValue.blobUrl
-  const initialDisplay =
-    isBrowserUrl(initBlobUrl) || isBrowserUrl(initFilePath) ? initBlobUrl || initFilePath : ''
+  const initialDisplay = durablePreviewFromProps(initFilePath, initBlobUrl)
 
   const [defaultValue, setDefaultValue] = React.useState(props.defaultValue)
   const [filePath, setFilePath] = React.useState(initFilePath)
@@ -69,8 +75,7 @@ const ImageUpload = (props) => {
       const newFilePath = props.defaultValue && props.defaultValue.filePath
       const newFileName = props.defaultValue && props.defaultValue.fileName
       const newBlobUrl = props.defaultValue && props.defaultValue.blobUrl
-      const nextDisplay =
-        isBrowserUrl(newBlobUrl) || isBrowserUrl(newFilePath) ? newBlobUrl || newFilePath : ''
+      const nextDisplay = durablePreviewFromProps(newFilePath, newBlobUrl)
 
       setDefaultValue(props.defaultValue)
       setFilePath(newFilePath)
@@ -284,7 +289,7 @@ const ImageUpload = (props) => {
               preview={{
                 visible: isOpen,
                 onVisibleChange: (visible) => setIsOpen(visible),
-                zIndex: 2000,
+                zIndex: 11000,
               }}
             />
           ) : filePath && !resolveDone ? (

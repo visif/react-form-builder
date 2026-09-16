@@ -1,15 +1,41 @@
 import React from 'react'
+import { createPortal } from 'react-dom'
 
 import { Input } from 'antd'
 
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
 
+const DROPDOWN_MAX_HEIGHT = 250
+
+const toSourceList = (data) => (Array.isArray(data) ? data : [])
+
+const matchSourceList = (sourceList, value) => {
+  const list = toSourceList(sourceList)
+  if (value === undefined || value === null || `${value}`.trim() === '') {
+    return list
+  }
+  const query = `${value}`.toLocaleLowerCase()
+  return list.filter((item) => `${item.name}`.toLocaleLowerCase().includes(query))
+}
+
+const optionStyle = {
+  position: 'relative',
+  display: 'block',
+  padding: '0.75rem 1.25rem',
+  marginBottom: -1,
+  backgroundColor: '#fff',
+  border: '1px solid rgba(0, 0, 0, 0.125)',
+}
+
 const DataSource = (props) => {
   const inputField = React.useRef(null)
   const mounted = React.useRef(false)
   const syncInProgress = React.useRef(false) // Flag to prevent infinite sync loops
   const lastSyncTimestamp = React.useRef(0) // Timestamp to prevent rapid sync cycles
+  const blurTimer = React.useRef(null)
+  const positionListenersAttached = React.useRef(false)
+  const isShowingListRef = React.useRef(false)
 
   const defaultValue = props.defaultValue || {}
 
@@ -19,7 +45,78 @@ const DataSource = (props) => {
   const [selectedItem, setSelectedItem] = React.useState(defaultValue.selectedItem)
   const [defaultSelectedItem, setDefaultSelectedItem] = React.useState(defaultValue.selectedItem)
   const [isShowingList, setIsShowingList] = React.useState(false)
+  const [dropdownStyle, setDropdownStyle] = React.useState(null)
   const [loading, setLoading] = React.useState(true)
+
+  const clearBlurTimer = React.useCallback(() => {
+    if (blurTimer.current) {
+      clearTimeout(blurTimer.current)
+      blurTimer.current = null
+    }
+  }, [])
+
+  const getInputElement = React.useCallback(() => {
+    const ref = inputField.current
+    if (!ref) {
+      return null
+    }
+    // Ant Design Input may expose the native input via input/inputElement
+    if (ref instanceof HTMLElement) {
+      return ref
+    }
+    return ref.input || ref.inputElement || ref.nativeElement || null
+  }, [])
+
+  const updateDropdownPosition = React.useCallback(() => {
+    const input = getInputElement()
+    if (!input || typeof window === 'undefined') {
+      return
+    }
+    const rect = input.getBoundingClientRect()
+    const spaceBelow = window.innerHeight - rect.bottom
+    const spaceAbove = rect.top
+    const openUp = spaceBelow < DROPDOWN_MAX_HEIGHT && spaceAbove > spaceBelow
+    const maxHeight = Math.max(
+      80,
+      Math.min(DROPDOWN_MAX_HEIGHT, (openUp ? spaceAbove : spaceBelow) - 8)
+    )
+    setDropdownStyle({
+      position: 'fixed',
+      left: rect.left,
+      width: rect.width,
+      top: openUp ? undefined : rect.bottom,
+      bottom: openUp ? window.innerHeight - rect.top : undefined,
+      maxHeight,
+      zIndex: 10050,
+      overflowY: 'auto',
+      backgroundColor: '#fff',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    })
+  }, [getInputElement])
+
+  const onReposition = React.useCallback(() => {
+    if (isShowingListRef.current) {
+      updateDropdownPosition()
+    }
+  }, [updateDropdownPosition])
+
+  const detachPositionListeners = React.useCallback(() => {
+    if (!positionListenersAttached.current || typeof window === 'undefined') {
+      return
+    }
+    positionListenersAttached.current = false
+    window.removeEventListener('resize', onReposition)
+    window.removeEventListener('scroll', onReposition, true)
+  }, [onReposition])
+
+  const attachPositionListeners = React.useCallback(() => {
+    if (positionListenersAttached.current || typeof window === 'undefined') {
+      return
+    }
+    positionListenersAttached.current = true
+    window.addEventListener('resize', onReposition)
+    window.addEventListener('scroll', onReposition, true)
+  }, [onReposition])
 
   const notifyParentOfInitialization = React.useCallback(() => {
     // Only notify parent once the component is fully initialized and not during sync operations
@@ -75,8 +172,9 @@ const DataSource = (props) => {
       try {
         const data = await props.getDataSource(props.data)
         if (mounted.current) {
-          setSourceList(data)
-          setMatchedList(data)
+          const list = toSourceList(data)
+          setSourceList(list)
+          setMatchedList(matchSourceList(list, searchText))
         }
       } catch (error) {
         console.warn('Error loading data source:', error)
@@ -86,7 +184,7 @@ const DataSource = (props) => {
         }
       }
     }
-  }, [props])
+  }, [props, searchText])
 
   React.useEffect(() => {
     mounted.current = true
@@ -100,9 +198,15 @@ const DataSource = (props) => {
 
     return () => {
       mounted.current = false
+      clearBlurTimer()
+      detachPositionListeners()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  React.useEffect(() => {
+    isShowingListRef.current = isShowingList
+  }, [isShowingList])
 
   React.useEffect(() => {
     // Handle sync updates from other DataSource components in the same column
@@ -133,22 +237,28 @@ const DataSource = (props) => {
   }, [props.data, props.defaultValue, props.updateElement, selectedItem, defaultSelectedItem])
 
   const handleInputFocus = React.useCallback(() => {
+    clearBlurTimer()
+    updateDropdownPosition()
     setIsShowingList(true)
-  }, [])
+    isShowingListRef.current = true
+    attachPositionListeners()
+  }, [clearBlurTimer, updateDropdownPosition, attachPositionListeners])
 
   const handleInputBlur = React.useCallback(() => {
-    setTimeout(() => {
-      setIsShowingList(false)
+    clearBlurTimer()
+    blurTimer.current = setTimeout(() => {
+      if (mounted.current) {
+        setIsShowingList(false)
+        isShowingListRef.current = false
+        detachPositionListeners()
+      }
     }, 200)
-  }, [])
+  }, [clearBlurTimer, detachPositionListeners])
 
   const debounceOnChange = React.useCallback(
     (value) => {
-      const matchData = sourceList.filter((item) =>
-        `${item.name}`.toLocaleLowerCase().includes(`${value}`.toLocaleLowerCase())
-      )
       setSearchText(value)
-      setMatchedList(matchData)
+      setMatchedList(matchSourceList(sourceList, value))
     },
     [sourceList]
   )
@@ -172,12 +282,16 @@ const DataSource = (props) => {
         setSelectedItem(item)
         setSearchText(item.name)
         setIsShowingList(false)
+        isShowingListRef.current = false
+        detachPositionListeners()
         return
       }
 
       setSelectedItem(item)
       setSearchText(item.name)
       setIsShowingList(false)
+      isShowingListRef.current = false
+      detachPositionListeners()
 
       // Only notify parent about user-initiated selections, not sync updates
       if (props.data.parentId && props.onElementChange && !loading) {
@@ -198,7 +312,7 @@ const DataSource = (props) => {
         })
       }
     },
-    [props, loading]
+    [props, loading, detachPositionListeners]
   )
 
   const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()
@@ -214,16 +328,44 @@ const DataSource = (props) => {
     type: 'text',
     name: props.data.field_name,
     value: searchText,
+    ref: inputField,
   }
 
   if (props.mutable) {
     inputProps.defaultValue = props.defaultValue
-    inputProps.ref = inputField
   }
 
   let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
   if (props.data.pageBreakBefore) {
     baseClasses += ' alwaysbreak'
+  }
+
+  const list = matchedList || []
+  let dropdown = null
+  if (isShowingList && dropdownStyle && typeof document !== 'undefined') {
+    dropdown = createPortal(
+      <div style={dropdownStyle} onMouseDown={(event) => event.preventDefault()}>
+        {loading && list.length === 0 && (
+          <div style={{ ...optionStyle, color: '#888' }}>Loading...</div>
+        )}
+        {!loading && list.length === 0 && (
+          <div style={{ ...optionStyle, color: '#888' }}>No options</div>
+        )}
+        {list.map((item) => (
+          <div
+            key={item.id}
+            style={{ ...optionStyle, cursor: 'pointer' }}
+            onMouseDown={(event) => {
+              event.preventDefault()
+              handleSelectItem(item)
+            }}
+          >
+            {item.name}
+          </div>
+        ))}
+      </div>,
+      document.body
+    )
   }
 
   return (
@@ -241,41 +383,13 @@ const DataSource = (props) => {
           <div>
             <Input
               {...inputProps}
-              disabled={props.read_only || !isSameEditor || loading}
+              disabled={props.read_only || !isSameEditor}
               onFocus={handleInputFocus}
               onBlur={handleInputBlur}
               onChange={handleOnChange}
             />
           </div>
-          <div
-            style={{
-              position: 'absolute',
-              zIndex: 199,
-              top: '100%',
-              left: 0,
-              right: 0,
-              height: 250,
-              overflowY: 'auto',
-              display: isShowingList ? 'block' : 'none',
-            }}
-          >
-            {(matchedList || []).map((item) => (
-              <div
-                key={item.id}
-                style={{
-                  position: 'relative',
-                  display: 'block',
-                  padding: '0.75rem 1.25rem',
-                  marginBottom: -1,
-                  backgroundColor: '#fff',
-                  border: '1px solid rgba(0, 0, 0, 0.125)',
-                }}
-                onClick={() => handleSelectItem(item)}
-              >
-                {item.name}
-              </div>
-            ))}
-          </div>
+          {dropdown}
         </div>
       </div>
     </div>

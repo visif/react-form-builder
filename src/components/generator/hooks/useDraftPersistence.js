@@ -63,6 +63,54 @@ export const readDraftFromStorage = (props) => {
   }
 }
 
+const isFileFieldKey = (key) => {
+  const lower = `${key || ''}`.toLowerCase()
+  return (
+    lower.startsWith('fileimage_') ||
+    lower.startsWith('fileupload_') ||
+    lower.startsWith('imageupload_')
+  )
+}
+
+const stripDeadBlobFromValue = (value) => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return value
+  }
+  if (typeof value.blobUrl === 'string' && value.blobUrl.startsWith('blob:')) {
+    return { ...value, blobUrl: '' }
+  }
+  return value
+}
+
+const hasServerFileValue = (value) => {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+  if (value.filePath) {
+    return true
+  }
+  return Array.isArray(value.fileList) && value.fileList.length > 0
+}
+
+/** Merge server answers with draft; never keep dead blob: preview URLs. */
+export const mergeAnswerData = (serverAnswers, draft) => {
+  const server = {}
+  Object.entries(serverAnswers || {}).forEach(([key, value]) => {
+    server[key] = isFileFieldKey(key) ? stripDeadBlobFromValue(value) : value
+  })
+  if (!draft) {
+    return server
+  }
+  const merged = { ...server }
+  Object.entries(draft).forEach(([key, value]) => {
+    if (isFileFieldKey(key) && hasServerFileValue(server[key])) {
+      return
+    }
+    merged[key] = isFileFieldKey(key) ? stripDeadBlobFromValue(value) : value
+  })
+  return merged
+}
+
 // ─── Static helpers (mirror the class-component API) ────────────────────
 
 export const clearDraftData = (props) => {
@@ -87,7 +135,7 @@ export const useDraftPersistence = (props, collectFormData) => {
   // Read draft once per mount (or when key-relevant props change)
   const draft = readDraftFromStorage(props)
   const ansData = convertAnswerData(props.answer_data)
-  const mergedData = draft ? { ...ansData, ...draft } : ansData
+  const mergedData = mergeAnswerData(ansData, draft)
 
   const [draftRestored, setDraftRestored] = useState(() => !!readDraftFromStorage(props))
 
@@ -104,7 +152,7 @@ export const useDraftPersistence = (props, collectFormData) => {
     if (typeof window === 'undefined' || !window.localStorage) return
     try {
       const formData = collectRef.current(propsRef.current.data)
-      const draftObj = convertAnswerData(formData)
+      const draftObj = mergeAnswerData(convertAnswerData(formData), null)
       window.localStorage.setItem(buildDraftStorageKey(propsRef.current), JSON.stringify(draftObj))
     } catch (_) {
       // Ignore quota / security errors
