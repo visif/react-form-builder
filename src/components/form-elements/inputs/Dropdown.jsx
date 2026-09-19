@@ -1,45 +1,57 @@
 import React from 'react'
 
-import { Select } from 'antd'
+import { Input, Select } from 'antd'
 
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
+import { INFO_TEXTAREA_STYLE } from '../shared/optionInfoLayout'
+
+const { TextArea } = Input
+
+const parseDropdownValue = (raw) => {
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+    return { value: raw.value ?? '', info: raw.info ?? '' }
+  }
+  return { value: raw || '', info: '' }
+}
 
 const Dropdown = (props) => {
   const inputField = React.useRef()
-  const [value, setValue] = React.useState(props.defaultValue)
+  const parsedDefault = parseDropdownValue(props.defaultValue)
+  const [value, setValue] = React.useState(parsedDefault.value)
+  const [info, setInfo] = React.useState(parsedDefault.info)
 
   // Update value when defaultValue prop changes
   React.useEffect(() => {
-    setValue(props.defaultValue)
+    const next = parseDropdownValue(props.defaultValue)
+    setValue(next.value)
+    setInfo(next.info)
   }, [props.defaultValue])
 
-  const handleChange = React.useCallback(
-    (selectedValue) => {
-      setValue(selectedValue)
+  const selectedOption = props.data.options?.find((option) => option.value == value)
+  const showInfo = !!selectedOption?.info
 
+  const emitChange = React.useCallback(
+    (selectedValue, nextInfo) => {
       const { data, handleChange: onFormularChange } = props
       const { formularKey, field_name } = data
+      const selected = data.options?.find((option) => option.value == selectedValue)
+      const payload = selected?.info
+        ? { value: selectedValue, info: nextInfo || '' }
+        : selectedValue
 
-      // Always call handleChange to update the form context
       if (onFormularChange) {
-        // Use formularKey if it exists, otherwise use field_name
-        onFormularChange(formularKey || field_name, selectedValue)
+        onFormularChange(formularKey || field_name, payload)
       }
 
-      // If onElementChange is provided, call it to synchronize changes across the column
       if (props.onElementChange) {
-        // Create updated data object with the new value
         const updatedData = {
           ...props.data,
-          value: selectedValue,
+          value: payload,
         }
 
-        // Send it for synchronization across columns
         props.onElementChange(updatedData)
 
-        // Immediately apply changes to this component's data
-        // This makes changes visible in edit mode instantly
         if (props.data.dirty === undefined || props.data.dirty) {
           updatedData.dirty = true
           if (props.updateElement) {
@@ -48,7 +60,27 @@ const Dropdown = (props) => {
         }
       }
     },
-    [props.data, props.handleChange, props.onElementChange, props.updateElement]
+    [props]
+  )
+
+  const handleChange = React.useCallback(
+    (selectedValue) => {
+      const selected = props.data.options?.find((option) => option.value == selectedValue)
+      const nextInfo = selected?.info ? info : ''
+      setValue(selectedValue)
+      setInfo(nextInfo)
+      emitChange(selectedValue, nextInfo)
+    },
+    [emitChange, info, props.data.options]
+  )
+
+  const handleInfoChange = React.useCallback(
+    (e) => {
+      const nextInfo = e.target.value
+      setInfo(nextInfo)
+      emitChange(value, nextInfo)
+    },
+    [emitChange, value]
   )
 
   const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()
@@ -63,10 +95,12 @@ const Dropdown = (props) => {
   const selectProps = {}
   selectProps.style = {
     width: '100%',
+    fontSize: '14px',
     color: 'rgba(0, 0, 0, 0.85)',
     WebkitTextFillColor: 'rgba(0, 0, 0, 0.85)',
     opacity: 1,
   }
+  selectProps.className = 'rfb-dropdown-select'
   selectProps.placeholder = 'Please Select'
   selectProps.value = value || undefined
   selectProps.onChange = handleChange
@@ -98,7 +132,18 @@ const Dropdown = (props) => {
       <ComponentHeader {...props} />
       <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
         <ComponentLabel {...props} />
-        <Select {...selectProps} options={options} />
+        <Select {...selectProps} options={options} popupClassName="rfb-dropdown-popup" />
+        {showInfo && (
+          <TextArea
+            className="rfb-info-textarea"
+            rows={2}
+            style={{ ...INFO_TEXTAREA_STYLE, marginTop: 8 }}
+            placeholder="Additional information"
+            value={info}
+            onChange={handleInfoChange}
+            disabled={props.read_only || !isSameEditor}
+          />
+        )}
       </div>
     </div>
   )

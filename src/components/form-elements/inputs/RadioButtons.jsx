@@ -4,6 +4,7 @@ import { Input, Radio } from 'antd'
 
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
+import { INFO_TEXTAREA_STYLE, OPTION_INFO_ROW_STYLE } from '../shared/optionInfoLayout'
 
 const { TextArea } = Input
 
@@ -127,9 +128,7 @@ const RadioButtons = (props) => {
 
             return (
               <div key={this_key} style={radioStyle}>
-                <div
-                  style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', width: '100%' }}
-                >
+                <div className="rfb-option-info-row" style={OPTION_INFO_ROW_STYLE}>
                   <Radio
                     value={option.key}
                     onClick={() => {
@@ -156,18 +155,15 @@ const RadioButtons = (props) => {
                       }
                     }}
                   >
-                    <span style={{ fontSize: '13px', color: '#262626' }}>{option.text}</span>
+                    <span className="rfb-option-text" style={{ fontSize: '14px', color: '#262626' }}>
+                      {option.text}
+                    </span>
                   </Radio>
                   {isChecked && option.info && (
                     <TextArea
+                      className="rfb-info-textarea"
                       rows={2}
-                      style={{
-                        flex: 1,
-                        minWidth: '150px',
-                        color: 'rgba(0, 0, 0, 0.85)',
-                        WebkitTextFillColor: 'rgba(0, 0, 0, 0.85)',
-                        opacity: 1,
-                      }}
+                      style={INFO_TEXTAREA_STYLE}
                       defaultValue={answerItem?.info ?? ''}
                       onChange={(e) => {
                         const infoValue = e.target.value
