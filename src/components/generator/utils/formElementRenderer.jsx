@@ -9,6 +9,7 @@
  */
 import React from 'react'
 
+import { resolveColumnChild } from '../../../utils/signatureCollect'
 import Registry from '../../../utils/registry'
 import FormElements from '../../form-elements/index'
 import {
@@ -70,7 +71,8 @@ export const getInputElement = (
   getDefaultValue,
   getEditor,
   formContext,
-  getCustomElementFn
+  getCustomElementFn,
+  onSignChange
 ) => {
   if (item.custom) {
     return getCustomElementFn(item, props, handleChange, getDefaultValue)
@@ -79,10 +81,11 @@ export const getInputElement = (
   return (
     <Input
       handleChange={handleChange}
+      onSignChange={onSignChange}
       mutable
       key={`form_${item.id}`}
       data={item}
-      read_only={props.read_only}
+      read_only={props.read_only || item.readOnly}
       defaultValue={getDefaultValue(item)}
       editor={getEditor(item)}
       getActiveUserProperties={props.getActiveUserProperties}
@@ -91,6 +94,8 @@ export const getInputElement = (
       onDownloadFile={props.onDownloadFile}
       onUploadImage={props.onUploadImage}
       getFormSource={props.getFormSource}
+      getFormInfo={props.getFormInfo}
+      onSelectChildForm={props.onSelectChildForm}
       broadcastChange={props.broadcastChange}
       variables={formContext.getAllVariables()}
     />
@@ -101,19 +106,13 @@ export const getInputElement = (
  * Get container element (rows/columns)
  */
 export const getContainerElement = (item, Element, getDataById, getInputElementFn) => {
+  const renderChild = (x) => {
+    const currentItem = resolveColumnChild(x, getDataById)
+    return x && currentItem ? getInputElementFn(currentItem) : <div>&nbsp;</div>
+  }
   const controls = Array.isArray(item.childItems[0])
-    ? item.childItems.map((row) =>
-        row.map((x) => {
-          const currentItem = getDataById(x)
-          return x && currentItem ? getInputElementFn(currentItem) : <div>&nbsp;</div>
-        })
-      )
-    : [
-        item.childItems.map((x) => {
-          const currentItem = getDataById(x)
-          return x && currentItem ? getInputElementFn(currentItem) : <div>&nbsp;</div>
-        }),
-      ]
+    ? item.childItems.map((row) => row.map(renderChild))
+    : [item.childItems.map(renderChild)]
   return (
     <Element
       mutable
@@ -178,7 +177,8 @@ export const renderFormElement = (item, props, handlers, helpers) => {
         getDefaultValue,
         getEditor,
         formContext,
-        (customItem) => customElementRenderer(customItem)
+        (customItem) => customElementRenderer(customItem),
+        handleSignature2Change
       )
 
     case 'DataSource':
@@ -211,7 +211,8 @@ export const renderFormElement = (item, props, handlers, helpers) => {
           getDefaultValue,
           getEditor,
           formContext,
-          (customItem) => customElementRenderer(customItem)
+          (customItem) => customElementRenderer(customItem),
+          handleSignature2Change
         )
       )
 
@@ -224,7 +225,8 @@ export const renderFormElement = (item, props, handlers, helpers) => {
           getDefaultValue,
           getEditor,
           formContext,
-          (customItem) => customElementRenderer(customItem)
+          (customItem) => customElementRenderer(customItem),
+          handleSignature2Change
         )
       )
 
@@ -237,7 +239,8 @@ export const renderFormElement = (item, props, handlers, helpers) => {
           getDefaultValue,
           getEditor,
           formContext,
-          (customItem) => customElementRenderer(customItem)
+          (customItem) => customElementRenderer(customItem),
+          handleSignature2Change
         )
       )
 
@@ -250,7 +253,8 @@ export const renderFormElement = (item, props, handlers, helpers) => {
           getDefaultValue,
           getEditor,
           formContext,
-          (customItem) => customElementRenderer(customItem)
+          (customItem) => customElementRenderer(customItem),
+          handleSignature2Change
         )
       )
 

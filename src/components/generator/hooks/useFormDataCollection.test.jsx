@@ -52,6 +52,44 @@ describe('useFormDataCollection', () => {
     })
   })
 
+  it('collects Signature2 children that only exist on a column row', () => {
+    const { result } = renderHook(
+      () => useFormDataCollection({}, () => null),
+      {
+        wrapper: createWrapper({
+          sig_nested: {
+            isSigned: true,
+            signedPerson: 'Ada',
+            signedPersonId: 1,
+            signedDateTime: '2026-09-19T05:00:00.000Z',
+          },
+        }),
+      }
+    )
+
+    const collected = result.current.collectFormData([
+      {
+        id: 'row-1',
+        element: 'TwoColumnRow',
+        childItems: [{ id: 'sig-nested', element: 'Signature2', field_name: 'sig_nested' }],
+      },
+    ])
+
+    expect(collected).toEqual([
+      {
+        name: 'sig_nested',
+        custom_name: 'sig_nested',
+        value: {
+          isSigned: true,
+          signedPerson: 'Ada',
+          signedPersonId: 1,
+          signedDateTime: '2026-09-19T05:00:00.000Z',
+        },
+        editor: null,
+      },
+    ])
+  })
+
   it('skips display-only elements', () => {
     const { result } = renderHook(
       () => useFormDataCollection({}, () => null),

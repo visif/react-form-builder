@@ -72,8 +72,9 @@ import { Button } from 'antd'
 
 import FORM_BUILDER_VERSION from '../../constants/version'
 import { FormProvider, useFormContext } from '../../contexts/FormContext'
-import type { ReactFormGeneratorProps } from '../../types/form'
+import type { FormFieldValue, ReactFormGeneratorProps } from '../../types/form'
 import { withGeneratorLegacyKeys } from '../../utils/propAliases'
+import { sameFormItemId } from '../../utils/signatureCollect'
 import LocalBuildBanner from '../shared/LocalBuildBanner'
 import FormValidator from './FormValidator'
 import {
@@ -277,8 +278,10 @@ const ReactForm = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
   const getDataById = useCallback(
     (id) => {
       const { data } = props
-      const item = data.find((x) => x.id === id)
-      return item
+      if (!Array.isArray(data)) {
+        return undefined
+      }
+      return data.find((x) => sameFormItemId(x?.id, id) || x?.id === id)
     },
     [props]
   )
@@ -345,10 +348,31 @@ const ReactForm = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
   const {
     draftRestored,
     handleFormInteraction,
-    handleSignature2Change,
+    handleSignature2Change: flushSignature2Draft,
     saveDraft,
     clearDraft,
   } = useDraftPersistence(props, collectFormData)
+
+  // Keep answerData in sync on sign so column-row remounts don't get a stale
+  // unsigned defaultValue. Flush draft after the value is written to context.
+  const handleSignature2Change = useCallback(
+    (payload?: { field_name?: string; value?: unknown }) => {
+      if (payload?.field_name) {
+        setAnswerData((prev) => ({
+          ...prev,
+          [payload.field_name as string]: payload.value,
+        }))
+        if (payload.value !== undefined) {
+          formContext.updateValue(
+            payload.field_name,
+            (payload.value === '' ? { isSigned: false } : payload.value) as FormFieldValue
+          )
+        }
+      }
+      flushSignature2Draft()
+    },
+    [flushSignature2Draft, formContext]
+  )
 
   const { validateForm } = useFormValidation(props, collectFormItems)
 

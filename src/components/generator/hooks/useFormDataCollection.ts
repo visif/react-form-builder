@@ -10,6 +10,7 @@ import { useCallback } from 'react'
 import { useFormContext } from '../../../contexts/FormContext'
 import type { FormElementData, FormFieldValue, ReactFormGeneratorProps } from '../../../types/form'
 import { serializeSignedDateTime } from '../../../utils/dateUtil'
+import { flattenColumnChildren, sameFormItemId } from '../../../utils/signatureCollect'
 
 const DISPLAY_ONLY_ELEMENTS = [
   'Header',
@@ -140,12 +141,34 @@ export const useFormDataCollection = (
   const collectFormData = useCallback(
     (data: FormElementData[] = []) => {
       const formData: Array<Record<string, unknown>> = []
-      data.forEach((item) => {
+      const seen = new Set<string>()
+      const pushItem = (item: FormElementData | null | undefined) => {
+        if (!item) {
+          return
+        }
+        const key = item.id != null ? `id:${item.id}` : item.field_name
+        if (key && seen.has(String(key))) {
+          return
+        }
+        if (key) {
+          seen.add(String(key))
+        }
         const item_data = collect(item)
         if (item_data) {
           formData.push(item_data)
         }
+      }
+
+      data.forEach((item) => {
+        pushItem(item)
       })
+
+      flattenColumnChildren(data, (id) =>
+        data.find((item) => sameFormItemId(item.id, id))
+      ).forEach((child) => {
+        pushItem(child as FormElementData)
+      })
+
       return formData
     },
     [collect]

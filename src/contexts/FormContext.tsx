@@ -53,6 +53,12 @@ export const FormProvider = ({ children, initialValues = {} }: FormProviderProps
   validationErrorsRef.current = validationErrors
 
   const updateValue = useCallback((fieldName: string, value: FormFieldValue) => {
+    // Keep the ref in sync immediately so collect/draft in the same click
+    // (Signature2 onSignChange) can read the just-written value.
+    valuesRef.current = {
+      ...valuesRef.current,
+      [fieldName]: value,
+    }
     setValues((prev) => ({
       ...prev,
       [fieldName]: value,

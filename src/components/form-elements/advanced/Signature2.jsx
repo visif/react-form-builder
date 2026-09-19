@@ -19,6 +19,8 @@ const Signature2 = (props) => {
   )
   const [isError, setIsError] = React.useState(false)
 
+  const prevDefaultValueRef = React.useRef(props.defaultValue)
+
   // Initialize form context with initial value
   React.useEffect(() => {
     if (props.handleChange && props.defaultValue && props.defaultValue.isSigned) {
@@ -48,15 +50,32 @@ const Signature2 = (props) => {
     }
   }, [props])
 
+  // Only sync from props when defaultValue itself changed (external update).
+  // Comparing against local isSigned wipes a just-signed click when the parent
+  // still holds { isSigned: false } — common for column-row remounts.
   React.useEffect(() => {
-    if (props.defaultValue && props.defaultValue.isSigned !== isSigned) {
-      setIsSigned(props.defaultValue && props.defaultValue.isSigned)
-      setSignedPerson(props.defaultValue.signedPerson)
-      setSignedPersonId(props.defaultValue && props.defaultValue.signedPersonId)
-      setSignedDateTime(props.defaultValue && props.defaultValue.signedDateTime)
+    const next = props.defaultValue
+    const prev = prevDefaultValueRef.current
+    prevDefaultValueRef.current = next
+
+    if (!next) {
+      return
+    }
+
+    const propsChanged =
+      (prev && prev.isSigned) !== (next && next.isSigned) ||
+      (prev && prev.signedPerson) !== (next && next.signedPerson) ||
+      (prev && prev.signedPersonId) !== (next && next.signedPersonId) ||
+      (prev && prev.signedDateTime) !== (next && next.signedDateTime)
+
+    if (propsChanged) {
+      setIsSigned(next && next.isSigned)
+      setSignedPerson(next && next.signedPerson)
+      setSignedPersonId(next && next.signedPersonId)
+      setSignedDateTime(next && next.signedDateTime)
       setIsError(false)
     }
-  }, [props.defaultValue, isSigned])
+  }, [props.defaultValue])
 
   const clickToSign = React.useCallback(() => {
     if (typeof props.getActiveUserProperties !== 'function') {
@@ -78,54 +97,42 @@ const Signature2 = (props) => {
 
     const position = `${props.data.position}`.toLocaleLowerCase().trim()
 
-    if (
+    const canSignSpecific =
       props.data.specificRole === 'specific' &&
       roleLists.find((item) => `${item}`.toLocaleLowerCase().trim() === position)
-    ) {
+    // Column-row clones sometimes omit specificRole; allow sign like "anyone".
+    const canSignAnyone =
+      props.data.specificRole === 'notSpecific' ||
+      props.data.specificRole == null ||
+      props.data.specificRole === ''
+
+    if (canSignSpecific || (canSignAnyone && props.data.specificRole !== 'specific')) {
       const newIsSigned = !isSigned
       const newSignedPerson = !isSigned ? userProperties.name : ''
       const newSignedPersonId = !isSigned ? userProperties.userId : ''
       const newSignedDateTime = !isSigned ? nowAsSignatureUtcIso() : null
+      const signedPayload = newIsSigned
+        ? {
+            isSigned: true,
+            signedPerson: newSignedPerson,
+            signedPersonId: newSignedPersonId,
+            signedDateTime: serializeSignedDateTime(newSignedDateTime),
+          }
+        : { isSigned: false }
 
       setIsSigned(newIsSigned)
       setSignedPerson(newSignedPerson)
       setSignedPersonId(newSignedPersonId)
       setSignedDateTime(newSignedDateTime)
 
-      // Update form context
       if (props.handleChange) {
-        props.handleChange(props.data.field_name, {
-          isSigned: newIsSigned,
-          signedPerson: newSignedPerson,
-          signedPersonId: newSignedPersonId,
-          signedDateTime: serializeSignedDateTime(newSignedDateTime),
-        })
+        props.handleChange(props.data.field_name, signedPayload)
       }
       if (typeof props.onSignChange === 'function') {
-        props.onSignChange()
-      }
-    } else if (props.data.specificRole === 'notSpecific') {
-      const newIsSigned = !isSigned
-      const newSignedPerson = !isSigned ? userProperties.name : ''
-      const newSignedPersonId = !isSigned ? userProperties.userId : ''
-      const newSignedDateTime = !isSigned ? nowAsSignatureUtcIso() : null
-
-      setIsSigned(newIsSigned)
-      setSignedPerson(newSignedPerson)
-      setSignedPersonId(newSignedPersonId)
-      setSignedDateTime(newSignedDateTime)
-
-      // Update form context
-      if (props.handleChange) {
-        props.handleChange(props.data.field_name, {
-          isSigned: newIsSigned,
-          signedPerson: newSignedPerson,
-          signedPersonId: newSignedPersonId,
-          signedDateTime: serializeSignedDateTime(newSignedDateTime),
+        props.onSignChange({
+          field_name: props.data.field_name,
+          value: newIsSigned ? signedPayload : '',
         })
-      }
-      if (typeof props.onSignChange === 'function') {
-        props.onSignChange()
       }
     } else {
       if (!isError) {

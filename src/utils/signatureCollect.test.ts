@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { isSignedSignatureValue, pickSignatureValue, sameFormItemId } from './signatureCollect'
+import {
+  flattenColumnChildren,
+  isSignedSignatureValue,
+  pickSignatureValue,
+  resolveColumnChild,
+  sameFormItemId,
+} from './signatureCollect'
 import { serializeSignedDateTime } from './dateUtil'
 
 describe('signatureCollect', () => {
@@ -21,6 +27,31 @@ describe('signatureCollect', () => {
     expect(pickSignatureValue(null, stored)).toEqual(stored)
     expect(pickSignatureValue({ isSigned: false }, '')).toBe('')
     expect(isSignedSignatureValue(stored)).toBe(true)
+  })
+
+  it('resolves column children from ids or nested objects', () => {
+    const byId = { id: 'sig-1', element: 'Signature2', field_name: 'sig_field' }
+    expect(resolveColumnChild('sig-1', (id) => (id === 'sig-1' ? byId : null))).toEqual(byId)
+    expect(
+      resolveColumnChild({ id: 'missing', element: 'Signature2', field_name: 'nested' }, () => null)
+    ).toEqual({ id: 'missing', element: 'Signature2', field_name: 'nested' })
+    expect(resolveColumnChild(null)).toBeNull()
+  })
+
+  it('flattens TwoColumnRow / ThreeColumnRow children even when they are nested objects', () => {
+    const data = [
+      {
+        id: 'row-1',
+        element: 'TwoColumnRow',
+        childItems: [
+          'sig-top',
+          { id: 'sig-nested', element: 'Signature2', field_name: 'sig_nested' },
+        ],
+      },
+      { id: 'sig-top', element: 'Signature2', field_name: 'sig_top' },
+    ]
+    const children = flattenColumnChildren(data, (id) => data.find((item) => item.id === id))
+    expect(children.map((child) => child.field_name)).toEqual(['sig_top', 'sig_nested'])
   })
 
   it('serializes dayjs-like objects so submit JSON stays readable', () => {
