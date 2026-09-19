@@ -17,6 +17,7 @@ const TextFieldEditor = ({
   multiline = false,
   placeholder = '',
   helpText = null,
+  errorText = null,
   className,
 }) => (
   <div className="form-group">
@@ -46,6 +47,11 @@ const TextFieldEditor = ({
           placeholder={placeholder}
         />
       )}
+    {errorText && (
+      <p className="help-block" style={{ color: '#c0392b' }}>
+        {errorText}
+      </p>
+    )}
     {helpText && <p className="help-block">{helpText}</p>}
   </div>
   )

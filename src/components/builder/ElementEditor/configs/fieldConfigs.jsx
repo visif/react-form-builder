@@ -68,21 +68,13 @@ export const buildFieldConfigs = ({
         placeholder: nextDynamicColumnRowUniqueName(
           designData.filter((item) => item && item.id !== props.element.id)
         ),
-        onChange: onUniqueNameChange,
-        onBlur: onUniqueNameBlur,
-        helpText: (
-          <>
-            {isUniqueNameTaken(designData, element.uniqueName, props.element.id) && (
-              <span style={{ color: '#c0392b', display: 'block' }}>
-                Unique name must be unique among Dynamic Column Rows on this form.
-              </span>
-            )}
-            <span>
-              Required. Used in template tags such as #WorkHistory_c1#. On a master form, tables
-              inside a SubForm use #SubFormName_WorkHistory_c1#.
-            </span>
-          </>
-        ),
+        onChange: onUniqueNameChange || ((e) => editElementProp('uniqueName', 'value', e)),
+        onBlur: onUniqueNameBlur || updateElement,
+        errorText: isUniqueNameTaken(designData, element.uniqueName, props.element.id)
+          ? 'Unique name must be unique among Dynamic Column Rows on this form.'
+          : null,
+        helpText:
+          'Required. Used in template tags such as #WorkHistory_c1#. On a master form, tables inside a SubForm use #SubFormName_WorkHistory_c1#.',
       },
     },
 
@@ -95,26 +87,20 @@ export const buildFieldConfigs = ({
         id: 'dcrCellName',
         label: 'Cell unique name',
         value: cellNameValue,
-        onChange: onCellNameChange,
-        onBlur: onCellNameBlur,
-        helpText: (
-          <>
-            {isCellNameTaken(
-              designData,
-              props.element.parentId,
-              cellNameValue,
-              props.element.id
-            ) && (
-              <span style={{ color: '#c0392b', display: 'block' }}>
-                Cell unique name must be unique within this table.
-              </span>
-            )}
-            <span>
-              Default is r{'{'}row{'}'}c{'{'}col{'}'} (e.g. r1c1). Any language is allowed.
-              Template tag: {templateColumnTagPreview(parentElement?.uniqueName, element.col)}
-            </span>
-          </>
-        ),
+        onChange: onCellNameChange || ((e) => editElementProp('cellName', 'value', e)),
+        onBlur: onCellNameBlur || updateElement,
+        errorText: isCellNameTaken(
+          designData,
+          props.element.parentId,
+          cellNameValue,
+          props.element.id
+        )
+          ? 'Cell unique name must be unique within this table.'
+          : null,
+        helpText: `Default is r{row}c{col} (e.g. r1c1). Any language is allowed. Template tag: ${templateColumnTagPreview(
+          parentElement?.uniqueName,
+          element.col
+        )}`,
       },
     },
 

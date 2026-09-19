@@ -228,6 +228,10 @@ const Toolbar = (props) => {
           elementOptions.rowLabels = []
         }
         elementOptions.rows = item.rows || 3
+        if (item.key === 'DynamicColumnRow') {
+          const existing = store.state?.payload?.data || []
+          elementOptions.uniqueName = nextDynamicColumnRowUniqueName(existing)
+        }
       }
 
       if (item.key === 'DynamicColumnRow') {
@@ -410,9 +414,9 @@ Toolbar._defaultItemOptions = function (element) {
 
 Toolbar._defaultItemColumns = function () {
   return [
-    { text: 'Column1', key: `table_column_${ID.uuid()}`, width: 1, isSync: true },
-    { text: 'Column2', key: `table_column_${ID.uuid()}`, width: 1, isSync: true },
-    { text: 'Column3', key: `table_column_${ID.uuid()}`, width: 1, isSync: true },
+    { text: 'Column1', key: `table_column_${ID.uuid()}`, width: 1, isSync: true, required: false },
+    { text: 'Column2', key: `table_column_${ID.uuid()}`, width: 1, isSync: true, required: false },
+    { text: 'Column3', key: `table_column_${ID.uuid()}`, width: 1, isSync: true, required: false },
   ]
 }
 

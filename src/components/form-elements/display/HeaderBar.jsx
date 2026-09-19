@@ -11,17 +11,15 @@ import { Button, Tag } from 'antd'
 import Grip from '../layout/grip'
 
 const HeaderBar = (props) => (
-  <div className="rfb-toolbar-header">
-    <Tag bordered={false} style={{ backgroundColor: 'transparent', padding: 0 }}>
-      {props.data.text}
-    </Tag>
-    <div className="rfb-toolbar-header-buttons">
+  <div className="toolbar-header rfb-toolbar-header">
+    <Tag className="rfb-element-name-tag">{props.data.text}</Tag>
+    <div className="toolbar-header-buttons rfb-toolbar-header-buttons">
       {props.data.element !== 'LineBreak' && (
       <Button
         type="text"
         size="small"
         icon={<EditOutlined />}
-        className="rfb-toolbar-header-action is-isolated"
+        className="btn rfb-toolbar-header-action is-isolated"
         onClick={props.editModeOn?.bind(props.parent, props.data)}
       />
         )}
@@ -29,7 +27,7 @@ const HeaderBar = (props) => (
         type="text"
         size="small"
         icon={<DeleteOutlined />}
-        className="rfb-toolbar-header-action is-isolated"
+        className="btn rfb-toolbar-header-action is-isolated"
         danger
         onClick={props.onDestroy?.bind(null, props.data)}
       />

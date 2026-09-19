@@ -96,4 +96,40 @@ describe('buildFieldConfigs', () => {
 
     expect(hrefConfig).toBeUndefined()
   })
+
+  it('includes Unique name for DynamicColumnRow', () => {
+    const configs = buildFieldConfigs({
+      props: {
+        element: {
+          id: 'dcr-1',
+          element: 'DynamicColumnRow',
+          uniqueName: 'WorkHistory',
+          columns: [],
+        },
+        preview: { state: { data: [] } },
+      },
+      element: {
+        id: 'dcr-1',
+        element: 'DynamicColumnRow',
+        uniqueName: 'WorkHistory',
+        columns: [],
+      },
+      fileOptions: [],
+      formDataSource: [],
+      activeForm: null,
+      onUploadFile: noop,
+      editElementProp: noop,
+      onContentChange: noop,
+      updateElement: noop,
+    })
+
+    const uniqueNameConfig = configs.find(
+      (config) => config.props && config.props.id === 'dcrUniqueName' && config.condition()
+    )
+
+    expect(uniqueNameConfig).toBeTruthy()
+    expect(uniqueNameConfig.props.label).toBe('Unique name')
+    expect(uniqueNameConfig.props.value).toBe('WorkHistory')
+    expect(uniqueNameConfig.props.helpText).toContain('#WorkHistory_c1#')
+  })
 })

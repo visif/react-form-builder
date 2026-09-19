@@ -123,6 +123,7 @@ const FileUpload = (props) => {
     <div
       className={`SortableItem rfb-item${props.data.pageBreakBefore ? ' alwaysbreak' : ''}`}
       title={tooltipText}
+      style={{ minWidth: 0, maxWidth: '100%' }}
     >
       <ComponentHeader {...props} />
       <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
@@ -152,32 +153,39 @@ const FileUpload = (props) => {
           </Button>
           {fileList && fileList.length > 0 && (
             <List
-              style={{ marginTop: '1rem', maxWidth: '450px' }}
+              className="rfb-file-upload-list"
+              style={{ marginTop: '1rem', width: '100%', maxWidth: '100%' }}
               size="small"
               dataSource={fileList}
               renderItem={(file, index) => (
-                <List.Item
-                  actions={
-                    canEdit
-                      ? [
-                          <FormDeleteButton
-                            key="delete"
-                            title="Delete file"
-                            onClick={() => onRemoveFile(file)}
-                          />,
-                        ]
-                      : []
-                  }
-                >
+                <List.Item className="rfb-file-upload-item">
                   <Button
                     type="link"
                     size="small"
                     icon={<DownloadOutlined />}
                     onClick={() => onDownloadFile(file)}
-                    style={{ padding: 0 }}
+                    className="rfb-file-upload-name"
+                    title={file.originalName}
+                    style={{
+                      flex: '1 1 auto',
+                      minWidth: 0,
+                      maxWidth: '100%',
+                      height: 'auto',
+                      padding: 0,
+                      whiteSpace: 'normal',
+                      overflowWrap: 'anywhere',
+                      wordBreak: 'break-word',
+                      textAlign: 'left',
+                    }}
                   >
                     {index + 1}.{file.originalName}
                   </Button>
+                  {canEdit && (
+                    <FormDeleteButton
+                      title="Delete file"
+                      onClick={() => onRemoveFile(file)}
+                    />
+                  )}
                 </List.Item>
               )}
             />

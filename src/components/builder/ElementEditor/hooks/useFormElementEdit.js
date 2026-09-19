@@ -199,6 +199,27 @@ export const useFormElementEdit = (props) => {
     updateElement()
   }, [props.element, updateElement])
 
+  // Assign a unique name the first time an older Dynamic Column Row is opened
+  useEffect(() => {
+    if (props.element.element !== 'DynamicColumnRow') {
+      return
+    }
+    if (sanitizeUniqueName(props.element.uniqueName)) {
+      return
+    }
+    const name = nextDynamicColumnRowUniqueName(
+      formDesignData().filter((item) => item && item.id !== props.element.id)
+    )
+    const updated = { ...elementRef.current, uniqueName: name }
+    props.element.uniqueName = name
+    setElement(updated)
+    elementRef.current = updated
+    setDirty(true)
+    if (debouncedPushRef.current) {
+      debouncedPushRef.current()
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Handle rich text content changes
   const onContentChange = useCallback(
     (property, html) => {

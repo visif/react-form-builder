@@ -304,19 +304,40 @@ const DynamicOptionList = ({
 
   // Compute how many extra columns after Options/Value
   const extraCols = [shouldShowInfo, shouldShowCorrect, shouldShowDefault].filter(Boolean)
-  const extraColWidths = extraCols.map(() => '60px').join(' ')
+  const extraColWidths = [
+    shouldShowInfo && '48px',
+    shouldShowCorrect && '72px',
+    shouldShowDefault && '64px',
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   const getGridColumns = () => {
     if (canHaveOptionValue) {
       if (extraCols.length > 0) {
-        return `1fr 120px ${extraColWidths} 120px`
+        return `minmax(0, 1fr) 72px ${extraColWidths} 64px`
       }
-      return '1fr 120px 120px'
+      return 'minmax(0, 1fr) 72px 64px'
     }
-    return '1fr 120px'
+    return 'minmax(0, 1fr) 64px'
   }
 
   const gridTemplateColumns = getGridColumns()
+  const columnLabelStyle = {
+    display: 'block',
+    margin: 0,
+    textAlign: 'center',
+    fontWeight: 500,
+    fontSize: 14,
+    lineHeight: '32px',
+    color: 'rgba(0, 0, 0, 0.88)',
+    whiteSpace: 'nowrap',
+  }
+  const centerCellStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  }
 
   return (
     <div className="dynamic-option-list">
@@ -331,14 +352,34 @@ const DynamicOptionList = ({
               padding: '4px 0',
             }}
           >
-            <Input value="Options" disabled />
-            {canHaveOptionValue && <Input value="Value" disabled />}
-            {shouldShowInfo && <Input value="Info" disabled style={{ textAlign: 'center' }} />}
+            <label
+              className="dynamic-option-col-label"
+              style={{ ...columnLabelStyle, textAlign: 'left' }}
+            >
+              Options
+            </label>
+            {canHaveOptionValue && (
+              <label
+                className="dynamic-option-col-label"
+                style={{ ...columnLabelStyle, textAlign: 'left' }}
+              >
+                Value
+              </label>
+            )}
+            {shouldShowInfo && (
+              <label className="dynamic-option-col-label" style={columnLabelStyle}>
+                Info
+              </label>
+            )}
             {shouldShowCorrect && (
-              <Input value="Correct" disabled style={{ textAlign: 'center' }} />
+              <label className="dynamic-option-col-label" style={columnLabelStyle}>
+                Correct
+              </label>
             )}
             {shouldShowDefault && (
-              <Input value="Default" disabled style={{ textAlign: 'center' }} />
+              <label className="dynamic-option-col-label" style={columnLabelStyle}>
+                Default
+              </label>
             )}
             <div></div>
           </div>
@@ -377,24 +418,30 @@ const DynamicOptionList = ({
                 )}
 
                 {canHaveOptionValue && canHaveInfo && (
-                  <Checkbox
-                    checked={Object.prototype.hasOwnProperty.call(option, 'info') && option.info}
-                    onChange={() => handleOptionInfo(index)}
-                  />
+                  <div style={centerCellStyle}>
+                    <Checkbox
+                      checked={Object.prototype.hasOwnProperty.call(option, 'info') && option.info}
+                      onChange={() => handleOptionInfo(index)}
+                    />
+                  </div>
                 )}
                 {canHaveOptionValue && canHaveOptionCorrect && (
-                  <Checkbox
-                    checked={
-                      Object.prototype.hasOwnProperty.call(option, 'correct') && option.correct
-                    }
-                    onChange={() => handleOptionCorrect(index)}
-                  />
+                  <div style={centerCellStyle}>
+                    <Checkbox
+                      checked={
+                        Object.prototype.hasOwnProperty.call(option, 'correct') && option.correct
+                      }
+                      onChange={() => handleOptionCorrect(index)}
+                    />
+                  </div>
                 )}
                 {shouldShowDefault && (
-                  <Radio
-                    checked={option.isDefault === true}
-                    onChange={() => handleOptionDefault(index)}
-                  />
+                  <div style={centerCellStyle}>
+                    <Radio
+                      checked={option.isDefault === true}
+                      onChange={() => handleOptionDefault(index)}
+                    />
+                  </div>
                 )}
 
                 <Space size="small">
@@ -404,13 +451,15 @@ const DynamicOptionList = ({
                     size="small"
                     icon={<PlusOutlined />}
                   />
-                  {index > 0 && (
+                  {index > 0 ? (
                     <Button
                       onClick={() => removeOption(index)}
                       danger
                       size="small"
                       icon={<MinusOutlined />}
                     />
+                  ) : (
+                    <span aria-hidden="true" style={{ width: 24, height: 24, display: 'inline-block' }} />
                   )}
                 </Space>
               </div>

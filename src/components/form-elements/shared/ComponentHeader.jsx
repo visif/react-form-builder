@@ -7,7 +7,7 @@ const ComponentHeader = (props) => {
     return null
   }
   return (
-    <div ref={props.dragHandleRef}>
+    <div ref={props.dragHandleRef} className="rfb-component-header">
       {props.data.pageBreakBefore && <div className="preview-page-break">Page Break</div>}
       <HeaderBar
         parent={props.parent}

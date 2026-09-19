@@ -347,12 +347,13 @@ const FormLink = (props) => {
             }}
           >
             {isFormSelected ? (
-              <Button type="default" className="form-link-action-btn" onClick={handlePrimaryAction}>
+              <Button type="primary" className="form-link-action-btn" onClick={handlePrimaryAction}>
                 {displayedFormName}
               </Button>
             ) : (
               <div className="form-link-preview" style={{ padding: '6px 0', width: 'auto' }}>
                 <Button
+                  type="primary"
                   href="#"
                   className="form-link-action-btn"
                   onClick={(e) => {

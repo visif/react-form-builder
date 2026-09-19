@@ -11,3 +11,16 @@ export { default as debounce } from './debounce'
 export { formatDate } from './dateUtil'
 export { post, get } from './requests'
 export { default as myxss } from './xss'
+export {
+  applyAutoCellName,
+  applyAutoCellNamesAfterSwap,
+  defaultCellName,
+  effectiveCellName,
+  isCellNameTaken,
+  isUniqueNameTaken,
+  nextDynamicColumnRowUniqueName,
+  sanitizeCellName,
+  sanitizeUniqueName,
+  templateColumnTagPreview,
+  templateTagPreview,
+} from './dynamic-column-row-names'
