@@ -24,6 +24,9 @@ describe('FileUpload', () => {
       whiteSpace: 'normal',
       overflowWrap: 'anywhere',
       maxWidth: '100%',
+      textAlign: 'left',
+      justifyContent: 'flex-start',
+      fontSize: '15px',
     })
     expect(nameButton.closest('.rfb-file-upload-list')).toBeTruthy()
   })

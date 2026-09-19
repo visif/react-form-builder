@@ -6,22 +6,23 @@ const deleteButtonStyle = {
   color: '#ff4d4f',
   background: 'transparent',
   border: 'none',
-  padding: 4,
+  padding: 0,
   lineHeight: 1,
-  fontSize: 16,
+  fontSize: 15,
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
   flexShrink: 0,
 }
 
-const iconStyle = { fontSize: 16 }
+const iconStyle = { fontSize: 15, lineHeight: 1 }
 
-const FormDeleteButton = ({ title, onClick }) => (
+const FormDeleteButton = ({ title, onClick, className }) => (
   <button
     type="button"
     title={title}
     aria-label={title}
+    className={className}
     style={deleteButtonStyle}
     onClick={onClick}
   >

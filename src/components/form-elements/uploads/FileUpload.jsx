@@ -159,6 +159,7 @@ const FileUpload = (props) => {
               dataSource={fileList}
               renderItem={(file, index) => (
                 <List.Item className="rfb-file-upload-item">
+                  <div className="rfb-file-upload-row">
                   <Button
                     type="link"
                     size="small"
@@ -167,7 +168,7 @@ const FileUpload = (props) => {
                     className="rfb-file-upload-name"
                     title={file.originalName}
                     style={{
-                      flex: '1 1 auto',
+                      flex: '0 1 auto',
                       minWidth: 0,
                       maxWidth: '100%',
                       height: 'auto',
@@ -176,16 +177,21 @@ const FileUpload = (props) => {
                       overflowWrap: 'anywhere',
                       wordBreak: 'break-word',
                       textAlign: 'left',
+                      justifyContent: 'flex-start',
+                      fontSize: 15,
+                      lineHeight: '22px',
                     }}
                   >
                     {index + 1}.{file.originalName}
                   </Button>
                   {canEdit && (
                     <FormDeleteButton
+                      className="rfb-file-upload-delete"
                       title="Delete file"
                       onClick={() => onRemoveFile(file)}
                     />
                   )}
+                  </div>
                 </List.Item>
               )}
             />

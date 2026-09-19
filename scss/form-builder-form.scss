@@ -175,18 +175,49 @@ input[type='date'] {
   .ant-list-item,
   .rfb-file-upload-item {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: flex-start;
     width: 100%;
     max-width: 100%;
     min-width: 0;
     padding-inline: 0;
   }
 
+  .rfb-file-upload-row {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .rfb-file-upload-delete {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    margin-inline-start: 5ch;
+    margin-block: 0;
+    padding: 0;
+    height: 22px;
+    line-height: 22px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .rfb-file-upload-item:hover .rfb-file-upload-delete,
+  .rfb-file-upload-item:focus-within .rfb-file-upload-delete {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
   .rfb-file-upload-name.ant-btn,
   .ant-btn-link {
     display: inline-flex;
-    align-items: flex-start;
-    flex: 1 1 auto;
+    align-items: center;
+    flex: 0 1 auto;
     min-width: 0;
     max-width: 100%;
     height: auto;
@@ -195,12 +226,16 @@ input[type='date'] {
     overflow-wrap: anywhere;
     word-break: break-word;
     text-align: left;
+    justify-content: flex-start;
+    font-size: 15px;
 
     > span {
       min-width: 0;
       white-space: normal;
       overflow-wrap: anywhere;
       word-break: break-word;
+      text-align: left;
+      font-size: inherit;
     }
   }
 }
