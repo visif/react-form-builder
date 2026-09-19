@@ -2,55 +2,24 @@ import React from 'react'
 
 import { DatePicker as AntDatePicker, TimePicker as AntTimePicker } from 'antd'
 import dayjs from 'dayjs'
-import buddhistEra from 'dayjs/plugin/buddhistEra'
-import utc from 'dayjs/plugin/utc'
 
-import ComponentHeader from '../shared/ComponentHeader'
-import ComponentLabel from '../shared/ComponentLabel'
+import {
+  formatDatePickerDisplay,
+  getCalendarType,
+  getDateFormat,
+  getPickerFormat,
+  parseStoredDate,
+  toStoredDateIso,
+} from '../../../utils/dateUtil'
 import {
   getPickerPopupContainer,
   isMulticolumnChild,
 } from '../../../utils/multicolumnField'
+import ComponentHeader from '../shared/ComponentHeader'
+import ComponentLabel from '../shared/ComponentLabel'
+import DatePickerTH from './DatePickerTH'
 
-dayjs.extend(utc)
-dayjs.extend(buddhistEra)
-
-const keyDateFormat = 'setting_date_format'
-const keyCalendarType = 'setting_calendar_type'
-
-const dateFormatList = {
-  'dd MMMM yyyy': 'DD MMMM YYYY',
-  'dd-MMM-yyyy': 'DD-MMM-YYYY',
-  'dd-MMM-yy': 'DD-MMM-YY',
-  'yyyy-MM-dd': 'YYYY-MM-DD',
-  'MM/dd/yyyy': 'MM/DD/YYYY',
-  'dd/MM/yyyy': 'DD/MM/YYYY',
-  'dd/MM/yy': 'DD/MM/YY',
-  'MMM dd, yyyy': 'MMM DD, YYYY',
-}
-
-const dateTimeFormatList = {
-  'dd MMMM yyyy': 'DD MMMM YYYY HH:mm',
-  'dd-MMM-yyyy': 'DD-MMM-YYYY HH:mm',
-  'dd-MMM-yy': 'DD-MMM-YY HH:mm',
-  'yyyy-MM-dd': 'YYYY-MM-DD HH:mm',
-  'MM/dd/yyyy': 'MM/DD/YYYY HH:mm',
-  'dd/MM/yyyy': 'DD/MM/YYYY HH:mm',
-  'dd/MM/yy': 'DD/MM/YY HH:mm',
-  'MMM dd, yyyy': 'MMM DD, YYYY HH:mm',
-}
-
-export const getDateFormat = (showTimeSelect) => {
-  const key = showTimeSelect
-    ? dateTimeFormatList[localStorage.getItem(keyDateFormat)]
-    : dateFormatList[localStorage.getItem(keyDateFormat)]
-  return key || (showTimeSelect ? 'DD MMMM YYYY HH:mm' : 'DD MMMM YYYY')
-}
-
-export const getCalendarType = () => {
-  const key = localStorage.getItem(keyCalendarType)
-  return key || 'EN'
-}
+export { getDateFormat }
 
 const DatePicker = (props) => {
   const inputField = React.useRef(null)
@@ -58,11 +27,11 @@ const DatePicker = (props) => {
 
   const updateFormat = React.useCallback(
     (oldFormatMask) => {
-      const formatMask = getDateFormat(props.data.showTimeSelect)
+      const formatMask = getDateFormat(props.data.showTimeSelect, props.data.dateFormat)
       const updated = formatMask !== oldFormatMask
       return { updated, formatMask }
     },
-    [props.data.showTimeSelect]
+    [props.data.showTimeSelect, props.data.dateFormat]
   )
 
   const updateDateTime = React.useCallback(
@@ -74,10 +43,7 @@ const DatePicker = (props) => {
         value = dayjs().toISOString()
       } else if (props.defaultValue) {
         try {
-          // Use formatMask for parsing natively, letting local/UTC offsets calculate correctly
-          value = dayjs(props.defaultValue, formatMask).isValid()
-            ? dayjs(props.defaultValue, formatMask).toISOString()
-            : dayjs(props.defaultValue).toISOString()
+          value = parseStoredDate(props.defaultValue, formatMask)
         } catch (error) {
           console.warn('Invalid date value:', props.defaultValue)
           value = null
@@ -148,13 +114,10 @@ const DatePicker = (props) => {
 
   const handleChange = React.useCallback(
     (date) => {
-      // Allow actual Time Zone offset logic to save correctly (e.g., 16:14 local -> 23:14 UTC)
-      // but force the correct selected DATE locally in case of midnight wrapping
-      const lockedDate = date ? dayjs(date.format('YYYY-MM-DDTHH:mm:ss')).toISOString() : null
+      const lockedDate = toStoredDateIso(date)
       setValue(lockedDate)
       setPlaceholder(formatMask.toLowerCase())
 
-      // Update form context
       if (props.handleChange) {
         props.handleChange(props.data.field_name, lockedDate)
       }
@@ -183,24 +146,10 @@ const DatePicker = (props) => {
     }
   }, []) // Only on mount
 
-  const formatDate = React.useCallback((date, mask) => {
-    if (!date) return ''
-
-    // Since we are correctly saving standard UTC in the database now,
-    // dayjs will automatically bring it back up to local time seamlessly
-    const localDate = dayjs(date)
-
-    if (getCalendarType() === 'EN') {
-      return localDate.format(mask)
-    }
-      // Convert to Buddhist calendar (add 543 years)
-      return localDate.format(mask.replace('YYYY', 'BBBB'))
-  }, [])
-
-  const getPickerFormat = React.useCallback(() => {
-    const calendarType = getCalendarType()
-    return calendarType === 'EN' ? formatMask : formatMask.replace(/YYYY/g, 'BBBB')
-  }, [formatMask])
+  const formatDate = React.useCallback(
+    (date, mask) => formatDatePickerDisplay(date, mask),
+    []
+  )
 
   const { showTimeSelect, showTimeSelectOnly } = props.data
   const userProperties = props.getActiveUserProperties && props.getActiveUserProperties()
@@ -252,6 +201,8 @@ const DatePicker = (props) => {
     : 'form-group'
 
   const pickerPopupStyles = { popup: { root: { zIndex: 2100 } } }
+  const pickerWidth = isMulticolumnChild(props.data) ? '100%' : 'auto'
+  const pickerStyle = { display: 'inline-block', width: pickerWidth, maxWidth: '100%' }
 
   return (
     <div className={baseClasses}>
@@ -271,20 +222,37 @@ const DatePicker = (props) => {
               className="form-control"
             />
           ) : !showTimeSelectOnly ? (
+            getCalendarType() === 'EN' ? (
             <AntDatePicker
               name={inputProps.name}
               ref={inputProps.ref}
               onChange={handleChange}
               value={value ? dayjs(value) : null}
               className="form-control bold-date-picker"
-              format={getPickerFormat()}
+              format={getPickerFormat(formatMask)}
               showTime={showTimeSelect ? { format: 'HH:mm', showSecond: false } : null}
               disabled={!isSameEditor || loading}
               placeholder={placeholder}
-              style={{ display: 'inline-block', width: 'auto' }}
+              style={pickerStyle}
               getPopupContainer={getPickerPopupContainer}
               styles={pickerPopupStyles}
             />
+            ) : (
+            <DatePickerTH
+              name={inputProps.name}
+              ref={inputProps.ref}
+              onChange={handleChange}
+              value={value ? dayjs(value) : null}
+              className="form-control bold-date-picker"
+              format={getPickerFormat(formatMask)}
+              showTime={showTimeSelect ? { format: 'HH:mm', showSecond: false } : null}
+              disabled={!isSameEditor || loading}
+              placeholder={placeholder}
+              style={pickerStyle}
+              getPopupContainer={getPickerPopupContainer}
+              styles={pickerPopupStyles}
+            />
+            )
           ) : (
             <AntTimePicker
               name={inputProps.name}
@@ -294,7 +262,7 @@ const DatePicker = (props) => {
               className="form-control bold-time-picker"
               disabled={!isSameEditor || loading}
               placeholder={placeholder}
-              style={{ display: 'inline-block', width: 'auto' }}
+              style={pickerStyle}
               format="HH:mm"
               minuteStep={1}
               getPopupContainer={getPickerPopupContainer}

@@ -9,6 +9,7 @@ import { useCallback } from 'react'
 
 import { useFormContext } from '../../../contexts/FormContext'
 import type { FormElementData, FormFieldValue, ReactFormGeneratorProps } from '../../../types/form'
+import { serializeSignedDateTime } from '../../../utils/dateUtil'
 
 const DISPLAY_ONLY_ELEMENTS = [
   'Header',
@@ -117,6 +118,12 @@ export const useFormDataCollection = (
           value.blobUrl.startsWith('blob:')
         ) {
           value = { ...value, blobUrl: '' }
+        }
+        if (item.element === 'Signature2' && value && typeof value === 'object' && !Array.isArray(value)) {
+          value = {
+            ...value,
+            signedDateTime: serializeSignedDateTime(value.signedDateTime),
+          }
         }
         itemData.value = value
         itemData.editor = oldEditor || (hasCollectedValue(item, contextValue) ? activeUser : null)

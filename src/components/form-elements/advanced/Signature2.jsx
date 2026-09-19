@@ -1,8 +1,6 @@
 import React from 'react'
 
-import dayjs from 'dayjs'
-
-import { formatDate } from '../../../utils/dateUtil'
+import { formatDate, nowAsSignatureUtcIso, serializeSignedDateTime } from '../../../utils/dateUtil'
 import ComponentHeader from '../shared/ComponentHeader'
 
 const Signature2 = (props) => {
@@ -28,7 +26,7 @@ const Signature2 = (props) => {
         isSigned: props.defaultValue.isSigned,
         signedPerson: props.defaultValue.signedPerson,
         signedPersonId: props.defaultValue.signedPersonId,
-        signedDateTime: props.defaultValue.signedDateTime,
+        signedDateTime: serializeSignedDateTime(props.defaultValue.signedDateTime),
       })
     }
   }, []) // Only on mount
@@ -55,6 +53,7 @@ const Signature2 = (props) => {
       setIsSigned(props.defaultValue && props.defaultValue.isSigned)
       setSignedPerson(props.defaultValue.signedPerson)
       setSignedPersonId(props.defaultValue && props.defaultValue.signedPersonId)
+      setSignedDateTime(props.defaultValue && props.defaultValue.signedDateTime)
       setIsError(false)
     }
   }, [props.defaultValue, isSigned])
@@ -86,7 +85,7 @@ const Signature2 = (props) => {
       const newIsSigned = !isSigned
       const newSignedPerson = !isSigned ? userProperties.name : ''
       const newSignedPersonId = !isSigned ? userProperties.userId : ''
-      const newSignedDateTime = !isSigned ? dayjs().utc(true) : null
+      const newSignedDateTime = !isSigned ? nowAsSignatureUtcIso() : null
 
       setIsSigned(newIsSigned)
       setSignedPerson(newSignedPerson)
@@ -99,7 +98,7 @@ const Signature2 = (props) => {
           isSigned: newIsSigned,
           signedPerson: newSignedPerson,
           signedPersonId: newSignedPersonId,
-          signedDateTime: newSignedDateTime,
+          signedDateTime: serializeSignedDateTime(newSignedDateTime),
         })
       }
       if (typeof props.onSignChange === 'function') {
@@ -109,7 +108,7 @@ const Signature2 = (props) => {
       const newIsSigned = !isSigned
       const newSignedPerson = !isSigned ? userProperties.name : ''
       const newSignedPersonId = !isSigned ? userProperties.userId : ''
-      const newSignedDateTime = !isSigned ? dayjs().utc(true) : null
+      const newSignedDateTime = !isSigned ? nowAsSignatureUtcIso() : null
 
       setIsSigned(newIsSigned)
       setSignedPerson(newSignedPerson)
@@ -122,7 +121,7 @@ const Signature2 = (props) => {
           isSigned: newIsSigned,
           signedPerson: newSignedPerson,
           signedPersonId: newSignedPersonId,
-          signedDateTime: newSignedDateTime,
+          signedDateTime: serializeSignedDateTime(newSignedDateTime),
         })
       }
       if (typeof props.onSignChange === 'function') {
