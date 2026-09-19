@@ -95,7 +95,7 @@ const Dropdown = (props) => {
   const selectProps = {}
   selectProps.style = {
     width: '100%',
-    fontSize: '14px',
+    fontSize: '15px',
     color: 'rgba(0, 0, 0, 0.85)',
     WebkitTextFillColor: 'rgba(0, 0, 0, 0.85)',
     opacity: 1,

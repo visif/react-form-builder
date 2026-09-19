@@ -155,7 +155,7 @@ const RadioButtons = (props) => {
                       }
                     }}
                   >
-                    <span className="rfb-option-text" style={{ fontSize: '14px', color: '#262626' }}>
+                    <span className="rfb-option-text" style={{ fontSize: '15px', color: '#262626' }}>
                       {option.text}
                     </span>
                   </Radio>
