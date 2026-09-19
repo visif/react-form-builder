@@ -20,8 +20,7 @@
     "noEmitOnError": false,
     "paths": {
       "@/*": ["./src/*"]
-    },
-    "types": ["vitest/globals"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["src/**/*.test.js", "src/**/*.test.jsx", "src/**/*.test.ts", "src/**/*.test.tsx", "src/test"]
