@@ -15,6 +15,13 @@ import {
   TwoColumnRow,
 } from './multi-column'
 import Registry from './stores/registry'
+import {
+  flattenColumnChildren,
+  isSignedSignatureValue,
+  pickSignatureValue,
+  resolveColumnChild,
+  sameFormItemId,
+} from './functions/signatureCollect'
 
 const {
   Image,
@@ -326,13 +333,13 @@ export default class ReactForm extends React.Component {
         : ''
     } else if (item.element === 'Table') {
       $item.value = ref.state.inputs
-    } else if (item.element === 'Signature2' && ref.state.isSigned) {
-      $item.value = {
-        isSigned: ref.state.isSigned,
-        signedPerson: ref.state.signedPerson,
-        signedPersonId: ref.state.signedPersonId,
-        signedDateTime: ref.state.signedDateTime,
-      }
+    } else if (item.element === 'Signature2') {
+      $item.value = pickSignatureValue(
+        ref && ref.state,
+        this.state && this.state.answerData
+          ? this.state.answerData[item.field_name]
+          : undefined
+      )
     } else if (item.element === 'DataSource' && ref.state.searchText) {
       $item.value = {
         type: ref.props.data.sourceType,
@@ -371,7 +378,7 @@ export default class ReactForm extends React.Component {
   _isIncorrect(item) {
     let incorrect = false
     if (item.canHaveAnswer) {
-      const ref = this.inputs[item.field_name]
+      const ref = this._getInputRef(item)
       if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
         item.options.forEach((option) => {
           const $option = ReactDOM.findDOMNode(ref.options[`child_ref_${option.key}`])
@@ -399,7 +406,7 @@ export default class ReactForm extends React.Component {
   _isInvalid(item) {
     let invalid = false
     if (item.required === true) {
-      const ref = this.inputs[item.field_name]
+      const ref = this._getInputRef(item)
       if (item.element === 'Checkboxes' || item.element === 'RadioButtons') {
         let checked_options = 0
         item.options.forEach((option) => {
@@ -425,6 +432,8 @@ export default class ReactForm extends React.Component {
           invalid = true
         } else if (item.element === 'ImageUpload' && !item.value.filePath) {
           invalid = true
+        } else if (item.element === 'Signature2') {
+          invalid = !isSignedSignatureValue($item.value)
         } else if (
           $item.value === undefined ||
           $item.value === null ||
@@ -442,8 +451,11 @@ export default class ReactForm extends React.Component {
       name: item.field_name,
       custom_name: item.custom_name || item.field_name,
     }
-    const ref = this.inputs[item.field_name]
-    const activeUser = this.props.getActiveUserProperties()
+    const ref = this._getInputRef(item)
+    const activeUser =
+      typeof this.props.getActiveUserProperties === 'function'
+        ? this.props.getActiveUserProperties()
+        : null
     const oldEditor = this._getEditor(item)
 
     if ((item.element === 'Checkboxes' || item.element === 'RadioButtons') && !!ref) {
@@ -497,7 +509,7 @@ export default class ReactForm extends React.Component {
       }
       itemData.editor = oldEditor ? oldEditor : valueItem.value ? activeUser : null
     } else {
-      if (!ref) {
+      if (!ref && item.element !== 'Signature2') {
         return null
       }
 
@@ -508,7 +520,7 @@ export default class ReactForm extends React.Component {
       if (item.element === 'Signature2') {
         itemData.editor = oldEditor
           ? oldEditor
-          : valueItem.value.isSigned
+          : isSignedSignatureValue(valueItem.value)
             ? activeUser
             : null
       } else if (item.element === 'DataSource' && ref.state.searchText) {
@@ -545,11 +557,30 @@ export default class ReactForm extends React.Component {
 
   _collectFormData(data) {
     const formData = []
-    data.forEach((item) => {
+    const seen = new Set()
+    const pushItem = (item) => {
+      if (!item) {
+        return
+      }
+      const key = item.id != null ? `id:${item.id}` : item.field_name
+      if (key && seen.has(key)) {
+        return
+      }
+      if (key) {
+        seen.add(key)
+      }
       const item_data = this._collect(item)
       if (item_data) {
         formData.push(item_data)
       }
+    }
+
+    ;(data || []).forEach((item) => {
+      pushItem(item)
+    })
+
+    flattenColumnChildren(data, (id) => this.getDataById(id)).forEach((child) => {
+      pushItem(child)
     })
 
     console.log('Collected Form Data:', formData)
@@ -573,7 +604,7 @@ export default class ReactForm extends React.Component {
   }
 
   _getSignatureImg(item) {
-    const ref = this.inputs[item.field_name]
+    const ref = this._getInputRef(item)
     const $canvas_sig = ref.canvas.current
     if ($canvas_sig) {
       const base64 = $canvas_sig.toDataURL().replace('data:image/png;base64,', '')
@@ -691,7 +722,8 @@ export default class ReactForm extends React.Component {
                 (item.element === 'FileUpload' &&
                   item.value.fileList &&
                   item.value.fileList.length > 0) ||
-                (item.element === 'ImageUpload' && !!item.value.filePath))
+                (item.element === 'ImageUpload' && !!item.value.filePath) ||
+                (item.element === 'Signature2' && isSignedSignatureValue(item.value)))
           )
 
           activeSectionFound = !!fillingItems
@@ -724,9 +756,40 @@ export default class ReactForm extends React.Component {
   }
 
   getDataById(id) {
+    if (id == null || id === '') {
+      return undefined
+    }
+    if (typeof id === 'object') {
+      return resolveColumnChild(id, (childId) => this.getDataById(childId))
+    }
     const { data } = this.props
-    const item = data.find((x) => x.id === id)
-    return item
+    return (data || []).find((x) => x && sameFormItemId(x.id, id))
+  }
+
+  _setInputRef = (item) => (component) => {
+    // Column-row remounts call the previous inline ref with null. Clearing
+    // here drops a just-signed Signature2 before submit can read it.
+    if (!component || !item) {
+      return
+    }
+    if (item.field_name) {
+      this.inputs[item.field_name] = component
+    }
+    if (item.id != null) {
+      this.inputs[item.id] = component
+      this.inputs[String(item.id)] = component
+    }
+  }
+
+  _getInputRef(item) {
+    if (!item) {
+      return null
+    }
+    return (
+      (item.field_name && this.inputs[item.field_name]) ||
+      (item.id != null && (this.inputs[item.id] || this.inputs[String(item.id)])) ||
+      null
+    )
   }
 
   handleChange = (propKey, value) => {
@@ -752,8 +815,22 @@ export default class ReactForm extends React.Component {
 
   // Signature2 uses click (not change/input), so draft would otherwise never
   // start — and even after start, the next interval save is up to 30s later.
-  _handleSignature2Change = () => {
+  _handleSignature2Change = (payload) => {
     this._handleFormInteraction()
+    if (payload && payload.field_name) {
+      this.setState(
+        (prev) => ({
+          answerData: {
+            ...prev.answerData,
+            [payload.field_name]: payload.value,
+          },
+        }),
+        () => {
+          this._saveDraft()
+        }
+      )
+      return
+    }
     this._saveDraft()
   }
 
@@ -939,9 +1016,7 @@ export default class ReactForm extends React.Component {
       <Input
         handleChange={this.handleChange}
         onSignChange={this._handleSignature2Change}
-        ref={(c) => {
-          this.inputs[item.field_name] = c
-        }}
+        ref={this._setInputRef(item)}
         mutable={true}
         key={`form_${item.id}`}
         data={item}
@@ -965,27 +1040,17 @@ export default class ReactForm extends React.Component {
   }
 
   getContainerElement(item, Element) {
+    const renderChild = (x) => {
+      const currentItem = this.getDataById(x)
+      return x && currentItem ? (
+        this.getInputElement(currentItem)
+      ) : (
+        <div>&nbsp;</div>
+      )
+    }
     const controls = Array.isArray(item.childItems[0])
-      ? item.childItems.map((row) =>
-          row.map((x) => {
-            const currentItem = this.getDataById(x)
-            return x && currentItem ? (
-              this.getInputElement(currentItem)
-            ) : (
-              <div>&nbsp;</div>
-            )
-          }),
-        )
-      : [
-          item.childItems.map((x) => {
-            const currentItem = this.getDataById(x)
-            return x && currentItem ? (
-              this.getInputElement(currentItem)
-            ) : (
-              <div>&nbsp;</div>
-            )
-          }),
-        ]
+      ? item.childItems.map((row) => row.map(renderChild))
+      : [item.childItems.map(renderChild)]
     return (
       <Element
         mutable={true}
@@ -1025,7 +1090,7 @@ export default class ReactForm extends React.Component {
     const inputProps = item.forwardRef && {
       handleChange: this.handleChange,
       defaultValue: this._getDefaultValue(item),
-      ref: (c) => (this.inputs[item.field_name] = c),
+      ref: this._setInputRef(item),
     }
 
     return (
@@ -1098,9 +1163,7 @@ export default class ReactForm extends React.Component {
             return (
               <DataSource
                 handleChange={this.handleChange}
-                ref={(c) => {
-                  this.inputs[item.field_name] = c
-                }}
+                ref={this._setInputRef(item)}
                 mutable={true}
                 key={`form_${item.id}`}
                 data={item}
@@ -1125,7 +1188,7 @@ export default class ReactForm extends React.Component {
           case 'Signature':
             return (
               <Signature
-                ref={(c) => (this.inputs[item.field_name] = c)}
+                ref={this._setInputRef(item)}
                 read_only={this.props.read_only || item.readOnly}
                 mutable={true}
                 key={`form_${item.id}`}
@@ -1138,7 +1201,7 @@ export default class ReactForm extends React.Component {
           case 'Signature2':
             return (
               <Signature2
-                ref={(c) => (this.inputs[item.field_name] = c)}
+                ref={this._setInputRef(item)}
                 read_only={this.props.read_only || item.readOnly}
                 mutable={true}
                 key={`form_${item.id}`}
@@ -1152,7 +1215,7 @@ export default class ReactForm extends React.Component {
           case 'Checkboxes':
             return (
               <Checkboxes
-                ref={(c) => (this.inputs[item.field_name] = c)}
+                ref={this._setInputRef(item)}
                 read_only={this.props.read_only}
                 handleChange={this.handleChange}
                 mutable={true}
@@ -1166,7 +1229,7 @@ export default class ReactForm extends React.Component {
           case 'Image':
             return (
               <Image
-                ref={(c) => (this.inputs[item.field_name] = c)}
+                ref={this._setInputRef(item)}
                 handleChange={this.handleChange}
                 mutable={true}
                 key={`form_${item.id}`}
@@ -1190,7 +1253,7 @@ export default class ReactForm extends React.Component {
           case 'Camera':
             return (
               <Camera
-                ref={(c) => (this.inputs[item.field_name] = c)}
+                ref={this._setInputRef(item)}
                 read_only={this.props.read_only || item.readOnly}
                 mutable={true}
                 key={`form_${item.id}`}
@@ -1202,7 +1265,7 @@ export default class ReactForm extends React.Component {
           case 'FileUpload':
             return (
               <FileUpload
-                ref={(c) => (this.inputs[item.field_name] = c)}
+                ref={this._setInputRef(item)}
                 read_only={this.props.read_only || item.readOnly}
                 mutable={true}
                 key={`form_${item.id}`}
@@ -1218,7 +1281,7 @@ export default class ReactForm extends React.Component {
           case 'FormLink':
             return (
               <FormLink
-                ref={(c) => (this.inputs[item.field_name] = c)}
+                ref={this._setInputRef(item)}
                 read_only={this.props.read_only || item.readOnly}
                 mutable={true}
                 key={`form_${item.id}`}
@@ -1236,7 +1299,7 @@ export default class ReactForm extends React.Component {
           case 'ImageUpload':
             return (
               <ImageUpload
-                ref={(c) => (this.inputs[item.field_name] = c)}
+                ref={this._setInputRef(item)}
                 read_only={this.props.read_only || item.readOnly}
                 mutable={true}
                 key={`form_${item.id}`}

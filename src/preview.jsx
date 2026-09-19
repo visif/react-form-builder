@@ -283,6 +283,8 @@ const Preview = (props) => {
             'customCSS',
             'defaultValue',
             'default_today',
+            'position',
+            'specificRole',
           ]
 
           propertiesToCopy.forEach((prop) => {

@@ -1,6 +1,7 @@
 import React from 'react'
 import dayjs from 'dayjs'
 import { formatDate } from '../functions/dateUtil'
+import { serializeSignedDateTime } from '../functions/signatureCollect'
 import ComponentHeader from './component-header'
 
 class Signature2 extends React.Component {
@@ -81,41 +82,60 @@ class Signature2 extends React.Component {
 
     const userProperties = this.props.getActiveUserProperties()
     let roleLists = (userProperties && userProperties.role) || []
+    if (!Array.isArray(roleLists)) {
+      roleLists = roleLists ? [roleLists] : []
+    }
     roleLists = roleLists.concat([(userProperties && userProperties.name) || ''])
 
     const position = `${this.props.data.position}`.toLocaleLowerCase().trim()
 
-    const notifySignedChange = () => {
-      if (typeof this.props.onSignChange === 'function') {
-        this.props.onSignChange()
+    const applySignedState = (current) => {
+      const nextIsSigned = !current.isSigned
+      return {
+        ...current,
+        isSigned: nextIsSigned,
+        signedPerson: nextIsSigned ? userProperties.name : '',
+        signedPersonId: nextIsSigned ? userProperties.userId : '',
+        signedDateTime: nextIsSigned ? dayjs().utc(true).toISOString() : null,
       }
     }
 
-    if (
+    const notifySignedChange = (nextState) => {
+      if (typeof this.props.onSignChange === 'function') {
+        this.props.onSignChange({
+          field_name: this.props.data.field_name,
+          value: nextState.isSigned
+            ? {
+                isSigned: true,
+                signedPerson: nextState.signedPerson,
+                signedPersonId: nextState.signedPersonId,
+                signedDateTime: serializeSignedDateTime(nextState.signedDateTime),
+              }
+            : '',
+        })
+      }
+    }
+
+    const canSignSpecific =
       this.props.data.specificRole === 'specific' &&
       roleLists.find((item) => `${item}`.toLocaleLowerCase().trim() === position)
-    ) {
-      this.setState(
-        (current) => ({
-          ...current,
-          isSigned: !current.isSigned,
-          signedPerson: !current.isSigned ? userProperties.name : '',
-          signedPersonId: !current.isSigned ? userProperties.userId : '',
-          signedDateTime: !current.isSigned ? dayjs().utc(true) : null,
-        }),
-        notifySignedChange
-      )
-    } else if (this.props.data.specificRole === 'notSpecific') {
-      this.setState(
-        (current) => ({
-          ...current,
-          isSigned: !current.isSigned,
-          signedPerson: !current.isSigned ? userProperties.name : '',
-          signedPersonId: !current.isSigned ? userProperties.userId : '',
-          signedDateTime: !current.isSigned ? dayjs().utc(true) : null,
-        }),
-        notifySignedChange
-      )
+    // Column-row clones sometimes omit specificRole; allow sign like "anyone".
+    const canSignAnyone =
+      this.props.data.specificRole === 'notSpecific' ||
+      this.props.data.specificRole == null ||
+      this.props.data.specificRole === ''
+
+    if (canSignSpecific || (canSignAnyone && this.props.data.specificRole !== 'specific')) {
+      if (this._signClickLock) {
+        return
+      }
+      this._signClickLock = true
+      window.setTimeout(() => {
+        this._signClickLock = false
+      }, 350)
+      this.setState(applySignedState, () => {
+        notifySignedChange(this.state)
+      })
     } else {
       if (!this.state.isError) {
         this.setState({
