@@ -7,11 +7,53 @@ import { useCallback } from 'react'
 
 import { useFormContext } from '../../../contexts/FormContext'
 import type { FormElementData, FormFieldValue, ReactFormGeneratorProps } from '../../../types/form'
+import { isSignedSignatureValue } from '../../../utils/signatureCollect'
 
 type CollectedFormItem = {
   id?: string
   element?: string
   value?: unknown
+}
+
+const isFilledSectionInput = (item: CollectedFormItem): boolean => {
+  if (
+    !item ||
+    item.element === 'Section' ||
+    item.element === 'Table' ||
+    item.element === 'Dropdown' ||
+    item.element === 'Range'
+  ) {
+    return false
+  }
+
+  const { value } = item
+  if (Array.isArray(value) && value.length > 0) {
+    return true
+  }
+  if (typeof value !== 'object' && !Array.isArray(value) && !!value) {
+    return true
+  }
+  if (
+    item.element === 'FileUpload' &&
+    value &&
+    typeof value === 'object' &&
+    Array.isArray((value as { fileList?: unknown[] }).fileList) &&
+    (value as { fileList: unknown[] }).fileList.length > 0
+  ) {
+    return true
+  }
+  if (
+    item.element === 'ImageUpload' &&
+    value &&
+    typeof value === 'object' &&
+    !!(value as { filePath?: string }).filePath
+  ) {
+    return true
+  }
+  if (item.element === 'Signature' || item.element === 'Signature2') {
+    return isSignedSignatureValue(value)
+  }
+  return false
 }
 
 const normalizeCorrectableValue = (item: FormElementData, value: FormFieldValue): string => {
@@ -187,28 +229,20 @@ export const useFormValidation = (
 
       let activeItems = []
 
+      // Only sections with at least one filled input are "active".
+      // Empty sections skip required-field validation. Once the last filled
+      // section is found (searching bottom-up), that section and all earlier
+      // ones are validated. Fields before the first section are always included.
       const reverseKeys = sectionItems.map((item) => item.id).reverse()
       reverseKeys.push('')
       let activeSectionFound = false
 
       reverseKeys.forEach((key) => {
-        const items = sectionGroup[key]
+        const items = Array.isArray(sectionGroup[key]) ? sectionGroup[key] : []
         let fillingItems = items
 
         if (key && !activeSectionFound) {
-          fillingItems = items.find(
-            (item) =>
-              item.element !== 'Table' &&
-              item.element !== 'Dropdown' &&
-              item.element !== 'Range' &&
-              ((Array.isArray(item.value) && item.value.length > 0) ||
-                (typeof item.value !== 'object' && !Array.isArray(item.value) && !!item.value) ||
-                (item.element === 'FileUpload' &&
-                  item.value.fileList &&
-                  item.value.fileList.length > 0) ||
-                (item.element === 'ImageUpload' && !!item.value.filePath))
-          )
-
+          fillingItems = items.find(isFilledSectionInput)
           activeSectionFound = !!fillingItems
         }
 
@@ -217,21 +251,8 @@ export const useFormValidation = (
         }
       })
 
-      if (activeSectionFound) {
-        const itemIds = activeItems.map((item) => item.id)
-        data_items = props.data.filter((item) => itemIds.includes(item.id))
-      } else {
-        const firstSectionId = sectionItems[0]?.id
-        const initialItems = [
-          ...(Array.isArray(sectionGroup['']) ? sectionGroup[''] : []),
-          ...(firstSectionId && Array.isArray(sectionGroup[firstSectionId])
-            ? sectionGroup[firstSectionId]
-            : []),
-        ]
-
-        const initialItemIds = initialItems.map((item) => item.id)
-        data_items = props.data.filter((item) => initialItemIds.includes(item.id))
-      }
+      const itemIds = activeItems.map((item) => item.id)
+      data_items = props.data.filter((item) => itemIds.includes(item.id))
     }
 
     data_items.forEach((item) => {
