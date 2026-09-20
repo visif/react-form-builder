@@ -265,6 +265,20 @@ input[type='date'] {
   .rfb-multicolumn-table {
     overflow: visible;
 
+    td:has(.rfb-image-upload-preview) {
+      height: auto;
+      vertical-align: top;
+    }
+
+    .rfb-image-upload-preview--column,
+    .rfb-image-upload-preview--column .ant-image,
+    .rfb-image-upload-preview--column .ant-image-img,
+    .rfb-image-upload-preview--column img {
+      width: 100% !important;
+      max-width: 100% !important;
+      height: auto !important;
+    }
+
     td {
       position: relative;
       vertical-align: top;

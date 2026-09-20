@@ -36,8 +36,12 @@ const ImageUpload = (props) => {
     height: (props.defaultValue && props.defaultValue.height) || null,
   })
   const containerRef = React.useRef(null)
+  const inColumnRow = Boolean(props.data?.parentId)
   const shouldObserveResize =
-    !!(displayUrl || filePath) && containerSize.width != null && containerSize.height != null
+    !inColumnRow &&
+    !!(displayUrl || filePath) &&
+    containerSize.width != null &&
+    containerSize.height != null
 
   // Observe user-initiated resizes; guard against re-render-triggered re-fires
   React.useEffect(() => {
@@ -251,17 +255,32 @@ const ImageUpload = (props) => {
         <ComponentLabel {...props} />
         <div
           ref={containerRef}
-          style={{
-            position: 'relative',
-            display: previewSrc ? 'inline-block' : 'block',
-            resize: previewSrc ? 'both' : 'none',
-            overflow: 'hidden',
-            minWidth: 80,
-            minHeight: 60,
-            maxWidth: '100%',
-            ...(containerSize.width && { width: containerSize.width }),
-            ...(containerSize.height && { height: containerSize.height }),
-          }}
+          className={`rfb-image-upload-preview${
+            inColumnRow ? ' rfb-image-upload-preview--column' : ''
+          }`}
+          style={
+            inColumnRow
+              ? {
+                  position: 'relative',
+                  display: 'block',
+                  width: '100%',
+                  maxWidth: '100%',
+                  height: 'auto',
+                  overflow: 'visible',
+                  minWidth: 0,
+                }
+              : {
+                  position: 'relative',
+                  display: previewSrc ? 'inline-block' : 'block',
+                  resize: previewSrc ? 'both' : 'none',
+                  overflow: 'hidden',
+                  minWidth: 80,
+                  minHeight: 60,
+                  maxWidth: '100%',
+                  ...(containerSize.width && { width: containerSize.width }),
+                  ...(containerSize.height && { height: containerSize.height }),
+                }
+          }
         >
           {showRemove && (
             <div
@@ -278,13 +297,23 @@ const ImageUpload = (props) => {
           {previewSrc ? (
             <Image
               onLoad={handleImageLoad}
-              style={{
-                width: hasExplicitWidth ? '100%' : 'auto',
-                maxWidth: '100%',
-                height: hasExplicitHeight ? '100%' : 'auto',
-                display: 'block',
-                objectFit: 'contain',
-              }}
+              style={
+                inColumnRow
+                  ? {
+                      width: '100%',
+                      maxWidth: '100%',
+                      height: 'auto',
+                      display: 'block',
+                      objectFit: 'contain',
+                    }
+                  : {
+                      width: hasExplicitWidth ? '100%' : 'auto',
+                      maxWidth: '100%',
+                      height: hasExplicitHeight ? '100%' : 'auto',
+                      display: 'block',
+                      objectFit: 'contain',
+                    }
+              }
               src={previewSrc}
               preview={{
                 visible: isOpen,
