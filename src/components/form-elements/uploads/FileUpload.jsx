@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { DownloadOutlined, UploadOutlined } from '@ant-design/icons'
-import { Button, List } from 'antd'
+import { Button, Popconfirm } from 'antd'
 
 import ComponentHeader from '../shared/ComponentHeader'
 import FormDeleteButton from '../shared/FormDeleteButton'
@@ -104,10 +104,7 @@ const FileUpload = (props) => {
         return
       }
 
-      setFileList((current) => {
-        const remainList = current.filter((item) => item.fileName !== file.fileName)
-        return [...remainList]
-      })
+      setFileList((current) => current.filter((item) => item.fileName !== file.fileName))
     },
     [canEditFiles]
   )
@@ -152,49 +149,46 @@ const FileUpload = (props) => {
             Upload files
           </Button>
           {fileList && fileList.length > 0 && (
-            <List
-              className="rfb-file-upload-list"
-              style={{ marginTop: '1rem', width: '100%', maxWidth: '100%' }}
-              size="small"
-              dataSource={fileList}
-              renderItem={(file, index) => (
-                <List.Item className="rfb-file-upload-item">
+            <div className="rfb-file-upload-list">
+              {fileList.map((file, index) => (
+                <div
+                  key={`${file.fileName || file.originalName || 'file'}-${index}`}
+                  className="rfb-file-upload-item"
+                >
                   <div className="rfb-file-upload-row">
-                  <Button
-                    type="link"
-                    size="small"
-                    icon={<DownloadOutlined />}
-                    onClick={() => onDownloadFile(file)}
-                    className="rfb-file-upload-name"
-                    title={file.originalName}
-                    style={{
-                      flex: '0 1 auto',
-                      minWidth: 0,
-                      maxWidth: '100%',
-                      height: 'auto',
-                      padding: 0,
-                      whiteSpace: 'normal',
-                      overflowWrap: 'anywhere',
-                      wordBreak: 'break-word',
-                      textAlign: 'left',
-                      justifyContent: 'flex-start',
-                      fontSize: 15,
-                      lineHeight: '22px',
-                    }}
-                  >
-                    {index + 1}.{file.originalName}
-                  </Button>
-                  {canEdit && (
-                    <FormDeleteButton
-                      className="rfb-file-upload-delete"
-                      title="Delete file"
-                      onClick={() => onRemoveFile(file)}
-                    />
-                  )}
+                    <button
+                      type="button"
+                      className="rfb-file-upload-name"
+                      title={file.originalName}
+                      onClick={() => onDownloadFile(file)}
+                    >
+                      <DownloadOutlined className="rfb-file-upload-name-icon" />
+                      <span className="rfb-file-upload-name-text">
+                        {index + 1}.{file.originalName}
+                      </span>
+                    </button>
+                    {canEdit && (
+                      <span className="rfb-file-upload-delete-wrap">
+                        <Popconfirm
+                          title="Confirm delete?"
+                          description={`Are you sure you want to delete "${
+                            file.originalName || file.fileName || 'this file'
+                          }"?`}
+                          okText="Delete"
+                          okButtonProps={{ danger: true }}
+                          cancelText="Cancel"
+                          onConfirm={() => onRemoveFile(file)}
+                          zIndex={5000}
+                          getPopupContainer={() => document.body}
+                        >
+                          <FormDeleteButton className="rfb-file-upload-delete" title="Delete file" />
+                        </Popconfirm>
+                      </span>
+                    )}
                   </div>
-                </List.Item>
-              )}
-            />
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </div>

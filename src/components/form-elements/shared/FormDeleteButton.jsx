@@ -17,8 +17,9 @@ const deleteButtonStyle = {
 
 const iconStyle = { fontSize: 15, lineHeight: 1 }
 
-const FormDeleteButton = ({ title, onClick, className }) => (
+const FormDeleteButton = React.forwardRef(({ title, onClick, className }, ref) => (
   <button
+    ref={ref}
     type="button"
     title={title}
     aria-label={title}
@@ -28,6 +29,8 @@ const FormDeleteButton = ({ title, onClick, className }) => (
   >
     <DeleteOutlined style={iconStyle} />
   </button>
-)
+))
+
+FormDeleteButton.displayName = 'FormDeleteButton'
 
 export default FormDeleteButton
