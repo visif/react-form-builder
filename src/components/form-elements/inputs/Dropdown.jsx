@@ -15,6 +15,16 @@ const parseDropdownValue = (raw) => {
   return { value: raw || '', info: '' }
 }
 
+export const filterDropdownOption = (input, option) => {
+  const query = String(input ?? '')
+    .trim()
+    .toLowerCase()
+  if (!query) return true
+  const label = String(option?.label ?? '').toLowerCase()
+  const optionValue = String(option?.value ?? '').toLowerCase()
+  return label.includes(query) || optionValue.includes(query)
+}
+
 const Dropdown = (props) => {
   const inputField = React.useRef()
   const parsedDefault = parseDropdownValue(props.defaultValue)
@@ -104,6 +114,9 @@ const Dropdown = (props) => {
   selectProps.placeholder = 'Please Select'
   selectProps.value = value || undefined
   selectProps.onChange = handleChange
+  selectProps.showSearch = true
+  selectProps.optionFilterProp = 'label'
+  selectProps.filterOption = filterDropdownOption
 
   if (props.mutable) {
     selectProps.ref = inputField
