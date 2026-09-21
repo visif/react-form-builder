@@ -65,9 +65,9 @@ const ImageUpload = (props) => {
   React.useEffect(() => {
     if (props.handleChange && props.data?.field_name) {
       props.handleChange(props.data.field_name, {
-        filePath,
-        fileName,
-        blobUrl,
+        filePath: filePath || '',
+        fileName: fileName || '',
+        blobUrl: blobUrl || '',
         width: containerSize.width,
         height: containerSize.height,
       })

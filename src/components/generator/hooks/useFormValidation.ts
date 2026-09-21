@@ -170,48 +170,6 @@ export const useFormValidation = (
     const formItems = collectFormItems(orderedItems)
     const sectionItems = formItems.filter((item) => item.element === 'Section')
 
-    const hasAnyUserInput = formItems.some((item) => {
-      if (item.element === 'Section') {
-        return false
-      }
-
-      const { value } = item
-
-      if (Array.isArray(value)) {
-        return value.length > 0
-      }
-
-      if (item.element === 'FileUpload') {
-        return !!(value && value.fileList && value.fileList.length > 0)
-      }
-
-      if (item.element === 'ImageUpload') {
-        return !!(value && value.filePath)
-      }
-
-      if (item.element === 'DataSource' || item.element === 'Dataset') {
-        return !!(value && value.value)
-      }
-
-      if (item.element === 'FormulaInput') {
-        return value && value.value !== undefined && value.value !== null && value.value !== ''
-      }
-
-      if (value && typeof value === 'object') {
-        return Object.values(value).some((v) => !!v)
-      }
-
-      if (typeof value === 'string') {
-        return value.trim().length > 0
-      }
-
-      return !!value
-    })
-
-    if (!hasAnyUserInput) {
-      return errors
-    }
-
     if (sectionItems.length > 0) {
       const firstItem = formItems[0]
       let activeSectionKey = firstItem.element === 'Section' ? firstItem.id : ''

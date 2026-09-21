@@ -311,9 +311,13 @@ const ReactForm = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
         return
       }
 
-      // Regular input: store value AND update formula variable
+      // Regular input: store the field value. Only fields with a formularKey
+      // participate in the formula variable map — otherwise table/file objects
+      // leak into FormulaInput as invalid variables.
       formContext.updateValue(fieldName, value)
-      const varKey = item?.formularKey || propKey
+      if (!item?.formularKey) {
+        return
+      }
 
       // Extract a scalar value for formula variables.
       // RadioButtons/Checkboxes emit [{key, value, info}] arrays — the formula
@@ -335,7 +339,7 @@ const ReactForm = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
         formulaValue = value.value
       }
 
-      formContext.updateVariable(varKey, formulaValue)
+      formContext.updateVariable(item.formularKey, formulaValue)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [props.data]
@@ -385,40 +389,24 @@ const ReactForm = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
         e.preventDefault()
       }
 
-      const { onSubmit } = props
-
-      // submit with no form
-      if (onSubmit) {
-        let errors = []
-        if (!props.skip_validations) {
-          errors = validateForm()
-          // Publish errors to context
-          formContext.setErrors(errors)
-        }
-
-        // Only submit if there are no errors.
-        if (errors.length < 1) {
-          const data = collectFormData(props.data)
-          onSubmit(data, props.parentElementId)
-          clearDraft()
-        }
-      } else {
-        // incase no submit function provided => go to form submit
-
-        let errors = []
-        if (!props.skip_validations) {
-          errors = validateForm()
-          // Publish errors to context
-          formContext.setErrors(errors)
-        }
-
-        // Only submit if there are no errors.
-        if (errors.length < 1) {
-          clearDraft()
-          formRef.current.submit()
-        }
+      let errors = []
+      if (!props.skip_validations) {
+        errors = validateForm()
+        formContext.setErrors(errors)
       }
-      // }
+
+      if (errors.length > 0) {
+        return
+      }
+
+      clearDraft()
+
+      if (props.onSubmit) {
+        props.onSubmit(collectFormData(props.data), props.parentElementId)
+        return
+      }
+
+      formRef.current?.submit()
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [props, collectFormData, validateForm, clearDraft]

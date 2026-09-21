@@ -5,12 +5,18 @@ import { Slider } from 'antd'
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
 
+const parseRangeValue = (raw, fallback) => {
+  const parsed = parseInt(raw, 10)
+  return Number.isNaN(parsed) ? fallback : parsed
+}
+
 const Range = (props) => {
   const inputField = React.useRef(null)
+  const fallbackValue = parseRangeValue(props.data.min_value, 0)
   const [value, setValue] = React.useState(
     props.defaultValue !== undefined
-      ? parseInt(props.defaultValue, 10)
-      : parseInt(props.data.default_value, 10)
+      ? parseRangeValue(props.defaultValue, fallbackValue)
+      : parseRangeValue(props.data.default_value, fallbackValue)
   )
 
   // Initialize form context with initial value
@@ -18,8 +24,8 @@ const Range = (props) => {
     if (props.handleChange) {
       const initialValue =
         props.defaultValue !== undefined
-          ? parseInt(props.defaultValue, 10)
-          : parseInt(props.data.default_value, 10)
+          ? parseRangeValue(props.defaultValue, fallbackValue)
+          : parseRangeValue(props.data.default_value, fallbackValue)
       props.handleChange(props.data.field_name, initialValue)
     }
   }, []) // Only on mount
@@ -27,7 +33,7 @@ const Range = (props) => {
   const changeValue = React.useCallback(
     (e) => {
       const { target } = e
-      const newValue = parseInt(target.value, 10)
+      const newValue = parseRangeValue(target.value, fallbackValue)
       setValue(newValue)
 
       // Update form context
