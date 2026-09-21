@@ -41,13 +41,19 @@ const renderElement = (item, props) => {
   const elementProps = { ...props }
 
   // Check if this is a syncable element type
+  // (only types that actually emit onElementChange are listed)
   if (
     [
       'Checkboxes',
       'RadioButtons',
       'Dropdown',
+      'TextInput',
+      'NumberInput',
+      'TextArea',
+      'Tags',
       'DataSource',
       'Dataset',
+      'Signature',
       'Signature2',
       'FormLink',
     ].includes(item.element) &&
@@ -166,6 +172,7 @@ const Dustbin = React.forwardRef(
       ...rest,
       row,
       col,
+      getDataById,
       syncColumnChanges,
       updateElement,
     })

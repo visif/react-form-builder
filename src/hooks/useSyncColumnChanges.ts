@@ -53,6 +53,15 @@ const useSyncColumnChanges = (
           ...itemData,
         }
 
+        // Sync common toggle properties for every element type, so e.g. marking
+        // one row's cell as required never leaves sibling rows out of sync
+        if (Object.prototype.hasOwnProperty.call(changeData, 'required')) {
+          updatedItem.required = changeData.required === true || changeData.required === 'true'
+        }
+        if (Object.prototype.hasOwnProperty.call(changeData, 'readOnly')) {
+          updatedItem.readOnly = changeData.readOnly === true || changeData.readOnly === 'true'
+        }
+
         // Apply changes based on element type and what was changed
         if (elementType === 'Checkboxes' || elementType === 'RadioButtons') {
           // For checkboxes/radio buttons

@@ -125,6 +125,15 @@ const Preview = (props) => {
     if (editElement && editElement.dirty) {
       editElement.dirty = false
       updateElement(editElement)
+      // Keep synced DynamicColumnRow cells consistent when pending edits
+      // are flushed by clicking outside the edit panel
+      if (
+        editElement.parentId &&
+        editElement.row !== undefined &&
+        editElement.col !== undefined
+      ) {
+        syncRowChanges(editElement)
+      }
     }
     props.manualEditModeOff()
   }
