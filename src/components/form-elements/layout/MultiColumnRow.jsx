@@ -15,6 +15,13 @@ import Dustbin from './dustbin'
 
 const accepts = [ItemTypes.BOX, ItemTypes.CARD]
 
+const RESIZABLE_COLUMN_ROWS = new Set([
+  'DynamicColumnRow',
+  'TwoColumnRow',
+  'ThreeColumnRow',
+  'FourColumnRow',
+])
+
 const stripPTags = (html) => {
   if (!html) return html
   return html.replace(/<p>/gi, '').replace(/<\/p>/gi, '').trim()
@@ -120,15 +127,17 @@ const MultiColumnRow = (props) => {
   const [draftWidths, setDraftWidths] = useState(null)
   const [isResizing, setIsResizing] = useState(false)
 
+  const columnCount = data.columns?.length || childItems[0]?.length || 0
+  const hasColumnHeaders = Array.isArray(data.columns) && data.columns.length > 0
   const canResizeColumns =
-    data.element === 'DynamicColumnRow' &&
+    RESIZABLE_COLUMN_ROWS.has(data.element) &&
     typeof updateElement === 'function' &&
     (Boolean(preview) || Boolean(editModeOn))
 
   const relativeWidths = useMemo(() => {
     if (draftWidths) return draftWidths
-    return getRelativeColumnWidths(data.columns)
-  }, [data.columns, draftWidths])
+    return getRelativeColumnWidths(data.columns, data.colWidths, columnCount)
+  }, [data.columns, data.colWidths, columnCount, draftWidths])
 
   const columnWidths = percentWidthsFromRelative(relativeWidths)
 
@@ -143,16 +152,24 @@ const MultiColumnRow = (props) => {
     window.removeEventListener('pointercancel', drag.up)
 
     const current = dataRef.current
-    if (typeof updateElement === 'function' && Array.isArray(current.columns)) {
+    if (typeof updateElement === 'function') {
       const rounded = drag.currentWidths.map(roundRelativeWidth)
-      updateElement({
-        ...current,
-        columns: current.columns.map((column, columnIndex) => ({
-          ...column,
-          width: rounded[columnIndex],
-        })),
-        dirty: true,
-      })
+      if (Array.isArray(current.columns) && current.columns.length > 0) {
+        updateElement({
+          ...current,
+          columns: current.columns.map((column, columnIndex) => ({
+            ...column,
+            width: rounded[columnIndex],
+          })),
+          dirty: true,
+        })
+      } else {
+        updateElement({
+          ...current,
+          colWidths: rounded,
+          dirty: true,
+        })
+      }
     }
     setDraftWidths(null)
     setIsResizing(false)
@@ -235,7 +252,7 @@ const MultiColumnRow = (props) => {
             width: '100%',
           }}
         >
-          {data.columns && (
+          {hasColumnHeaders && (
             <thead>
               <tr>
                 {/* Add empty header cell for row labels column if row labels are present */}
@@ -273,7 +290,7 @@ const MultiColumnRow = (props) => {
                   >
                     <span dangerouslySetInnerHTML={{ __html: stripPTags(column.text) }} />
                     {column.required && <RequiredBadge />}
-                    {canResizeColumns && columnIndex < data.columns.length - 1 && (
+                    {canResizeColumns && columnIndex < relativeWidths.length - 1 && (
                       <ColumnResizeHandle
                         columnIndex={columnIndex}
                         onResizeStart={startColumnResize}
@@ -314,11 +331,7 @@ const MultiColumnRow = (props) => {
                   // Get column width with proper fallback handling
                   let columnWidth = 100 / row.length // Default: equal distribution
 
-                  if (
-                    data.columns &&
-                    columnWidths.length > 0 &&
-                    columnIndex < columnWidths.length
-                  ) {
+                  if (columnWidths.length > 0 && columnIndex < columnWidths.length) {
                     const calculatedWidth = columnWidths[columnIndex]
                     if (!Number.isNaN(calculatedWidth) && calculatedWidth > 0) {
                       columnWidth = calculatedWidth
@@ -329,6 +342,7 @@ const MultiColumnRow = (props) => {
                     <td
                       key={`${rowIndex}_${columnIndex}_${item || '_'}`}
                       style={{
+                        position: 'relative',
                         padding: '12px',
                         width: `${columnWidth}%`,
                         maxWidth: `${columnWidth}%`,
@@ -358,6 +372,14 @@ const MultiColumnRow = (props) => {
                           {...props}
                         />
                       )}
+                      {canResizeColumns &&
+                        !hasColumnHeaders &&
+                        columnIndex < relativeWidths.length - 1 && (
+                          <ColumnResizeHandle
+                            columnIndex={columnIndex}
+                            onResizeStart={startColumnResize}
+                          />
+                        )}
                     </td>
                   )
                 })}

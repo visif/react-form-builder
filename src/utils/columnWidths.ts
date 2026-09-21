@@ -36,11 +36,34 @@ export const getRowLabelColumnCssWidth = (rowLabels?: RowLabelSource[] | null): 
   return `calc(${maxLen}ch + ${ROW_LABEL_HORIZONTAL_PADDING_PX}px)`
 }
 
-export const getRelativeColumnWidths = (columns?: ColumnWidthSource[] | null): number[] =>
-  (columns || []).map((column) => {
-    const width = Number(column?.width)
-    return Number.isFinite(width) && width > 0 ? width : 1
-  })
+const toPositiveWidth = (width: unknown): number => {
+  const value = Number(width)
+  return Number.isFinite(value) && value > 0 ? value : 1
+}
+
+/**
+ * Relative column widths for layout and mouse-resize.
+ * Prefers `columns[].width` (Dynamic Column Row), then `colWidths`
+ * (Two/Three/Four Column Row), then equal widths.
+ */
+export const getRelativeColumnWidths = (
+  columns?: ColumnWidthSource[] | null,
+  colWidths?: Array<string | number> | null,
+  columnCount = 0
+): number[] => {
+  if (columns && columns.length > 0) {
+    return columns.map((column) => toPositiveWidth(column?.width))
+  }
+  if (colWidths && colWidths.length > 0) {
+    const widths = colWidths.map(toPositiveWidth)
+    const count = columnCount || widths.length
+    if (count > widths.length) {
+      return [...widths, ...Array(count - widths.length).fill(1)]
+    }
+    return widths.slice(0, count)
+  }
+  return Array(Math.max(columnCount, 0)).fill(1)
+}
 
 export const roundRelativeWidth = (width: number): number => Math.round(width * 100) / 100
 

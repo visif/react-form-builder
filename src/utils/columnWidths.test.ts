@@ -48,6 +48,14 @@ describe('columnWidths', () => {
         2, 1, 1, 3,
       ])
     })
+
+    it('uses colWidths when columns are not defined', () => {
+      expect(getRelativeColumnWidths(undefined, [1.5, 0.5], 2)).toEqual([1.5, 0.5])
+    })
+
+    it('pads equal widths when only a column count is known', () => {
+      expect(getRelativeColumnWidths(undefined, undefined, 3)).toEqual([1, 1, 1])
+    })
   })
 
   describe('resizeAdjacentColumnWidths', () => {
