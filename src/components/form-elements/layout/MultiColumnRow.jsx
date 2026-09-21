@@ -1,8 +1,14 @@
 /* eslint-disable camelcase */
-import React from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import ItemTypes from '../../../constants/itemTypes'
 import useSyncColumnChanges from '../../../hooks/useSyncColumnChanges'
+import {
+  getRelativeColumnWidths,
+  getRowLabelColumnCssWidth,
+  resizeAdjacentColumnWidths,
+  roundRelativeWidth,
+} from '../../../utils/columnWidths'
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel, { RequiredBadge } from '../shared/ComponentLabel'
 import Dustbin from './dustbin'
@@ -12,6 +18,68 @@ const accepts = [ItemTypes.BOX, ItemTypes.CARD]
 const stripPTags = (html) => {
   if (!html) return html
   return html.replace(/<p>/gi, '').replace(/<\/p>/gi, '').trim()
+}
+
+const percentWidthsFromRelative = (relativeWidths) => {
+  const totalWidth = relativeWidths.reduce((sum, width) => sum + width, 0)
+  if (!totalWidth) return relativeWidths.map(() => 0)
+  return relativeWidths.map((width) => (width / totalWidth) * 100)
+}
+
+const RESIZE_HANDLE_STYLE = {
+  position: 'absolute',
+  top: 0,
+  right: -6,
+  width: 12,
+  height: '100%',
+  padding: 0,
+  margin: 0,
+  border: 0,
+  background: 'transparent',
+  cursor: 'col-resize',
+  zIndex: 6,
+  touchAction: 'none',
+  userSelect: 'none',
+}
+
+const RESIZE_HANDLE_BAR_STYLE = {
+  position: 'absolute',
+  top: 6,
+  bottom: 6,
+  left: 5,
+  width: 2,
+  borderRadius: 1,
+  backgroundColor: '#98a2b3',
+  pointerEvents: 'none',
+}
+
+const ColumnResizeHandle = ({ columnIndex, onResizeStart }) => {
+  const [hovered, setHovered] = React.useState(false)
+
+  return (
+    <button
+      type="button"
+      className="rfb-col-resize-handle"
+      aria-orientation="vertical"
+      aria-label={`Resize column ${columnIndex + 1}`}
+      title="Drag to resize column"
+      style={RESIZE_HANDLE_STYLE}
+      onPointerDown={onResizeStart(columnIndex)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onMouseDown={(event) => {
+        event.preventDefault()
+        event.stopPropagation()
+      }}
+    >
+      <span
+        style={{
+          ...RESIZE_HANDLE_BAR_STYLE,
+          backgroundColor: hovered ? '#1677ff' : '#98a2b3',
+        }}
+      />
+    </button>
+  )
 }
 
 const MultiColumnRow = (props) => {
@@ -30,6 +98,7 @@ const MultiColumnRow = (props) => {
     openLinkedForm,
     getFormInfo,
     getFormSource,
+    preview,
   } = props
 
   const { childItems = [], pageBreakBefore } = data
@@ -39,25 +108,117 @@ const MultiColumnRow = (props) => {
 
   // Check if row labels are defined in data
   const hasRowLabels = Array.isArray(data.rowLabels) && data.rowLabels.length > 0
+  const rowLabelColumnWidth = hasRowLabels ? getRowLabelColumnCssWidth(data.rowLabels) : null
 
   // Use the custom hook for synchronizing column changes
   const syncColumnChanges = useSyncColumnChanges(childItems, getDataById, updateElement)
 
-  // Calculate column widths once for the entire component
-  const columnWidths = data.columns
-    ? (() => {
-        const totalWidth = data.columns.reduce((sum, col) => {
-          const width = Number(col.width) || 1
-          return sum + width
-        }, 0)
-        const widths = data.columns.map((column) => {
-          const width = Number(column.width) || 1
-          return (width / totalWidth) * 100
-        })
+  const tableRef = useRef(null)
+  const dataRef = useRef(data)
+  dataRef.current = data
+  const dragStateRef = useRef(null)
+  const [draftWidths, setDraftWidths] = useState(null)
+  const [isResizing, setIsResizing] = useState(false)
 
-        return widths
-      })()
-    : []
+  const canResizeColumns =
+    data.element === 'DynamicColumnRow' &&
+    typeof updateElement === 'function' &&
+    (Boolean(preview) || Boolean(editModeOn))
+
+  const relativeWidths = useMemo(() => {
+    if (draftWidths) return draftWidths
+    return getRelativeColumnWidths(data.columns)
+  }, [data.columns, draftWidths])
+
+  const columnWidths = percentWidthsFromRelative(relativeWidths)
+
+  const stopColumnResize = useCallback(() => {
+    const drag = dragStateRef.current
+    if (!drag) return
+
+    dragStateRef.current = null
+    document.body.classList.remove('rfb-col-resizing')
+    window.removeEventListener('pointermove', drag.move)
+    window.removeEventListener('pointerup', drag.up)
+    window.removeEventListener('pointercancel', drag.up)
+
+    const current = dataRef.current
+    if (typeof updateElement === 'function' && Array.isArray(current.columns)) {
+      const rounded = drag.currentWidths.map(roundRelativeWidth)
+      updateElement({
+        ...current,
+        columns: current.columns.map((column, columnIndex) => ({
+          ...column,
+          width: rounded[columnIndex],
+        })),
+        dirty: true,
+      })
+    }
+    setDraftWidths(null)
+    setIsResizing(false)
+  }, [updateElement])
+
+  const moveColumnResize = useCallback((event) => {
+    const drag = dragStateRef.current
+    if (!drag) return
+    const deltaUnits = (event.clientX - drag.startX) / drag.pxPerUnit
+    const next = resizeAdjacentColumnWidths(drag.startWidths, drag.index, deltaUnits)
+    drag.currentWidths = next
+    setDraftWidths(next)
+  }, [])
+
+  const startColumnResize = useCallback(
+    (columnIndex) => (event) => {
+      if (!canResizeColumns || columnIndex >= relativeWidths.length - 1) return
+      if (dragStateRef.current) return
+      event.preventDefault()
+      event.stopPropagation()
+
+      const tableWidth = tableRef.current?.clientWidth || 0
+      const rowLabelCell = tableRef.current?.querySelector('.rfb-table-row-header-cell')
+      const rowLabelWidth = rowLabelCell?.getBoundingClientRect?.().width || 0
+      const usableWidth = Math.max(tableWidth - rowLabelWidth, 1)
+      const totalUnits = relativeWidths.reduce((sum, width) => sum + width, 0) || 1
+
+      const move = moveColumnResize
+      const up = stopColumnResize
+      dragStateRef.current = {
+        index: columnIndex,
+        startX: event.clientX,
+        startWidths: relativeWidths,
+        currentWidths: relativeWidths,
+        pxPerUnit: usableWidth / totalUnits,
+        move,
+        up,
+      }
+      setDraftWidths(relativeWidths)
+      setIsResizing(true)
+      document.body.classList.add('rfb-col-resizing')
+      window.addEventListener('pointermove', move)
+      window.addEventListener('pointerup', up)
+      window.addEventListener('pointercancel', up)
+    },
+    [canResizeColumns, moveColumnResize, relativeWidths, stopColumnResize]
+  )
+
+  useEffect(
+    () => () => {
+      if (!dragStateRef.current) return
+      window.removeEventListener('pointermove', dragStateRef.current.move)
+      window.removeEventListener('pointerup', dragStateRef.current.up)
+      window.removeEventListener('pointercancel', dragStateRef.current.up)
+      document.body.classList.remove('rfb-col-resizing')
+      dragStateRef.current = null
+    },
+    []
+  )
+
+  const rowLabelCellStyle = {
+    width: rowLabelColumnWidth,
+    minWidth: rowLabelColumnWidth,
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box',
+  }
 
   return (
     <div className={baseClasses}>
@@ -65,7 +226,8 @@ const MultiColumnRow = (props) => {
       <div>
         <ComponentLabel {...props} />
         <table
-          className="rfb-multicolumn-table"
+          ref={tableRef}
+          className={`rfb-multicolumn-table${isResizing ? ' rfb-col-resizing' : ''}`}
           style={{
             marginBottom: '0',
             borderCollapse: 'collapse',
@@ -81,7 +243,7 @@ const MultiColumnRow = (props) => {
                   <th
                     className="rfb-table-row-header-cell"
                     style={{
-                      width: 'var(--rfb-table-row-header-width, 150px)',
+                      ...rowLabelCellStyle,
                       fontWeight: 'var(--rfb-table-header-font-weight, bold)',
                       fontFamily: 'var(--rfb-table-header-font-family, inherit)',
                       backgroundColor: '#eaecf0',
@@ -95,6 +257,7 @@ const MultiColumnRow = (props) => {
                     key={`header_${columnIndex}`}
                     className="rfb-table-column-header"
                     style={{
+                      position: 'relative',
                       textAlign: 'center',
                       verticalAlign: 'middle',
                       fontWeight: 'var(--rfb-table-header-font-weight, bold)',
@@ -110,6 +273,12 @@ const MultiColumnRow = (props) => {
                   >
                     <span dangerouslySetInnerHTML={{ __html: stripPTags(column.text) }} />
                     {column.required && <RequiredBadge />}
+                    {canResizeColumns && columnIndex < data.columns.length - 1 && (
+                      <ColumnResizeHandle
+                        columnIndex={columnIndex}
+                        onResizeStart={startColumnResize}
+                      />
+                    )}
                   </th>
                 ))}
               </tr>
@@ -123,6 +292,7 @@ const MultiColumnRow = (props) => {
                   <td
                     className="row-label rfb-table-row-label"
                     style={{
+                      ...rowLabelCellStyle,
                       textAlign: 'right',
                       padding: '12px',
                       backgroundColor: '#f9fafb',

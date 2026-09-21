@@ -288,6 +288,11 @@ input[type='date'] {
       min-width: 0;
     }
 
+    .rfb-table-row-header-cell,
+    .rfb-table-row-label {
+      white-space: nowrap;
+    }
+
     .rfb-item,
     .form-group,
     .form-group > div {
