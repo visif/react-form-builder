@@ -69,12 +69,28 @@ export const RequiredAsterisk = () => (
 
 const isRequiredValue = (value) => value === true || value === 'true'
 
-const isDynamicColumnChild = (data, mutable) => {
+// Resolve the getDataById lookup from whichever prop shape is available.
+// In the builder preview, `mutable` is a boolean and `getDataById` is passed
+// as its own prop; in the generator, `mutable` is an object carrying it.
+const resolveGetDataById = (props) => {
+  if (typeof props.getDataById === 'function') return props.getDataById
+  if (props.mutable && typeof props.mutable.getDataById === 'function') {
+    return props.mutable.getDataById
+  }
+  return null
+}
+
+const getParentElement = (props) => {
+  if (!props.data?.parentId) return null
+  const getDataById = resolveGetDataById(props)
+  return getDataById ? getDataById(props.data.parentId) : null
+}
+
+const isDynamicColumnChild = (data, props) => {
   if (!data?.parentId || data.row === undefined || data.col === undefined) {
     return false
   }
-  const parent =
-    mutable && typeof mutable.getDataById === 'function' ? mutable.getDataById(data.parentId) : null
+  const parent = getParentElement(props)
   if (parent?.element) {
     return parent.element === 'DynamicColumnRow'
   }
@@ -83,26 +99,25 @@ const isDynamicColumnChild = (data, mutable) => {
 
 const ComponentLabel = (props) => {
   const hasRequiredLabel = isRequiredValue(props.data?.required) && !props.read_only
-  const inDynamicColumn = isDynamicColumnChild(props.data, props.mutable)
+  const inDynamicColumn = isDynamicColumnChild(props.data, props)
   const requiredMark = inDynamicColumn ? <RequiredAsterisk /> : <RequiredBadge />
+
+  const parentElement = getParentElement(props)
+  const parentDynamicColumnRow =
+    parentElement && parentElement.element === 'DynamicColumnRow' ? parentElement : null
+
+  // When the Dynamic Column Row opts in to showing labels, the row-level setting
+  // overrides the automatic hideLabel flag that is stamped on children at drop time.
+  const rowShowsLabels = parentDynamicColumnRow?.showDisplayLabel === true
 
   const hideLabelSetting =
     (props.data.isShowLabel !== undefined && props.data.isShowLabel === false) ||
-    (props.data && props.data.hideLabel === true)
+    (props.data && props.data.hideLabel === true && !rowShowsLabels)
 
-  let hideBecauseDynamicColumn = false
-  if (props.data.parentId) {
-    const parentElement =
-      props.mutable && props.mutable.getDataById && props.mutable.getDataById(props.data.parentId)
-
-    if (
-      parentElement &&
-      parentElement.element === 'DynamicColumnRow' &&
-      props.data.displayLabelInColumn !== true
-    ) {
-      hideBecauseDynamicColumn = true
-    }
-  }
+  const hideBecauseDynamicColumn =
+    parentDynamicColumnRow !== null &&
+    !rowShowsLabels &&
+    props.data.displayLabelInColumn !== true
 
   // Keep the required marker visible even when the cell label is hidden.
   if (hideLabelSetting || hideBecauseDynamicColumn) {

@@ -8,6 +8,7 @@ import {
 } from '../../../../utils/dynamic-column-row-names'
 import DynamicColumnList from '../DynamicColumnList'
 import DynamicOptionList from '../DynamicOptionList'
+import CheckboxFieldEditor from '../editors/specific/CheckboxFieldEditor'
 import DataSourceEditor from '../editors/specific/DataSourceEditor'
 import FormLinkEditor from '../editors/specific/FormLinkEditor'
 import ImageEditor from '../editors/specific/ImageEditor'
@@ -75,6 +76,18 @@ export const buildFieldConfigs = ({
           : null,
         helpText:
           'Required. Used in template tags such as #WorkHistory_c1#. On a master form, tables inside a SubForm use #SubFormName_WorkHistory_c1#.',
+      },
+    },
+
+    // Show the Display Label for the input elements inside a Dynamic Column Row
+    {
+      condition: () => props.element.element === 'DynamicColumnRow',
+      component: CheckboxFieldEditor,
+      props: {
+        id: 'dcrShowDisplayLabel',
+        label: 'Show the Display Label for the input element',
+        checked: element.showDisplayLabel === true,
+        onChange: (e) => editElementProp('showDisplayLabel', 'checked', e),
       },
     },
 
@@ -333,7 +346,6 @@ export const buildFieldConfigs = ({
       props: {
         element: props.element,
         formDataSource,
-        activeForm,
         onChange: editElementProp,
         onBlur: updateElement,
         onSubFormNameChange,

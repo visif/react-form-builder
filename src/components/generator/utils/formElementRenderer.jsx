@@ -72,7 +72,8 @@ export const getInputElement = (
   getEditor,
   formContext,
   getCustomElementFn,
-  onSignChange
+  onSignChange,
+  getDataById
 ) => {
   if (item.custom) {
     return getCustomElementFn(item, props, handleChange, getDefaultValue)
@@ -97,6 +98,7 @@ export const getInputElement = (
       getFormInfo={props.getFormInfo}
       onSelectChildForm={props.onSelectChildForm}
       broadcastChange={props.broadcastChange}
+      getDataById={getDataById}
       variables={formContext.getAllVariables()}
     />
   )
@@ -178,7 +180,8 @@ export const renderFormElement = (item, props, handlers, helpers) => {
         getEditor,
         formContext,
         (customItem) => customElementRenderer(customItem),
-        handleSignature2Change
+        handleSignature2Change,
+        getDataById
       )
 
     case 'DataSource':
@@ -212,7 +215,8 @@ export const renderFormElement = (item, props, handlers, helpers) => {
           getEditor,
           formContext,
           (customItem) => customElementRenderer(customItem),
-          handleSignature2Change
+          handleSignature2Change,
+          getDataById
         )
       )
 
@@ -226,7 +230,8 @@ export const renderFormElement = (item, props, handlers, helpers) => {
           getEditor,
           formContext,
           (customItem) => customElementRenderer(customItem),
-          handleSignature2Change
+          handleSignature2Change,
+          getDataById
         )
       )
 
@@ -240,7 +245,8 @@ export const renderFormElement = (item, props, handlers, helpers) => {
           getEditor,
           formContext,
           (customItem) => customElementRenderer(customItem),
-          handleSignature2Change
+          handleSignature2Change,
+          getDataById
         )
       )
 
@@ -254,7 +260,8 @@ export const renderFormElement = (item, props, handlers, helpers) => {
           getEditor,
           formContext,
           (customItem) => customElementRenderer(customItem),
-          handleSignature2Change
+          handleSignature2Change,
+          getDataById
         )
       )
 

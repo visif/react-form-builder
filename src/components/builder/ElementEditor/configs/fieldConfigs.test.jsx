@@ -132,4 +132,72 @@ describe('buildFieldConfigs', () => {
     expect(uniqueNameConfig.props.value).toBe('WorkHistory')
     expect(uniqueNameConfig.props.helpText).toContain('#WorkHistory_c1#')
   })
+
+  it('includes the Show Display Label checkbox for DynamicColumnRow, defaulting to unchecked', () => {
+    const configs = buildFieldConfigs({
+      props: {
+        element: {
+          id: 'dcr-1',
+          element: 'DynamicColumnRow',
+          uniqueName: 'WorkHistory',
+          columns: [],
+        },
+        preview: { state: { data: [] } },
+      },
+      element: {
+        id: 'dcr-1',
+        element: 'DynamicColumnRow',
+        uniqueName: 'WorkHistory',
+        columns: [],
+      },
+      fileOptions: [],
+      formDataSource: [],
+      activeForm: null,
+      onUploadFile: noop,
+      editElementProp: noop,
+      onContentChange: noop,
+      updateElement: noop,
+    })
+
+    const showLabelConfig = configs.find(
+      (config) => config.props && config.props.id === 'dcrShowDisplayLabel' && config.condition()
+    )
+
+    expect(showLabelConfig).toBeTruthy()
+    expect(showLabelConfig.props.label).toBe('Show the Display Label for the input element')
+    expect(showLabelConfig.props.checked).toBe(false)
+
+    const checkedConfigs = buildFieldConfigs({
+      props: {
+        element: {
+          id: 'dcr-1',
+          element: 'DynamicColumnRow',
+          uniqueName: 'WorkHistory',
+          columns: [],
+          showDisplayLabel: true,
+        },
+        preview: { state: { data: [] } },
+      },
+      element: {
+        id: 'dcr-1',
+        element: 'DynamicColumnRow',
+        uniqueName: 'WorkHistory',
+        columns: [],
+        showDisplayLabel: true,
+      },
+      fileOptions: [],
+      formDataSource: [],
+      activeForm: null,
+      onUploadFile: noop,
+      editElementProp: noop,
+      onContentChange: noop,
+      updateElement: noop,
+    })
+
+    const checkedConfig = checkedConfigs.find(
+      (config) => config.props && config.props.id === 'dcrShowDisplayLabel' && config.condition()
+    )
+
+    expect(checkedConfig.props.checked).toBe(true)
+  })
 })
