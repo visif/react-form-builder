@@ -146,10 +146,10 @@ npm link @visif/form-builder
 
 ### 3. Rebuild on changes
 
-After editing source files in this repo, re-run the build to propagate changes:
+After editing source files in this repo, rebuild so the host picks up `dist/` and keeps the local notice banner:
 
 ```bash
-npm run build
+yarn build:local
 ```
 
 ### 4. Unlink when done
@@ -164,11 +164,18 @@ npm unlink
 
 ## Build & Publish
 
+| Command | Use |
+|---------|-----|
+| `yarn build` | Publish/CI artifact — no local notice banner |
+| `yarn build:local` / `yarn link:local` | Local consumer testing — orange notice banner baked in |
+| `npm publish` | Runs `prepublishOnly` → production `yarn build`, then publishes |
+
 ```bash
-npm run build
-npm version patch
+yarn build
 npm publish
 ```
+
+`prepublishOnly` clears `VITE_LOCAL_BUILD` before building, so a registry package never includes the orange notice even if the last local build left it in `dist/`.
 
 ## License
 

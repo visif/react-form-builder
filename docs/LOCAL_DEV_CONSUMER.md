@@ -4,7 +4,7 @@ Use this when **migration-vdc** should consume a local build of `@visif/form-bui
 
 ## Option A — `file:` dependency (recommended)
 
-In **migration-vdc** `package.json`, point at the sibling repo (adjust path if needed):
+In **migration-vdc** `package.json`, point at this sibling repo (adjust if your clone path differs — Vite also accepts `../migration/react-form-builder`):
 
 ```json
 {
@@ -27,7 +27,7 @@ yarn --cwd ../migration-react-form-builder build:local
 **Before publish / CI:** restore the registry version:
 
 ```json
-"@visif/form-builder": "^0.0.5"
+"@visif/form-builder": "^0.0.6"
 ```
 
 Do not commit the `file:` override to main if your pipeline should always use the published package.

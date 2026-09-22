@@ -44,9 +44,9 @@ export default defineConfig({
       name: 'ReactFormBuilder',
       formats: ['es', 'umd'],
       fileName: (format) => `app.${format}.js`,
+      cssFileName: 'app',
     },
     outDir: 'dist',
-    cssFileName: 'app',
     rollupOptions: {
       external: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
       output: {
