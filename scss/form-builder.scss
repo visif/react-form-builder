@@ -793,6 +793,26 @@ body.rfb-col-resizing {
   }
 }
 
+// Keep typed autocomplete text from stacking over the selected label / placeholder.
+.rfb-dropdown-select {
+  .ant-select-selection-item,
+  .ant-select-selection-search-input {
+    color: rgba(0, 0, 0, 0.85);
+    -webkit-text-fill-color: rgba(0, 0, 0, 0.85);
+  }
+}
+
+.rfb-dropdown-select.rfb-dropdown-searching,
+.rfb-dropdown-select.ant-select-show-search:has(.ant-select-selection-search-input:not(:placeholder-shown)) {
+  .ant-select-selection-item,
+  .ant-select-selection-placeholder {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    color: transparent !important;
+    -webkit-text-fill-color: transparent !important;
+  }
+}
+
 .form-place-holder {
   margin: 10px;
   border: 2px dashed #bbb;

@@ -30,16 +30,19 @@ const Dropdown = (props) => {
   const parsedDefault = parseDropdownValue(props.defaultValue)
   const [value, setValue] = React.useState(parsedDefault.value)
   const [info, setInfo] = React.useState(parsedDefault.info)
+  const [searchValue, setSearchValue] = React.useState('')
 
   // Update value when defaultValue prop changes
   React.useEffect(() => {
     const next = parseDropdownValue(props.defaultValue)
     setValue(next.value)
     setInfo(next.info)
+    setSearchValue('')
   }, [props.defaultValue])
 
   const selectedOption = props.data.options?.find((option) => option.value == value)
   const showInfo = !!selectedOption?.info
+  const isSearching = searchValue.length > 0
 
   const emitChange = React.useCallback(
     (selectedValue, nextInfo) => {
@@ -75,13 +78,28 @@ const Dropdown = (props) => {
 
   const handleChange = React.useCallback(
     (selectedValue) => {
-      const selected = props.data.options?.find((option) => option.value == selectedValue)
+      const nextValue = selectedValue ?? ''
+      const selected = props.data.options?.find((option) => option.value == nextValue)
       const nextInfo = selected?.info ? info : ''
-      setValue(selectedValue)
+      setSearchValue('')
+      setValue(nextValue)
       setInfo(nextInfo)
-      emitChange(selectedValue, nextInfo)
+      emitChange(nextValue, nextInfo)
     },
     [emitChange, info, props.data.options]
+  )
+
+  const handleSearch = React.useCallback((input) => {
+    setSearchValue(input)
+  }, [])
+
+  const handleInputKeyDown = React.useCallback(
+    (event) => {
+      if (event.key === 'Backspace' && !searchValue && value) {
+        handleChange('')
+      }
+    },
+    [handleChange, searchValue, value]
   )
 
   const handleInfoChange = React.useCallback(
@@ -102,19 +120,26 @@ const Dropdown = (props) => {
       userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
+  const isDisabled = !!(props.read_only || !isSameEditor)
   const selectProps = {}
   selectProps.style = {
     width: '100%',
     fontSize: '15px',
-    color: 'rgba(0, 0, 0, 0.85)',
-    WebkitTextFillColor: 'rgba(0, 0, 0, 0.85)',
-    opacity: 1,
   }
-  selectProps.className = 'rfb-dropdown-select'
-  selectProps.placeholder = 'Please Select'
+  selectProps.className = isSearching
+    ? 'rfb-dropdown-select rfb-dropdown-searching'
+    : 'rfb-dropdown-select'
+  selectProps.placeholder = isSearching ? undefined : 'Please Select'
   selectProps.value = value || undefined
+  selectProps.onSearch = handleSearch
   selectProps.onChange = handleChange
+  selectProps.onInputKeyDown = handleInputKeyDown
+  selectProps.onDropdownVisibleChange = (open) => {
+    if (!open) setSearchValue('')
+  }
   selectProps.showSearch = true
+  selectProps.allowClear = !isDisabled
+  selectProps.autoClearSearchValue = true
   selectProps.optionFilterProp = 'label'
   selectProps.filterOption = filterDropdownOption
 
@@ -122,7 +147,7 @@ const Dropdown = (props) => {
     selectProps.ref = inputField
   }
 
-  if (props.read_only || !isSameEditor) {
+  if (isDisabled) {
     selectProps.disabled = true
   }
 
@@ -154,7 +179,7 @@ const Dropdown = (props) => {
             placeholder="Additional information"
             value={info}
             onChange={handleInfoChange}
-            disabled={props.read_only || !isSameEditor}
+            disabled={isDisabled}
           />
         )}
       </div>

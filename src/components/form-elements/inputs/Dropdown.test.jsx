@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import Dropdown, { filterDropdownOption } from './Dropdown'
@@ -60,5 +60,27 @@ describe('Dropdown', () => {
     expect(combobox).toBeTruthy()
     expect(combobox).not.toHaveAttribute('readonly')
     expect(combobox.closest('.rfb-dropdown-select')).toBeTruthy()
+  })
+
+  it('hides the current selection and placeholder while typing', () => {
+    render(<Dropdown mutable data={dropdownData} defaultValue="th" />)
+
+    const combobox = screen.getByRole('combobox')
+    fireEvent.change(combobox, { target: { value: 'viet' } })
+
+    const select = combobox.closest('.rfb-dropdown-select')
+    expect(select).toHaveClass('rfb-dropdown-searching')
+    expect(combobox).toHaveValue('viet')
+    expect(select.querySelector('.ant-select-selection-placeholder')).toBeNull()
+  })
+
+  it('allows clearing the selected value with backspace', () => {
+    render(<Dropdown mutable data={dropdownData} defaultValue="th" />)
+
+    const combobox = screen.getByRole('combobox')
+    fireEvent.keyDown(combobox, { key: 'Backspace' })
+
+    expect(combobox.closest('.ant-select')).not.toHaveClass('ant-select-disabled')
+    expect(screen.getByText('Please Select')).toBeTruthy()
   })
 })
