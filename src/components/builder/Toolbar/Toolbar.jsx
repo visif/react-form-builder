@@ -171,6 +171,9 @@ const Toolbar = (props) => {
         elementOptions.src = item.src
         elementOptions.width = item.src.width || 100
         elementOptions.height = item.src.height || 100
+        elementOptions.lockAspectRatio = item.lockAspectRatio !== false
+        elementOptions.aspectRatio =
+          item.aspectRatio || elementOptions.width / elementOptions.height
       }
 
       if (item.key === 'DatePicker') {
@@ -608,6 +611,8 @@ function _defaultItems() {
       icon: 'far fa-image',
       field_name: 'image_',
       src: '',
+      lockAspectRatio: true,
+      aspectRatio: 1,
     },
     {
       key: 'Rating',

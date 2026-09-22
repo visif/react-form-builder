@@ -28,6 +28,35 @@ export const useFormElementEdit = (props) => {
     elementRef.current = element
   }, [element])
 
+  useEffect(() => {
+    if (props.element?.element !== 'Image') return
+    setElement((prev) => {
+      if (!prev || prev.id !== props.element.id) return prev
+      if (
+        prev.width === props.element.width &&
+        prev.height === props.element.height &&
+        prev.aspectRatio === props.element.aspectRatio &&
+        prev.src === props.element.src
+      ) {
+        return prev
+      }
+      return {
+        ...prev,
+        width: props.element.width,
+        height: props.element.height,
+        aspectRatio: props.element.aspectRatio,
+        src: props.element.src,
+      }
+    })
+  }, [
+    props.element,
+    props.element?.id,
+    props.element?.width,
+    props.element?.height,
+    props.element?.aspectRatio,
+    props.element?.src,
+  ])
+
   const formDesignData = useCallback(
     () => props.preview?.state?.data || [],
     [props.preview]
@@ -120,6 +149,26 @@ export const useFormElementEdit = (props) => {
       }
     },
     [element, formDataSource, props]
+  )
+
+  const editElementFields = useCallback(
+    (fields, { immediate } = {}) => {
+      const this_element = { ...elementRef.current, ...fields }
+      Object.keys(fields).forEach((key) => {
+        props.element[key] = fields[key]
+      })
+      setElement(this_element)
+      elementRef.current = this_element
+      setDirty(true)
+
+      if (immediate) {
+        props.updateElement.call(props.preview, this_element)
+        setDirty(false)
+      } else if (debouncedPushRef.current) {
+        debouncedPushRef.current()
+      }
+    },
+    [props]
   )
 
   const onUniqueNameChange = useCallback(
@@ -287,6 +336,7 @@ export const useFormElementEdit = (props) => {
     activeForm,
     formDesignData,
     editElementProp,
+    editElementFields,
     onContentChange,
     onUniqueNameChange,
     onUniqueNameBlur,

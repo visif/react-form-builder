@@ -43,6 +43,42 @@
       padding-top: 35px;
     }
 
+    // Match native <img width height style="max-width:100%;height:auto">
+    // Ant Design Image otherwise sizes the wrapper in raw pixels (or 100% of the form).
+    .rfb-display-image.ant-image {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .rfb-display-image .ant-image-img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .rfb-display-image-box {
+      position: relative;
+      display: inline-block;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    .rfb-image-resize-handle {
+      position: absolute;
+      right: -5px;
+      bottom: -5px;
+      width: 12px;
+      height: 12px;
+      padding: 0;
+      margin: 0;
+      border: 1px solid #fff;
+      border-radius: 2px;
+      background: #1677ff;
+      cursor: nwse-resize;
+      z-index: 6;
+      touch-action: none;
+      user-select: none;
+    }
+
     .option-inline {
       display: inline-block !important;
       margin-right: 10px !important;
@@ -825,4 +861,10 @@ body.rfb-col-resizing {
     20pt bold,
     'Vollkorn';
   color: #bbb;
+}
+
+body.rfb-image-resizing,
+body.rfb-image-resizing * {
+  cursor: nwse-resize !important;
+  user-select: none !important;
 }

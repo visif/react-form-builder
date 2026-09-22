@@ -26,6 +26,10 @@ export const createImageUploadHandler = (setElement, props) => async (event) => 
             const updated = { ...prev }
             updated.width = img.width
             updated.height = img.height
+            updated.aspectRatio = img.height ? img.width / img.height : 1
+            if (updated.lockAspectRatio == null) {
+              updated.lockAspectRatio = true
+            }
             updated.src = imageUrl
             props.updateElement.call(props.preview, updated)
             return updated

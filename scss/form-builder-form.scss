@@ -75,6 +75,33 @@ input[type='date'] {
     .italic {
       font-style: italic;
     }
+
+    .no-image {
+      background: #eee;
+      width: 100px;
+      height: 100px;
+      border: 1px solid #ddd;
+      text-align: center;
+      padding-top: 35px;
+    }
+
+    .rfb-display-image.ant-image {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .rfb-display-image .ant-image-img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .rfb-display-image-box {
+      position: relative;
+      display: inline-block;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
     .form-label {
       display: block !important;
       margin-bottom: 4px;
