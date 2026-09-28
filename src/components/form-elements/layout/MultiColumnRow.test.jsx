@@ -3,7 +3,6 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { DynamicColumnRow, FourColumnRow, ThreeColumnRow, TwoColumnRow } from './MultiColumnRow'
-import { getRowLabelColumnCssWidth } from '../../../utils/columnWidths'
 
 const longLabel = 'Overtime Working Hours'
 const shortLabel = 'Qty'
@@ -35,24 +34,45 @@ const emptyControls = [
 ]
 
 describe('DynamicColumnRow layout', () => {
-  it('sizes the row-label column to the longest row label name', () => {
+  it('defaults columns that have no width to 1', () => {
+    const data = buildData({
+      columns: [
+        { key: 'c1', text: 'Column1' },
+        { key: 'c2', text: 'Column2', width: 2 },
+        { key: 'c3', text: 'Column3', width: '' },
+      ],
+    })
+    const { container } = render(
+      <DynamicColumnRow data={data} controls={emptyControls} mutable />
+    )
+
+    expect(data.columns.map((column) => column.width)).toEqual([1, 2, 1])
+    const headers = container.querySelectorAll('.rfb-table-column-header')
+    const rowHeader = container.querySelector('.rfb-table-row-header-cell')
+    expect(rowHeader.style.width).toBe('20%')
+    expect(headers[0].style.width).toBe('20%')
+    expect(headers[1].style.width).toBe('40%')
+    expect(headers[2].style.width).toBe('20%')
+  })
+
+  it('gives the row-name column a default share of 1', () => {
     const data = buildData()
     const { container } = render(
       <DynamicColumnRow data={data} controls={emptyControls} mutable />
     )
 
-    const expected = getRowLabelColumnCssWidth(data.rowLabels)
     const header = container.querySelector('.rfb-table-row-header-cell')
     const labels = container.querySelectorAll('.rfb-table-row-label')
 
-    expect(header.style.width).toBe(expected)
-    expect(header.style.minWidth).toBe(expected)
-    expect(labels[0].style.width).toBe(expected)
+    expect(header.style.width).toBe('25%')
+    expect(header.style.maxWidth).toBe('25%')
+    expect(header.style.whiteSpace).toBe('normal')
+    expect(header.className).toContain('rfb-row-label-col-fixed')
+    expect(labels[0].style.width).toBe('25%')
     expect(labels[1].textContent).toContain(longLabel)
-    expect(header.style.whiteSpace).toBe('nowrap')
   })
 
-  it('uses a saved caption width instead of the longest row label', () => {
+  it('uses a saved caption width instead of the default share', () => {
     const data = buildData({ rowLabelWidth: 140 })
     const { container } = render(
       <DynamicColumnRow data={data} controls={emptyControls} mutable />

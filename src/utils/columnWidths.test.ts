@@ -1,51 +1,29 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  applyDefaultColumnWidths,
   clampRowLabelColumnWidth,
-  getMaxRowLabelTextLength,
   getRelativeColumnWidths,
-  getRowLabelColumnCssWidth,
+  getTableColumnPercents,
   MIN_ROW_LABEL_COLUMN_WIDTH_PX,
   resizeAdjacentColumnWidths,
   roundRelativeWidth,
-  ROW_LABEL_HORIZONTAL_PADDING_PX,
   toRowLabelWidthPx,
 } from './columnWidths'
 
 describe('columnWidths', () => {
-  describe('getMaxRowLabelTextLength', () => {
-    it('uses the longest visible row-label name', () => {
-      expect(
-        getMaxRowLabelTextLength([
-          { text: 'A' },
-          { text: 'Very Long Row Label Name' },
-          { text: 'Mid' },
-        ])
-      ).toBe('Very Long Row Label Name'.length)
+  describe('getTableColumnPercents', () => {
+    it('gives the row-name column one share instead of the longest label', () => {
+      expect(getTableColumnPercents([1, 1, 1], true)).toEqual({
+        columns: [25, 25, 25],
+        rowLabel: 25,
+      })
     })
 
-    it('strips HTML before measuring', () => {
-      expect(
-        getMaxRowLabelTextLength([{ text: '<p><strong>Hours</strong></p>' }, { text: 'Qty' }])
-      ).toBe('Hours'.length)
-    })
-
-    it('returns 0 when there are no labels', () => {
-      expect(getMaxRowLabelTextLength([])).toBe(0)
-      expect(getMaxRowLabelTextLength(null)).toBe(0)
-    })
-  })
-
-  describe('getRowLabelColumnCssWidth', () => {
-    it('fits the longest label with cell padding', () => {
-      const labels = [{ text: 'Short' }, { text: 'LongestLabel' }]
-      expect(getRowLabelColumnCssWidth(labels)).toBe(
-        `calc(${'LongestLabel'.length}ch + ${ROW_LABEL_HORIZONTAL_PADDING_PX}px)`
-      )
-    })
-
-    it('uses a saved pixel width instead of the longest label', () => {
-      expect(getRowLabelColumnCssWidth([{ text: 'Very Long Row Label Name' }], 160)).toBe('160px')
+    it('leaves the row-name column out when it has a saved width', () => {
+      const percents = getTableColumnPercents([1, 1, 1], false)
+      expect(percents.rowLabel).toBeNull()
+      percents.columns.forEach((width) => expect(width).toBeCloseTo(100 / 3))
     })
   })
 
@@ -60,6 +38,14 @@ describe('columnWidths', () => {
       expect(clampRowLabelColumnWidth(10, 400)).toBe(MIN_ROW_LABEL_COLUMN_WIDTH_PX)
       expect(clampRowLabelColumnWidth(900, 320)).toBe(320)
       expect(clampRowLabelColumnWidth(180, 400)).toBe(180)
+    })
+  })
+
+  describe('applyDefaultColumnWidths', () => {
+    it('sets a missing or invalid Dynamic Column Row width to 1', () => {
+      const columns = [{ width: 2 }, { width: '0' }, {}, { width: '' }, { width: null }]
+      applyDefaultColumnWidths(columns)
+      expect(columns.map((column) => column.width)).toEqual([2, 1, 1, 1, 1])
     })
   })
 

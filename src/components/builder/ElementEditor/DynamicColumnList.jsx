@@ -10,6 +10,7 @@ import ReactQuill, { Quill } from 'react-quill-new'
 
 import 'react-quill-new/dist/quill.snow.css'
 
+import { applyDefaultColumnWidths } from '../../../utils/columnWidths'
 import ID from '../../../utils/uuid'
 // eslint-disable-next-line import/no-cycle
 import FormElementsEdit from './FormElementsEdit'
@@ -115,7 +116,10 @@ ColumnHeaderEditor.propTypes = {
 }
 
 const DynamicColumnList = ({ element: propsElement, preview = null, updateElement }) => {
-  const [element, setElement] = useState(propsElement)
+  const [element, setElement] = useState(() => {
+    applyDefaultColumnWidths(propsElement?.columns)
+    return propsElement
+  })
   const [showEditModal, setShowEditModal] = useState(false)
   const [editingColumn, setEditingColumn] = useState(null)
   const [dirty, setDirty] = useState(false)
@@ -338,7 +342,7 @@ const DynamicColumnList = ({ element: propsElement, preview = null, updateElemen
                     type="text"
                     name={`width_${index}`}
                     placeholder="Width"
-                    value={option.width}
+                    value={option.width ?? 1}
                     onBlur={updateColumn}
                     onChange={(e) => editColumn(index, 'width', e)}
                   />

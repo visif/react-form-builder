@@ -4,9 +4,10 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ItemTypes from '../../../constants/itemTypes'
 import useSyncColumnChanges from '../../../hooks/useSyncColumnChanges'
 import {
+  applyDefaultColumnWidths,
   clampRowLabelColumnWidth,
   getRelativeColumnWidths,
-  getRowLabelColumnCssWidth,
+  getTableColumnPercents,
   MIN_ROW_LABEL_COLUMN_WIDTH_PX,
   resizeAdjacentColumnWidths,
   roundRelativeWidth,
@@ -28,12 +29,6 @@ const RESIZABLE_COLUMN_ROWS = new Set([
 const stripPTags = (html) => {
   if (!html) return html
   return html.replace(/<p>/gi, '').replace(/<\/p>/gi, '').trim()
-}
-
-const percentWidthsFromRelative = (relativeWidths) => {
-  const totalWidth = relativeWidths.reduce((sum, width) => sum + width, 0)
-  if (!totalWidth) return relativeWidths.map(() => 0)
-  return relativeWidths.map((width) => (width / totalWidth) * 100)
 }
 
 const RESIZE_HANDLE_STYLE = {
@@ -142,14 +137,17 @@ const MultiColumnRow = (props) => {
     return getRelativeColumnWidths(data.columns, data.colWidths, columnCount)
   }, [data.columns, data.colWidths, columnCount, draftWidths])
 
-  const columnWidths = percentWidthsFromRelative(relativeWidths)
-
   const savedRowLabelWidth = toRowLabelWidthPx(data.rowLabelWidth)
   const activeRowLabelWidth = draftRowLabelWidth ?? savedRowLabelWidth
   const rowLabelWidthIsFixed = activeRowLabelWidth != null
-  const rowLabelColumnWidth = hasRowLabels
-    ? getRowLabelColumnCssWidth(data.rowLabels, activeRowLabelWidth)
-    : null
+  const useDefaultRowLabelWidth = hasRowLabels && !rowLabelWidthIsFixed
+  const tablePercents = getTableColumnPercents(relativeWidths, useDefaultRowLabelWidth)
+  const columnWidths = tablePercents.columns
+  const rowLabelColumnWidth = !hasRowLabels
+    ? null
+    : rowLabelWidthIsFixed
+      ? `${activeRowLabelWidth}px`
+      : `${tablePercents.rowLabel}%`
 
   const stopColumnResize = useCallback(() => {
     const drag = dragStateRef.current
@@ -324,13 +322,13 @@ const MultiColumnRow = (props) => {
   const rowLabelCellStyle = {
     width: rowLabelColumnWidth,
     minWidth: rowLabelColumnWidth,
-    maxWidth: rowLabelWidthIsFixed ? rowLabelColumnWidth : undefined,
-    whiteSpace: rowLabelWidthIsFixed ? 'normal' : 'nowrap',
-    overflowWrap: rowLabelWidthIsFixed ? 'anywhere' : undefined,
+    maxWidth: rowLabelColumnWidth,
+    whiteSpace: 'normal',
+    overflowWrap: 'anywhere',
     boxSizing: 'border-box',
     position: 'relative',
   }
-  const rowLabelCellClassName = rowLabelWidthIsFixed ? ' rfb-row-label-col-fixed' : ''
+  const rowLabelCellClassName = ' rfb-row-label-col-fixed'
   const rowCaptionResizeHandle = canResizeColumns && hasRowLabels && (
     <ColumnResizeHandle
       columnIndex={-1}
@@ -537,6 +535,7 @@ const createColumnRow =
 const createDynamicColumnRow =
   () =>
   ({ data = {}, class_name, ...rest }) => {
+    applyDefaultColumnWidths(data.columns)
     const rows = Number(data.rows) || 1
     const columns = data.columns?.length || 2
     const defaultClassName = `col-md-${Math.floor(12 / columns)}`

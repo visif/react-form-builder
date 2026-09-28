@@ -1,34 +1,13 @@
-export const ROW_LABEL_HORIZONTAL_PADDING_PX = 24
 export const MIN_ROW_LABEL_COLUMN_WIDTH_PX = 48
 export const MIN_RELATIVE_COLUMN_WIDTH = 0.2
+/** Share used when a Dynamic Column Row revision has no column width. */
+export const DEFAULT_RELATIVE_COLUMN_WIDTH = 1
 
 export type ColumnWidthSource = {
   width?: string | number | null
 }
 
-export type RowLabelSource = {
-  text?: string | null
-}
-
-/** Plain text from a row-label / header that may contain HTML. */
-export const stripHtmlToText = (html?: string | null): string =>
-  `${html || ''}`
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
-    .replace(/\s+/g, ' ')
-    .trim()
-
-/** Longest visible row-label name, after stripping HTML. */
-export const getMaxRowLabelTextLength = (rowLabels?: RowLabelSource[] | null): number =>
-  (rowLabels || []).reduce((max, label) => {
-    const length = stripHtmlToText(label?.text).length
-    return Math.max(max, length)
-  }, 0)
-
-/** Saved caption width in pixels, or null when the column should fit its text. */
+/** Saved caption width in pixels, or null when the column uses the default share of 1. */
 export const toRowLabelWidthPx = (width: unknown): number | null => {
   const value = Number(width)
   if (!Number.isFinite(value) || value <= 0) return null
@@ -48,23 +27,27 @@ export const clampRowLabelColumnWidth = (
   return Math.min(max, Math.max(minWidth, width))
 }
 
-/**
- * CSS width for the row-caption column.
- * A saved pixel width wins. Otherwise the column fits the longest label.
- */
-export const getRowLabelColumnCssWidth = (
-  rowLabels?: RowLabelSource[] | null,
-  savedWidth?: unknown
-): string => {
-  const saved = toRowLabelWidthPx(savedWidth)
-  if (saved != null) return `${saved}px`
-  const maxLen = getMaxRowLabelTextLength(rowLabels)
-  return `calc(${maxLen}ch + ${ROW_LABEL_HORIZONTAL_PADDING_PX}px)`
-}
-
 const toPositiveWidth = (width: unknown): number => {
   const value = Number(width)
-  return Number.isFinite(value) && value > 0 ? value : 1
+  return Number.isFinite(value) && value > 0 ? value : DEFAULT_RELATIVE_COLUMN_WIDTH
+}
+
+/**
+ * Fill in column widths that a revision left blank.
+ * Mutates each column in place so the designer, editor, and saved form share one value.
+ */
+export const applyDefaultColumnWidths = <T extends ColumnWidthSource>(
+  columns?: T[] | null
+): T[] => {
+  if (!Array.isArray(columns)) return []
+  columns.forEach((column) => {
+    if (!column) return
+    const value = Number(column.width)
+    if (!Number.isFinite(value) || value <= 0) {
+      column.width = DEFAULT_RELATIVE_COLUMN_WIDTH
+    }
+  })
+  return columns
 }
 
 /**
@@ -92,6 +75,29 @@ export const getRelativeColumnWidths = (
 }
 
 export const roundRelativeWidth = (width: number): number => Math.round(width * 100) / 100
+
+/**
+ * Percent of the table for each data column.
+ * When the row-name column has no saved pixel width, it takes one share so its width
+ * does not follow the longest row name.
+ */
+export const getTableColumnPercents = (
+  relativeWidths: number[],
+  includeDefaultRowLabel = false
+): { columns: number[]; rowLabel: number | null } => {
+  const labelUnits = includeDefaultRowLabel ? DEFAULT_RELATIVE_COLUMN_WIDTH : 0
+  const total = relativeWidths.reduce((sum, width) => sum + width, 0) + labelUnits
+  if (!total) {
+    return {
+      columns: relativeWidths.map(() => 0),
+      rowLabel: includeDefaultRowLabel ? 0 : null,
+    }
+  }
+  return {
+    columns: relativeWidths.map((width) => (width / total) * 100),
+    rowLabel: includeDefaultRowLabel ? (labelUnits / total) * 100 : null,
+  }
+}
 
 /**
  * Drag the border between `leftIndex` and the next column.
