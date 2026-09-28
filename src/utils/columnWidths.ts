@@ -1,4 +1,5 @@
 export const ROW_LABEL_HORIZONTAL_PADDING_PX = 24
+export const MIN_ROW_LABEL_COLUMN_WIDTH_PX = 48
 export const MIN_RELATIVE_COLUMN_WIDTH = 0.2
 
 export type ColumnWidthSource = {
@@ -27,11 +28,36 @@ export const getMaxRowLabelTextLength = (rowLabels?: RowLabelSource[] | null): n
     return Math.max(max, length)
   }, 0)
 
+/** Saved caption width in pixels, or null when the column should fit its text. */
+export const toRowLabelWidthPx = (width: unknown): number | null => {
+  const value = Number(width)
+  if (!Number.isFinite(value) || value <= 0) return null
+  return Math.round(value)
+}
+
 /**
- * CSS width that fits the longest row-label name.
- * Uses `ch` so the column grows with character count, plus cell padding.
+ * Keep a dragged caption column inside the table.
+ * `maxWidth` is the widest the caption may grow while leaving room for the data columns.
  */
-export const getRowLabelColumnCssWidth = (rowLabels?: RowLabelSource[] | null): string => {
+export const clampRowLabelColumnWidth = (
+  width: number,
+  maxWidth: number,
+  minWidth = MIN_ROW_LABEL_COLUMN_WIDTH_PX
+): number => {
+  const max = Math.max(minWidth, maxWidth)
+  return Math.min(max, Math.max(minWidth, width))
+}
+
+/**
+ * CSS width for the row-caption column.
+ * A saved pixel width wins. Otherwise the column fits the longest label.
+ */
+export const getRowLabelColumnCssWidth = (
+  rowLabels?: RowLabelSource[] | null,
+  savedWidth?: unknown
+): string => {
+  const saved = toRowLabelWidthPx(savedWidth)
+  if (saved != null) return `${saved}px`
   const maxLen = getMaxRowLabelTextLength(rowLabels)
   return `calc(${maxLen}ch + ${ROW_LABEL_HORIZONTAL_PADDING_PX}px)`
 }

@@ -9,6 +9,9 @@ type Item = {
   required?: boolean
   readOnly?: boolean
   label?: string
+  position?: string
+  specificRole?: string
+  initialized?: boolean
   row: number
   col: number
   parentId: string
@@ -45,9 +48,9 @@ describe('useSyncColumnChanges', () => {
     })
 
     const updates = updateElement.mock.calls.map((call) => call[0])
-    expect(updates).toHaveLength(2)
-    expect(updates.map((u: Item) => u.id).sort()).toEqual(['r2c3', 'r3c3'])
-    updates.forEach((u: Item) => expect(u.required).toBe(false))
+    expect(updates).toHaveLength(1)
+    expect(updates[0].id).toBe('r3c3')
+    expect(updates[0].required).toBe(false)
   })
 
   it('propagates readOnly to sibling rows for TextInput cells', () => {
@@ -94,6 +97,55 @@ describe('useSyncColumnChanges', () => {
 
     act(() => {
       result.current(0, 2, 'Header', { required: true })
+    })
+
+    expect(updateElement).not.toHaveBeenCalled()
+  })
+
+  it('does not rewrite Signature2 siblings that already match the init payload', () => {
+    const items: Item[] = [
+      {
+        id: 's1',
+        element: 'Signature2',
+        required: false,
+        readOnly: false,
+        position: 'Placeholder Text',
+        specificRole: 'notSpecific',
+        initialized: true,
+        row: 0,
+        col: 0,
+        parentId: 'dcr',
+      },
+      {
+        id: 's2',
+        element: 'Signature2',
+        required: false,
+        readOnly: false,
+        position: 'Placeholder Text',
+        specificRole: 'notSpecific',
+        initialized: true,
+        row: 1,
+        col: 0,
+        parentId: 'dcr',
+      },
+    ]
+    const childItems = [['s1'], ['s2']]
+    const getDataById = (id: string) => items.find((x) => x.id === id)
+    const updateElement = vi.fn()
+
+    const { result } = renderHook(() =>
+      useSyncColumnChanges(childItems as never, getDataById as never, updateElement)
+    )
+
+    act(() => {
+      result.current(0, 0, 'Signature2', {
+        element: 'Signature2',
+        initialized: true,
+        position: 'Placeholder Text',
+        specificRole: 'notSpecific',
+        required: false,
+        readOnly: false,
+      })
     })
 
     expect(updateElement).not.toHaveBeenCalled()

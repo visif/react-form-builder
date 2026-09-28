@@ -320,6 +320,12 @@ input[type='date'] {
       white-space: nowrap;
     }
 
+    .rfb-table-row-header-cell.rfb-row-label-col-fixed,
+    .rfb-table-row-label.rfb-row-label-col-fixed {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
     .rfb-item,
     .form-group,
     .form-group > div {

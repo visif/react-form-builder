@@ -34,10 +34,10 @@ const Signature2 = (props) => {
   }, []) // Only on mount
 
   React.useEffect(() => {
-    // If this is in a DynamicColumnRow and we have onElementChange,
-    // notify parent that this component is now initialized
+    // Match react-form-builder Signature2.componentDidMount: notify the column
+    // once. Depending on `props` re-fires after every parent update, and each
+    // notice rewrites sibling cells, which freezes large revisions on open.
     if (props.data.parentId && props.onElementChange) {
-      // Send initialization status to parent
       props.onElementChange({
         ...props.data,
         element: 'Signature2',
@@ -48,7 +48,8 @@ const Signature2 = (props) => {
         readOnly: props.data.readOnly,
       })
     }
-  }, [props])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Only sync from props when defaultValue itself changed (external update).
   // Comparing against local isSigned wipes a just-signed click when the parent

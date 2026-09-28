@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  clampRowLabelColumnWidth,
   getMaxRowLabelTextLength,
   getRelativeColumnWidths,
   getRowLabelColumnCssWidth,
+  MIN_ROW_LABEL_COLUMN_WIDTH_PX,
   resizeAdjacentColumnWidths,
   roundRelativeWidth,
   ROW_LABEL_HORIZONTAL_PADDING_PX,
+  toRowLabelWidthPx,
 } from './columnWidths'
 
 describe('columnWidths', () => {
@@ -39,6 +42,24 @@ describe('columnWidths', () => {
       expect(getRowLabelColumnCssWidth(labels)).toBe(
         `calc(${'LongestLabel'.length}ch + ${ROW_LABEL_HORIZONTAL_PADDING_PX}px)`
       )
+    })
+
+    it('uses a saved pixel width instead of the longest label', () => {
+      expect(getRowLabelColumnCssWidth([{ text: 'Very Long Row Label Name' }], 160)).toBe('160px')
+    })
+  })
+
+  describe('row caption width', () => {
+    it('ignores empty saved widths', () => {
+      expect(toRowLabelWidthPx(undefined)).toBeNull()
+      expect(toRowLabelWidthPx(0)).toBeNull()
+      expect(toRowLabelWidthPx('180')).toBe(180)
+    })
+
+    it('does not shrink the caption below the minimum or past the table', () => {
+      expect(clampRowLabelColumnWidth(10, 400)).toBe(MIN_ROW_LABEL_COLUMN_WIDTH_PX)
+      expect(clampRowLabelColumnWidth(900, 320)).toBe(320)
+      expect(clampRowLabelColumnWidth(180, 400)).toBe(180)
     })
   })
 

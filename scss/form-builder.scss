@@ -417,11 +417,21 @@
             cursor: move;
             pointer-events: none;
           }
-          .rfb-toolbar-header,
-          .toolbar-header {
+          // Only this element's own menu. A descendant selector would reveal
+          // every nested cell menu while the pointer is anywhere on the row.
+          > .rfb-component-header > .rfb-toolbar-header,
+          > .rfb-component-header > .toolbar-header {
             opacity: 1;
             visibility: visible;
             pointer-events: auto;
+          }
+
+          // Keep the parent row menu hidden while the pointer is on a nested field.
+          &:has(.rfb-item:hover) > .rfb-component-header > .rfb-toolbar-header,
+          &:has(.rfb-item:hover) > .rfb-component-header > .toolbar-header {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
           }
         }
       }
@@ -667,6 +677,12 @@
   .rfb-table-row-header-cell,
   .rfb-table-row-label {
     white-space: nowrap;
+  }
+
+  .rfb-table-row-header-cell.rfb-row-label-col-fixed,
+  .rfb-table-row-label.rfb-row-label-col-fixed {
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 
   .rfb-table-column-header {

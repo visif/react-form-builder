@@ -4,10 +4,13 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ItemTypes from '../../../constants/itemTypes'
 import useSyncColumnChanges from '../../../hooks/useSyncColumnChanges'
 import {
+  clampRowLabelColumnWidth,
   getRelativeColumnWidths,
   getRowLabelColumnCssWidth,
+  MIN_ROW_LABEL_COLUMN_WIDTH_PX,
   resizeAdjacentColumnWidths,
   roundRelativeWidth,
+  toRowLabelWidthPx,
 } from '../../../utils/columnWidths'
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel, { RequiredBadge } from '../shared/ComponentLabel'
@@ -60,7 +63,7 @@ const RESIZE_HANDLE_BAR_STYLE = {
   pointerEvents: 'none',
 }
 
-const ColumnResizeHandle = ({ columnIndex, onResizeStart }) => {
+const ColumnResizeHandle = ({ columnIndex, onResizeStart, label, title }) => {
   const [hovered, setHovered] = React.useState(false)
 
   return (
@@ -68,8 +71,8 @@ const ColumnResizeHandle = ({ columnIndex, onResizeStart }) => {
       type="button"
       className="rfb-col-resize-handle"
       aria-orientation="vertical"
-      aria-label={`Resize column ${columnIndex + 1}`}
-      title="Drag to resize column"
+      aria-label={label || `Resize column ${columnIndex + 1}`}
+      title={title || 'Drag to resize column'}
       style={RESIZE_HANDLE_STYLE}
       onPointerDown={onResizeStart(columnIndex)}
       onMouseEnter={() => setHovered(true)}
@@ -115,7 +118,6 @@ const MultiColumnRow = (props) => {
 
   // Check if row labels are defined in data
   const hasRowLabels = Array.isArray(data.rowLabels) && data.rowLabels.length > 0
-  const rowLabelColumnWidth = hasRowLabels ? getRowLabelColumnCssWidth(data.rowLabels) : null
 
   // Use the custom hook for synchronizing column changes
   const syncColumnChanges = useSyncColumnChanges(childItems, getDataById, updateElement)
@@ -125,6 +127,7 @@ const MultiColumnRow = (props) => {
   dataRef.current = data
   const dragStateRef = useRef(null)
   const [draftWidths, setDraftWidths] = useState(null)
+  const [draftRowLabelWidth, setDraftRowLabelWidth] = useState(null)
   const [isResizing, setIsResizing] = useState(false)
 
   const columnCount = data.columns?.length || childItems[0]?.length || 0
@@ -141,9 +144,16 @@ const MultiColumnRow = (props) => {
 
   const columnWidths = percentWidthsFromRelative(relativeWidths)
 
+  const savedRowLabelWidth = toRowLabelWidthPx(data.rowLabelWidth)
+  const activeRowLabelWidth = draftRowLabelWidth ?? savedRowLabelWidth
+  const rowLabelWidthIsFixed = activeRowLabelWidth != null
+  const rowLabelColumnWidth = hasRowLabels
+    ? getRowLabelColumnCssWidth(data.rowLabels, activeRowLabelWidth)
+    : null
+
   const stopColumnResize = useCallback(() => {
     const drag = dragStateRef.current
-    if (!drag) return
+    if (!drag || drag.kind === 'rowLabel') return
 
     dragStateRef.current = null
     document.body.classList.remove('rfb-col-resizing')
@@ -200,6 +210,7 @@ const MultiColumnRow = (props) => {
       const move = moveColumnResize
       const up = stopColumnResize
       dragStateRef.current = {
+        kind: 'column',
         index: columnIndex,
         startX: event.clientX,
         startWidths: relativeWidths,
@@ -218,6 +229,86 @@ const MultiColumnRow = (props) => {
     [canResizeColumns, moveColumnResize, relativeWidths, stopColumnResize]
   )
 
+  const stopRowLabelResize = useCallback(() => {
+    const drag = dragStateRef.current
+    if (!drag || drag.kind !== 'rowLabel') return
+
+    dragStateRef.current = null
+    document.body.classList.remove('rfb-col-resizing')
+    window.removeEventListener('pointermove', drag.move)
+    window.removeEventListener('pointerup', drag.up)
+    window.removeEventListener('pointercancel', drag.up)
+
+    const current = dataRef.current
+    if (typeof updateElement === 'function') {
+      updateElement({
+        ...current,
+        rowLabelWidth: Math.round(drag.currentWidth),
+        dirty: true,
+      })
+    }
+    setDraftRowLabelWidth(null)
+    setIsResizing(false)
+  }, [updateElement])
+
+  const moveRowLabelResize = useCallback((event) => {
+    const drag = dragStateRef.current
+    if (!drag || drag.kind !== 'rowLabel') return
+    const next = clampRowLabelColumnWidth(
+      drag.startWidth + (event.clientX - drag.startX),
+      drag.maxWidth
+    )
+    drag.currentWidth = next
+    setDraftRowLabelWidth(next)
+  }, [])
+
+  const startRowLabelResize = useCallback(
+    () => (event) => {
+      if (!canResizeColumns || !hasRowLabels) return
+      if (dragStateRef.current) return
+      event.preventDefault()
+      event.stopPropagation()
+
+      const cell = event.currentTarget?.closest?.(
+        '.rfb-table-row-header-cell, .rfb-table-row-label'
+      )
+      const measured = cell?.getBoundingClientRect?.().width || 0
+      const startWidth = measured || activeRowLabelWidth || MIN_ROW_LABEL_COLUMN_WIDTH_PX
+      const tableWidth = tableRef.current?.clientWidth || 0
+      const reservedForDataColumns = Math.max(80, columnCount * 40)
+      const maxWidth =
+        tableWidth > reservedForDataColumns
+          ? tableWidth - reservedForDataColumns
+          : startWidth
+
+      const move = moveRowLabelResize
+      const up = stopRowLabelResize
+      dragStateRef.current = {
+        kind: 'rowLabel',
+        startX: event.clientX,
+        startWidth,
+        currentWidth: startWidth,
+        maxWidth,
+        move,
+        up,
+      }
+      setDraftRowLabelWidth(startWidth)
+      setIsResizing(true)
+      document.body.classList.add('rfb-col-resizing')
+      window.addEventListener('pointermove', move)
+      window.addEventListener('pointerup', up)
+      window.addEventListener('pointercancel', up)
+    },
+    [
+      activeRowLabelWidth,
+      canResizeColumns,
+      columnCount,
+      hasRowLabels,
+      moveRowLabelResize,
+      stopRowLabelResize,
+    ]
+  )
+
   useEffect(
     () => () => {
       if (!dragStateRef.current) return
@@ -233,9 +324,21 @@ const MultiColumnRow = (props) => {
   const rowLabelCellStyle = {
     width: rowLabelColumnWidth,
     minWidth: rowLabelColumnWidth,
-    whiteSpace: 'nowrap',
+    maxWidth: rowLabelWidthIsFixed ? rowLabelColumnWidth : undefined,
+    whiteSpace: rowLabelWidthIsFixed ? 'normal' : 'nowrap',
+    overflowWrap: rowLabelWidthIsFixed ? 'anywhere' : undefined,
     boxSizing: 'border-box',
+    position: 'relative',
   }
+  const rowLabelCellClassName = rowLabelWidthIsFixed ? ' rfb-row-label-col-fixed' : ''
+  const rowCaptionResizeHandle = canResizeColumns && hasRowLabels && (
+    <ColumnResizeHandle
+      columnIndex={-1}
+      onResizeStart={startRowLabelResize}
+      label="Resize row caption"
+      title="Drag to resize row caption"
+    />
+  )
 
   return (
     <div className={baseClasses}>
@@ -258,7 +361,7 @@ const MultiColumnRow = (props) => {
                 {/* Add empty header cell for row labels column if row labels are present */}
                 {hasRowLabels && (
                   <th
-                    className="rfb-table-row-header-cell"
+                    className={`rfb-table-row-header-cell${rowLabelCellClassName}`}
                     style={{
                       ...rowLabelCellStyle,
                       fontWeight: 'var(--rfb-table-header-font-weight, bold)',
@@ -267,7 +370,9 @@ const MultiColumnRow = (props) => {
                       borderBottom: '1px solid #d0d5dd',
                       borderRight: '1px solid #d0d5dd',
                     }}
-                  />
+                  >
+                    {rowCaptionResizeHandle}
+                  </th>
                 )}
                 {data.columns.map((column, columnIndex) => (
                   <th
@@ -307,7 +412,7 @@ const MultiColumnRow = (props) => {
                 {/* Add row label cell if row labels are present */}
                 {hasRowLabels && (
                   <td
-                    className="row-label rfb-table-row-label"
+                    className={`row-label rfb-table-row-label${rowLabelCellClassName}`}
                     style={{
                       ...rowLabelCellStyle,
                       textAlign: 'right',
@@ -325,6 +430,7 @@ const MultiColumnRow = (props) => {
                           : '',
                       }}
                     />
+                    {!hasColumnHeaders && rowIndex === 0 && rowCaptionResizeHandle}
                   </td>
                 )}
                 {row.map((item, columnIndex) => {

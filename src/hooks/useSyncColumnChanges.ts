@@ -7,6 +7,26 @@ type GetDataById = (id: string) => FormElementData | undefined | null
 type UpdateElement = (element: FormElementData) => void
 type ChangeData = Record<string, unknown>
 
+const valuesEqual = (left: unknown, right: unknown): boolean => {
+  if (Object.is(left, right)) return true
+  if (left == null || right == null || typeof left !== 'object' || typeof right !== 'object') {
+    return false
+  }
+  try {
+    return JSON.stringify(left) === JSON.stringify(right)
+  } catch {
+    return false
+  }
+}
+
+const elementSyncChanged = (before: FormElementData, after: FormElementData): boolean => {
+  const keys = new Set([...Object.keys(before || {}), ...Object.keys(after || {})])
+  for (const key of keys) {
+    if (!valuesEqual(before?.[key], after?.[key])) return true
+  }
+  return false
+}
+
 /**
  * Custom hook for synchronizing changes across columns in a multi-column row
  */
@@ -270,8 +290,9 @@ const useSyncColumnChanges = (
           }
         }
 
-        // If we created an updated item, apply the changes
-        if (updatedItem && updateElement) {
+        // Skip identical sibling copies. Mount-time init (Signature2, DataSource)
+        // notifies every row; rewriting unchanged cells re-renders the whole preview.
+        if (updatedItem && updateElement && elementSyncChanged(itemData, updatedItem)) {
           updateElement(updatedItem)
         }
       })

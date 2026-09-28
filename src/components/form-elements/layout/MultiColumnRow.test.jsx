@@ -49,6 +49,79 @@ describe('DynamicColumnRow layout', () => {
     expect(header.style.minWidth).toBe(expected)
     expect(labels[0].style.width).toBe(expected)
     expect(labels[1].textContent).toContain(longLabel)
+    expect(header.style.whiteSpace).toBe('nowrap')
+  })
+
+  it('uses a saved caption width instead of the longest row label', () => {
+    const data = buildData({ rowLabelWidth: 140 })
+    const { container } = render(
+      <DynamicColumnRow data={data} controls={emptyControls} mutable />
+    )
+
+    const header = container.querySelector('.rfb-table-row-header-cell')
+    const label = container.querySelector('.rfb-table-row-label')
+
+    expect(header.style.width).toBe('140px')
+    expect(header.style.maxWidth).toBe('140px')
+    expect(header.style.whiteSpace).toBe('normal')
+    expect(label.className).toContain('rfb-row-label-col-fixed')
+  })
+
+  it('shows a caption resize handle in builder edit mode', () => {
+    render(
+      <DynamicColumnRow
+        data={buildData()}
+        controls={emptyControls}
+        preview
+        updateElement={() => {}}
+      />
+    )
+
+    expect(screen.getByLabelText('Resize row caption')).toBeTruthy()
+  })
+
+  it('does not show the caption resize handle when filling out the form', () => {
+    render(<DynamicColumnRow data={buildData()} controls={emptyControls} mutable />)
+
+    expect(screen.queryByLabelText('Resize row caption')).toBeNull()
+  })
+
+  it('persists the caption column width after a mouse drag', () => {
+    const updateElement = vi.fn()
+    const data = buildData()
+    const { container } = render(
+      <DynamicColumnRow
+        data={data}
+        controls={emptyControls}
+        preview
+        updateElement={updateElement}
+      />
+    )
+
+    const table = container.querySelector('.rfb-multicolumn-table')
+    Object.defineProperty(table, 'clientWidth', { configurable: true, value: 800 })
+    const header = container.querySelector('.rfb-table-row-header-cell')
+    header.getBoundingClientRect = () => ({
+      width: 220,
+      height: 36,
+      top: 0,
+      left: 0,
+      right: 220,
+      bottom: 36,
+      x: 0,
+      y: 0,
+      toJSON: () => {},
+    })
+
+    fireEvent.pointerDown(screen.getByLabelText('Resize row caption'), { clientX: 220 })
+    fireEvent.pointerMove(window, { clientX: 140 })
+    fireEvent.pointerUp(window)
+
+    expect(updateElement).toHaveBeenCalledTimes(1)
+    const updated = updateElement.mock.calls[0][0]
+    expect(updated.rowLabelWidth).toBe(140)
+    expect(updated.columns).toEqual(data.columns)
+    expect(updated.dirty).toBe(true)
   })
 
   it('shows mouse resize handles in builder edit mode', () => {
