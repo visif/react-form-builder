@@ -46,6 +46,8 @@
  * @param {string} [props.locale='en'] - Locale for internationalization
  * @param {Array} [props.files] - File upload configuration
  * @param {Function} [props.renderEditForm] - Custom render function for edit form
+ * @param {Object|false} [props.formImport] - "Import from file" configuration (PDF / DOCX / XLSX / image).
+ *   Pass `false` to hide the import button, or `{ adapters, ocr, pdf, onImported }` to customise it.
  *
  * @returns {React.ReactElement} The form builder interface with toolbar and preview
  *
@@ -94,8 +96,10 @@ const ReactFormBuilder = (incomingProps: ReactFormBuilderProps) => {
   const toolbarProps: {
     showDescription?: boolean
     items?: ReactFormBuilderProps['toolbarItems']
+    importConfig?: ReactFormBuilderProps['formImport']
   } = {
     showDescription: props.show_description,
+    importConfig: props.formImport,
   }
   if (props.toolbarItems) {
     toolbarProps.items = props.toolbarItems

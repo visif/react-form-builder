@@ -22,6 +22,9 @@ export default defineConfig({
         'src/utils/**/*.ts',
         'src/hooks/**/*.ts',
         'src/contexts/**/*.tsx',
+        'src/import/**/*.ts',
+        'src/components/builder/Import/*.tsx',
+        'src/components/builder/Toolbar/toolbarItems.d.ts',
         'src/components/builder/ReactFormBuilder.tsx',
         'src/components/generator/ReactFormGenerator.tsx',
         'src/components/generator/utils/formHelpers.ts',
@@ -49,6 +52,12 @@ export default defineConfig({
     outDir: 'dist',
     rollupOptions: {
       external: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
+      // The document parsers used by "Import from file" (pdfjs-dist, mammoth,
+      // xlsx, tesseract.js) are loaded with dynamic import() so they become
+      // separate ES chunks fetched only when a file is imported. Allowing the
+      // entry signature to be extended keeps app.es.js as the real entry
+      // (no facade) while those chunks share CommonJS helpers with it.
+      preserveEntrySignatures: 'allow-extension',
       output: {
         globals: {
           react: 'React',

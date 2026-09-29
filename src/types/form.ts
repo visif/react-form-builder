@@ -1,5 +1,7 @@
 import type { ComponentType, ReactElement, ReactNode } from 'react'
 
+import type { FormImportConfig } from '../import/types'
+
 export type FormFieldValue =
   | string
   | number
@@ -70,6 +72,12 @@ export type ReactFormBuilderProps = {
   onUploadFile?: (...args: unknown[]) => unknown
   onUploadImage?: (...args: unknown[]) => unknown
   onDownloadFile?: (...args: unknown[]) => unknown
+  /**
+   * "Import from file" (PDF / DOCX / XLSX / image → form) configuration.
+   * Pass `false` to hide the import button. Defaults to the built-in
+   * browser extractors with OCR for images and scanned PDFs.
+   */
+  formImport?: FormImportConfig | false
 }
 
 export type ReactFormGeneratorProps = {
