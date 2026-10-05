@@ -668,6 +668,22 @@ export default class FormElementsEdit extends React.Component {
             </p>
           </div>
         )}
+        {this.props.element.element === 'DynamicColumnRow' && (
+          <div className="form-group">
+            <div className="custom-control custom-checkbox">
+              <input
+                id="dcrShowDisplayLabel"
+                className="custom-control-input"
+                type="checkbox"
+                checked={this.state.element.showDisplayLabel === true}
+                onChange={this.editElementProp.bind(this, 'showDisplayLabel', 'checked')}
+              />
+              <label className="custom-control-label" htmlFor="dcrShowDisplayLabel">
+                Show the Display Label for the input element
+              </label>
+            </div>
+          </div>
+        )}
         {this.props.element.parentId &&
           this.props.preview &&
           typeof this.props.preview.getDataById === 'function' &&

@@ -1,4 +1,9 @@
 import React from 'react'
+import {
+  getParentElement,
+  isDynamicColumnChild,
+  shouldHideColumnDisplayLabel,
+} from './dynamic-column-display-label'
 import myxss from './myxss'
 
 const convertUnderlineToIns = (html) =>
@@ -67,52 +72,20 @@ export const RequiredAsterisk = () => (
 
 const isRequiredValue = (value) => value === true || value === 'true'
 
-const isDynamicColumnChild = (data, mutable) => {
-  if (!data?.parentId || data.row === undefined || data.col === undefined) {
-    return false
-  }
-  const parent =
-    mutable && typeof mutable.getDataById === 'function'
-      ? mutable.getDataById(data.parentId)
-      : null
-  if (parent?.element) {
-    return parent.element === 'DynamicColumnRow'
-  }
-  return data.hideLabel === true
-}
-
 const ComponentLabel = (props) => {
   const hasRequiredLabel =
     isRequiredValue(props.data?.required) && !props.read_only
-  const inDynamicColumn = isDynamicColumnChild(props.data, props.mutable)
+  const inDynamicColumn = isDynamicColumnChild(props.data, props)
   const requiredMark = inDynamicColumn ? (
     <RequiredAsterisk />
   ) : (
     <RequiredBadge />
   )
 
-  const hideLabelSetting =
-    (props.data.isShowLabel !== undefined && props.data.isShowLabel === false) ||
-    (props.data && props.data.hideLabel === true)
-
-  let hideBecauseDynamicColumn = false
-  if (props.data.parentId) {
-    const parentElement =
-      props.mutable &&
-      props.mutable.getDataById &&
-      props.mutable.getDataById(props.data.parentId)
-
-    if (
-      parentElement &&
-      parentElement.element === 'DynamicColumnRow' &&
-      props.data.displayLabelInColumn !== true
-    ) {
-      hideBecauseDynamicColumn = true
-    }
-  }
+  const parentElement = getParentElement(props)
 
   // Keep the required marker visible even when the cell label is hidden.
-  if (hideLabelSetting || hideBecauseDynamicColumn) {
+  if (shouldHideColumnDisplayLabel(props.data, parentElement)) {
     if (!hasRequiredLabel) {
       return null
     }

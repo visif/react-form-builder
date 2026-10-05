@@ -1035,6 +1035,7 @@ export default class ReactForm extends React.Component {
         broadcastChange={this.broadcastChange}
         emitter={this.emitter}
         variables={this.state.variables}
+        getDataById={this.getDataById}
       />
     )
   }
@@ -1099,6 +1100,7 @@ export default class ReactForm extends React.Component {
         read_only={this.props.read_only}
         key={`form_${item.id}`}
         data={item}
+        getDataById={this.getDataById}
         {...inputProps}
       />
     )
