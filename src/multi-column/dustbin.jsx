@@ -63,14 +63,21 @@ const renderElement = (item, props) => {
   )
 }
 
+const COLUMN_ROW_ELEMENTS = new Set([
+  'TwoColumnRow',
+  'ThreeColumnRow',
+  'FourColumnRow',
+  'DynamicColumnRow',
+])
+
 const isContainerItem = (item) => {
-  if (item.itemType !== ItemTypes.CARD) {
-    const { data } = item
-    if (data) {
-      return data.isContainer || (data.field_name && data.field_name.includes('_col_row'))
-    }
-  }
-  return false
+  const data = item && item.data
+  if (!data) return false
+  return (
+    data.isContainer ||
+    COLUMN_ROW_ELEMENTS.has(data.element) ||
+    (data.field_name && data.field_name.includes('_col_row'))
+  )
 }
 
 // Main Component
@@ -117,6 +124,7 @@ const Dustbin = React.forwardRef(
       ...rest,
       row,
       col,
+      getDataById,
       syncColumnChanges,
       updateElement,
     })

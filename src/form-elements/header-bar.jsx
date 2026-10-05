@@ -2,7 +2,7 @@
  * <HeaderBar />
  */
 import React from 'react'
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons'
+import { DeleteOutlined, DragOutlined, EditOutlined } from '@ant-design/icons'
 import Grip from '../multi-column/grip'
 
 export default class HeaderBar extends React.Component {
@@ -28,13 +28,17 @@ export default class HeaderBar extends React.Component {
           >
             <DeleteOutlined className="vdc-ant-form-builder-icon is-isolated" />
           </div>
-          {!this.props.data.isContainer && (
+          {!this.props.data.isContainer ? (
             <Grip
               data={this.props.data}
               index={this.props.index}
               onDestroy={this.props.onDestroy}
               setAsChild={this.props.setAsChild}
             />
+          ) : (
+            <div className="btn is-isolated" style={{ cursor: 'move' }} aria-label="Drag to move" title="Drag to move">
+              <DragOutlined className="vdc-ant-form-builder-icon is-isolated" />
+            </div>
           )}
         </div>
       </div>

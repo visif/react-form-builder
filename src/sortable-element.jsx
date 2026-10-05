@@ -19,11 +19,6 @@ const MULTI_COLUMN_ELEMENTS = new Set([
   'DynamicColumnRow',
 ])
 
-const shouldUseDragHandle = (props) => {
-  const element = props?.data?.element || props?.data?.key
-  if (MULTI_COLUMN_ELEMENTS.has(element)) return true
-  return false
-}
 
 // Drag source specification
 const cardSource = {
@@ -167,7 +162,7 @@ const withDragAndDrop = (ComposedComponent) => {
     render() {
       const { isDragging, connectDragSource, connectDropTarget } = this.props
       const opacity = isDragging ? 0 : 1
-      const useDragHandle = this.props.useDragHandle || shouldUseDragHandle(this.props)
+      const useDragHandle = Boolean(this.props.useDragHandle)
       const content = (
         <div>
           <ComposedComponent {...this.props} style={{ ...cardStyle, opacity }} />

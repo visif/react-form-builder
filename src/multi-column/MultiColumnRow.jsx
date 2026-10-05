@@ -24,7 +24,6 @@ const MultiColumnRow = (props) => {
     seq,
     index,
     updateElement,
-    connectDragSource,
     onSelectChildForm,
     openLinkedForm,
     getFormInfo,
@@ -58,28 +57,11 @@ const MultiColumnRow = (props) => {
       })()
     : []
 
-  // Render header and ensure a visible drag handle even when header is hidden
   const header = <ComponentHeader {...props} />
-  const headerWithHandle = connectDragSource
-    ? connectDragSource(
-        <div className="rfb-drag-handle" style={{ cursor: 'move' }}>
-          {header || (
-            <div className="toolbar-header" style={{ padding: '4px 0' }}>
-              <span className="badge badge-secondary">{data?.text || 'Row'}</span>
-              <div className="toolbar-header-buttons">
-                <div className="btn is-isolated" aria-label="Drag row" title="Drag row">
-                  <i className="is-isolated fas fa-grip-vertical" />
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )
-    : header
 
   return (
     <div className={baseClasses}>
-      {headerWithHandle}
+      {header}
       <div>
         <ComponentLabel {...props} />
         <table
