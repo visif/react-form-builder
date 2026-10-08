@@ -4,7 +4,7 @@ import { Checkbox, Input } from 'antd'
 
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
-import { INFO_TEXTAREA_STYLE, OPTION_INFO_ROW_STYLE } from '../shared/optionInfoLayout'
+import { getChoiceOptionLayout, INFO_TEXTAREA_STYLE } from '../shared/optionInfoLayout'
 
 const { TextArea } = Input
 
@@ -52,9 +52,7 @@ const Checkboxes = (props) => {
     baseClasses += ' alwaysbreak'
   }
 
-  const checkboxStyle = props.data.inline
-    ? { display: 'block', marginRight: '16px', marginBottom: '4px' }
-    : { display: 'block', marginBottom: '4px' }
+  const optionLayout = getChoiceOptionLayout(props.data.inline)
 
   return (
     <div className={baseClasses}>
@@ -75,8 +73,8 @@ const Checkboxes = (props) => {
           }
 
           return (
-            <div key={this_key} style={checkboxStyle}>
-              <div className="rfb-option-info-row" style={OPTION_INFO_ROW_STYLE}>
+            <div key={this_key} className={optionLayout.className} style={optionLayout.style}>
+              <div className="rfb-option-info-row" style={optionLayout.rowStyle}>
                 <Checkbox
                   {...checkboxProps}
                   onChange={(e) => {

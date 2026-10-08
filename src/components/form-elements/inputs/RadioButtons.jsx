@@ -4,7 +4,7 @@ import { Input, Radio } from 'antd'
 
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
-import { INFO_TEXTAREA_STYLE, OPTION_INFO_ROW_STYLE } from '../shared/optionInfoLayout'
+import { getChoiceOptionLayout, INFO_TEXTAREA_STYLE } from '../shared/optionInfoLayout'
 
 const { TextArea } = Input
 
@@ -63,9 +63,7 @@ const RadioButtons = (props) => {
     ? `${props.data.parentId}_row${props.data.row}_col${props.data.col}_${props.data.field_name}`
     : props.data.field_name
 
-  const radioStyle = props.data.inline
-    ? { display: 'block', marginRight: '16px', marginBottom: '4px' }
-    : { display: 'block', marginBottom: '4px' }
+  const optionLayout = getChoiceOptionLayout(props.data.inline)
 
   // Find the currently selected option
   const selectedOption = value?.find((item) => item.value)
@@ -127,8 +125,8 @@ const RadioButtons = (props) => {
             const isChecked = answerItem?.value ?? isCheckedInOptions ?? false
 
             return (
-              <div key={this_key} style={radioStyle}>
-                <div className="rfb-option-info-row" style={OPTION_INFO_ROW_STYLE}>
+              <div key={this_key} className={optionLayout.className} style={optionLayout.style}>
+                <div className="rfb-option-info-row" style={optionLayout.rowStyle}>
                   <Radio
                     value={option.key}
                     onClick={() => {

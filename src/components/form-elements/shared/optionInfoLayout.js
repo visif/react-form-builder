@@ -17,3 +17,29 @@ export const INFO_TEXTAREA_STYLE = {
   WebkitTextFillColor: 'rgba(0, 0, 0, 0.85)',
   opacity: 1,
 }
+
+/** Layout for a single checkbox or multiple-choice option. */
+export function getChoiceOptionLayout(inline) {
+  if (inline) {
+    return {
+      className: 'option-inline',
+      style: {
+        display: 'inline-block',
+        verticalAlign: 'top',
+        marginRight: '16px',
+        marginBottom: '4px',
+        maxWidth: '100%',
+      },
+      rowStyle: {
+        ...OPTION_INFO_ROW_STYLE,
+        width: 'auto',
+      },
+    }
+  }
+
+  return {
+    className: undefined,
+    style: { display: 'block', marginBottom: '4px' },
+    rowStyle: OPTION_INFO_ROW_STYLE,
+  }
+}

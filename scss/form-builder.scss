@@ -81,7 +81,13 @@
 
     .option-inline {
       display: inline-block !important;
+      vertical-align: top;
       margin-right: 10px !important;
+      max-width: 100%;
+
+      .rfb-option-info-row {
+        width: auto !important;
+      }
     }
     .form-label {
       display: block !important;
