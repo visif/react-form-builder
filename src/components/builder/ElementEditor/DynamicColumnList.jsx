@@ -85,7 +85,8 @@ const ColumnHeaderEditor = ({ value, onChange, onBlur }) => {
   }, [value])
 
   const handleChange = useCallback(
-    (content) => {
+    (content, _delta, source) => {
+      if (source && source !== 'user') return
       isInternalChange.current = true
       setEditorValue(content)
       if (onChange) {
@@ -148,51 +149,57 @@ const DynamicColumnList = ({ element: propsElement, preview = null, updateElemen
     [preview, updateElement]
   )
 
-  const editColumn = useCallback(
-    (index, key, e) => {
-      setElement((prevElement) => {
-        const columns = [...(prevElement.columns || [])]
-        const column = { ...columns[index] }
-
-        if (key === 'isSync' || key === 'required') {
-          column[key] = e.target.checked
-        } else {
-          const val =
-            column.value !== _setValue(column[key]) ? column.value : _setValue(e.target.value)
-          column[key] = e.target.value
-          column.value = val
-        }
-
-        columns[index] = column
-        const newElement = { ...prevElement, columns }
-        dirtyRef.current = true
-        setDirty(true)
-        if (key === 'isSync' || key === 'required') {
-          persistElement(newElement)
-          dirtyRef.current = false
-          setDirty(false)
-        }
-        return newElement
-      })
+  const commitColumns = useCallback(
+    (index, mapColumn) => {
+      const prevElement = elementRef.current
+      const columns = [...(prevElement.columns || [])]
+      const column = mapColumn({ ...columns[index] })
+      if (!column) {
+        return prevElement
+      }
+      columns[index] = column
+      const newElement = { ...prevElement, columns }
+      elementRef.current = newElement
+      dirtyRef.current = false
+      setElement(newElement)
+      setDirty(false)
+      persistElement(newElement)
+      return newElement
     },
     [persistElement]
   )
 
-  const editColumnText = useCallback((index, html) => {
-    setElement((prevElement) => {
-      const columns = [...(prevElement.columns || [])]
-      const column = { ...columns[index] }
-      const oldPlain = stripHtml(column.text)
-      const newPlain = stripHtml(html)
-      const val = column.value !== _setValue(oldPlain) ? column.value : _setValue(newPlain)
-      column.text = html
-      column.value = val
-      columns[index] = column
-      dirtyRef.current = true
-      setDirty(true)
-      return { ...prevElement, columns }
-    })
-  }, [])
+  const editColumn = useCallback(
+    (index, key, e) => {
+      commitColumns(index, (column) => {
+        if (key === 'isSync' || key === 'required') {
+          column[key] = e.target.checked
+          return column
+        }
+        const val =
+          column.value !== _setValue(column[key]) ? column.value : _setValue(e.target.value)
+        column[key] = e.target.value
+        column.value = val
+        return column
+      })
+    },
+    [commitColumns]
+  )
+
+  const editColumnText = useCallback(
+    (index, html) => {
+      commitColumns(index, (column) => {
+        if (column.text === html) return null
+        const oldPlain = stripHtml(column.text)
+        const newPlain = stripHtml(html)
+        const val = column.value !== _setValue(oldPlain) ? column.value : _setValue(newPlain)
+        column.text = html
+        column.value = val
+        return column
+      })
+    },
+    [commitColumns]
+  )
 
   const updateColumn = useCallback(() => {
     if (dirtyRef.current) {

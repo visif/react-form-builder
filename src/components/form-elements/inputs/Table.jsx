@@ -5,8 +5,22 @@ import PropTypes from 'prop-types'
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons'
 import { Button, Input } from 'antd'
 
+import myxss from '../../../utils/xss'
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
+
+const tableHeaderHtml = (text) => {
+  const safe = myxss.process(String(text ?? ''))
+  return safe.replace(/<p(\s[^>]*)?>/gi, (match) => {
+    if (/style\s*=/.test(match)) {
+      return match.replace(
+        /style\s*=\s*(['"])([\s\S]*?)\1/i,
+        (_, quote, styleValue) => `style=${quote}${styleValue};margin:0;${quote}`
+      )
+    }
+    return match.replace(/<p/i, '<p style="margin:0;"')
+  })
+}
 
 const { TextArea } = Input
 
@@ -187,7 +201,11 @@ const Table = (props) => {
                       backgroundColor: '#fafafa',
                     }}
                   >
-                    <label>{rowLabels[i].text}</label>
+                    <label
+                      dangerouslySetInnerHTML={{
+                        __html: tableHeaderHtml(rowLabels[i].text),
+                      }}
+                    />
                   </td>
                 )
               }
@@ -268,7 +286,11 @@ const Table = (props) => {
                       fontWeight: 500,
                     }}
                 >
-                  {col.text}
+                  <span
+                    dangerouslySetInnerHTML={{
+                      __html: tableHeaderHtml(col.text),
+                    }}
+                  />
                 </th>
                 ))}
             </tr>

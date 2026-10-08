@@ -6,6 +6,7 @@ import {
   sanitizeCellName,
   sanitizeUniqueName,
 } from '../../../../utils/dynamic-column-row-names'
+import { mergeEditorElementUpdate } from '../utils/mergeEditorElementUpdate'
 
 /**
  * Custom hook for managing form element editing state and operations
@@ -71,9 +72,21 @@ export const useFormElementEdit = (props) => {
     }
   }, [])
 
-  // Update element in parent component
-  const updateElement = useCallback(() => {
-    const currentElement = elementRef.current
+  // Update element in parent component.
+  // Blur handlers call this with a DOM event. Column editors call it with the
+  // edited element; that argument has to win, or the header text is dropped.
+  const updateElement = useCallback((maybeElement) => {
+    const currentElement = mergeEditorElementUpdate(elementRef.current, maybeElement)
+    elementRef.current = currentElement
+    setElement(currentElement)
+    if (
+      props.element &&
+      currentElement &&
+      props.element.id === currentElement.id &&
+      props.element.columns !== currentElement.columns
+    ) {
+      props.element.columns = currentElement.columns
+    }
     props.updateElement.call(props.preview, currentElement)
     setDirty(false)
 
