@@ -94,6 +94,9 @@ const ImageUpload = (props) => {
     }
   }, [props.defaultValue, defaultValue])
 
+  const resolveImageUrlRef = React.useRef(props.resolveImageUrl)
+  resolveImageUrlRef.current = props.resolveImageUrl
+
   React.useEffect(() => {
     let cancelled = false
 
@@ -121,7 +124,8 @@ const ImageUpload = (props) => {
         }
         return
       }
-      if (!filePath || typeof props.resolveImageUrl !== 'function') {
+      const resolveImageUrl = resolveImageUrlRef.current
+      if (!filePath || typeof resolveImageUrl !== 'function') {
         if (!cancelled) {
           setDisplayUrl('')
           setResolveDone(true)
@@ -129,7 +133,7 @@ const ImageUpload = (props) => {
         return
       }
       try {
-        const resolved = await props.resolveImageUrl(filePath)
+        const resolved = await resolveImageUrl(filePath)
         if (!cancelled) {
           setDisplayUrl(resolved || '')
           setResolveDone(true)
@@ -147,7 +151,9 @@ const ImageUpload = (props) => {
     return () => {
       cancelled = true
     }
-  }, [filePath, blobUrl, props.resolveImageUrl])
+    // resolveImageUrl is read from a ref so a parent re-render does not cancel
+    // the lookup and leave a restored draft image blank.
+  }, [filePath, blobUrl])
 
   const onRemoveImage = React.useCallback(() => {
     Modal.confirm({
