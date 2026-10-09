@@ -100,6 +100,18 @@ const ReactForm = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
   // Get form context
   const formContext = useFormContext()
 
+  // Every field the user changes. Draft/submit read this so a later click
+  // cannot replace the snapshot with only the active element.
+  const editedValuesRef = useRef<Record<string, FormFieldValue>>({})
+
+  const rememberEditedValue = useCallback((fieldName: string, value: FormFieldValue) => {
+    if (!fieldName) return
+    editedValuesRef.current = {
+      ...editedValuesRef.current,
+      [fieldName]: value,
+    }
+  }, [])
+
   // State — seed from answer_data merged with any restored draft
   const [answerData, setAnswerData] = useState(() => {
     const ansData = convertAnswerData(props.answer_data)
@@ -116,20 +128,31 @@ const ReactForm = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
     formContext.setAllVariables(initialVariables)
   }, []) // Only on mount
 
+  // Re-seed only when the answers or the field list actually change.
+  // A new `data` array identity (parent re-render) must not wipe typed values.
+  const answerSyncKey = JSON.stringify(props.answer_data ?? null)
+  const dataFieldKey = Array.isArray(props.data)
+    ? props.data
+        .map((item) => `${item?.id ?? ''}:${item?.field_name ?? ''}:${item?.element ?? ''}`)
+        .join('|')
+    : ''
+
   // Update state when props change
   useEffect(() => {
-    const ansData = convertAnswerData(props.answer_data)
     const draft = readDraftFromStorage(props)
-    const merged = mergeAnswerData(ansData, draft)
-    setAnswerData(merged)
-    const newVariables = getVariableValueHelper(merged, props.data)
+    const merged = mergeAnswerData(convertAnswerData(props.answer_data), draft)
+    const edited = editedValuesRef.current
+    const fields = Array.isArray(props.data) ? props.data : []
+    setAnswerData({ ...merged, ...edited })
+    const newVariables = getVariableValueHelper({ ...merged, ...edited }, fields)
     formContext.setAllVariables(newVariables)
 
     // Also update FormContext values with answer data
     // Need to convert checkbox/radio values to proper format
-    Object.keys(ansData).forEach((key) => {
-      const item = props.data.find((d) => d.field_name === key)
-      const value = ansData[key]
+    Object.keys(merged).forEach((key) => {
+      if (Object.prototype.hasOwnProperty.call(edited, key)) return
+      const item = fields.find((d) => d.field_name === key)
+      const value = merged[key]
 
       // Convert simple arrays to checkbox/radio format
       if (item && (item.element === 'Checkboxes' || item.element === 'RadioButtons')) {
@@ -171,9 +194,18 @@ const ReactForm = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
       }
     })
 
+    Object.entries(edited).forEach(([key, value]) => {
+      formContext.updateValue(key, value)
+    })
+
     // Seed FormContext with isDefault option values for Dropdowns without answer data
-    props.data.forEach((item) => {
-      if (item.element === 'Dropdown' && !ansData[item.field_name] && Array.isArray(item.options)) {
+    fields.forEach((item) => {
+      if (
+        item.element === 'Dropdown' &&
+        !merged[item.field_name] &&
+        !Object.prototype.hasOwnProperty.call(edited, item.field_name) &&
+        Array.isArray(item.options)
+      ) {
         const defaultOption = item.options.find((opt) => opt.isDefault === true)
         if (defaultOption) {
           formContext.updateValue(item.field_name, defaultOption.value)
@@ -181,7 +213,7 @@ const ReactForm = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
       }
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.answer_data, props.data])
+  }, [answerSyncKey, dataFieldKey])
 
   // Helper functions
   const getDefaultValue = useCallback(
@@ -290,7 +322,10 @@ const ReactForm = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
   const handleChange = useCallback(
     (propKey, value) => {
       // Find the item — propKey may be either a formularKey or a field_name
-      const item = props.data.find((d) => d.field_name === propKey || d.formularKey === propKey)
+      const fields = Array.isArray(props.data) ? props.data : []
+      const item =
+        fields.find((d) => d.field_name === propKey) ||
+        fields.find((d) => d.formularKey === propKey)
       const fieldName = item?.field_name || propKey
 
       // Detect composite formula value from FormulaInput's publishValue:
@@ -299,6 +334,7 @@ const ReactForm = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
       const isCompositeFormula =
         value !== null && typeof value === 'object' && 'formula' in value && 'variables' in value
       if (isCompositeFormula) {
+        rememberEditedValue(fieldName, value)
         formContext.updateValue(fieldName, value)
         return
       }
@@ -314,6 +350,7 @@ const ReactForm = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
       // Regular input: store the field value. Only fields with a formularKey
       // participate in the formula variable map — otherwise table/file objects
       // leak into FormulaInput as invalid variables.
+      rememberEditedValue(fieldName, value)
       formContext.updateValue(fieldName, value)
       if (!item?.formularKey) {
         return
@@ -342,11 +379,27 @@ const ReactForm = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
       formContext.updateVariable(item.formularKey, formulaValue)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [props.data]
+    [props.data, rememberEditedValue]
   )
 
   // Custom hooks for specific functionality
   const { collectFormData, collectFormItems } = useFormDataCollection(props, getEditor)
+
+  const collectFormDataWithEdits = useCallback(
+    (formItems) => {
+      const rows = collectFormData(formItems) || []
+      const edited = editedValuesRef.current
+      if (!edited || Object.keys(edited).length === 0) return rows
+      return rows.map((row) => {
+        const name = typeof row?.name === 'string' ? row.name : ''
+        if (!name || !Object.prototype.hasOwnProperty.call(edited, name)) {
+          return row
+        }
+        return { ...row, value: edited[name] }
+      })
+    },
+    [collectFormData]
+  )
 
   // Draft persistence
   const {
@@ -355,7 +408,7 @@ const ReactForm = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
     handleSignature2Change: flushSignature2Draft,
     saveDraft,
     clearDraft,
-  } = useDraftPersistence(props, collectFormData)
+  } = useDraftPersistence(props, collectFormDataWithEdits, () => editedValuesRef.current)
 
   // Keep answerData in sync on sign so column-row remounts don't get a stale
   // unsigned defaultValue. Flush draft after the value is written to context.
@@ -367,15 +420,16 @@ const ReactForm = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
           [payload.field_name as string]: payload.value,
         }))
         if (payload.value !== undefined) {
-          formContext.updateValue(
-            payload.field_name,
-            (payload.value === '' ? { isSigned: false } : payload.value) as FormFieldValue
-          )
+          const storedValue = (
+            payload.value === '' ? { isSigned: false } : payload.value
+          ) as FormFieldValue
+          rememberEditedValue(payload.field_name, storedValue)
+          formContext.updateValue(payload.field_name, storedValue)
         }
       }
       flushSignature2Draft()
     },
-    [flushSignature2Draft, formContext]
+    [flushSignature2Draft, formContext, rememberEditedValue]
   )
 
   const { validateForm } = useFormValidation(props, collectFormItems)
@@ -389,6 +443,15 @@ const ReactForm = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
         e.preventDefault()
       }
 
+      const active = typeof document !== 'undefined' ? document.activeElement : null
+      if (
+        active &&
+        active !== document.body &&
+        typeof (active as HTMLElement).blur === 'function'
+      ) {
+        ;(active as HTMLElement).blur()
+      }
+
       let errors = []
       if (!props.skip_validations) {
         errors = validateForm()
@@ -399,17 +462,19 @@ const ReactForm = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
         return
       }
 
+      const submitted = collectFormDataWithEdits(props.data)
       clearDraft()
+      editedValuesRef.current = {}
 
       if (props.onSubmit) {
-        props.onSubmit(collectFormData(props.data), props.parentElementId)
+        props.onSubmit(submitted, props.parentElementId)
         return
       }
 
       formRef.current?.submit()
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [props, collectFormData, validateForm, clearDraft]
+    [props, collectFormDataWithEdits, validateForm, clearDraft]
   )
 
   useImperativeHandle(
@@ -424,6 +489,7 @@ const ReactForm = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
 
   const handleClearDraft = useCallback(() => {
     clearDraft()
+    editedValuesRef.current = {}
     // Reset form state back to original answer_data (without draft)
     const ansData = convertAnswerData(props.answer_data)
     setAnswerData(ansData)

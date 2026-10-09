@@ -45,24 +45,23 @@ export const FormProvider = ({ children, initialValues = {} }: FormProviderProps
     Array<(event: { propKey: string; value: FormFieldValue }) => void>
   >([])
 
-  const valuesRef = useRef(values)
+  // Source of truth for collect/draft. Do not assign this from `values` during
+  // render: a render with a stale state snapshot drops every field except the
+  // one written in the latest updateValue.
+  const valuesRef = useRef(initialValues)
   const variablesRef = useRef(variables)
   const validationErrorsRef = useRef(validationErrors)
-  valuesRef.current = values
   variablesRef.current = variables
   validationErrorsRef.current = validationErrors
 
   const updateValue = useCallback((fieldName: string, value: FormFieldValue) => {
-    // Keep the ref in sync immediately so collect/draft in the same click
-    // (Signature2 onSignChange) can read the just-written value.
-    valuesRef.current = {
+    if (!fieldName) return
+    const next = {
       ...valuesRef.current,
       [fieldName]: value,
     }
-    setValues((prev) => ({
-      ...prev,
-      [fieldName]: value,
-    }))
+    valuesRef.current = next
+    setValues(next)
   }, [])
 
   const getValue = useCallback((fieldName: string) => valuesRef.current[fieldName], [])
@@ -70,6 +69,7 @@ export const FormProvider = ({ children, initialValues = {} }: FormProviderProps
   const getAllValues = useCallback(() => valuesRef.current, [])
 
   const resetValues = useCallback(() => {
+    valuesRef.current = initialValues
     setValues(initialValues)
   }, [initialValues])
 

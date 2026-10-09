@@ -82,6 +82,9 @@ const Preview = (props) => {
   const [data, setData] = useState([])
   const [answerData, setAnswerData] = useState({})
   const editForm = useRef(null)
+  // Latest element list. Updated synchronously so editing element B cannot
+  // dispatch a snapshot that drops edits already made to element A.
+  const dataRef = useRef(Array.isArray(props.data) ? props.data : [])
 
   const { updateState, undo, redo } = useUndoRedo()
 
@@ -94,6 +97,7 @@ const Preview = (props) => {
   useEffect(() => {
     const { onLoad, onPost, data, url, saveUrl } = props
     store.setExternalHandler(onLoad, onPost)
+    dataRef.current = Array.isArray(data) ? data : []
     setData(data || [])
     setAnswerData({})
     seqRef.current = 0
@@ -139,10 +143,12 @@ const Preview = (props) => {
   }
 
   const updateElement = (element) => {
-    const index = data.findIndex((item) => element.id === item.id)
+    const source = Array.isArray(dataRef.current) ? dataRef.current : []
+    const index = source.findIndex((item) => item && element && item.id === element.id)
     if (index !== -1) {
-      const newData = [...data]
+      const newData = source.slice()
       newData[index] = element
+      dataRef.current = newData
       seqRef.current = seqRef.current > 100000 ? 0 : seqRef.current + 1
       store.dispatch('updateOrder', newData)
     }
@@ -156,6 +162,8 @@ const Preview = (props) => {
       console.warn('_onChange received invalid data:', data)
       return
     }
+
+    dataRef.current = data
 
     const answerData = {}
     data.forEach((item) => {
@@ -196,7 +204,8 @@ const Preview = (props) => {
   }
 
   const getDataById = (id) => {
-    const item = data.find((x) => x && x.id === id)
+    const source = Array.isArray(dataRef.current) ? dataRef.current : data
+    const item = source.find((x) => x && x.id === id)
     return item
   }
 
@@ -231,7 +240,7 @@ const Preview = (props) => {
       applyAutoCellNamesAfterSwap(child, row, col, oldItem, oldRow, oldCol)
     }
 
-    store.dispatch('updateOrder', data)
+    store.dispatch('updateOrder', dataRef.current)
     return true
   }
 
@@ -241,7 +250,7 @@ const Preview = (props) => {
     }
 
     // Keep track of all data modifications
-    let updatedData = [...data]
+    let updatedData = [...dataRef.current]
 
     // Handle the original drop first
     const oldParent = getDataById(child.parentId)
@@ -449,6 +458,7 @@ const Preview = (props) => {
     seqRef.current = seqRef.current > 100000 ? 0 : seqRef.current + 1
 
     // Update the state once with all changes
+    dataRef.current = updatedData
     setData(updatedData)
 
     // Dispatch the final update to the store
@@ -457,7 +467,7 @@ const Preview = (props) => {
 
   const removeChild = (item, row = 0, col) => {
     // Create a working copy of the data
-    let newData = [...data]
+    let newData = [...dataRef.current]
     // Track any elements that need to be removed
     const elementsToRemove = []
 
@@ -486,6 +496,7 @@ const Preview = (props) => {
       seqRef.current = seqRef.current > 100000 ? 0 : seqRef.current + 1
 
       // Update the state and store
+      dataRef.current = newData
       store.dispatch('updateOrder', newData)
       setData(newData)
     }
@@ -495,8 +506,8 @@ const Preview = (props) => {
     const parent = getDataById(item.data.parentId)
     const oldItem = getDataById(id)
     if (parent && oldItem) {
-      const newIndex = data.indexOf(oldItem)
-      const newData = [...data]
+      const newIndex = dataRef.current.indexOf(oldItem)
+      const newData = [...dataRef.current]
       if (Array.isArray(parent.childItems)) {
         if (Array.isArray(parent.childItems[0])) {
           if (oldItem.row !== undefined && oldItem.col !== undefined) {
@@ -514,6 +525,7 @@ const Preview = (props) => {
       delete item.parentIndex
       item.index = newIndex
       seqRef.current = seqRef.current > 100000 ? 0 : seqRef.current + 1
+      dataRef.current = newData
       store.dispatch('updateOrder', newData)
       setData(newData)
     }

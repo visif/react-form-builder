@@ -4,6 +4,7 @@ import {
   buildDraftStorageKey,
   clearDraftData,
   hasDraft,
+  mergeDraftSnapshot,
   readDraftFromStorage,
 } from './useDraftPersistence'
 
@@ -49,6 +50,27 @@ describe('useDraftPersistence helpers', () => {
     clearDraftData(props)
     expect(hasDraft(props)).toBe(false)
     expect(readDraftFromStorage(props)).toBeNull()
+  })
+
+  it('keeps earlier filled fields when the latest collect only has the active field', () => {
+    const existing = { field_a: 'alpha', field_b: 'beta' }
+    const collected = { field_a: '', field_b: '', field_c: '' }
+    const edited = { field_c: 'gamma' }
+
+    expect(mergeDraftSnapshot(existing, collected, edited)).toEqual({
+      field_a: 'alpha',
+      field_b: 'beta',
+      field_c: 'gamma',
+    })
+  })
+
+  it('lets an intentional clear replace a previously filled field', () => {
+    expect(
+      mergeDraftSnapshot({ field_a: 'alpha', field_b: 'beta' }, { field_a: '' }, { field_a: '' })
+    ).toEqual({
+      field_a: '',
+      field_b: 'beta',
+    })
   })
 
   it('treats empty objects and invalid JSON as missing drafts', () => {

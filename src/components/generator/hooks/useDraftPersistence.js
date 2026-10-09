@@ -92,6 +92,53 @@ const hasServerFileValue = (value) => {
   return Array.isArray(value.fileList) && value.fileList.length > 0
 }
 
+/** True when a collected value should replace what is already stored. */
+export const isMeaningfulDraftValue = (value) => {
+  if (value == null || value === '') return false
+  if (Array.isArray(value)) return value.length > 0
+  if (typeof value !== 'object') return true
+  if ('isSigned' in value) return Boolean(value.isSigned)
+  if (Array.isArray(value.fileList)) return value.fileList.length > 0
+  if ('filePath' in value && !('fileList' in value)) return Boolean(value.filePath)
+  if ('formula' in value && 'value' in value) {
+    return value.value !== '' && value.value != null
+  }
+  const keys = Object.keys(value)
+  if (
+    'value' in value &&
+    keys.every((key) => key === 'value' || key === 'info' || key === 'blobUrl')
+  ) {
+    return value.value !== '' && value.value != null
+  }
+  return keys.length > 0
+}
+
+const sanitizeDraftValue = (key, value) =>
+  isFileFieldKey(key) ? stripDeadBlobFromValue(value) : value
+
+/**
+ * Keep previously filled fields when a later collect only has the active field.
+ * Edited values always win, including an intentional clear. Empty defaults do
+ * not wipe a value already stored for a field the user has not touched.
+ */
+export const mergeDraftSnapshot = (existing, collected, edited) => {
+  const result = {}
+  Object.entries(existing || {}).forEach(([key, value]) => {
+    result[key] = sanitizeDraftValue(key, value)
+  })
+  Object.entries(collected || {}).forEach(([key, value]) => {
+    if (edited && Object.prototype.hasOwnProperty.call(edited, key)) return
+    const next = sanitizeDraftValue(key, value)
+    if (isMeaningfulDraftValue(next)) {
+      result[key] = next
+    }
+  })
+  Object.entries(edited || {}).forEach(([key, value]) => {
+    result[key] = sanitizeDraftValue(key, value)
+  })
+  return result
+}
+
 /** Merge server answers with draft; never keep dead blob: preview URLs. */
 export const mergeAnswerData = (serverAnswers, draft) => {
   const server = {}
@@ -127,10 +174,12 @@ export const hasDraft = (props) => readDraftFromStorage(props) !== null
 
 // ─── Hook ───────────────────────────────────────────────────────────────
 
-export const useDraftPersistence = (props, collectFormData) => {
+export const useDraftPersistence = (props, collectFormData, getEditedValues) => {
   const draftIntervalRef = useRef(null)
   const draftClearedRef = useRef(false)
   const draftStartedRef = useRef(false)
+  const getEditedRef = useRef(getEditedValues)
+  getEditedRef.current = getEditedValues
 
   // Read draft once per mount (or when key-relevant props change)
   const draft = readDraftFromStorage(props)
@@ -151,8 +200,18 @@ export const useDraftPersistence = (props, collectFormData) => {
   const saveDraft = useCallback(() => {
     if (typeof window === 'undefined' || !window.localStorage) return
     try {
+      // Commit the focused control before reading values. Some fields write
+      // their latest text on blur, and that handler runs before blur() returns.
+      const active = typeof document !== 'undefined' ? document.activeElement : null
+      if (active && active !== document.body && typeof active.blur === 'function') {
+        active.blur()
+      }
       const formData = collectRef.current(propsRef.current.data)
-      const draftObj = mergeAnswerData(convertAnswerData(formData), null)
+      const collected = convertAnswerData(formData)
+      const existing = readDraftFromStorage(propsRef.current)
+      const edited =
+        typeof getEditedRef.current === 'function' ? getEditedRef.current() : null
+      const draftObj = mergeDraftSnapshot(existing, collected, edited)
       window.localStorage.setItem(buildDraftStorageKey(propsRef.current), JSON.stringify(draftObj))
     } catch (_) {
       // Ignore quota / security errors

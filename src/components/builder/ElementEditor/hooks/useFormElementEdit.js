@@ -22,12 +22,16 @@ export const useFormElementEdit = (props) => {
 
   // Refs for debounced update
   const debouncedPushRef = useRef(null)
+  const debounceTimerRef = useRef(null)
   const elementRef = useRef(element)
+  const dirtyRef = useRef(false)
 
   // Sync ref with state
   useEffect(() => {
     elementRef.current = element
   }, [element])
+
+  dirtyRef.current = dirty
 
   useEffect(() => {
     if (props.element?.element !== 'Image') return
@@ -63,15 +67,6 @@ export const useFormElementEdit = (props) => {
     [props.preview]
   )
 
-  // Debounce utility
-  const debounce = useCallback((fn, ms) => {
-    let t
-    return (...a) => {
-      clearTimeout(t)
-      t = setTimeout(() => fn(...a), ms)
-    }
-  }, [])
-
   // Update element in parent component.
   // Blur handlers call this with a DOM event. Column editors call it with the
   // edited element; that argument has to win, or the header text is dropped.
@@ -103,15 +98,38 @@ export const useFormElementEdit = (props) => {
     }
   }, [props])
 
-  // Initialize debounced push on mount
-  if (!debouncedPushRef.current) {
-    debouncedPushRef.current = debounce(() => updateElement(), 400)
-  }
+  const updateElementRef = useRef(updateElement)
+  updateElementRef.current = updateElement
 
-  // Update debounced reference when updateElement changes
-  useEffect(() => {
-    debouncedPushRef.current = debounce(() => updateElement(), 400)
-  }, [updateElement, debounce])
+  // One timer for the open editor. Replacing the debounced function used to
+  // leave the previous timeout running, and that timeout wrote a stale copy
+  // of the form that kept only the last edited element.
+  const schedulePush = useCallback(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
+    debounceTimerRef.current = setTimeout(() => {
+      debounceTimerRef.current = null
+      dirtyRef.current = false
+      updateElementRef.current()
+    }, 400)
+  }, [])
+
+  debouncedPushRef.current = schedulePush
+
+  useEffect(
+    () => () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+        debounceTimerRef.current = null
+      }
+      if (dirtyRef.current) {
+        dirtyRef.current = false
+        updateElementRef.current()
+      }
+    },
+    []
+  )
 
   // Edit element property with optional async form loading
   const editElementProp = useCallback(
