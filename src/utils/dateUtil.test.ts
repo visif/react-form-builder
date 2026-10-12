@@ -57,6 +57,17 @@ describe('dateUtil', () => {
     expect(formatDate(stamped)).toBe(dayjs().format('DD/MM/YYYY'))
   })
 
+  it('reopens a Thai dd/MM/yy date without turning พ.ศ. 69 into 62', () => {
+    localStorage.setItem('setting_calendar_type', 'TH')
+    localStorage.setItem('setting_date_format', 'dd/MM/yy')
+
+    const stored = toStoredDateIso(dayjs('2026-10-20T00:00:00'))
+    const parsed = parseStoredDate(stored, 'DD/MM/YY')
+
+    expect(dayjs(parsed).format('YYYY-MM-DD')).toBe('2026-10-20')
+    expect(formatDatePickerDisplay(parsed, 'DD/MM/YY')).toBe('20/10/69')
+  })
+
   it('formats DatePicker and Signature dates in Thai Buddhist when calendar is TH', () => {
     localStorage.setItem('setting_calendar_type', 'TH')
     localStorage.setItem('setting_date_format', 'dd MMMM yyyy')

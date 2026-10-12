@@ -151,6 +151,17 @@ export const toStoredDateIso = (date?: dayjs.Dayjs | null): string | null => {
 }
 
 /**
+ * Stored DatePicker values are UTC ISO (`2026-10-19T17:00:00.000Z`).
+ * Parsing that with a 2-digit mask such as `DD/MM/YY` is not strict, so dayjs
+ * reads digits out of the ISO string (day 20, month 10, year 19 → 2019).
+ * Thai display then shows พ.ศ. 62 instead of 69.
+ */
+const isIsoDateString = (value: string): boolean =>
+  /^\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(?:Z|[+-]\d{2}:?\d{2})?)?$/.test(
+    value.trim()
+  )
+
+/**
  * DatePicker load: parse a stored ISO or formatted string and return UTC ISO
  * after converting Buddhist years back to Gregorian.
  */
@@ -162,7 +173,12 @@ export const parseStoredDate = (
     return null
   }
 
-  let parsed = formatMask ? dayjs(value, formatMask) : dayjs(value)
+  let parsed =
+    typeof value === 'string' && isIsoDateString(value)
+      ? dayjs(value.trim())
+      : formatMask
+        ? dayjs(value, formatMask)
+        : dayjs(value)
   if (!parsed.isValid()) {
     parsed = dayjs(value)
   }
