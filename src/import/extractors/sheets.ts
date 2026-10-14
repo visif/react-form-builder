@@ -31,6 +31,50 @@ const FILL_ONLY = new RegExp(`^\\s*(?:${IMPORT_TEXT_PATTERNS.FILL_RUN.source})\\
 const isMergedAcrossColumns = (merges: SheetMergeRange[], r: number, c: number): boolean =>
   merges.some((m) => m.s.r <= r && r <= m.e.r && m.s.c <= c && c <= m.e.c && m.e.c > m.s.c)
 
+const KEY_CELL = /[:：]\s*$/
+
+/** "SPECIFICATIONS & ITEMIZED QUOTATION" – spreadsheet templates mark headings with caps. */
+const isHeadingText = (text: string): boolean => {
+  const letters = text.replace(/[^A-Za-z]/g, '')
+  return (
+    letters.length >= 4 &&
+    letters === letters.toUpperCase() &&
+    text.length <= 80 &&
+    !KEY_CELL.test(text) &&
+    !FILL_ONLY.test(text)
+  )
+}
+
+const filledIndexes = (row: string[]): number[] =>
+  row.reduce<number[]>((acc, c, idx) => (c ? [...acc, idx] : acc), [])
+
+/** "Label:" cells each followed by a sample value (or nothing): a pre-filled form row. */
+const isKeyValueRow = (row: string[]): boolean => {
+  const idx = filledIndexes(row)
+  if (idx.length === 0 || !KEY_CELL.test(row[idx[0]]) || row[idx[0]].length > 60) return false
+  const keys = idx.filter((i) => KEY_CELL.test(row[i])).length
+  return keys * 2 >= idx.length || !row[idx[0] + 1]
+}
+
+/** "Name: | Jane | Date: | 2026-01-01" → "Name ______ Date ______" (sample values dropped). */
+const keyValueText = (row: string[], from = 0, to = row.length): string =>
+  row
+    .slice(from, to)
+    .filter((c) => KEY_CELL.test(c))
+    .map((c) => `${c.replace(KEY_CELL, '').trim()} ______`)
+    .join(' ')
+
+const keyColumns = (row: string[]): number[] => filledIndexes(row).filter((i) => KEY_CELL.test(row[i]))
+
+/** Side-by-side label blocks → `| Label ______ | Label ______ |` rows (optional heading row). */
+const pushFieldGrid = (out: string[], headings: string[] | null, block: string[][], starts: number[]) => {
+  if (headings) out.push(`| ${headings.join(' | ')} |`)
+  block.forEach((r) => {
+    out.push(`| ${starts.map((s, k) => keyValueText(r, s, starts[k + 1])).join(' | ')} |`)
+  })
+  out.push('')
+}
+
 /**
  * Convert spreadsheet grids into markdown-lite text:
  *  - a header row with ≥2 filled cells followed by rows that also have ≥2
@@ -61,13 +105,53 @@ export function sheetsToText(sheets: ExtractedSheets['sheets']): string {
         continue
       }
 
+      if (filled.length === 1 && isHeadingText(filled[0])) {
+        out.push(`## ${filled[0]}`)
+        sawContent = true
+        i += 1
+        continue
+      }
+
+      if (filled.length <= 4 && filled.every(isHeadingText)) {
+        // Side-by-side sections ("Buyer details | Vendor details"): left block, then right.
+        // Without label rows below, a caps row is more likely a table header.
+        const starts = filledIndexes(row)
+        let j = i + 1
+        while (j < rows.length && isKeyValueRow(rows[j])) j += 1
+        if (j > i + 1) {
+          pushFieldGrid(out, filled, rows.slice(i + 1, j), starts)
+          sawContent = true
+          i = j
+          continue
+        }
+      }
+
+      if (isKeyValueRow(row)) {
+        // Rows with labels in the same columns keep their side-by-side layout
+        const starts = keyColumns(row)
+        let j = i + 1
+        while (
+          starts.length >= 2 &&
+          j < rows.length &&
+          isKeyValueRow(rows[j]) &&
+          keyColumns(rows[j]).join() === starts.join()
+        ) {
+          j += 1
+        }
+        if (starts.length >= 2) pushFieldGrid(out, null, rows.slice(i, j), starts)
+        else out.push(keyValueText(row))
+        sawContent = true
+        i = j
+        continue
+      }
+
       if (filled.length >= 2 && !row.some((c) => OPTION_GLYPH.test(c))) {
         // Look ahead for a table block
         let j = i + 1
         while (j < rows.length) {
           const next = rows[j]
           const nextFilled = filledCells(next)
-          if (next.some((c) => OPTION_GLYPH.test(c))) break
+          if (next.some((c) => OPTION_GLYPH.test(c)) || isKeyValueRow(next)) break
           if (nextFilled.length >= 2) {
             j += 1
             continue

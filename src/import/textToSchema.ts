@@ -1,3 +1,4 @@
+/* eslint-disable no-continue */
 /**
  * Heuristic converter from extracted document text to an ImportedFormSchema.
  *
@@ -27,25 +28,31 @@ const RADIO_GLYPH = /(?:[○●◯◉⚪⚫]|\(\s{0,3}[xX✓✔]?\s{0,3}\))/g
 const OPTION_GLYPH = new RegExp(`${CHECKBOX_GLYPH.source}|${RADIO_GLYPH.source}`, 'g')
 
 const TABLE_ROW = /^\s*\|.*\|\s*$/
-const MARKDOWN_HEADING = /^\s*#{1,6}\s+(.+?)\s*$/
+const MARKDOWN_HEADING = /^\s*(#{1,6})\s+(.+?)\s*$/
 const PLAIN_BULLET = /^\s*[-*•▪◦‣]\s+/
-const LEADING_NUMBER = /^\s*(?:ข้อ(?:ที่)?\s*)?\(?\d{1,3}(?:\.\d{1,2})*[.)]?\s*/
+// "1." / "1)" / "(1)" / "2.1" / "ข้อ 3" – a bare number ("107/315 ถนน…") is not a question
+const LEADING_NUMBER = /^\s*(?:ข้อ(?:ที่)?\s*\d{1,3}|\(?\d{1,3}(?:\.\d{1,2})+\.?|\(?\d{1,3}[.)])(?:\s|$)/
 const SEPARATOR_LINE = /^[\s\-_=─━═~*]{6,}$/
 const PAGE_NUMBER = /^\s*(?:หน้า|page|p\.)\s*\d+(?:\s*(?:\/|of|จาก)\s*\d+)?\s*$/i
 const SECTION_HEADING =
   /^\s*(?:ส่วนที่|ตอนที่|หมวดที่|หมวด|ส่วน|part|section|ตอน|บทที่|chapter)\s*[\dIVX๐-๙]+/i
 const INSTRUCTION = /^\s*(?:กรุณา|โปรด|คำชี้แจง|คำอธิบาย|หมายเหตุ\s*[:：]|please|note\s*[:：]|instructions?\s*[:：])/i
+// Placeholder text shown inside an empty control (printed / screenshotted web forms)
+const SELECT_PLACEHOLDER =
+  /^(?:please\s+select|select(?:\s+(?:one|an?\s+option))?|choose(?:\s+one)?|-{1,2}\s*(?:select|choose)[^-]*-{1,2}|กรุณาเลือก|โปรดเลือก|เลือก)\s*(?:\.{3}|…)?\s*[▾▼⌄]?$/i
+const DATE_PLACEHOLDER =
+  /^(?:dd|mm|yyyy|วว|ดด|ปปปป)(?:\s*[/.-]\s*(?:dd|mm|yyyy|yy|วว|ดด|ปปปป|ปป)){2}$|^yyyy-mm-dd$|^select\s+date$|^เลือกวันที่$/i
 const YES_NO = /^(?:ใช่|ไม่ใช่|yes|no|มี|ไม่มี|ผ่าน|ไม่ผ่าน)$/i
 
 /* Type inference keyword lists (checked in priority order) */
 const KEYWORDS: Array<[ImportedFieldType, RegExp]> = [
   ['signature', /ลงชื่อ|ลงนาม|ลายมือชื่อ|ลายเซ็น|เซ็นชื่อ|ผู้อนุมัติ|ผู้ตรวจสอบ|signature|signed\s*by|sign\s*here|approved\s*by|reviewed\s*by/i],
-  ['date', /วันที่|วัน\s*\/\s*เดือน\s*\/\s*ปี|ว\s*\/\s*ด\s*\/\s*ป|วันเกิด|วัน\s*เดือน\s*ปี|ลงวันที่|เมื่อวันที่|กำหนดส่ง|\bdate\b|\bdob\b|birth|deadline|due\s*on/i],
+  ['date', /วันที่|วัน\s*\/\s*เดือน\s*\/\s*ปี|ว\s*\/\s*ด\s*\/\s*ป|วันเกิด|วัน\s*เดือน\s*ปี|ลงวันที่|เมื่อวันที่|กำหนดส่ง|วันหมดอายุ|\bdate\b|\bdob\b|birth|deadline|due\s*on|valid\s*until|expir(?:y|es|ation)/i],
   ['imageupload', /รูปถ่าย|รูปภาพ|ภาพถ่าย|\bphoto|\bpicture|\bimage/i],
   ['fileupload', /เอกสารแนบ|แนบไฟล์|ไฟล์แนบ|แนบเอกสาร|สิ่งที่ส่งมาด้วย|attach|upload|\bfile\b/i],
   ['rating', /คะแนน|ระดับความพึงพอใจ|ความพึงพอใจ|\brating\b|\brate\b|satisfaction|ให้ดาว/i],
   ['textarea', /หมายเหตุ|รายละเอียด|ที่อยู่|เหตุผล|ข้อเสนอแนะ|ความคิดเห็น|อธิบาย|ข้อคิดเห็น|สาเหตุ|remarks?|notes?|comments?|description|address|reason|details?|explain|feedback|suggestions?|justification/i],
-  ['number', /จำนวน|ยอดรวม|ยอดเงิน|ราคา|จำนวนเงิน|บาท|อายุ|น้ำหนัก|ส่วนสูง|ร้อยละ|เปอร์เซ็นต์|\bage\b|amount|\bqty\b|quantity|price|\btotal\b|\bcount\b|weight|height|percent|\bno\.\s*of\b|number\s*of/i],
+  ['number', /จำนวน|ยอดรวม|ยอดเงิน|ราคา|จำนวนเงิน|บาท|อายุ|น้ำหนัก|ส่วนสูง|ร้อยละ|เปอร์เซ็นต์|ภาษี|\bage\b|amount|\bqty\b|quantity|price|\btotal\b|subtotal|\btax\b|\(\s*[$฿€£¥]\s*\)|\(\s*\d+(?:\.\d+)?\s*%\s*\)|\bcount\b|weight|height|percent|\bno\.\s*of\b|number\s*of/i],
   ['dropdown', /จังหวัด|ประเทศ|คำนำหน้า|คำนำหน้าชื่อ|province|country|prefix|\bselect\b|\bchoose\b|โปรดเลือก|กรุณาเลือก/i],
 ]
 
@@ -81,6 +88,10 @@ const isPunctuationOnly = (text: string): boolean => /^[\s\p{P}\p{S}]*$/u.test(t
 
 const hasThai = (text: string): boolean => /[\u0E00-\u0E7F]/.test(text)
 
+/** FILL_RUN / OPTION_GLYPH are global (used with matchAll); never call .test on them directly. */
+const hasFillRun = (text: string): boolean => new RegExp(FILL_RUN.source).test(text)
+const hasOptionGlyph = (text: string): boolean => new RegExp(OPTION_GLYPH.source).test(text)
+
 /** Rough visual width: Thai has no word spaces, so count characters generously. */
 const textLength = (text: string): number => text.replace(/\s+/g, ' ').trim().length
 
@@ -108,13 +119,14 @@ const uniqueOptions = (options: string[]): string[] => {
 
 type Token =
   | { kind: 'blank' }
-  | { kind: 'heading'; text: string }
+  | { kind: 'heading'; text: string; level: number }
   | { kind: 'table-row'; cells: string[] }
   | { kind: 'separator' }
   | { kind: 'options'; label: string; options: string[]; radio: boolean; raw: string }
   | { kind: 'bullet'; text: string; raw: string }
   | { kind: 'fields'; fields: ImportedField[]; leadingLabelMissing: boolean; raw: string }
   | { kind: 'prompt'; label: string; raw: string } // "Label:" with nothing after
+  | { kind: 'placeholder'; as: 'dropdown' | 'date'; raw: string } // "Please Select", "dd/mm/yyyy"
   | { kind: 'text'; text: string; raw: string }
 
 function splitOptionsLine(line: string): { label: string; options: string[]; radio: boolean } | null {
@@ -190,22 +202,163 @@ function splitInlineChoices(value: string): string[] | null {
   return uniqueOptions(parts)
 }
 
-function tokenize(line: string): Token {
+/** Parse a markdown / pipe / space-aligned table row into cells, or null. */
+function parseTableCells(line: string): string[] | null {
   const trimmed = line.trim()
-  if (!trimmed) return { kind: 'blank' }
-  if (PAGE_NUMBER.test(trimmed)) return { kind: 'blank' }
+  if (!trimmed) return null
+
   if (TABLE_ROW.test(trimmed)) {
     const cells = trimmed
       .slice(1, -1)
       .split('|')
       .map((c) => c.trim())
-    if (cells.every((c) => /^:?-{2,}:?$/.test(c))) return { kind: 'blank' } // markdown separator row
-    return { kind: 'table-row', cells }
+    if (cells.every((c) => /^:?-{2,}:?$/.test(c))) return null // markdown separator row
+    return cells
+  }
+
+  // "A | B | C" without outer pipes
+  if (trimmed.includes('|') && !hasOptionGlyph(trimmed) && !hasFillRun(trimmed)) {
+    const cells = trimmed.split('|').map((c) => c.trim())
+    if (cells.filter((c) => c.length > 0).length >= 2) return cells
+  }
+
+  return null
+}
+
+/**
+ * Split a line into columns by tabs / 2+ spaces. Returns null when the line
+ * does not look like a tabular row (options, fill-in blanks, single cell…).
+ */
+function splitAlignedCells(line: string): string[] | null {
+  const trimmed = line.replace(/\s+$/, '')
+  if (!trimmed.trim()) return null
+  if (hasOptionGlyph(trimmed) || hasFillRun(trimmed)) return null
+  if (MARKDOWN_HEADING.test(trimmed) || SEPARATOR_LINE.test(trimmed)) return null
+  if (INSTRUCTION.test(trimmed) || PAGE_NUMBER.test(trimmed)) return null
+
+  const pipe = parseTableCells(trimmed)
+  if (pipe) return pipe
+
+  if (!/\t|\s{2,}/.test(trimmed)) return null
+  const cells = trimmed
+    .split(/\t+|\s{2,}/)
+    .map((c) => c.trim())
+    .filter((c, idx, arr) => c.length > 0 || (idx > 0 && idx < arr.length - 1))
+  if (cells.filter((c) => c).length < 2) return null
+  return cells
+}
+
+const toPipeRow = (cells: string[]): string => `| ${cells.join(' | ')} |`
+
+const MAX_CELL_CONTINUATION_LINES = 60
+
+/**
+ * Turn consecutive space-aligned / pipe-separated lines into markdown table
+ * rows so PDF / OCR / plain-text grids become `table` fields.
+ */
+export function promoteAlignedTables(lines: string[]): string[] {
+  const out: string[] = []
+  let i = 0
+  while (i < lines.length) {
+    const headerCells = splitAlignedCells(lines[i])
+    if (!headerCells || headerCells.filter((c) => c).length < 2) {
+      out.push(lines[i])
+      i += 1
+      continue
+    }
+
+    const block: string[][] = [headerCells]
+    let j = i + 1
+    while (j < lines.length) {
+      const raw = lines[j]
+      if (!raw.trim()) break
+      const cells = splitAlignedCells(raw)
+      // Accept body rows even when only the first column is filled (fixed row labels)
+      if (cells && cells.length >= 2) {
+        block.push(cells)
+        j += 1
+        continue
+      }
+      // Already a markdown/pipe row but too narrow – stop the block
+      if (TABLE_ROW.test(raw.trim()) || (raw.includes('|') && !hasOptionGlyph(raw))) {
+        break
+      }
+      // Single short label under a wide header → fixed row label (rating grids)
+      const label = raw.trim()
+      if (
+        headerCells.filter((c) => c).length >= 3 &&
+        label.length > 0 &&
+        label.length <= 60 &&
+        !hasFillRun(label) &&
+        !hasOptionGlyph(label) &&
+        !MARKDOWN_HEADING.test(label) &&
+        !INSTRUCTION.test(label) &&
+        !/[?？]$/.test(label)
+      ) {
+        block.push([label, ...Array(headerCells.length - 1).fill('')])
+        j += 1
+        continue
+      }
+      // Wrapped text inside a cell: plain lines sandwiched between rows of the
+      // same table ("Work item | 90,000", bullet details…, "Total | 100,000")
+      if (block.length >= 2) {
+        let k = j
+        while (
+          k < lines.length &&
+          k - j < MAX_CELL_CONTINUATION_LINES &&
+          lines[k].trim() &&
+          !lines[k].includes('|') &&
+          !hasFillRun(lines[k]) &&
+          !hasOptionGlyph(lines[k]) &&
+          !MARKDOWN_HEADING.test(lines[k])
+        ) {
+          k += 1
+        }
+        const next = k > j && k < lines.length ? splitAlignedCells(lines[k]) : null
+        if (next && next.length === headerCells.length) {
+          const last = block[block.length - 1]
+          const extra = lines.slice(j, k).map((l) => l.trim()).join(' ')
+          last[0] = [last[0], extra].filter(Boolean).join(' ')
+          j = k
+          continue
+        }
+      }
+      break
+    }
+
+    const multiRows = block.filter((r) => r.filter((c) => c).length >= 2).length
+    const isTable = multiRows >= 2 || (headerCells.filter((c) => c).length >= 3 && block.length >= 3)
+    if (isTable) {
+      const width = Math.max(...block.map((r) => r.length), headerCells.length)
+      block.forEach((r) => {
+        const padded = [...r, ...Array(Math.max(0, width - r.length)).fill('')]
+        out.push(toPipeRow(padded.slice(0, width)))
+      })
+      i = j
+      continue
+    }
+
+    out.push(lines[i])
+    i += 1
+  }
+  return out
+}
+
+function tokenize(line: string): Token {
+  const trimmed = line.trim()
+  if (!trimmed) return { kind: 'blank' }
+  if (PAGE_NUMBER.test(trimmed)) return { kind: 'blank' }
+  const tableCells = parseTableCells(trimmed)
+  if (tableCells) {
+    return { kind: 'table-row', cells: tableCells }
   }
   if (SEPARATOR_LINE.test(trimmed)) return { kind: 'separator' }
 
   const heading = trimmed.match(MARKDOWN_HEADING)
-  if (heading) return { kind: 'heading', text: cleanLabel(heading[1]) }
+  if (heading) return { kind: 'heading', text: cleanLabel(heading[2]), level: heading[1].length }
+
+  if (SELECT_PLACEHOLDER.test(trimmed)) return { kind: 'placeholder', as: 'dropdown', raw: trimmed }
+  if (DATE_PLACEHOLDER.test(trimmed)) return { kind: 'placeholder', as: 'date', raw: trimmed }
 
   const opts = splitOptionsLine(trimmed)
   if (opts && opts.options.length > 0) {
@@ -233,10 +386,13 @@ function tokenize(line: string): Token {
         const radio = choices.length <= 4 || choices.every((c) => YES_NO.test(c))
         return { kind: 'options', label: cleanLabel(key), options: choices, radio, raw: trimmed }
       }
-      if (textLength(value) <= 40) {
-        // A sample value (pre-filled form) – keep the field, drop the value
+      if (textLength(value) <= 40 || textLength(key) <= 30) {
+        // A sample value (pre-filled form) – keep the field, drop the value.
+        // Long answers ("ที่อยู่: 107/315 …") become multi-line inputs.
         const { label, required } = stripRequired(key)
-        const field: ImportedField = { type: inferInputType(label), label, source: trimmed }
+        let type = inferInputType(label)
+        if (type === 'text' && textLength(value) > 40) type = 'textarea'
+        const field: ImportedField = { type, label, source: trimmed }
         if (required) field.required = true
         return { kind: 'fields', fields: [field], leadingLabelMissing: false, raw: trimmed }
       }
@@ -259,6 +415,9 @@ const wrapRow = (fields: ImportedField[], source: string): ImportedField => {
 }
 
 function buildTable(rows: string[][], source: string): ImportedField | null {
+  // Need at least a header + one body row; a lone multi-column line is usually
+  // side-by-side fields (e.g. "Name ____  Date ____"), not a table.
+  if (rows.length < 2) return null
   const width = Math.max(...rows.map((r) => r.length))
   if (width < 2) return null
   const padded = rows.map((r) => [...r, ...Array(width - r.length).fill('')])
@@ -267,9 +426,9 @@ function buildTable(rows: string[][], source: string): ImportedField | null {
 
   // Fixed row labels: first column filled, the rest (mostly) empty
   const fillOnly = new RegExp(`^\\s*(?:${FILL_RUN.source})\\s*$`)
+  const isBlank = (c: string) => !c || isPunctuationOnly(c) || fillOnly.test(c)
   const hasRowLabels =
-    body.length > 0 &&
-    body.every((r) => r[0] && r.slice(1).every((c) => !c || isPunctuationOnly(c) || fillOnly.test(c)))
+    body.length > 0 && body.every((r) => !isBlank(r[0]) && r.slice(1).every(isBlank))
 
   const field: ImportedField = {
     type: 'table',
@@ -285,6 +444,62 @@ function buildTable(rows: string[][], source: string): ImportedField | null {
   return field
 }
 
+/**
+ * A grid whose cells are all "Label ______" is a side-by-side layout of inputs
+ * (e.g. buyer details | vendor details), not a data table. An optional first
+ * row without blanks gives the column headings.
+ */
+function buildFieldGrid(rows: string[][], source: string): ImportedField | null {
+  const width = Math.max(...rows.map((r) => r.length))
+  if (width < 2 || width > 4) return null
+  const cellField = (cell: string): ImportedField | null => {
+    const fill = splitFillLine(cell)
+    if (!fill || fill.leadingLabelMissing || fill.fields.length !== 1 || !fill.fields[0].label) return null
+    return fill.fields[0]
+  }
+  const first = rows[0].map((c) => c.trim())
+  const hasHeader = first.some(Boolean) && !first.some(hasFillRun)
+  const body = hasHeader ? rows.slice(1) : rows
+  if (body.length < (hasHeader ? 1 : 2)) return null
+
+  const grid: Array<Array<ImportedField | null>> = []
+  const ok = body.every((r) => {
+    const cells = Array.from({ length: width }, (_, i) => (r[i] || '').trim())
+    const line = cells.map((c) => (c ? cellField(c) : null))
+    if (cells.some((c, i) => c && !line[i]) || line.every((f) => !f)) return false
+    grid.push(line)
+    return true
+  })
+  if (!ok) return null
+
+  const field: ImportedField = { type: 'row', grid, source }
+  if (hasHeader) field.columns = Array.from({ length: width }, (_, i) => cleanLabel(first[i] || ''))
+  return field
+}
+
+/** Turn a single multi-column line into inputs / a column row. */
+function fieldsFromTableRow(cells: string[], source: string): ImportedField[] {
+  const list: ImportedField[] = []
+  cells.forEach((cell) => {
+    const text = cell.trim()
+    if (!text) return
+    const fill = splitFillLine(text)
+    if (fill && fill.fields.length > 0) {
+      fill.fields.forEach((f) => {
+        if (!f.label) f.label = `Field ${list.length + 1}`
+        list.push(f)
+      })
+      return
+    }
+    const { label, required } = stripRequired(text)
+    if (!label || isPunctuationOnly(label)) return
+    const field: ImportedField = { type: inferInputType(label), label, source }
+    if (required) field.required = true
+    list.push(field)
+  })
+  return list
+}
+
 export type TextToSchemaOptions = {
   /** Use the first short line as the form title / Header (default true) */
   detectTitle?: boolean
@@ -292,9 +507,12 @@ export type TextToSchemaOptions = {
 
 export function textToFormSchema(rawText: string, options: TextToSchemaOptions = {}): ImportedFormSchema {
   const { detectTitle = true } = options
-  const lines = normalize(rawText)
+  const rawLines = normalize(rawText)
     .split(/\f|\n/)
     .map((l) => l.replace(/\s+$/, ''))
+  // Promote space-aligned grids (PDF / OCR / plain text) to markdown table rows
+  // before tokenising so they become Table fields instead of loose labels.
+  const lines = promoteAlignedTables(rawLines)
 
   const tokens = lines.map(tokenize)
   const fields: ImportedField[] = []
@@ -325,6 +543,15 @@ export function textToFormSchema(rawText: string, options: TextToSchemaOptions =
     const result = stripRequired(pending.label)
     pending = null
     return result
+  }
+
+  /** Adopt the standalone Label line directly above as a field label. */
+  const takeLabelField = (): { label: string; required: boolean } | null => {
+    const prev = fields[fields.length - 1]
+    if (!prev || prev.type !== 'label' || !prev.label || textLength(prev.label) > 80) return null
+    fields.pop()
+    const result = stripRequired(prev.label)
+    return result.label ? result : null
   }
 
   const flushOptions = () => {
@@ -367,11 +594,33 @@ export function textToFormSchema(rawText: string, options: TextToSchemaOptions =
     if (!tableRows) return
     const rows = tableRows
     tableRows = null
+    const grid = buildFieldGrid(rows, tableSource)
+    if (grid) {
+      flushPending()
+      fields.push(grid)
+      return
+    }
     const table = buildTable(rows, tableSource)
     if (table) {
       const taken = takePendingLabel()
-      if (taken?.label) table.label = taken.label
+      const prev = fields[fields.length - 1]
+      if (taken?.label) {
+        table.label = taken.label
+      } else if (prev?.type === 'label' && prev.label && textLength(prev.label) <= 60) {
+        // A caption line right above the grid ("รายละเอียดงาน") names the table
+        fields.pop()
+        table.label = prev.label
+      }
       fields.push(table)
+      return
+    }
+    // Lone multi-column line → side-by-side fields, not a 1-row table
+    if (rows.length === 1) {
+      const list = fieldsFromTableRow(rows[0], tableSource)
+      if (list.length > 0) {
+        flushPending()
+        fields.push(wrapRow(list, tableSource))
+      }
     }
   }
 
@@ -405,7 +654,7 @@ export function textToFormSchema(rawText: string, options: TextToSchemaOptions =
         if (!sawContent && detectTitle && !title) {
           title = token.text
           fields.push({ type: 'header', label: token.text, source: token.text })
-        } else if (SECTION_HEADING.test(token.text)) {
+        } else if (token.level >= 2 || SECTION_HEADING.test(token.text)) {
           fields.push({ type: 'section', label: token.text, source: token.text })
         } else {
           fields.push({ type: 'header', label: token.text, source: token.text })
@@ -435,7 +684,8 @@ export function textToFormSchema(rawText: string, options: TextToSchemaOptions =
           optionGroup.options = uniqueOptions([...optionGroup.options, ...token.options])
           if (token.radio !== optionGroup.radio) optionGroup.radio = false
         } else {
-          const taken = takePendingLabel()
+          // Options on their own lines take the question above as their label
+          const taken = takePendingLabel() || takeLabelField()
           optionGroup = {
             label: taken?.label || '',
             options: [...token.options],
@@ -443,6 +693,18 @@ export function textToFormSchema(rawText: string, options: TextToSchemaOptions =
             source: token.raw,
           }
           if (taken?.required) optionGroup.label = `${optionGroup.label}*`
+        }
+        break
+      }
+
+      case 'placeholder': {
+        flushOptions()
+        sawContent = true
+        const taken = takePendingLabel() || takeLabelField()
+        if (taken?.label) {
+          const field: ImportedField = { type: token.as, label: taken.label, source: token.raw }
+          if (taken.required) field.required = true
+          fields.push(field)
         }
         break
       }
@@ -464,11 +726,14 @@ export function textToFormSchema(rawText: string, options: TextToSchemaOptions =
             list[0].label = taken.label
             list[0].type = inferInputType(`${taken.label} ${list[0].description || ''}`)
             if (taken.required) list[0].required = true
-          } else if (fields.length > 0 && fields[fields.length - 1].type === 'label') {
+          } else {
             // Previous standalone text line was the label
-            const prev = fields.pop() as ImportedField
-            list[0].label = prev.label || ''
-            list[0].type = inferInputType(list[0].label)
+            const prev = takeLabelField()
+            if (prev) {
+              list[0].label = prev.label
+              list[0].type = inferInputType(prev.label)
+              if (prev.required) list[0].required = true
+            }
           }
         } else {
           flushPending()
@@ -524,6 +789,14 @@ export function textToFormSchema(rawText: string, options: TextToSchemaOptions =
         if (/[?？]$/.test(text)) {
           flushPending()
           pending = { label: text.replace(/[?？]$/, '').trim(), required: false, raw: text }
+          break
+        }
+
+        // "Name *" – a required marker means this is a field label, even when the
+        // input itself was not captured (e.g. borderless inputs in a print)
+        if (/\*\s*$/.test(text) && textLength(text) <= 80) {
+          flushPending()
+          pending = { label: text, required: false, raw: text }
           break
         }
 

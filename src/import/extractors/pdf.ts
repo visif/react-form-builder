@@ -8,12 +8,21 @@ import type {
 import { detectFileKind } from './fileKind'
 import { normalizeGlyphs } from './htmlToText'
 import { ocrImages } from './ocr'
+import {
+  annotateItemsWithShapes,
+  collectShapes,
+  dropDuplicatePages,
+  type PageLine,
+  type PdfTextItem,
+  stripRunningLines,
+} from './pdfLayout'
 
-type TextItem = { str: string; transform: number[]; width?: number; height?: number; hasEOL?: boolean }
+type TextItem = PdfTextItem
 
 type PdfPage = {
   getTextContent: () => Promise<{ items: Array<TextItem | { type: string }> }>
   getAnnotations: () => Promise<Array<Record<string, unknown>>>
+  getOperatorList: () => Promise<{ fnArray: number[]; argsArray: unknown[][] }>
   getViewport: (opts: { scale: number }) => { width: number; height: number }
   render: (params: Record<string, unknown>) => { promise: Promise<void> }
 }
@@ -26,6 +35,7 @@ type PdfDocument = {
 
 type PdfjsModule = {
   version: string
+  OPS: Record<string, number>
   GlobalWorkerOptions: { workerSrc: string }
   getDocument: (params: Record<string, unknown>) => { promise: Promise<PdfDocument> }
 }
@@ -45,8 +55,30 @@ async function loadPdfjs(workerSrc?: string): Promise<PdfjsModule> {
 /* Text layer → lines                                                          */
 /* -------------------------------------------------------------------------- */
 
+// Thai above/below vowels and tone marks take no horizontal advance of their own
+const THAI_COMBINING = /[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E]/g
+
+/**
+ * pdf.js reports width 0 for Thai syllables that end in a combining mark
+ * ("รั", "ที่"), which would make the following glyph look like a new word.
+ * Estimate the advance from the number of spacing characters instead.
+ */
+const estimateWidth = (str: string, size: number): number => {
+  const spacing = str.replace(THAI_COMBINING, '').replace(/\s/g, '').length
+  return Math.max(spacing, 1) * size * 0.6
+}
+
 export function textItemsToLines(items: TextItem[]): string[] {
-  const usable = items.filter((it) => typeof it.str === 'string' && Array.isArray(it.transform))
+  return textItemsToPageLines(items).map((l) => l.text)
+}
+
+/** Like `textItemsToLines`, keeping each line's baseline y (PDF space). */
+export function textItemsToPageLines(items: TextItem[]): PageLine[] {
+  // Whitespace-only items are dropped: pdf.js inserts them mid-syllable in Thai
+  // text ("รั", " ", "บมอบงาน"), and word gaps are recovered from geometry below.
+  const usable = items.filter(
+    (it) => typeof it.str === 'string' && it.str.trim() !== '' && Array.isArray(it.transform)
+  )
   if (usable.length === 0) return []
 
   type Line = { y: number; size: number; items: Array<{ x: number; end: number; str: string }> }
@@ -56,7 +88,7 @@ export function textItemsToLines(items: TextItem[]): string[] {
     const x = it.transform[4]
     const y = it.transform[5]
     const size = Math.abs(it.transform[3]) || Math.abs(it.transform[0]) || 10
-    const width = it.width || it.str.length * size * 0.5
+    const width = it.width || estimateWidth(it.str, size)
     const tolerance = Math.max(2, size * 0.45)
     let line = lines.find((l) => Math.abs(l.y - y) <= tolerance)
     if (!line) {
@@ -70,18 +102,30 @@ export function textItemsToLines(items: TextItem[]): string[] {
 
   return lines.map((line) => {
     line.items.sort((a, b) => a.x - b.x)
-    let text = ''
+    const cells: string[] = []
+    let current = ''
     let prevEnd: number | null = null
     line.items.forEach((seg) => {
       if (prevEnd !== null) {
         const gap = seg.x - prevEnd
-        if (gap > line.size * 2.5) text += '   ' // wide gap → column boundary
-        else if (gap > line.size * 0.15) text += ' '
+        if (gap > line.size * 2.5) {
+          // Wide gap → column boundary (preserve as separate cells for table detection)
+          if (current.trim()) cells.push(normalizeGlyphs(current).replace(/[ \t]+/g, ' ').trim())
+          current = seg.str
+          prevEnd = seg.end
+          return
+        }
+        if (gap > line.size * 0.15) current += ' '
       }
-      text += seg.str
+      current += seg.str
       prevEnd = seg.end
     })
-    return normalizeGlyphs(text).replace(/[ \t]+/g, ' ').trim()
+    if (current.trim()) cells.push(normalizeGlyphs(current).replace(/[ \t]+/g, ' ').trim())
+
+    // Multi-column PDF lines become markdown-lite table rows so textToFormSchema
+    // can detect them. Single-cell lines stay plain text.
+    const text = cells.length >= 2 ? `| ${cells.join(' | ')} |` : cells[0] || ''
+    return { y: line.y, text }
   })
 }
 
@@ -262,8 +306,8 @@ export async function extractPdf(file: File, ctx: ImportContext = {}): Promise<E
       return { kind: 'schema', schema }
     }
 
-    // 2. Text layer, page by page; OCR pages that have (almost) no text
-    const pageTexts: string[] = []
+    // 2. Text layer + drawn controls, page by page; OCR pages that have (almost) no text
+    const pages: Array<{ height: number; lines: PageLine[]; strings: string[] }> = []
     const ocrTargets: Array<{ index: number; canvas: HTMLCanvasElement }> = []
     for (let p = 1; p <= doc.numPages; p += 1) {
       ctx.onProgress?.({
@@ -275,12 +319,22 @@ export async function extractPdf(file: File, ctx: ImportContext = {}): Promise<E
       const page = await doc.getPage(p)
       // eslint-disable-next-line no-await-in-loop
       const content = await page.getTextContent()
-      const lines = textItemsToLines(content.items as TextItem[])
-      const chars = lines.join('').replace(/\s/g, '').length
+      const viewport = page.getViewport({ scale: 1 })
+      const rawItems = (content.items as TextItem[]).filter((it) => typeof it.str === 'string')
+      const strings = rawItems.map((it) => it.str).filter((s) => s.trim())
+      let items = rawItems
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        const ops = await page.getOperatorList()
+        items = annotateItemsWithShapes(rawItems, collectShapes(ops, pdfjs.OPS), viewport.width)
+      } catch {
+        // Drawn controls are a best-effort hint; fall back to the text layer
+      }
+      const chars = strings.join('').replace(/\s/g, '').length
       if (chars >= minChars) {
-        pageTexts.push(lines.join('\n'))
+        pages.push({ height: viewport.height, lines: textItemsToPageLines(items), strings })
       } else {
-        pageTexts.push('')
+        pages.push({ height: viewport.height, lines: [], strings: [] })
         if (!ctx.ocr?.disabled && typeof document !== 'undefined') {
           // eslint-disable-next-line no-await-in-loop
           const canvas = await renderPageToCanvas(page, pdfOptions.ocrScale ?? 2)
@@ -288,6 +342,9 @@ export async function extractPdf(file: File, ctx: ImportContext = {}): Promise<E
         }
       }
     }
+
+    const duplicates = dropDuplicatePages(pages.map((pg) => pg.strings))
+    const pageTexts = stripRunningLines(pages).map((lines, i) => (duplicates.has(i) ? '' : lines.map((l) => l.text).join('\n')))
 
     let ocrPages = 0
     if (ocrTargets.length > 0) {
@@ -304,8 +361,8 @@ export async function extractPdf(file: File, ctx: ImportContext = {}): Promise<E
     ctx.onProgress?.({ step: 'analyzing', message: 'Detecting fields…', percent: 90 })
     return {
       kind: 'text',
-      text: pageTexts.join('\n\f\n'),
-      meta: { extractor: 'pdf', pages: doc.numPages, ocrPages },
+      text: pageTexts.filter((t) => t.trim()).join('\n\f\n'),
+      meta: { extractor: 'pdf', pages: doc.numPages, ocrPages, duplicatePages: duplicates.size },
     }
   } finally {
     if (doc.destroy) await doc.destroy().catch(() => undefined)

@@ -17,8 +17,9 @@ export function detectFileKind(file: { name?: string; type?: string }): ImportFi
     return 'docx'
   }
   if (
-    ['xlsx', 'xlsm', 'xls', 'csv', 'ods'].includes(ext) ||
+    ['xlsx', 'xlsm', 'xls', 'csv', 'ods', 'numbers'].includes(ext) ||
     mime === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+    mime === 'application/vnd.apple.numbers' ||
     mime === 'application/vnd.ms-excel' ||
     mime === 'text/csv'
   ) {
@@ -35,4 +36,4 @@ export function detectFileKind(file: { name?: string; type?: string }): ImportFi
 }
 
 export const DEFAULT_IMPORT_ACCEPT =
-  '.pdf,.docx,.xlsx,.xlsm,.xls,.csv,.png,.jpg,.jpeg,.webp,.bmp,.tif,.tiff,.txt,.md'
+  '.pdf,.docx,.xlsx,.xlsm,.xls,.csv,.ods,.numbers,.png,.jpg,.jpeg,.webp,.bmp,.tif,.tiff,.txt,.md'

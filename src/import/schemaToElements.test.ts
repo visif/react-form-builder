@@ -37,6 +37,31 @@ describe('schemaToFormElements', () => {
     expect(new Set(elements.map((e) => e.id)).size).toBe(elements.length)
   })
 
+  it('builds a multi-row column layout with column headings from a grid row', () => {
+    const elements = schemaToFormElements({
+      fields: [
+        {
+          type: 'row',
+          columns: ['Buyer', 'Vendor'],
+          grid: [
+            [{ type: 'text', label: 'Company' }, { type: 'text', label: 'Vendor Name' }],
+            [{ type: 'date', label: 'Issued' }, null],
+          ],
+        },
+      ],
+    })
+    const [row, ...kids] = elements
+    expect(row.element).toBe('TwoColumnRow')
+    expect(row.rows).toBe(2)
+    expect((row.columns as Array<{ text: string }>).map((c) => c.text)).toEqual(['Buyer', 'Vendor'])
+    expect(row.childItems).toEqual([[kids[0].id, kids[1].id], [kids[2].id, null]])
+    expect(kids.map((k) => [k.element, k.row, k.col, k.parentId === row.id])).toEqual([
+      ['TextInput', 0, 0, true],
+      ['TextInput', 0, 1, true],
+      ['DatePicker', 1, 0, true],
+    ])
+  })
+
   it('keeps placeholder options when a choice field has none', () => {
     const [dropdown] = schemaToFormElements({ fields: [{ type: 'dropdown', label: 'Province' }] })
     expect(dropdown.element).toBe('Dropdown')

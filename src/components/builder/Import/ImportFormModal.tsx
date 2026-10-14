@@ -73,11 +73,16 @@ const TYPE_OPTIONS = (Object.keys(TYPE_LABELS) as Array<Exclude<ImportedFieldTyp
 
 const STATIC_TYPES: ImportedFieldType[] = ['header', 'section', 'paragraph', 'label', 'linebreak']
 
+/** Cells of a column row in reading order; `grid` rows are flattened. */
+const rowCells = (field: ImportedField): Array<ImportedField | null> =>
+  (field.grid ? field.grid.flat() : field.children || [])
+
 const schemaToRows = (schema: ImportedFormSchema): ReviewRow[] => {
   const rows: ReviewRow[] = []
   schema.fields.forEach((field, index) => {
     if (field.type === 'row') {
-      (field.children || []).forEach((child, childIndex) => {
+      rowCells(field).forEach((child, childIndex) => {
+        if (!child) return
         rows.push({
           id: `${index}-${childIndex}`,
           path: [index, childIndex],
@@ -96,6 +101,23 @@ const schemaToRows = (schema: ImportedFormSchema): ReviewRow[] => {
 const rowsToSchema = (schema: ImportedFormSchema, rows: ReviewRow[]): ImportedFormSchema => {
   const fields: ImportedField[] = []
   schema.fields.forEach((field, index) => {
+    if (field.type === 'row' && field.grid) {
+      const kept = new Map(
+        rows.filter((r) => r.path[0] === index && r.include).map((r) => [r.path[1] ?? 0, r.field])
+      )
+      let flat = 0
+      const grid = field.grid
+        .map((line) =>
+          line.map((cell) => {
+            const at = flat
+            flat += 1
+            return cell ? kept.get(at) || null : null
+          })
+        )
+        .filter((line) => line.some(Boolean))
+      if (grid.length > 0) fields.push({ ...field, grid })
+      return
+    }
     if (field.type === 'row') {
       const children = rows
         .filter((r) => r.path[0] === index && r.include)
@@ -394,7 +416,7 @@ const ImportFormModal = ({ open, onClose, config }: Props) => {
             </p>
             <p className="ant-upload-text">Click or drag a file here</p>
             <p className="ant-upload-hint">
-              PDF, Word (.docx), Excel (.xlsx / .csv) or an image (.png / .jpg). The form layout is
+              PDF, Word (.docx), spreadsheet (.xlsx / .csv / .numbers) or an image (.png / .jpg). The form layout is
               detected automatically and you can review every field before it is added.
             </p>
           </Dragger>

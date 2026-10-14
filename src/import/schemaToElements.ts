@@ -162,31 +162,45 @@ export function schemaToFormElements(
 
   schema.fields.forEach((field) => {
     if (field.type === 'row') {
-      const kids = (field.children || []).slice(0, 4)
-      if (kids.length === 0) return
-      if (kids.length === 1) {
-        const single = createLeaf(kids[0], context)
-        if (single) {
-          topLevel.push(single)
-          existing.push(single)
-        }
+      const lines = (field.grid || [field.children || []])
+        .map((line) => line.slice(0, 4))
+        .filter((line) => line.some(Boolean))
+      const width = Math.max(0, ...lines.map((line) => line.length))
+      if (width === 0) return
+      if (width === 1) {
+        lines.forEach(([kid]) => {
+          const single = kid && createLeaf(kid, context)
+          if (single) {
+            topLevel.push(single)
+            existing.push(single)
+          }
+        })
         return
       }
-      const rowItem = findDefaultItem(ROW_ELEMENT_BY_SIZE[kids.length])
+      const rowItem = findDefaultItem(ROW_ELEMENT_BY_SIZE[width])
       if (!rowItem) return
       const rowEl = buildElementOptions(rowItem, { existingData: existing }) as FormElementData
       rowEl.isContainer = true
-      const childIds: Array<string | null> = kids.map(() => null)
-      kids.forEach((kid, col) => {
-        const childEl = createLeaf(kid, context)
-        if (!childEl) return
-        childEl.parentId = rowEl.id
-        childEl.row = 0
-        childEl.col = col
-        childIds[col] = childEl.id as string
-        children.push({ child: childEl, parent: rowEl })
-      })
-      rowEl.childItems = [childIds]
+      rowEl.childItems = lines.map((line, row) =>
+        Array.from({ length: width }, (_, col) => {
+          const kid = line[col]
+          const childEl = kid && createLeaf(kid, context)
+          if (!childEl) return null
+          childEl.parentId = rowEl.id
+          childEl.row = row
+          childEl.col = col
+          children.push({ child: childEl, parent: rowEl })
+          return childEl.id as string
+        })
+      )
+      rowEl.rows = lines.length
+      if (field.columns?.some(Boolean)) {
+        rowEl.columns = Array.from({ length: width }, (_, col) => ({
+          text: escapeHtml(field.columns?.[col] || ''),
+          key: `row_column_${ID.uuid()}`,
+          width: 1,
+        }))
+      }
       topLevel.push(rowEl)
       existing.push(rowEl)
       return

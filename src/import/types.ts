@@ -42,6 +42,11 @@ export type ImportedField = {
   rows?: number
   /** Children for `row` */
   children?: ImportedField[]
+  /**
+   * Multi-row layout for `row`: one array of cells per line (`null` = empty cell).
+   * Takes precedence over `children`; `columns` become the column headers.
+   */
+  grid?: Array<Array<ImportedField | null>>
   /** Optional placeholder / help text */
   description?: string
   /** 0–1 confidence reported by the extractor (informational) */

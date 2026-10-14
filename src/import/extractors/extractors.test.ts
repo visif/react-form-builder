@@ -13,6 +13,7 @@ describe('detectFileKind', () => {
     expect(detectFileKind({ name: 'a.docx', type: '' })).toBe('docx')
     expect(detectFileKind({ name: 'a.xlsx', type: '' })).toBe('sheet')
     expect(detectFileKind({ name: 'a.csv', type: 'text/csv' })).toBe('sheet')
+    expect(detectFileKind({ name: 'RFQ.numbers', type: '' })).toBe('sheet')
     expect(detectFileKind({ name: 'scan', type: 'image/png' })).toBe('image')
     expect(detectFileKind({ name: 'a.md', type: '' })).toBe('text')
     expect(detectFileKind({ name: 'a.zip', type: 'application/zip' })).toBe('unknown')
@@ -45,6 +46,61 @@ describe('htmlToText (DOCX)', () => {
     })
     expect(schema.fields[0]).toMatchObject({ type: 'header', label: 'Title' })
     expect(schema.fields[1]).toMatchObject({ type: 'number', label: 'Age' })
+  })
+})
+
+describe('sheetsToText (pre-filled template)', () => {
+  it('splits side-by-side sections, drops sample values and ends tables at summary rows', () => {
+    const rows = [
+      ['REQUEST FOR QUOTATION (RFQ)', '', '', ''],
+      ['1. BUYER DETAILS', '', '2. VENDOR DETAILS', ''],
+      ['Company Name:', 'Acme Inc.', 'Vendor Name:', 'Apex Ltd.'],
+      ['Date Issued:', '2026-10-01', 'Valid Until:', '[ Vendor to Fill ]'],
+      ['3. ITEMS', '', '', ''],
+      ['Item #', 'Description', 'Qty', 'Total Price ($)'],
+      ['1', 'Workstation', '15', '27750'],
+      ['2', 'Monitor', '30', '11400'],
+      ['Subtotal:', '', '', '39150'],
+      ['Tax (7%):', '', '', '2740.5'],
+      ['5. SIGNATURE', '', '', ''],
+      ['Authorized Name:', '[ Printed Name ]', 'Signature:', ''],
+    ]
+    const text = sheetsToText([{ name: 'RFQ', rows }])
+    expect(text.split('\n')).toEqual([
+      '## REQUEST FOR QUOTATION (RFQ)',
+      '| 1. BUYER DETAILS | 2. VENDOR DETAILS |',
+      '| Company Name ______ | Vendor Name ______ |',
+      '| Date Issued ______ | Valid Until ______ |',
+      '',
+      '## 3. ITEMS',
+      '| Item # | Description | Qty | Total Price ($) |',
+      '| 1 | Workstation | 15 | 27750 |',
+      '| 2 | Monitor | 30 | 11400 |',
+      '',
+      'Subtotal ______',
+      'Tax (7%) ______',
+      '## 5. SIGNATURE',
+      '| Authorized Name ______ | Signature ______ |',
+    ])
+
+    const schema = normalizeExtractResult({ kind: 'sheets', sheets: [{ name: 'RFQ', rows }] })
+    expect(schema.fields.map((f) => `${f.type}:${f.label ?? ''}`)).toEqual([
+      'header:REQUEST FOR QUOTATION (RFQ)',
+      'row:',
+      'section:3. ITEMS',
+      'table:',
+      'number:Subtotal',
+      'number:Tax (7%)',
+      'section:5. SIGNATURE',
+      'row:',
+    ])
+    const details = schema.fields[1]
+    expect(details.columns).toEqual(['1. BUYER DETAILS', '2. VENDOR DETAILS'])
+    expect(details.grid?.map((line) => line.map((c) => `${c?.type}:${c?.label}`))).toEqual([
+      ['text:Company Name', 'text:Vendor Name'],
+      ['date:Date Issued', 'date:Valid Until'],
+    ])
+    expect(schema.fields[schema.fields.length - 1].children?.map((c) => c.type)).toEqual(['text', 'signature'])
   })
 })
 
@@ -109,8 +165,49 @@ describe('PDF helpers', () => {
       item('Date', 300, 720),
       item('....', 330, 720.5),
     ])
-    expect(lines[0]).toMatch(/^Name \.+\s+Date \.+$/)
+    // Wide X gaps become markdown table cells so column structure survives
+    expect(lines[0]).toMatch(/^\| Name \.+ \| Date \.+ \|$/)
     expect(lines[1]).toBe('Address')
+  })
+
+  it('emits multi-row pipe tables from aligned PDF columns', () => {
+    const item = (str: string, x: number, y: number, size = 10) => ({
+      str,
+      transform: [size, 0, 0, size, x, y],
+      width: Math.max(str.length, 1) * size * 0.5,
+    })
+    const lines = textItemsToLines([
+      item('รายการ', 40, 700),
+      item('ดี', 200, 700),
+      item('พอใช้', 320, 700),
+      item('ความสะอาด', 40, 680),
+      item('ความรวดเร็ว', 40, 660),
+    ])
+    expect(lines[0]).toBe('| รายการ | ดี | พอใช้ |')
+    expect(lines[1]).toBe('ความสะอาด')
+    expect(lines[2]).toBe('ความรวดเร็ว')
+
+    const schema = normalizeExtractResult({ kind: 'text', text: ['แบบประเมิน', ...lines].join('\n') })
+    expect(schema.fields[1]).toMatchObject({
+      type: 'table',
+      columns: ['รายการ', 'ดี', 'พอใช้'],
+      rowLabels: ['ความสะอาด', 'ความรวดเร็ว'],
+    })
+  })
+
+  it('joins Thai syllables that pdf.js splits with zero widths and stray spaces', () => {
+    const item = (str: string, x: number, width: number, size = 24) => ({
+      str,
+      transform: [size, 0, 0, size, x, 780],
+      width,
+    })
+    const lines = textItemsToLines([
+      item('ใบ', 56.7, 28.9),
+      item('รั', 85.6, 0),
+      item(' ', 85.6, 0.48),
+      item('บมอบงาน', 97.1, 98.7),
+    ])
+    expect(lines).toEqual(['ใบรับมอบงาน'])
   })
 
   it('builds a schema from AcroForm widgets', () => {
