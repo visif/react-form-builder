@@ -1,4 +1,7 @@
 import React from 'react'
+
+import { HolderOutlined } from '@ant-design/icons'
+
 import HeaderBar from '../display/HeaderBar'
 
 const ComponentHeader = (props) => {
@@ -7,7 +10,18 @@ const ComponentHeader = (props) => {
     return null
   }
   return (
-    <div ref={props.dragHandleRef} className="rfb-component-header">
+    <div className="rfb-component-header">
+      {props.dragHandleRef && (
+        <div
+          ref={props.dragHandleRef}
+          className="rfb-row-drag-handle is-isolated"
+          title="Drag to move row"
+          aria-label="Drag to move row"
+          role="button"
+        >
+          <HolderOutlined />
+        </div>
+      )}
       {props.data.pageBreakBefore && <div className="preview-page-break">Page Break</div>}
       <HeaderBar
         parent={props.parent}

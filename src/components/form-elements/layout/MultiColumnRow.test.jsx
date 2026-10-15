@@ -1,7 +1,10 @@
 import React from 'react'
+import { DndProvider } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
+import SortableElement from '../../builder/Preview/SortableElement'
 import { DynamicColumnRow, FourColumnRow, ThreeColumnRow, TwoColumnRow } from './MultiColumnRow'
 
 const longLabel = 'Overtime Working Hours'
@@ -244,6 +247,31 @@ describe('fixed column rows', () => {
     )
 
     expect(screen.queryByRole('button', { name: /Resize column/ })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Drag to move row' })).toBeNull()
+  })
+
+  it.each([
+    ['TwoColumnRow', TwoColumnRow, 2],
+    ['ThreeColumnRow', ThreeColumnRow, 3],
+    ['FourColumnRow', FourColumnRow, 4],
+  ])('makes %s draggable from a row handle in the builder', (element, Component, columnCount) => {
+    const SortableRow = SortableElement(Component)
+    render(
+      <DndProvider backend={HTML5Backend}>
+        <SortableRow
+          id={`${element}-1`}
+          index={0}
+          moveCard={() => {}}
+          data={buildFixedRow(element, columnCount)}
+          controls={fixedControls(columnCount)}
+          preview
+          updateElement={() => {}}
+        />
+      </DndProvider>
+    )
+
+    const handle = screen.getByRole('button', { name: 'Drag to move row' })
+    expect(handle.getAttribute('draggable')).toBe('true')
   })
 
   it('persists TwoColumnRow colWidths after a mouse drag in edit mode', () => {

@@ -14,6 +14,13 @@ import { useDrag, useDrop } from 'react-dnd'
 
 import ItemTypes from '../../../constants/itemTypes'
 
+const COLUMN_ROW_ELEMENTS = new Set([
+  'TwoColumnRow',
+  'ThreeColumnRow',
+  'FourColumnRow',
+  'DynamicColumnRow',
+])
+
 const cardStyle = {
   padding: '0.5rem 1rem',
   marginBottom: '.5rem',
@@ -25,7 +32,8 @@ const withDragAndDrop = (ComposedComponent) => {
   const Card = (props) => {
     const { id, index, moveCard, insertCard, data, onCreate, seq = -1 } = props
     const ref = useRef(null)
-    const dragHandleRef = useRef(null)
+    const useRowDragHandle =
+      Boolean(data?.isContainer) || COLUMN_ROW_ELEMENTS.has(data?.element)
 
     const [{ isDragging }, drag, dragPreview] = useDrag(
       () => ({
@@ -159,11 +167,12 @@ const withDragAndDrop = (ComposedComponent) => {
       [index, moveCard, insertCard, data, onCreate]
     )
 
-    // Combine drag and drop refs
-    if (data?.isContainer) {
+    // Column rows are dragged from a dedicated handle. Their cells are nested
+    // drag sources, and the header wrapper uses display:contents so it cannot
+    // receive the pointer events that start a drag.
+    if (useRowDragHandle) {
       drop(ref)
       dragPreview(ref)
-      drag(dragHandleRef)
     } else {
       dragPreview(drop(ref))
       drag(ref)
@@ -175,7 +184,7 @@ const withDragAndDrop = (ComposedComponent) => {
       <div ref={ref}>
         <ComposedComponent
           {...props}
-          dragHandleRef={dragHandleRef}
+          dragHandleRef={useRowDragHandle ? drag : undefined}
           style={{ ...cardStyle, opacity }}
         />
       </div>

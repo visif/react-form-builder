@@ -345,6 +345,33 @@
           display: contents;
         }
 
+        // Sit above the columns, on the right. The header uses display:contents,
+        // so this has to span the row or the icon stays at the start of the line.
+        // The edit toolbar is shifted left so it does not cover the grip.
+        &:has(> .rfb-component-header > .rfb-row-drag-handle) {
+          > .rfb-component-header > .rfb-toolbar-header,
+          > .rfb-component-header > .toolbar-header {
+            right: 40px;
+          }
+        }
+
+        .rfb-row-drag-handle {
+          display: flex;
+          justify-content: flex-end;
+          align-items: center;
+          width: 100%;
+          height: 22px;
+          margin: 0 0 2px;
+          color: #98a2b3;
+          cursor: grab;
+          pointer-events: auto;
+          line-height: 1;
+
+          &:active {
+            cursor: grabbing;
+          }
+        }
+
         .rfb-toolbar-header,
         .toolbar-header {
           display: flex;
