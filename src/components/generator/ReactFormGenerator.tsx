@@ -483,8 +483,9 @@ const ReactForm = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
       saveDraft,
       handleSubmit,
       clearDraft,
+      getAnswers: () => collectFormDataWithEdits(props.data),
     }),
-    [saveDraft, handleSubmit, clearDraft]
+    [saveDraft, handleSubmit, clearDraft, collectFormDataWithEdits, props.data]
   )
 
   const handleClearDraft = useCallback(() => {

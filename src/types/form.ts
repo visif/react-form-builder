@@ -180,6 +180,8 @@ export type ReactFormGeneratorHandle = {
   saveDraft: () => void
   handleSubmit: (e?: { preventDefault?: () => void } | null) => void
   clearDraft: () => void
+  /** Current answers including unsaved edits. Does not submit or clear the draft. */
+  getAnswers: () => unknown[]
 }
 
 export type FormBuildersExport = {
