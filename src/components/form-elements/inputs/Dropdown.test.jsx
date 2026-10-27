@@ -74,6 +74,41 @@ describe('Dropdown', () => {
     expect(select.querySelector('.ant-select-selection-placeholder')).toBeNull()
   })
 
+  it('disables the info input when the dropdown is locked for edit', () => {
+    render(
+      <Dropdown
+        mutable
+        read_only
+        data={{
+          ...dropdownData,
+          options: [
+            { value: 'th', text: 'Thailand', info: true },
+            { value: 'vn', text: 'Vietnam' },
+          ],
+        }}
+        defaultValue={{ value: 'th', info: 'note' }}
+      />
+    )
+
+    expect(screen.getByRole('combobox')).toBeDisabled()
+    expect(screen.getByRole('textbox')).toBeDisabled()
+  })
+
+  it('keeps the info input editable while the dropdown can be edited', () => {
+    render(
+      <Dropdown
+        mutable
+        data={{
+          ...dropdownData,
+          options: [{ value: 'th', text: 'Thailand', info: true }],
+        }}
+        defaultValue={{ value: 'th', info: 'note' }}
+      />
+    )
+
+    expect(screen.getByRole('textbox')).toBeEnabled()
+  })
+
   it('allows clearing the selected value with backspace', () => {
     render(<Dropdown mutable data={dropdownData} defaultValue="th" />)
 

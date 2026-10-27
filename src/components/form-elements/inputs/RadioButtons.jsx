@@ -47,6 +47,8 @@ const RadioButtons = (props) => {
       userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
+  const isDisabled = !!(props.read_only || props.data?.readOnly || !isSameEditor)
+
   let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
   if (props.data.pageBreakBefore) {
     baseClasses += ' alwaysbreak'
@@ -77,7 +79,7 @@ const RadioButtons = (props) => {
           style={{ width: '100%' }}
           name={uniqueName}
           value={selectedOption?.key}
-          disabled={props.read_only || !isSameEditor}
+          disabled={isDisabled}
           onChange={(e) => {
             const selectedKey = e.target.value
             const option = props.data.options.find((opt) => opt.key === selectedKey)
@@ -130,6 +132,7 @@ const RadioButtons = (props) => {
                   <Radio
                     value={option.key}
                     onClick={() => {
+                      if (isDisabled) return
                       if (selectedOption?.key === option.key) {
                         setValue([])
                         if (handleChange) {
@@ -163,6 +166,7 @@ const RadioButtons = (props) => {
                       rows={2}
                       style={INFO_TEXTAREA_STYLE}
                       defaultValue={answerItem?.info ?? ''}
+                      disabled={isDisabled}
                       onChange={(e) => {
                         const infoValue = e.target.value
                         const newValue = (value || []).map((item) =>

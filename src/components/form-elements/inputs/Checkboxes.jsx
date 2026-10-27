@@ -47,6 +47,8 @@ const Checkboxes = (props) => {
       userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
+  const isDisabled = !!(props.read_only || props.data?.readOnly || !isSameEditor)
+
   let baseClasses = `${props.data.isShowLabel !== false ? 'SortableItem rfb-item' : 'SortableItem'}`
   if (props.data.pageBreakBefore) {
     baseClasses += ' alwaysbreak'
@@ -69,7 +71,7 @@ const Checkboxes = (props) => {
 
           const checkboxProps = {
             checked: props.mutable ? isChecked : isCheckedInOptions,
-            disabled: props.read_only || !isSameEditor,
+            disabled: isDisabled,
           }
 
           return (
@@ -138,6 +140,7 @@ const Checkboxes = (props) => {
                     rows={2}
                     style={INFO_TEXTAREA_STYLE}
                     defaultValue={answerItem?.info ?? ''}
+                    disabled={isDisabled}
                     onChange={(e) => {
                       const infoValue = e.target.value
                       const newValue = (value || []).map((item) =>

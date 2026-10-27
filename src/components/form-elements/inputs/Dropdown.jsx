@@ -120,7 +120,7 @@ const Dropdown = (props) => {
       userProperties.userId === savedEditor.userId || userProperties.hasDCCRole === true
   }
 
-  const isDisabled = !!(props.read_only || !isSameEditor)
+  const isDisabled = !!(props.read_only || props.data?.readOnly || !isSameEditor)
   const selectProps = {}
   selectProps.style = {
     width: '100%',

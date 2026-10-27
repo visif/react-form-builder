@@ -297,7 +297,7 @@ export const renderFormElement = (item, props, handlers, helpers) => {
     case 'Checkboxes':
       return (
         <Checkboxes
-          read_only={props.read_only}
+          read_only={props.read_only || item.readOnly}
           handleChange={handleChange}
           mutable
           key={`form_${item.id}`}
