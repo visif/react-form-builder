@@ -3,7 +3,7 @@ import { renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import { FormProvider } from '../../../contexts/FormContext'
-import { useFormValidation } from './useFormValidation'
+import { resolveActiveCollectedItems, useFormValidation } from './useFormValidation'
 
 const createWrapper = (initialValues = {}) => {
   const Wrapper = ({ children }) => (
@@ -57,6 +57,21 @@ describe('useFormValidation', () => {
     ).toBe(true)
   })
 
+  it('does not require a read-only field from a previous section', () => {
+    const { result } = renderHook(() => useFormValidation(...baseHookArgs), {
+      wrapper: createWrapper({ previous_field: '' }),
+    })
+
+    expect(
+      result.current.isInvalid({
+        required: true,
+        readOnly: true,
+        field_name: 'previous_field',
+        element: 'TextInput',
+      })
+    ).toBe(false)
+  })
+
   it('ignores optional fields', () => {
     const { result } = renderHook(() => useFormValidation(...baseHookArgs), {
       wrapper: createWrapper({ optional_field: '' }),
@@ -93,5 +108,37 @@ describe('useFormValidation', () => {
         correct: 'wrong',
       })
     ).toBe(false)
+  })
+})
+
+describe('resolveActiveCollectedItems', () => {
+  const items = [
+    { id: 's1', element: 'Section' },
+    { id: 'creative', element: 'TextInput', value: 'done' },
+    { id: 's2', element: 'Section' },
+    { id: 'manager', element: 'RadioButtons', value: [{ key: 'approve' }] },
+    { id: 's3', element: 'Section' },
+    { id: 'later', element: 'TextInput', value: '' },
+  ]
+  const dataById = new Map([
+    ['creative', { id: 'creative', readOnly: true, required: true }],
+    ['manager', { id: 'manager', required: true }],
+    ['later', { id: 'later', readOnly: true, required: true }],
+  ])
+
+  it('validates only the current filled section, not the previous one', () => {
+    const active = resolveActiveCollectedItems(items, dataById)
+    expect(active.map((item) => item.id)).toEqual(['manager'])
+  })
+
+  it('ignores a filled previous section when those fields are read-only', () => {
+    const onlyPreviousFilled = [
+      { id: 's1', element: 'Section' },
+      { id: 'creative', element: 'TextInput', value: 'from sibling' },
+      { id: 's2', element: 'Section' },
+      { id: 'manager', element: 'RadioButtons', value: [] },
+    ]
+    const active = resolveActiveCollectedItems(onlyPreviousFilled, dataById)
+    expect(active.map((item) => item.id)).toEqual(['manager'])
   })
 })

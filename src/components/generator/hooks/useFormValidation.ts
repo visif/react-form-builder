@@ -9,7 +9,7 @@ import { useFormContext } from '../../../contexts/FormContext'
 import type { FormElementData, FormFieldValue, ReactFormGeneratorProps } from '../../../types/form'
 import { isSignedSignatureValue } from '../../../utils/signatureCollect'
 
-type CollectedFormItem = {
+export type CollectedFormItem = {
   id?: string
   element?: string
   value?: unknown
@@ -54,6 +54,68 @@ const isFilledSectionInput = (item: CollectedFormItem): boolean => {
     return isSignedSignatureValue(value)
   }
   return false
+}
+
+const isReadOnlyDataItem = (item: FormElementData | undefined): boolean =>
+  Boolean(item?.readOnly)
+
+/**
+ * Grouped workflow steps lock earlier Sections as read-only. Required fields
+ * there must not block the current assignee. Start at the last Section this
+ * user actually filled (an editable input) and do not walk back into previous
+ * Sections. If nothing editable is filled yet, only editable fields are
+ * checked.
+ */
+export const resolveActiveCollectedItems = (
+  formItems: CollectedFormItem[],
+  dataById: Map<string, FormElementData>
+): CollectedFormItem[] => {
+  const sectionItems = formItems.filter((item) => item.element === 'Section')
+  if (sectionItems.length === 0) {
+    return formItems
+  }
+
+  const firstItem = formItems[0]
+  let activeSectionKey = firstItem?.element === 'Section' ? firstItem.id : ''
+  const sectionGroup: Record<string, CollectedFormItem[]> = {}
+  sectionGroup[activeSectionKey || ''] = []
+
+  formItems.forEach((item) => {
+    if (item.element === 'Section') {
+      activeSectionKey = item.id
+      sectionGroup[activeSectionKey || ''] = []
+      return
+    }
+    const key = activeSectionKey || ''
+    if (!sectionGroup[key]) {
+      sectionGroup[key] = []
+    }
+    sectionGroup[key].push(item)
+  })
+
+  const isEditableFilled = (item: CollectedFormItem): boolean => {
+    const data = item.id != null ? dataById.get(String(item.id)) : undefined
+    if (isReadOnlyDataItem(data)) {
+      return false
+    }
+    return isFilledSectionInput(item)
+  }
+
+  const reverseKeys = sectionItems.map((item) => item.id).reverse()
+  for (const key of reverseKeys) {
+    const items = Array.isArray(sectionGroup[key || '']) ? sectionGroup[key || ''] : []
+    if (items.some(isEditableFilled)) {
+      return items
+    }
+  }
+
+  return formItems.filter((item) => {
+    if (item.element === 'Section') {
+      return false
+    }
+    const data = item.id != null ? dataById.get(String(item.id)) : undefined
+    return !isReadOnlyDataItem(data)
+  })
 }
 
 const normalizeCorrectableValue = (item: FormElementData, value: FormFieldValue): string => {
@@ -110,6 +172,9 @@ export const useFormValidation = (
 
   const isInvalid = useCallback(
     (item: FormElementData) => {
+      if (item.readOnly === true) {
+        return false
+      }
       let invalid = false
       if (item.required === true) {
         const value = formContext.getValue(item.field_name)
@@ -168,49 +233,16 @@ export const useFormValidation = (
     })
 
     const formItems = collectFormItems(orderedItems)
-    const sectionItems = formItems.filter((item) => item.element === 'Section')
+    const dataById = new Map(
+      (props.data || [])
+        .filter((item) => item?.id != null && item.id !== '')
+        .map((item) => [String(item.id), item])
+    )
+    const activeItems = resolveActiveCollectedItems(formItems, dataById)
 
-    if (sectionItems.length > 0) {
-      const firstItem = formItems[0]
-      let activeSectionKey = firstItem.element === 'Section' ? firstItem.id : ''
-      const sectionGroup = {}
-      sectionGroup[activeSectionKey] = []
-
-      formItems.forEach((item) => {
-        if (item.element === 'Section') {
-          activeSectionKey = item.id
-          sectionGroup[activeSectionKey] = []
-        } else {
-          sectionGroup[activeSectionKey].push(item)
-        }
-      })
-
-      let activeItems = []
-
-      // Only sections with at least one filled input are "active".
-      // Empty sections skip required-field validation. Once the last filled
-      // section is found (searching bottom-up), that section and all earlier
-      // ones are validated. Fields before the first section are always included.
-      const reverseKeys = sectionItems.map((item) => item.id).reverse()
-      reverseKeys.push('')
-      let activeSectionFound = false
-
-      reverseKeys.forEach((key) => {
-        const items = Array.isArray(sectionGroup[key]) ? sectionGroup[key] : []
-        let fillingItems = items
-
-        if (key && !activeSectionFound) {
-          fillingItems = items.find(isFilledSectionInput)
-          activeSectionFound = !!fillingItems
-        }
-
-        if (fillingItems) {
-          activeItems = activeItems.concat(items)
-        }
-      })
-
-      const itemIds = activeItems.map((item) => item.id)
-      data_items = props.data.filter((item) => itemIds.includes(item.id))
+    if (formItems.some((item) => item.element === 'Section')) {
+      const itemIds = new Set(activeItems.map((item) => item.id).filter(Boolean))
+      data_items = props.data.filter((item) => itemIds.has(item.id))
     }
 
     data_items.forEach((item) => {
