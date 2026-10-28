@@ -73,7 +73,9 @@ const FileUpload = (props) => {
       for (let i = 0; i < newFileList.length; i += 1) {
         const currentFile = newFileList[i]
         const response = await uploadAttachFile(currentFile)
-        if (response) {
+        // An empty server name still renders a row, then Open searches for the
+        // display name and cannot find the numeric file on disk.
+        if (response && response.fileName) {
           newResponse.push(response)
         }
       }
