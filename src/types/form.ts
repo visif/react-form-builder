@@ -70,6 +70,7 @@ export type ReactFormBuilderProps = {
   onUploadFile?: (...args: unknown[]) => unknown
   onUploadImage?: (...args: unknown[]) => unknown
   onDownloadFile?: (...args: unknown[]) => unknown
+  onViewFile?: (...args: unknown[]) => unknown
 }
 
 export type ReactFormGeneratorProps = {
@@ -125,6 +126,7 @@ export type ReactFormGeneratorProps = {
   getActiveUserProperties?: (...args: unknown[]) => unknown
   onUploadFile?: (...args: unknown[]) => unknown
   onDownloadFile?: (...args: unknown[]) => unknown
+  onViewFile?: (...args: unknown[]) => unknown
   onUploadImage?: (...args: unknown[]) => unknown
   resolveImageUrl?: (filePath: string) => Promise<string> | string
   getFormSource?: (...args: unknown[]) => unknown

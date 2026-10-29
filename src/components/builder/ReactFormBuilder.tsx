@@ -151,6 +151,7 @@ const ReactFormBuilder = (incomingProps: ReactFormBuilderProps) => {
               onUploadFile={props.onUploadFile}
               onUploadImage={props.onUploadImage}
               onDownloadFile={props.onDownloadFile}
+              onViewFile={props.onViewFile}
             />
           </div>
           <div

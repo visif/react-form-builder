@@ -939,6 +939,7 @@ const Preview = (props) => {
         onUploadFile={props.onUploadFile || defaultOnUploadFile}
         onUploadImage={props.onUploadImage || defaultOnUploadImage}
         onDownloadFile={props.onDownloadFile || defaultOnDownloadFile}
+        onViewFile={props.onViewFile}
       />
     )
   }

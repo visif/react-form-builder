@@ -1,6 +1,6 @@
 import React from 'react'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
 
 import FileUpload from './FileUpload'
 
@@ -47,7 +47,67 @@ describe('FileUpload', () => {
     expect(nameButton.querySelector('.rfb-file-upload-name-text')).toHaveTextContent(
       `1.${longName}`
     )
+    expect(nameButton.querySelector('.anticon-download')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Download' })).toBeTruthy()
     expect(nameButton.closest('.rfb-file-upload-list')).toBeTruthy()
+  })
+
+  it('views a pdf from the file name and downloads from the icon', () => {
+    const onViewFile = vi.fn()
+    const onDownloadFile = vi.fn()
+    const file = { originalName: 'report.pdf', fileName: '1.pdf' }
+
+    render(
+      <FileUpload
+        mutable
+        data={{ field_name: 'fileupload_1', isShowLabel: false }}
+        onViewFile={onViewFile}
+        onDownloadFile={onDownloadFile}
+        defaultValue={{ fileList: [file] }}
+      />
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /report\.pdf/ }))
+    expect(onViewFile).toHaveBeenCalledWith(file)
+    expect(onDownloadFile).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Download' }))
+    expect(onDownloadFile).toHaveBeenCalledWith(file)
+  })
+
+  it('asks before downloading a file that cannot be viewed', async () => {
+    const onViewFile = vi.fn()
+    const onDownloadFile = vi.fn()
+    const file = { originalName: 'archive.zip', fileName: '2.zip' }
+
+    render(
+      <FileUpload
+        mutable
+        data={{ field_name: 'fileupload_1', isShowLabel: false }}
+        onViewFile={onViewFile}
+        onDownloadFile={onDownloadFile}
+        defaultValue={{ fileList: [file] }}
+      />
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Download' }))
+    expect(onDownloadFile).toHaveBeenCalledWith(file)
+    expect(screen.queryByRole('dialog')).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: /archive\.zip/ }))
+    expect(onViewFile).not.toHaveBeenCalled()
+
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getAllByText('This file cannot be viewed').length).toBeGreaterThan(0)
+    expect(
+      within(dialog).getByText('Do you want to download "archive.zip" instead?')
+    ).toBeTruthy()
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Download' }))
+    await waitFor(() => {
+      expect(onDownloadFile).toHaveBeenCalledTimes(2)
+    })
+    expect(onDownloadFile).toHaveBeenLastCalledWith(file)
   })
 
   it('asks for confirmation before deleting an attached file', () => {

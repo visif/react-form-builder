@@ -93,6 +93,7 @@ export const getInputElement = (
       getDataSource={props.getDataSource}
       onUploadFile={props.onUploadFile}
       onDownloadFile={props.onDownloadFile}
+      onViewFile={props.onViewFile}
       onUploadImage={props.onUploadImage}
       getFormSource={props.getFormSource}
       getFormInfo={props.getFormInfo}
@@ -357,6 +358,7 @@ export const renderFormElement = (item, props, handlers, helpers) => {
           handleChange={handleChange}
           onUploadFile={props.onUploadFile}
           onDownloadFile={props.onDownloadFile}
+          onViewFile={props.onViewFile}
           editor={getEditor(item)}
           getActiveUserProperties={props.getActiveUserProperties}
         />

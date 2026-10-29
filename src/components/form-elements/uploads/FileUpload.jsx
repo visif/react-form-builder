@@ -1,12 +1,39 @@
 import React from 'react'
 
 import { DownloadOutlined, UploadOutlined } from '@ant-design/icons'
-import { Button, Popconfirm } from 'antd'
+import { Button, Modal, Popconfirm } from 'antd'
 
 import ComponentHeader from '../shared/ComponentHeader'
 import FormDeleteButton from '../shared/FormDeleteButton'
 
 const getSavedEditor = (editor) => (Array.isArray(editor) ? editor[0] : editor)
+
+const VIEWABLE_FORM_FILE_EXTENSIONS = new Set([
+  'pdf',
+  'png',
+  'jpg',
+  'jpeg',
+  'gif',
+  'bmp',
+  'webp',
+  'mp4',
+  'avi',
+  'mov',
+])
+
+const getFormFileExtension = (fileName) => {
+  const normalized = `${fileName || ''}`.trim()
+  const dotIndex = normalized.lastIndexOf('.')
+  if (dotIndex < 0 || dotIndex === normalized.length - 1) {
+    return ''
+  }
+  return normalized.substring(dotIndex + 1).toLowerCase()
+}
+
+export const isViewableFormFile = (file) => {
+  const name = file?.originalName || file?.fileName || ''
+  return VIEWABLE_FORM_FILE_EXTENSIONS.has(getFormFileExtension(name))
+}
 
 const FileUpload = (props) => {
   const inputField = React.useRef(null)
@@ -99,6 +126,28 @@ const FileUpload = (props) => {
     [props.onDownloadFile]
   )
 
+  const onOpenFile = React.useCallback(
+    (file) => {
+      if (isViewableFormFile(file)) {
+        if (typeof props.onViewFile === 'function') {
+          return props.onViewFile(file)
+        }
+        return onDownloadFile(file)
+      }
+
+      const name = file?.originalName || file?.fileName || 'this file'
+      Modal.confirm({
+        title: 'This file cannot be viewed',
+        content: `Do you want to download "${name}" instead?`,
+        okText: 'Download',
+        cancelText: 'Cancel',
+        zIndex: 5000,
+        onOk: () => onDownloadFile(file),
+      })
+    },
+    [onDownloadFile, props.onViewFile]
+  )
+
   const onRemoveFile = React.useCallback(
     (file) => {
       if (!canEditFiles()) {
@@ -162,12 +211,23 @@ const FileUpload = (props) => {
                       type="button"
                       className="rfb-file-upload-name"
                       title={file.originalName}
-                      onClick={() => onDownloadFile(file)}
+                      onClick={() => onOpenFile(file)}
                     >
-                      <DownloadOutlined className="rfb-file-upload-name-icon" />
                       <span className="rfb-file-upload-name-text">
                         {index + 1}.{file.originalName}
                       </span>
+                    </button>
+                    <button
+                      type="button"
+                      className="rfb-file-upload-download"
+                      title="Download"
+                      aria-label="Download"
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        onDownloadFile(file)
+                      }}
+                    >
+                      <DownloadOutlined />
                     </button>
                     {canEdit && (
                       <span className="rfb-file-upload-delete-wrap">
