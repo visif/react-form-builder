@@ -6,8 +6,9 @@
 import { useCallback } from 'react'
 
 import { useFormContext } from '../../../contexts/FormContext'
-import type { FormElementData, FormFieldValue, ReactFormGeneratorProps } from '../../../types/form'
+import type { FormElementData, FormFieldValue, FormValues, ReactFormGeneratorProps } from '../../../types/form'
 import { isSignedSignatureValue } from '../../../utils/signatureCollect'
+import { convertAnswerData } from '../utils/formHelpers'
 
 export type CollectedFormItem = {
   id?: string
@@ -59,16 +60,62 @@ const isFilledSectionInput = (item: CollectedFormItem): boolean => {
 const isReadOnlyDataItem = (item: FormElementData | undefined): boolean =>
   Boolean(item?.readOnly)
 
+export type FilledSectionOptions = {
+  /** Require fields only in sections whose values differ from the loaded answers. */
+  filledSectionOnly?: boolean
+  originalValues?: FormValues
+}
+
+const canonicalAnswer = (value: unknown): string => {
+  if (value == null) {
+    return ''
+  }
+  if (typeof value === 'string') {
+    const text = value.trim()
+    return text.toLowerCase() === 'null' ? '' : text
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value)
+  }
+  if (Array.isArray(value)) {
+    return value.length === 0 ? '' : JSON.stringify(value)
+  }
+  if (typeof value === 'object') {
+    const record = value as Record<string, unknown>
+    if (record.isSigned === false) {
+      return ''
+    }
+    if (Array.isArray(record.fileList) && record.fileList.length === 0 && !record.filePath) {
+      return ''
+    }
+    if (typeof record.filePath === 'string' && record.filePath.trim() === '' && record.isSigned !== true) {
+      return ''
+    }
+    if ('value' in record && (record.value == null || record.value === '')) {
+      return ''
+    }
+    return JSON.stringify(value)
+  }
+  return String(value)
+}
+
+const answerChanged = (current: unknown, original: unknown): boolean =>
+  canonicalAnswer(current) !== canonicalAnswer(original)
+
 /**
  * Grouped workflow steps lock earlier Sections as read-only. Required fields
  * there must not block the current assignee. Start at the last Section this
  * user actually filled (an editable input) and do not walk back into previous
  * Sections. If nothing editable is filled yet, only editable fields are
  * checked.
+ *
+ * When the workflow Description matches no Section, filledSectionOnly keeps
+ * required checks on the sections whose answers changed and skips the rest.
  */
 export const resolveActiveCollectedItems = (
   formItems: CollectedFormItem[],
-  dataById: Map<string, FormElementData>
+  dataById: Map<string, FormElementData>,
+  options?: FilledSectionOptions
 ): CollectedFormItem[] => {
   const sectionItems = formItems.filter((item) => item.element === 'Section')
   if (sectionItems.length === 0) {
@@ -99,6 +146,36 @@ export const resolveActiveCollectedItems = (
       return false
     }
     return isFilledSectionInput(item)
+  }
+
+  if (options?.filledSectionOnly) {
+    const orderedKeys = ['']
+    sectionItems.forEach((item) => {
+      orderedKeys.push(item.id || '')
+    })
+    const active: CollectedFormItem[] = []
+    orderedKeys.forEach((key) => {
+      const items = Array.isArray(sectionGroup[key]) ? sectionGroup[key] : []
+      const userFilled = items.some((item) => {
+        if (!item || item.element === 'Section') {
+          return false
+        }
+        const data = item.id != null ? dataById.get(String(item.id)) : undefined
+        if (isReadOnlyDataItem(data)) {
+          return false
+        }
+        const fieldName = data?.field_name
+        const original = fieldName ? options.originalValues?.[fieldName] : undefined
+        if (!answerChanged(item.value, original)) {
+          return false
+        }
+        return canonicalAnswer(item.value) !== ''
+      })
+      if (userFilled) {
+        active.push(...items)
+      }
+    })
+    return active
   }
 
   const reverseKeys = sectionItems.map((item) => item.id).reverse()
@@ -238,7 +315,10 @@ export const useFormValidation = (
         .filter((item) => item?.id != null && item.id !== '')
         .map((item) => [String(item.id), item])
     )
-    const activeItems = resolveActiveCollectedItems(formItems, dataById)
+    const activeItems = resolveActiveCollectedItems(formItems, dataById, {
+      filledSectionOnly: Boolean(props.validateFilledSectionOnly),
+      originalValues: convertAnswerData(props.answer_data),
+    })
 
     if (formItems.some((item) => item.element === 'Section')) {
       const itemIds = new Set(activeItems.map((item) => item.id).filter(Boolean))

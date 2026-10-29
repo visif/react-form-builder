@@ -119,6 +119,8 @@ export type ReactFormGeneratorProps = {
   submitButton?: ReactElement
   onUpdate?: (data: Record<string, unknown>) => void
   validateForCorrectness?: boolean
+  /** When a workflow Description matches no Section, require fields only in sections the user fills. */
+  validateFilledSectionOnly?: boolean
   getDataSource?: (...args: unknown[]) => unknown
   getActiveUserProperties?: (...args: unknown[]) => unknown
   onUploadFile?: (...args: unknown[]) => unknown

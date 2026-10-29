@@ -131,6 +131,64 @@ describe('resolveActiveCollectedItems', () => {
     expect(active.map((item) => item.id)).toEqual(['manager'])
   })
 
+  it('checks required fields only in sections the user filled when the description matches none', () => {
+    const items = [
+      { id: 's1', element: 'Section' },
+      { id: 'qa', element: 'TextInput', value: 'checked' },
+      { id: 'qa_required', element: 'TextInput', value: '' },
+      { id: 's2', element: 'Section' },
+      { id: 'md', element: 'RadioButtons', value: [] },
+      { id: 'md_sign', element: 'Signature2', value: { isSigned: false } },
+    ]
+    const dataById = new Map([
+      ['qa', { id: 'qa', field_name: 'qa_note' }],
+      ['qa_required', { id: 'qa_required', field_name: 'qa_required', required: true }],
+      ['md', { id: 'md', field_name: 'md_decision', required: true }],
+      ['md_sign', { id: 'md_sign', field_name: 'md_sign', required: true }],
+    ])
+    const active = resolveActiveCollectedItems(items, dataById, {
+      filledSectionOnly: true,
+      originalValues: { qa_note: '', qa_required: '', md_decision: [], md_sign: { isSigned: false } },
+    })
+    expect(active.map((item) => item.id)).toEqual(['qa', 'qa_required'])
+  })
+
+  it('does not require other sections when the user has not filled one in', () => {
+    const items = [
+      { id: 's1', element: 'Section' },
+      { id: 'qa', element: 'TextInput', value: '' },
+      { id: 's2', element: 'Section' },
+      { id: 'md', element: 'RadioButtons', value: [] },
+    ]
+    const dataById = new Map([
+      ['qa', { id: 'qa', field_name: 'qa_note', required: true }],
+      ['md', { id: 'md', field_name: 'md_decision', required: true }],
+    ])
+    const active = resolveActiveCollectedItems(items, dataById, {
+      filledSectionOnly: true,
+      originalValues: {},
+    })
+    expect(active).toEqual([])
+  })
+
+  it('ignores a section whose saved answers did not change', () => {
+    const items = [
+      { id: 's1', element: 'Section' },
+      { id: 'qa', element: 'TextInput', value: 'already' },
+      { id: 's2', element: 'Section' },
+      { id: 'md', element: 'TextInput', value: '' },
+    ]
+    const dataById = new Map([
+      ['qa', { id: 'qa', field_name: 'qa_note', required: true }],
+      ['md', { id: 'md', field_name: 'md_decision', required: true }],
+    ])
+    const active = resolveActiveCollectedItems(items, dataById, {
+      filledSectionOnly: true,
+      originalValues: { qa_note: 'already' },
+    })
+    expect(active).toEqual([])
+  })
+
   it('ignores a filled previous section when those fields are read-only', () => {
     const onlyPreviousFilled = [
       { id: 's1', element: 'Section' },
