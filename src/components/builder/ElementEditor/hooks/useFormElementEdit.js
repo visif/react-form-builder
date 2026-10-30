@@ -67,6 +67,51 @@ export const useFormElementEdit = (props) => {
     [props.preview]
   )
 
+  // A move inside Dynamic Column Row updates the stored element in place.
+  // The open editor keeps its own copy, so pick up the new coordinate name.
+  useEffect(() => {
+    const elementId = props.element?.id
+    if (!elementId) {
+      return
+    }
+    const live =
+      (typeof props.preview?.getDataById === 'function' &&
+        props.preview.getDataById(elementId)) ||
+      props.element
+    if (!live) {
+      return
+    }
+    const sameIndex = (left, right) => {
+      if (left == null && right == null) {
+        return true
+      }
+      return Number(left) === Number(right)
+    }
+    setElement((prev) => {
+      if (!prev || prev.id !== live.id) {
+        return prev
+      }
+      if (sameIndex(prev.row, live.row) && sameIndex(prev.col, live.col)) {
+        return prev
+      }
+      const next = {
+        ...prev,
+        row: live.row,
+        col: live.col,
+        cellName: live.cellName,
+        cellNameCustom: live.cellNameCustom,
+      }
+      elementRef.current = next
+      if (props.element && props.element !== live) {
+        props.element.row = live.row
+        props.element.col = live.col
+        props.element.cellName = live.cellName
+        props.element.cellNameCustom = live.cellNameCustom
+      }
+      return next
+    })
+  }, [props.element, props.preview, props.element?.row, props.element?.col, props.element?.cellName])
+
   // Update element in parent component.
   // Blur handlers call this with a DOM event. Column editors call it with the
   // edited element; that argument has to win, or the header text is dropped.

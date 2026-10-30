@@ -37,6 +37,7 @@ import {
   applyAutoCellName,
   applyAutoCellNamesAfterSwap,
   defaultCellName,
+  ensureUniqueAutoCellName,
 } from '../../../utils/dynamic-column-row-names'
 import FormElementsEdit from '../ElementEditor/FormElementsEdit'
 import SortableFormElements from './SortableFormElements'
@@ -209,37 +210,85 @@ const Preview = (props) => {
     return item
   }
 
+  const findChildSlot = (parent, childId) => {
+    if (!parent || !Array.isArray(parent.childItems) || !childId) {
+      return null
+    }
+    for (let rowIndex = 0; rowIndex < parent.childItems.length; rowIndex += 1) {
+      const rowItems = parent.childItems[rowIndex]
+      if (!Array.isArray(rowItems)) {
+        continue
+      }
+      const colIndex = rowItems.indexOf(childId)
+      if (colIndex !== -1) {
+        return { row: rowIndex, col: colIndex }
+      }
+    }
+    return null
+  }
+
+  const copyCellPlacement = (from, to) => {
+    if (!from || !to || from === to) {
+      return
+    }
+    to.row = from.row
+    to.col = from.col
+    to.parentId = from.parentId
+    to.parentIndex = from.parentIndex
+    to.hideLabel = from.hideLabel
+    to.cellName = from.cellName
+    to.cellNameCustom = from.cellNameCustom
+  }
+
   const swapChildren = (item, child, row, col) => {
-    if (child.row !== undefined && child.col !== undefined && item.id !== child.parentId) {
+    const moving = (child?.id && getDataById(child.id)) || child
+    const movingParentId = moving?.parentId || child?.parentId
+    const slot = findChildSlot(item, moving?.id)
+    const movingRow = slot ? slot.row : moving?.row
+    const movingCol = slot ? slot.col : moving?.col
+
+    if (
+      movingRow !== undefined &&
+      movingCol !== undefined &&
+      item.id !== movingParentId
+    ) {
       return false
     }
 
     if (
-      child.row === undefined ||
-      child.col === undefined ||
-      (child.row === row && child.col === col) ||
-      !item.childItems[row][col]
+      movingRow === undefined ||
+      movingCol === undefined ||
+      (Number(movingRow) === Number(row) && Number(movingCol) === Number(col)) ||
+      !item.childItems?.[row]?.[col] ||
+      item.childItems[row][col] === moving?.id
     ) {
       return false
     }
 
     const oldId = item.childItems[row][col]
     const oldItem = getDataById(oldId)
-    const oldRow = child.row || 0
-    const oldCol = child.col
+    if (!oldItem) {
+      return false
+    }
+    const oldRow = Number(movingRow)
+    const oldCol = Number(movingCol)
 
     item.childItems[oldRow][oldCol] = oldId
     oldItem.row = oldRow
     oldItem.col = oldCol
 
-    item.childItems[row][col] = child.id
-    child.row = row
-    child.col = col
+    item.childItems[row][col] = moving.id
+    moving.row = row
+    moving.col = col
+    moving.parentId = item.id
 
     if (item.element === 'DynamicColumnRow') {
-      applyAutoCellNamesAfterSwap(child, row, col, oldItem, oldRow, oldCol)
+      applyAutoCellNamesAfterSwap(moving, row, col, oldItem, oldRow, oldCol)
+      ensureUniqueAutoCellName(dataRef.current, item.id, moving, row, col)
+      ensureUniqueAutoCellName(dataRef.current, item.id, oldItem, oldRow, oldCol)
     }
 
+    copyCellPlacement(moving, child)
     store.dispatch('updateOrder', dataRef.current)
     return true
   }
@@ -252,44 +301,61 @@ const Preview = (props) => {
     // Keep track of all data modifications
     let updatedData = [...dataRef.current]
 
-    // Handle the original drop first
-    const oldParent = getDataById(child.parentId)
-    const oldRow = child.row
-    const oldCol = child.col
+    // Drag payload can be a detached copy after the editor saves a snapshot.
+    // Names have to change on the object that is actually stored.
+    const moving = (child?.id && getDataById(child.id)) || child
+    const sourceSlot = findChildSlot(getDataById(moving.parentId) || item, moving.id)
+    const oldParent = getDataById(moving.parentId)
+    const oldRow = sourceSlot ? sourceSlot.row : moving.row
+    const oldCol = sourceSlot ? sourceSlot.col : moving.col
 
     // Update the child properties
-    item.childItems[row][col] = child.id
-    child.row = row
-    child.col = col
-    child.parentId = item.id
-    child.parentIndex = updatedData.indexOf(item)
+    item.childItems[row][col] = moving.id
+    moving.row = row
+    moving.col = col
+    moving.parentId = item.id
+    moving.parentIndex = updatedData.indexOf(item)
 
     // Set hideLabel to true ONLY for elements in Dynamic Columns, not other column types
     if (item.element === 'DynamicColumnRow') {
-      child.hideLabel = true
-      applyAutoCellName(child, row, col)
+      moving.hideLabel = true
+      applyAutoCellName(moving, row, col, oldRow, oldCol)
     } else if (item.element?.includes('ColumnRow')) {
-      if (child.hideLabel === true) {
-        delete child.hideLabel
+      if (moving.hideLabel === true) {
+        delete moving.hideLabel
       }
     }
 
-    // Handle old parent reference
-    if (oldParent) {
-      oldParent.childItems[oldRow][oldCol] = null
+    // Clear every previous slot. element.row/col can lag behind the grid after a move.
+    if (oldParent && Array.isArray(oldParent.childItems)) {
+      oldParent.childItems.forEach((rowItems, rowIndex) => {
+        if (!Array.isArray(rowItems)) {
+          return
+        }
+        rowItems.forEach((cellId, colIndex) => {
+          const keptHere = oldParent === item && rowIndex === row && colIndex === col
+          if (cellId === moving.id && !keptHere) {
+            oldParent.childItems[rowIndex][colIndex] = null
+          }
+        })
+      })
     }
 
+    copyCellPlacement(moving, child)
+
     // If this element isn't in our data array yet (new element), add it
-    if (!getDataById(child.id)) {
-      updatedData.push(child)
+    if (moving?.id && !getDataById(moving.id)) {
+      updatedData.push(moving)
     }
 
     if (item.childItems.length > 1 && item.columns[col].isSync !== false) {
       const rowsToUpdate = []
 
       for (let rowIndex = 0; rowIndex < item.childItems.length; rowIndex++) {
-        // Skip the current row as it already has the element
-        if (rowIndex !== row) {
+        // Skip the current row as it already has the element.
+        // Row can arrive as a string from saved JSON; 5 !== "5" would clone
+        // a second cell with the same r{row}c{col} name.
+        if (Number(rowIndex) !== Number(row)) {
           const existingElementId = item.childItems[rowIndex][col]
           if (existingElementId) {
             const existingElement = getDataById(existingElementId)
@@ -433,6 +499,16 @@ const Preview = (props) => {
             }
           })
 
+          if (item.element === 'DynamicColumnRow') {
+            ensureUniqueAutoCellName(
+              updatedData.concat(rowsToUpdate.map((entry) => entry.newElement)),
+              item.id,
+              newElement,
+              rowIndex,
+              col
+            )
+          }
+
           // Add to our tracking array
           rowsToUpdate.push({ rowIndex, newElement })
         }
@@ -452,6 +528,11 @@ const Preview = (props) => {
 
     if (toRemove.length) {
       updatedData = updatedData.filter((x) => toRemove.indexOf(x) === -1)
+    }
+
+    if (item.element === 'DynamicColumnRow') {
+      ensureUniqueAutoCellName(updatedData, item.id, moving, row, col)
+      copyCellPlacement(moving, child)
     }
 
     // Update sequence number

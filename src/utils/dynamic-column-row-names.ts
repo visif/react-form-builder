@@ -63,18 +63,36 @@ export function isAutoCellName(name: string, row: unknown, col: unknown): boolea
   return name === defaultCellName(row, col)
 }
 
+/**
+ * Keep an automatic r{row}c{col} name aligned with the cell the element now
+ * occupies. A custom name is kept, except when it is still the previous
+ * cell's coordinate name — that name belongs to the cell, so it follows the move.
+ */
 export function applyAutoCellName<T extends NamedChild>(
   child: T | null | undefined,
   row: number,
-  col: number
+  col: number,
+  previousRow?: unknown,
+  previousCol?: unknown
 ): T | null | undefined {
   if (!child) {
     return child
   }
-  if (child.cellNameCustom && child.cellName) {
+  const nextName = defaultCellName(row, col)
+  const priorName = defaultCellName(
+    previousRow !== undefined ? previousRow : child.row,
+    previousCol !== undefined ? previousCol : child.col
+  )
+  const current = sanitizeCellName(child.cellName)
+  const keepsCustomName =
+    Boolean(child.cellNameCustom) &&
+    Boolean(current) &&
+    current !== priorName &&
+    current !== nextName
+  if (keepsCustomName) {
     return child
   }
-  child.cellName = defaultCellName(row, col)
+  child.cellName = nextName
   child.cellNameCustom = false
   return child
 }
@@ -87,8 +105,50 @@ export function applyAutoCellNamesAfterSwap(
   displacedRow: number,
   displacedCol: number
 ): void {
-  applyAutoCellName(movingChild, newRow, newCol)
-  applyAutoCellName(displacedChild, displacedRow, displacedCol)
+  if (movingChild && displacedChild && movingChild === displacedChild) {
+    applyAutoCellName(movingChild, newRow, newCol, displacedRow, displacedCol)
+    return
+  }
+  applyAutoCellName(movingChild, newRow, newCol, displacedRow, displacedCol)
+  applyAutoCellName(displacedChild, displacedRow, displacedCol, newRow, newCol)
+}
+
+/** First unused coordinate name, then r6c3_2, r6c3_3, … when that name is taken. */
+export function nextFreeCellName(
+  data: NamedChild[] | null | undefined,
+  parentId: string | undefined,
+  row: number,
+  col: number,
+  exceptId: string | undefined
+): string {
+  const base = defaultCellName(row, col)
+  if (!isCellNameTaken(data, parentId, base, exceptId)) {
+    return base
+  }
+  let suffix = 2
+  let candidate = `${base}_${suffix}`
+  while (isCellNameTaken(data, parentId, candidate, exceptId)) {
+    suffix += 1
+    candidate = `${base}_${suffix}`
+  }
+  return candidate
+}
+
+export function ensureUniqueAutoCellName(
+  data: NamedChild[] | null | undefined,
+  parentId: string | undefined,
+  child: NamedChild | null | undefined,
+  row: number,
+  col: number
+): void {
+  if (!child || child.cellNameCustom) {
+    return
+  }
+  if (!isCellNameTaken(data, parentId, child.cellName, child.id)) {
+    return
+  }
+  child.cellName = nextFreeCellName(data, parentId, row, col, child.id)
+  child.cellNameCustom = false
 }
 
 export function nextDynamicColumnRowUniqueName(data: NamedChild[] | null | undefined): string {

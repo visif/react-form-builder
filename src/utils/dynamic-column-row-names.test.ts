@@ -4,6 +4,7 @@ import {
   applyAutoCellName,
   applyAutoCellNamesAfterSwap,
   defaultCellName,
+  ensureUniqueAutoCellName,
   isCellNameTaken,
   isUniqueNameTaken,
   nextDynamicColumnRowUniqueName,
@@ -102,5 +103,28 @@ describe('dynamic-column-row-names', () => {
     const child = { cellName: 'r1c1', cellNameCustom: false }
     applyAutoCellName(child, 2, 0)
     expect(child.cellName).toBe('r3c1')
+  })
+
+  it('moves a coordinate name with the cell even when it was marked custom', () => {
+    const moving = { cellName: 'r6c3', cellNameCustom: true }
+    applyAutoCellName(moving, 1, 2, 5, 2)
+    expect(moving.cellName).toBe('r2c3')
+    expect(moving.cellNameCustom).toBe(false)
+  })
+
+  it('keeps a real custom name when the cell moves', () => {
+    const moving = { cellName: 'qty', cellNameCustom: true }
+    applyAutoCellName(moving, 1, 2, 5, 2)
+    expect(moving.cellName).toBe('qty')
+    expect(moving.cellNameCustom).toBe(true)
+  })
+
+  it('gives the moved cell a free name when the coordinate is already taken', () => {
+    const moving = { id: 'moved', parentId: 't1', cellName: 'r2c3', cellNameCustom: false }
+    const taken = { id: 'other', parentId: 't1', cellName: 'r2c3', cellNameCustom: true }
+    ensureUniqueAutoCellName([moving, taken], 't1', moving, 1, 2)
+    expect(moving.cellName).toBe('r2c3_2')
+    expect(moving.cellNameCustom).toBe(false)
+    expect(taken.cellName).toBe('r2c3')
   })
 })

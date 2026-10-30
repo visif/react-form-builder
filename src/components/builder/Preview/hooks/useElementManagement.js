@@ -128,7 +128,7 @@ export const useElementManagement = (data, setData, seq) => {
       // Set hideLabel to true ONLY for elements in Dynamic Columns, not other column types
       if (item.element === 'DynamicColumnRow') {
         child.hideLabel = true
-        applyAutoCellName(child, row, col)
+        applyAutoCellName(child, row, col, oldRow, oldCol)
       } else if (item.element?.includes('ColumnRow')) {
         if (child.hideLabel === true) {
           delete child.hideLabel
