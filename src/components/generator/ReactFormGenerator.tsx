@@ -405,6 +405,7 @@ const ReactForm = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
   const {
     draftRestored,
     handleFormInteraction,
+    handleFormBlur,
     handleSignature2Change: flushSignature2Draft,
     saveDraft,
     clearDraft,
@@ -583,6 +584,7 @@ const ReactForm = forwardRef((incomingProps: ReactFormGeneratorProps, ref) => {
           onSubmit={handleSubmit}
           onChange={handleFormInteraction}
           onInput={handleFormInteraction}
+          onBlur={handleFormBlur}
           method={props.form_method}
         >
           {props.authenticity_token && (

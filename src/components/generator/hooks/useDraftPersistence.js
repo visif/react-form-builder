@@ -3,7 +3,35 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { withGeneratorLegacyKeys } from '../../../utils/propAliases'
 import { convertAnswerData } from '../utils/formHelpers'
 
-const DRAFT_AUTOSAVE_INTERVAL = 30 * 1000 // 30 seconds
+/** Same event and window key the app publishes when SessionTimeout is loaded or changed. */
+export const SESSION_IDLE_MINUTES_EVENT = 'vdc-session-idle-minutes-changed'
+export const SESSION_IDLE_MINUTES_WINDOW_KEY = '__vdcSessionIdleMinutes'
+export const DEFAULT_DRAFT_IDLE_MINUTES = 30
+/** Write the idle draft this long before the server session expires. */
+export const DRAFT_IDLE_LEAD_MS = 3 * 60 * 1000
+
+const positiveMinutes = (value) => {
+  const minutes = Number(value)
+  if (!Number.isFinite(minutes) || minutes <= 0) return null
+  return minutes
+}
+
+/** Full session idle time in ms. Defaults to 30 minutes. */
+export const readSessionIdleMs = () => {
+  let minutes = DEFAULT_DRAFT_IDLE_MINUTES
+  if (typeof window !== 'undefined') {
+    const published = positiveMinutes(window[SESSION_IDLE_MINUTES_WINDOW_KEY])
+    if (published) minutes = published
+  }
+  return minutes * 60 * 1000
+}
+
+/** Idle time before a draft write: session timeout minus 3 minutes. */
+export const draftIdleDelayMs = (sessionIdleMs) => {
+  const idle = Number(sessionIdleMs)
+  const timeout = Number.isFinite(idle) && idle > 0 ? idle : readSessionIdleMs()
+  return Math.max(0, timeout - DRAFT_IDLE_LEAD_MS)
+}
 
 export const buildDraftStorageKey = (incomingProps) => {
   const props = withGeneratorLegacyKeys(incomingProps || {})
@@ -175,7 +203,9 @@ export const hasDraft = (props) => readDraftFromStorage(props) !== null
 // ─── Hook ───────────────────────────────────────────────────────────────
 
 export const useDraftPersistence = (props, collectFormData, getEditedValues) => {
-  const draftIntervalRef = useRef(null)
+  const idleTimerRef = useRef(null)
+  const lastActivityRef = useRef(0)
+  const sessionIdleMsRef = useRef(readSessionIdleMs())
   const draftClearedRef = useRef(false)
   const draftStartedRef = useRef(false)
   const getEditedRef = useRef(getEditedValues)
@@ -196,16 +226,18 @@ export const useDraftPersistence = (props, collectFormData, getEditedValues) => 
   const propsRef = useRef(props)
   propsRef.current = props
 
+  const clearIdleTimer = useCallback(() => {
+    if (idleTimerRef.current) {
+      clearTimeout(idleTimerRef.current)
+      idleTimerRef.current = null
+    }
+  }, [])
+
   // ── Save draft ──────────────────────────────────────────────────────
+  // Does not blur the focused control. Typing must keep the caret.
   const saveDraft = useCallback(() => {
     if (typeof window === 'undefined' || !window.localStorage) return
     try {
-      // Commit the focused control before reading values. Some fields write
-      // their latest text on blur, and that handler runs before blur() returns.
-      const active = typeof document !== 'undefined' ? document.activeElement : null
-      if (active && active !== document.body && typeof active.blur === 'function') {
-        active.blur()
-      }
       const formData = collectRef.current(propsRef.current.data)
       const collected = convertAnswerData(formData)
       const existing = readDraftFromStorage(propsRef.current)
@@ -218,40 +250,58 @@ export const useDraftPersistence = (props, collectFormData, getEditedValues) => 
     }
   }, [])
 
-  // ── Start autosave (lazy – triggered on first interaction) ──────────
-  const startDraftAutosave = useCallback(() => {
-    if (draftStartedRef.current || draftClearedRef.current || propsRef.current.read_only) return
-    draftStartedRef.current = true
-    draftIntervalRef.current = setInterval(() => {
+  // One write after the user has been idle until 3 minutes before session timeout.
+  const scheduleIdleSave = useCallback(() => {
+    clearIdleTimer()
+    if (!draftStartedRef.current || draftClearedRef.current || propsRef.current.read_only) return
+    const delay = draftIdleDelayMs(sessionIdleMsRef.current)
+    const elapsed = Date.now() - lastActivityRef.current
+    const wait = Math.max(0, delay - elapsed)
+    idleTimerRef.current = setTimeout(() => {
+      idleTimerRef.current = null
       saveDraft()
-    }, DRAFT_AUTOSAVE_INTERVAL)
-  }, [saveDraft])
+    }, wait)
+  }, [clearIdleTimer, saveDraft])
+
+  const noteActivity = useCallback(() => {
+    if (propsRef.current.read_only || draftClearedRef.current) return
+    draftStartedRef.current = true
+    lastActivityRef.current = Date.now()
+    scheduleIdleSave()
+  }, [scheduleIdleSave])
 
   /**
-   * Public flush – start autosave if needed, then write current values now.
-   * Used by host apps (e.g. Don't Save) via ref.saveDraft().
+   * Public flush – write current values now. Used by host apps (e.g. Don't Save).
+   * Does not move focus.
    */
   const flushDraft = useCallback(() => {
     if (propsRef.current.read_only) return
     draftClearedRef.current = false
-    if (!draftStartedRef.current) {
-      startDraftAutosave()
-    }
+    draftStartedRef.current = true
+    lastActivityRef.current = Date.now()
     saveDraft()
-  }, [saveDraft, startDraftAutosave])
+    scheduleIdleSave()
+  }, [saveDraft, scheduleIdleSave])
 
-  // ── Handler to attach to <form onChange / onInput> ──────────────────
+  // ── Typing resets the idle timer and does not write a draft ─────────
   const handleFormInteraction = useCallback(() => {
-    if (!draftStartedRef.current) {
-      startDraftAutosave()
-    }
-  }, [startDraftAutosave])
+    noteActivity()
+  }, [noteActivity])
 
-  // Signature2 uses click (not change/input), so start + flush immediately
-  const handleSignature2Change = useCallback(() => {
-    handleFormInteraction()
+  // A field lost focus. Its own blur handler has already committed the value.
+  const handleFormBlur = useCallback(() => {
+    if (propsRef.current.read_only || draftClearedRef.current) return
+    draftStartedRef.current = true
+    lastActivityRef.current = Date.now()
     saveDraft()
-  }, [handleFormInteraction, saveDraft])
+    scheduleIdleSave()
+  }, [saveDraft, scheduleIdleSave])
+
+  // Signature2 commits on click, which may not blur the control.
+  const handleSignature2Change = useCallback(() => {
+    noteActivity()
+    saveDraft()
+  }, [noteActivity, saveDraft])
 
   // ── Clear draft ─────────────────────────────────────────────────────
   const clearDraft = useCallback(() => {
@@ -262,35 +312,46 @@ export const useDraftPersistence = (props, collectFormData, getEditedValues) => 
       // Ignore
     }
 
-    // Stop the autosave interval so it won't re-save the draft
-    if (draftIntervalRef.current) {
-      clearInterval(draftIntervalRef.current)
-      draftIntervalRef.current = null
-    }
+    clearIdleTimer()
     draftClearedRef.current = true
     setDraftRestored(false)
-  }, [])
+  }, [clearIdleTimer])
+
+  useEffect(() => {
+    sessionIdleMsRef.current = readSessionIdleMs()
+    const onTimeoutChanged = (event) => {
+      const minutes = positiveMinutes(event?.detail)
+      if (!minutes) return
+      sessionIdleMsRef.current = minutes * 60 * 1000
+      if (draftStartedRef.current && !draftClearedRef.current) {
+        scheduleIdleSave()
+      }
+    }
+    window.addEventListener(SESSION_IDLE_MINUTES_EVENT, onTimeoutChanged)
+    return () => {
+      window.removeEventListener(SESSION_IDLE_MINUTES_EVENT, onTimeoutChanged)
+    }
+  }, [scheduleIdleSave])
 
   // ── Cleanup on unmount ──────────────────────────────────────────────
   useEffect(() => () => {
-      if (draftIntervalRef.current) {
-        clearInterval(draftIntervalRef.current)
-        draftIntervalRef.current = null
-      }
+      clearIdleTimer()
       // Save one last time before unmounting so partial work is not lost
       if (!propsRef.current.read_only && !draftClearedRef.current && draftStartedRef.current) {
         saveDraft()
       }
-    }, [saveDraft])
+    }, [clearIdleTimer, saveDraft])
 
   return {
     /** Answer data merged with any restored draft */
     mergedAnswerData: mergedData,
     /** Whether a draft was restored from localStorage */
     draftRestored,
-    /** Attach to <form onChange / onInput> to lazily start autosave */
+    /** Attach to <form onChange / onInput>. Resets the idle timer; does not write. */
     handleFormInteraction,
-    /** Signature2 click → start autosave + flush immediately */
+    /** Attach to <form onBlur>. Writes the draft after a field leaves focus. */
+    handleFormBlur,
+    /** Signature2 click → write now without moving focus */
     handleSignature2Change,
     /** Public flush for host apps (ref.saveDraft) */
     saveDraft: flushDraft,

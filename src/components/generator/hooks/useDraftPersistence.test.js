@@ -1,11 +1,17 @@
-import { describe, expect, it, beforeEach, afterEach } from 'vitest'
+import { renderHook, act } from '@testing-library/react'
+import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 
 import {
   buildDraftStorageKey,
   clearDraftData,
+  DEFAULT_DRAFT_IDLE_MINUTES,
+  draftIdleDelayMs,
   hasDraft,
   mergeDraftSnapshot,
   readDraftFromStorage,
+  readSessionIdleMs,
+  SESSION_IDLE_MINUTES_WINDOW_KEY,
+  useDraftPersistence,
 } from './useDraftPersistence'
 
 describe('useDraftPersistence helpers', () => {
@@ -81,5 +87,90 @@ describe('useDraftPersistence helpers', () => {
 
     window.localStorage.setItem(key, '{bad-json')
     expect(readDraftFromStorage(props)).toBeNull()
+  })
+})
+
+describe('draft save timing', () => {
+  beforeEach(() => {
+    window.localStorage.clear()
+    delete window[SESSION_IDLE_MINUTES_WINDOW_KEY]
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+    window.localStorage.clear()
+    delete window[SESSION_IDLE_MINUTES_WINDOW_KEY]
+  })
+
+  it('writes an idle draft 3 minutes before the session timeout', () => {
+    expect(readSessionIdleMs()).toBe(DEFAULT_DRAFT_IDLE_MINUTES * 60 * 1000)
+    expect(draftIdleDelayMs(30 * 60 * 1000)).toBe(27 * 60 * 1000)
+
+    window[SESSION_IDLE_MINUTES_WINDOW_KEY] = 60
+    expect(draftIdleDelayMs(readSessionIdleMs())).toBe(57 * 60 * 1000)
+  })
+
+  it('does not save or blur while the user is still typing', () => {
+    const blur = vi.fn()
+    const textarea = document.createElement('textarea')
+    textarea.blur = blur
+    document.body.appendChild(textarea)
+    textarea.focus()
+
+    const props = { formAction: '/forms/submit', taskId: 9 }
+    const { result, unmount } = renderHook(() =>
+      useDraftPersistence(
+        props,
+        () => [{ name: 'note', value: 'hello' }],
+        () => ({ note: 'hello' })
+      )
+    )
+
+    act(() => {
+      result.current.handleFormInteraction()
+    })
+    act(() => {
+      vi.advanceTimersByTime(30 * 1000)
+    })
+
+    expect(blur).not.toHaveBeenCalled()
+    expect(readDraftFromStorage(props)).toBeNull()
+
+    act(() => {
+      vi.advanceTimersByTime(draftIdleDelayMs(readSessionIdleMs()) - 30 * 1000)
+    })
+    expect(readDraftFromStorage(props)).toEqual({ note: 'hello' })
+    expect(blur).not.toHaveBeenCalled()
+
+    unmount()
+    textarea.remove()
+  })
+
+  it('saves when a field loses focus without moving focus itself', () => {
+    const blur = vi.fn()
+    const textarea = document.createElement('textarea')
+    textarea.blur = blur
+    document.body.appendChild(textarea)
+    textarea.focus()
+
+    const props = { formAction: '/forms/submit', taskId: 10 }
+    const { result, unmount } = renderHook(() =>
+      useDraftPersistence(
+        props,
+        () => [{ name: 'note', value: 'left' }],
+        () => ({ note: 'left' })
+      )
+    )
+
+    act(() => {
+      result.current.handleFormBlur()
+    })
+
+    expect(readDraftFromStorage(props)).toEqual({ note: 'left' })
+    expect(blur).not.toHaveBeenCalled()
+
+    unmount()
+    textarea.remove()
   })
 })
