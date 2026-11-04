@@ -195,10 +195,15 @@ export const useRowSync = (getDataById, updateElement) => {
 
           case 'Signature':
           case 'Signature2':
-            updatedItem.position = changedElement.position
-            updatedItem.specificRole = changedElement.specificRole
-            updatedItem.label = changedElement.label
-            changed = true
+            // Role / Position stays on the edited cell. Copying it makes every
+            // signature in the column show the same text.
+            if (
+              changedElement.specificRole !== undefined &&
+              changedElement.specificRole !== itemData.specificRole
+            ) {
+              updatedItem.specificRole = changedElement.specificRole
+              changed = true
+            }
             break
           case 'Image':
             ['center', 'width', 'height'].forEach((prop) => {

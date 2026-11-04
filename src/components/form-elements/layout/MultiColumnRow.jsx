@@ -115,7 +115,12 @@ const MultiColumnRow = (props) => {
   const hasRowLabels = Array.isArray(data.rowLabels) && data.rowLabels.length > 0
 
   // Use the custom hook for synchronizing column changes
-  const syncColumnChanges = useSyncColumnChanges(childItems, getDataById, updateElement)
+  const syncColumnChanges = useSyncColumnChanges(
+    childItems,
+    getDataById,
+    updateElement,
+    data.columns
+  )
 
   const tableRef = useRef(null)
   const dataRef = useRef(data)

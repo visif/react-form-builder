@@ -150,4 +150,116 @@ describe('useSyncColumnChanges', () => {
 
     expect(updateElement).not.toHaveBeenCalled()
   })
+
+  it('keeps each Signature2 role when one cell reports a different position', () => {
+    const items: Item[] = [
+      {
+        id: 's1',
+        element: 'Signature2',
+        position: 'Finance & Information Technology Department Manager',
+        specificRole: 'specific',
+        required: false,
+        readOnly: false,
+        initialized: true,
+        row: 0,
+        col: 2,
+        parentId: 'dcr',
+      },
+      {
+        id: 's2',
+        element: 'Signature2',
+        position: 'Accounting Manager',
+        specificRole: 'specific',
+        required: false,
+        readOnly: false,
+        initialized: true,
+        row: 1,
+        col: 2,
+        parentId: 'dcr',
+      },
+    ]
+    const childItems = [
+      [null, null, 's1'],
+      [null, null, 's2'],
+    ]
+    const getDataById = (id: string) => items.find((x) => x.id === id)
+    const updateElement = vi.fn()
+
+    const { result } = renderHook(() =>
+      useSyncColumnChanges(childItems as never, getDataById as never, updateElement, [
+        { isSync: true },
+        { isSync: true },
+        { isSync: true },
+      ])
+    )
+
+    act(() => {
+      result.current(0, 2, 'Signature2', {
+        element: 'Signature2',
+        initialized: true,
+        position: 'Finance & Information Technology Department Manager',
+        specificRole: 'specific',
+        required: false,
+        readOnly: false,
+      })
+    })
+
+    expect(updateElement).not.toHaveBeenCalled()
+    expect(items[1].position).toBe('Accounting Manager')
+  })
+
+  it('does not copy a signature role into siblings when column sync is off', () => {
+    const items: Item[] = [
+      {
+        id: 's1',
+        element: 'Signature2',
+        position: 'Finance & Information Technology Department Manager',
+        specificRole: 'specific',
+        required: true,
+        initialized: true,
+        row: 0,
+        col: 2,
+        parentId: 'dcr',
+      },
+      {
+        id: 's2',
+        element: 'Signature2',
+        position: 'Placeholder Text',
+        specificRole: 'notSpecific',
+        required: false,
+        initialized: false,
+        row: 1,
+        col: 2,
+        parentId: 'dcr',
+      },
+    ]
+    const childItems = [
+      [null, null, 's1'],
+      [null, null, 's2'],
+    ]
+    const getDataById = (id: string) => items.find((x) => x.id === id)
+    const updateElement = vi.fn()
+
+    const { result } = renderHook(() =>
+      useSyncColumnChanges(childItems as never, getDataById as never, updateElement, [
+        { isSync: false },
+        { isSync: false },
+        { isSync: false },
+      ])
+    )
+
+    act(() => {
+      result.current(0, 2, 'Signature2', {
+        element: 'Signature2',
+        initialized: true,
+        position: 'Finance & Information Technology Department Manager',
+        specificRole: 'specific',
+        required: true,
+        readOnly: false,
+        label: 'ลายเซ็น',
+      })
+    })
+
+    expect(updateElement).not.toHaveBeenCalled()
+  })
 })

@@ -294,3 +294,80 @@ describe('fixed column rows', () => {
     expect(updated.dirty).toBe(true)
   })
 })
+
+describe('DynamicColumnRow signature column', () => {
+  const buildSignatureColumn = ({ isSync, siblingRequired = false }) => {
+    const signature = (id, row, position, required) => ({
+      id,
+      element: 'Signature2',
+      field_name: `sig_${row}`,
+      parentId: 'dcr-sig',
+      row,
+      col: 1,
+      position,
+      specificRole: 'specific',
+      required,
+      readOnly: false,
+      initialized: true,
+    })
+    const items = [
+      signature('sig-a', 0, 'Finance & Information Technology Department Manager', false),
+      signature('sig-b', 1, 'Accounting Manager', siblingRequired),
+    ]
+    const data = {
+      id: 'dcr-sig',
+      element: 'DynamicColumnRow',
+      rows: 2,
+      columns: [
+        { key: 'c1', text: 'Name', width: 1, isSync },
+        { key: 'c2', text: 'Signature &amp; Date', width: 1, isSync },
+      ],
+      childItems: [
+        [null, 'sig-a'],
+        [null, 'sig-b'],
+      ],
+      isContainer: true,
+    }
+    const getDataById = (id) => items.find((item) => item.id === id)
+    return { data, getDataById, items }
+  }
+
+  const renderColumn = (setup) => {
+    const updateElement = vi.fn()
+    render(
+      <DndProvider backend={HTML5Backend}>
+        <DynamicColumnRow
+          data={setup.data}
+          getDataById={setup.getDataById}
+          updateElement={updateElement}
+          setAsChild={() => {}}
+          removeChild={() => {}}
+          editModeOn={() => {}}
+          mutable
+        />
+      </DndProvider>
+    )
+    return updateElement
+  }
+
+  it('keeps each signature role when the cells mount in a synced column', () => {
+    // Regression for the shared "Signature & Date" placeholder: mounting one
+    // Signature2 used to stamp its Role / Position onto every sibling row.
+    const updateElement = renderColumn(buildSignatureColumn({ isSync: true }))
+
+    expect(screen.getAllByText('Finance & Information Technology Department Manager')).toHaveLength(
+      1
+    )
+    expect(screen.getAllByText('Accounting Manager')).toHaveLength(1)
+    expect(updateElement).not.toHaveBeenCalled()
+  })
+
+  it('leaves sibling cells untouched when the column Sync option is off', () => {
+    const updateElement = renderColumn(
+      buildSignatureColumn({ isSync: false, siblingRequired: true })
+    )
+
+    expect(screen.getAllByText('Accounting Manager')).toHaveLength(1)
+    expect(updateElement).not.toHaveBeenCalled()
+  })
+})

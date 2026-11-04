@@ -6,6 +6,7 @@ type SyncChildItems = Array<Array<string | null | undefined>>
 type GetDataById = (id: string) => FormElementData | undefined | null
 type UpdateElement = (element: FormElementData) => void
 type ChangeData = Record<string, unknown>
+type SyncColumn = { isSync?: boolean } | null | undefined
 
 const valuesEqual = (left: unknown, right: unknown): boolean => {
   if (Object.is(left, right)) return true
@@ -33,10 +34,17 @@ const elementSyncChanged = (before: FormElementData, after: FormElementData): bo
 const useSyncColumnChanges = (
   childItems: SyncChildItems,
   getDataById: GetDataById,
-  updateElement: UpdateElement
+  updateElement: UpdateElement,
+  columns?: Array<SyncColumn> | null
 ) => {
   const syncColumnChanges = useCallback(
     (rowIndex: number, columnIndex: number, elementType: string, changeData: ChangeData) => {
+      // isSync === false is the column editor's Sync checkbox turned off.
+      // A missing flag still syncs, matching Preview.syncRowChanges.
+      if (columns?.[columnIndex]?.isSync === false) {
+        return
+      }
+
       // Only sync for supported element types
       if (
         ![
@@ -160,12 +168,14 @@ const useSyncColumnChanges = (
 
           // Make sure the DataSource is properly initialized
           updatedItem.initialized = true
-        } else if (elementType === 'Signature2') {
-          // For Signature2 components
-          if (changeData.position !== undefined) {
-            updatedItem.position = changeData.position
-          }
-          if (changeData.specificRole !== undefined) {
+        } else if (elementType === 'Signature' || elementType === 'Signature2') {
+          // Role / Position is the text under the signature line. Each row is a
+          // different signer, so a mount or an edit of one cell must not stamp
+          // that text onto the rest of the column.
+          if (
+            changeData.specificRole !== undefined &&
+            changeData.specificRole !== itemData.specificRole
+          ) {
             updatedItem.specificRole = changeData.specificRole
           }
           // Handle label changes
@@ -297,7 +307,7 @@ const useSyncColumnChanges = (
         }
       })
     },
-    [childItems, getDataById, updateElement]
+    [childItems, columns, getDataById, updateElement]
   )
 
   return syncColumnChanges
