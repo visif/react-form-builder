@@ -4,6 +4,7 @@ import { Input, Select } from 'antd'
 
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
+import { FORM_POPUP_STYLES } from '../../../utils/multicolumnField'
 import { INFO_TEXTAREA_STYLE } from '../shared/optionInfoLayout'
 
 const { TextArea } = Input
@@ -170,7 +171,12 @@ const Dropdown = (props) => {
       <ComponentHeader {...props} />
       <div className={props.data.isShowLabel !== false ? 'form-group' : ''}>
         <ComponentLabel {...props} />
-        <Select {...selectProps} options={options} popupClassName="rfb-dropdown-popup" />
+        <Select
+          {...selectProps}
+          options={options}
+          popupClassName="rfb-dropdown-popup"
+          styles={FORM_POPUP_STYLES}
+        />
         {showInfo && (
           <TextArea
             className="rfb-info-textarea"

@@ -62,6 +62,16 @@ describe('Dropdown', () => {
     expect(combobox.closest('.rfb-dropdown-select')).toBeTruthy()
   })
 
+  it('renders the open popup above host Drawer/Modal overlays', () => {
+    render(<Dropdown mutable data={dropdownData} defaultValue="" />)
+
+    fireEvent.mouseDown(screen.getByRole('combobox'))
+
+    const popup = document.querySelector('.ant-select-dropdown')
+    expect(popup).toBeTruthy()
+    expect(Number(popup.style.zIndex)).toBeGreaterThanOrEqual(2100)
+  })
+
   it('hides the current selection and placeholder while typing', () => {
     render(<Dropdown mutable data={dropdownData} defaultValue="th" />)
 

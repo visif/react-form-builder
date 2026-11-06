@@ -12,6 +12,7 @@ import {
   toStoredDateIso,
 } from '../../../utils/dateUtil'
 import {
+  FORM_POPUP_STYLES,
   getPickerPopupContainer,
   isMulticolumnChild,
 } from '../../../utils/multicolumnField'
@@ -200,7 +201,7 @@ const DatePicker = (props) => {
     ? 'form-group is-isolated'
     : 'form-group'
 
-  const pickerPopupStyles = { popup: { root: { zIndex: 2100 } } }
+  const pickerPopupStyles = FORM_POPUP_STYLES
   const pickerWidth = isMulticolumnChild(props.data) ? '100%' : 'auto'
   const pickerStyle = { display: 'inline-block', width: pickerWidth, maxWidth: '100%' }
 

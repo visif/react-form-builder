@@ -2,6 +2,7 @@ import React from 'react'
 
 import { Select } from 'antd'
 
+import { FORM_POPUP_STYLES } from '../../../utils/multicolumnField'
 import ComponentHeader from '../shared/ComponentHeader'
 import ComponentLabel from '../shared/ComponentLabel'
 
@@ -92,6 +93,7 @@ const Tags = (props) => {
     placeholder: stripHtml(props.data.label) || 'Select tags',
     onChange: handleChange,
     options,
+    styles: FORM_POPUP_STYLES,
   }
 
   if (!props.mutable) {
