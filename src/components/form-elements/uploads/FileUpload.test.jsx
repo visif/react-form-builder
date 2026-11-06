@@ -44,9 +44,8 @@ describe('FileUpload', () => {
 
     const nameButton = screen.getByRole('button', { name: new RegExp(longName) })
     expect(nameButton).toHaveClass('rfb-file-upload-name')
-    expect(nameButton.querySelector('.rfb-file-upload-name-text')).toHaveTextContent(
-      `1.${longName}`
-    )
+    expect(nameButton.querySelector('.rfb-file-upload-index')).toHaveTextContent('1.')
+    expect(nameButton.querySelector('.rfb-file-upload-name-text')).toHaveTextContent(longName)
     expect(nameButton.querySelector('.anticon-download')).toBeNull()
     expect(screen.getByRole('button', { name: 'Download' })).toBeTruthy()
     expect(nameButton.closest('.rfb-file-upload-list')).toBeTruthy()

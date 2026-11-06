@@ -353,9 +353,13 @@ const MultiColumnRow = (props) => {
           className={`rfb-multicolumn-table${isResizing ? ' rfb-col-resizing' : ''}`}
           style={{
             marginBottom: '0',
-            borderCollapse: 'collapse',
+            borderCollapse: 'separate',
+            borderSpacing: 0,
             tableLayout: 'fixed',
             width: '100%',
+            border: '1px solid #d0d5dd',
+            borderRadius: 12,
+            background: '#ffffff',
           }}
         >
           {hasColumnHeaders && (

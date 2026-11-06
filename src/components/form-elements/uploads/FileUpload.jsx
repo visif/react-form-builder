@@ -213,9 +213,8 @@ const FileUpload = (props) => {
                       title={file.originalName}
                       onClick={() => onOpenFile(file)}
                     >
-                      <span className="rfb-file-upload-name-text">
-                        {index + 1}.{file.originalName}
-                      </span>
+                      <span className="rfb-file-upload-index">{index + 1}.</span>
+                      <span className="rfb-file-upload-name-text">{file.originalName}</span>
                     </button>
                     <button
                       type="button"
