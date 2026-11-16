@@ -1,8 +1,16 @@
 import React, { useCallback, useMemo } from 'react'
 
+import { SwapOutlined } from '@ant-design/icons'
+import { Button } from 'antd'
+
 import '../../../styles/draft-align.css'
 import { useFormElementEdit } from './hooks/useFormElementEdit'
 import { createImageUploadHandler } from './utils/imageUploadHandler'
+import {
+  getOppositeChoiceElementType,
+  isSwitchableChoiceElement,
+  resolveChoiceElementTitle,
+} from './utils/switchChoiceElementType'
 import { buildFieldConfigs } from './configs/fieldConfigs'
 
 /**
@@ -36,6 +44,7 @@ const FormElementsEdit = (props) => {
     onCellNameBlur,
     onSubFormNameChange,
     onSubFormNameBlur,
+    switchChoiceType,
     formDesignData,
     updateElement,
     setElement,
@@ -99,10 +108,16 @@ const FormElementsEdit = (props) => {
     ]
   )
 
+  const canSwitchChoiceType = isSwitchableChoiceElement(element?.element)
+  const oppositeChoiceType = getOppositeChoiceElementType(element?.element)
+  const oppositeChoiceTitle = oppositeChoiceType
+    ? resolveChoiceElementTitle(oppositeChoiceType, props.toolbarItems)
+    : ''
+
   // Render the editor UI
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Header with element name and close button */}
+      {/* Header with element name, Checkboxes <-> Multiple Choice toggle, and close button */}
       <div
         style={{
           display: 'flex',
@@ -111,7 +126,26 @@ const FormElementsEdit = (props) => {
           margin: 0,
         }}
       >
-        <h2 style={{ margin: 0 }}>{props.element.text}</h2>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            flexWrap: 'wrap',
+          }}
+        >
+          <h2 style={{ margin: 0 }}>{element.text || props.element.text}</h2>
+          {canSwitchChoiceType && (
+            <Button
+              size="small"
+              icon={<SwapOutlined />}
+              onClick={switchChoiceType}
+              data-testid="switch-choice-element-type"
+            >
+              {`Change to ${oppositeChoiceTitle}`}
+            </Button>
+          )}
+        </div>
         <button
           type="button"
           className="dismiss-edit"

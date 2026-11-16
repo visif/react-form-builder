@@ -200,4 +200,37 @@ describe('buildFieldConfigs', () => {
 
     expect(checkedConfig.props.checked).toBe(true)
   })
+
+  it('defaults Display horizontal, Value, Info, and Correct capability flags for imported Checkboxes/RadioButtons', () => {
+    const importedCheckbox = {
+      id: 'chk-imported',
+      element: 'Checkboxes',
+      label: '1. กระบวนการดูแลผู้ป่วย',
+      canHaveAnswer: true,
+      canHaveInfo: true,
+      options: [{ key: 'k1', text: '101 การคัดกรอง', value: '1' }],
+    }
+    const configs = buildFieldConfigs({
+      props: {
+        element: importedCheckbox,
+        preview: { state: { data: [importedCheckbox] } },
+      },
+      element: importedCheckbox,
+      fileOptions: [],
+      formDataSource: [],
+      activeForm: null,
+      onUploadFile: noop,
+      editElementProp: noop,
+      onContentChange: noop,
+      updateElement: noop,
+    })
+
+    const labelCfg = configs.find((c) => c.condition() && c.props && 'canHaveDisplayHorizontal' in c.props)
+    expect(labelCfg.props.canHaveDisplayHorizontal).toBe(true)
+
+    const optionCfg = configs.find((c) => c.condition() && c.props && 'canHaveOptionValue' in c.props)
+    expect(optionCfg.props.canHaveOptionValue).toBe(true)
+    expect(optionCfg.props.canHaveOptionCorrect).toBe(true)
+    expect(optionCfg.props.canHaveInfo).toBe(true)
+  })
 })

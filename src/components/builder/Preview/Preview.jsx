@@ -787,10 +787,27 @@ const Preview = (props) => {
         if (!itemId) return
 
         const itemData = getDataById(itemId)
-        if (!itemData || itemData.element !== changedElement.element) return
+        const isChoiceTypeSwap =
+          (changedElement.element === 'Checkboxes' || changedElement.element === 'RadioButtons') &&
+          (itemData?.element === 'Checkboxes' || itemData?.element === 'RadioButtons')
+        if (!itemData || (itemData.element !== changedElement.element && !isChoiceTypeSwap)) return
 
         const updatedItem = { ...itemData }
         let changed = false
+
+        if (isChoiceTypeSwap && itemData.element !== changedElement.element) {
+          updatedItem.element = changedElement.element
+          updatedItem.text = changedElement.text
+          if (changedElement.element === 'RadioButtons') {
+            updatedItem.formularKey = changedElement.formularKey ?? itemData.formularKey ?? ''
+            if (Array.isArray(updatedItem.value) && updatedItem.value.length > 1) {
+              updatedItem.value = updatedItem.value.slice(0, 1)
+            }
+          } else if (!changedElement.formularKey && updatedItem.formularKey === '') {
+            delete updatedItem.formularKey
+          }
+          changed = true
+        }
 
         const commonProps = [
           'label',
@@ -1051,6 +1068,7 @@ const Preview = (props) => {
     const formElementEditProps = {
       showCorrectColumn: props.showCorrectColumn,
       files: props.files,
+      toolbarItems: props.toolbarItems,
       manualEditModeOff,
       // Pass the enhanced preview object
       preview: previewObject,

@@ -294,13 +294,16 @@ const DynamicOptionList = ({
     propsElement?.row !== undefined
   )
 
+  const shouldShowValue = Boolean(canHaveOptionValue)
+
   const shouldShowInfo =
-    canHaveInfo || (isInDynamicColumn && propsElement?.element === 'Checkboxes')
+    shouldShowValue && (canHaveInfo || (isInDynamicColumn && propsElement?.element === 'Checkboxes'))
 
   const shouldShowCorrect =
-    canHaveOptionCorrect || (isInDynamicColumn && propsElement?.element === 'Checkboxes')
+    shouldShowValue &&
+    (canHaveOptionCorrect || (isInDynamicColumn && propsElement?.element === 'Checkboxes'))
 
-  const shouldShowDefault = canHaveDefaultValue
+  const shouldShowDefault = Boolean(canHaveDefaultValue)
 
   // Compute how many extra columns after Options/Value
   const extraCols = [shouldShowInfo, shouldShowCorrect, shouldShowDefault].filter(Boolean)
@@ -313,11 +316,14 @@ const DynamicOptionList = ({
     .join(' ')
 
   const getGridColumns = () => {
-    if (canHaveOptionValue) {
+    if (shouldShowValue) {
       if (extraCols.length > 0) {
         return `minmax(0, 1fr) 72px ${extraColWidths} 64px`
       }
       return 'minmax(0, 1fr) 72px 64px'
+    }
+    if (extraCols.length > 0) {
+      return `minmax(0, 1fr) ${extraColWidths} 64px`
     }
     return 'minmax(0, 1fr) 64px'
   }
@@ -409,7 +415,7 @@ const DynamicOptionList = ({
                   }}
                   onBlur={updateOption}
                 />
-                {canHaveOptionValue && (
+                {shouldShowValue && (
                   <Input
                     value={val}
                     onChange={(e) => handleValueChangeThrottled(index, e)}
@@ -417,7 +423,7 @@ const DynamicOptionList = ({
                   />
                 )}
 
-                {canHaveOptionValue && canHaveInfo && (
+                {shouldShowInfo && (
                   <div style={centerCellStyle}>
                     <Checkbox
                       checked={Object.prototype.hasOwnProperty.call(option, 'info') && option.info}
@@ -425,7 +431,7 @@ const DynamicOptionList = ({
                     />
                   </div>
                 )}
-                {canHaveOptionValue && canHaveOptionCorrect && (
+                {shouldShowCorrect && (
                   <div style={centerCellStyle}>
                     <Checkbox
                       checked={

@@ -128,6 +128,7 @@ const ReactFormBuilder = (incomingProps: ReactFormBuilderProps) => {
           >
             <Preview
               files={props.files}
+              toolbarItems={props.toolbarItems}
               manualEditModeOff={manualEditModeOff}
               showCorrectColumn={props.showCorrectColumn}
               parent={null}

@@ -7,6 +7,10 @@ import {
   sanitizeUniqueName,
 } from '../../../../utils/dynamic-column-row-names'
 import { mergeEditorElementUpdate } from '../utils/mergeEditorElementUpdate'
+import {
+  buildSwitchedChoiceElement,
+  isSwitchableChoiceElement,
+} from '../utils/switchChoiceElementType'
 
 /**
  * Custom hook for managing form element editing state and operations
@@ -91,18 +95,35 @@ export const useFormElementEdit = (props) => {
       if (!prev || prev.id !== live.id) {
         return prev
       }
-      if (sameIndex(prev.row, live.row) && sameIndex(prev.col, live.col)) {
+      const sameCoords = sameIndex(prev.row, live.row) && sameIndex(prev.col, live.col)
+      const sameType = prev.element === live.element
+      if (sameCoords && sameType) {
         return prev
       }
       const next = {
         ...prev,
+        element: live.element,
+        text: live.text,
+        options: live.options ?? prev.options,
         row: live.row,
         col: live.col,
         cellName: live.cellName,
         cellNameCustom: live.cellNameCustom,
       }
+      if ('formularKey' in live) {
+        next.formularKey = live.formularKey
+      } else {
+        delete next.formularKey
+      }
       elementRef.current = next
       if (props.element && props.element !== live) {
+        props.element.element = live.element
+        props.element.text = live.text
+        if ('formularKey' in live) {
+          props.element.formularKey = live.formularKey
+        } else {
+          delete props.element.formularKey
+        }
         props.element.row = live.row
         props.element.col = live.col
         props.element.cellName = live.cellName
@@ -110,7 +131,14 @@ export const useFormElementEdit = (props) => {
       }
       return next
     })
-  }, [props.element, props.preview, props.element?.row, props.element?.col, props.element?.cellName])
+  }, [
+    props.element,
+    props.preview,
+    props.preview?.state?.data,
+    props.element?.row,
+    props.element?.col,
+    props.element?.cellName,
+  ])
 
   // Update element in parent component.
   // Blur handlers call this with a DOM event. Column editors call it with the
@@ -399,6 +427,37 @@ export const useFormElementEdit = (props) => {
     loadFormData()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const switchChoiceType = useCallback(() => {
+    const current = elementRef.current
+    if (!current || !isSwitchableChoiceElement(current.element)) {
+      return
+    }
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+      debounceTimerRef.current = null
+    }
+    const live =
+      (typeof props.preview?.getDataById === 'function' &&
+        props.preview.getDataById(current.id)) ||
+      props.element
+    const switched = buildSwitchedChoiceElement(current, live, props.toolbarItems)
+    if (!switched) {
+      return
+    }
+    if (props.element && props.element.id === switched.id) {
+      if (!('formularKey' in switched) && 'formularKey' in props.element) {
+        delete props.element.formularKey
+      }
+      Object.assign(props.element, switched)
+      props.element.dirty = false
+    }
+    dirtyRef.current = false
+    elementRef.current = switched
+    setDirty(false)
+    setElement(switched)
+    props.updateElement.call(props.preview, switched)
+  }, [props])
+
   // Synchronize dirty flag to props.element
   if (dirty) {
     props.element.dirty = true
@@ -420,6 +479,7 @@ export const useFormElementEdit = (props) => {
     onCellNameBlur,
     onSubFormNameChange,
     onSubFormNameBlur,
+    switchChoiceType,
     updateElement,
     setElement,
     setDirty,

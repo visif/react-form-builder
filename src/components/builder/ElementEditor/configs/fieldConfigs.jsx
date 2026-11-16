@@ -43,13 +43,16 @@ export const buildFieldConfigs = ({
   formDesignData,
   updateElement,
 }) => {
-  const {
-    canHaveDisplayHorizontal,
-    canHaveOptionCorrect,
-    canHaveOptionValue,
-    canHaveInfo,
-    canHaveDefaultValue,
-  } = props.element
+  const canHaveDisplayHorizontal =
+    (element.canHaveDisplayHorizontal ?? props.element.canHaveDisplayHorizontal) !== false
+  const canHaveOptionCorrect =
+    (element.canHaveOptionCorrect ?? props.element.canHaveOptionCorrect) !== false
+  const canHaveOptionValue =
+    (element.canHaveOptionValue ?? props.element.canHaveOptionValue) !== false
+  const canHaveInfo = Boolean(element.canHaveInfo ?? props.element.canHaveInfo)
+  const canHaveDefaultValue = Boolean(
+    element.canHaveDefaultValue ?? props.element.canHaveDefaultValue
+  )
 
   const designData = typeof formDesignData === 'function' ? formDesignData() : []
   const parentElement =
@@ -178,12 +181,13 @@ export const buildFieldConfigs = ({
     // Label editor (for most input elements)
     {
       condition: () =>
+        'label' in element ||
         'label' in props.element ||
-        props.element.element === 'Signature2' ||
-        props.element.element === 'ImageUpload',
+        element.element === 'Signature2' ||
+        element.element === 'ImageUpload',
       component: LabelEditor,
       props: {
-        element: props.element,
+        element,
         onChange: editElementProp,
         onContentChange,
         onBlur: updateElement,
@@ -246,7 +250,7 @@ export const buildFieldConfigs = ({
 
     // Dynamic options list (for Dropdown, Radio, Checkboxes)
     {
-      condition: () => 'options' in props.element,
+      condition: () => 'options' in element || 'options' in props.element,
       component: DynamicOptionList,
       props: {
         showCorrectColumn: props.showCorrectColumn,
@@ -257,8 +261,8 @@ export const buildFieldConfigs = ({
         data: props.preview?.state?.data,
         updateElement: props.updateElement,
         preview: props.preview,
-        element: props.element,
-        key: `option-${props.element.options?.length || 0}`,
+        element,
+        key: `option-${element.element}-${(element.options || props.element.options)?.length || 0}`,
       },
     },
 
@@ -330,12 +334,12 @@ export const buildFieldConfigs = ({
 
     // Formula key field
     {
-      condition: () => 'formularKey' in props.element,
+      condition: () => 'formularKey' in element,
       component: TextFieldEditor,
       props: {
         id: 'formularKey',
         label: 'Formula Key',
-        value: props.element.formularKey,
+        value: element.formularKey,
         onChange: (e) => editElementProp('formularKey', 'value', e),
         onBlur: updateElement,
       },
