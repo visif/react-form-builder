@@ -204,6 +204,36 @@ const DataSource = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const dataSourceConfigKey = React.useMemo(
+    () =>
+      JSON.stringify({
+        sourceType: props.data?.sourceType,
+        formSource: props.data?.formSource,
+        fields: Object.keys(props.data || {})
+          .filter((key) => key.startsWith('formField') && key.length > 'formField'.length && props.data[key])
+          .sort(),
+      }),
+    [props.data]
+  )
+  const prevConfigKeyRef = React.useRef(dataSourceConfigKey)
+
+  React.useEffect(() => {
+    if (prevConfigKeyRef.current === dataSourceConfigKey) {
+      return
+    }
+    prevConfigKeyRef.current = dataSourceConfigKey
+    setSearchText('')
+    setSelectedItem(null)
+    setDefaultSelectedItem(null)
+    setLoading(true)
+    Promise.resolve(loadDataSource()).finally(() => {
+      if (mounted.current) {
+        setLoading(false)
+      }
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataSourceConfigKey])
+
   React.useEffect(() => {
     isShowingListRef.current = isShowingList
   }, [isShowingList])

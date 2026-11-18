@@ -29,77 +29,84 @@ const toPlainText = (str) => {
  * @param {Function} onChange - Handler for field value changes
  * @param {Function} onBlur - Handler for field blur events
  */
-const DataSourceEditor = ({ element, formDataSource, activeForm, onChange, onBlur }) => (
-  <div>
-    {/* sourceType: Determines the data source type (name, department, role, or form)
-          Defaults to 'name' if not set */}
-    {'sourceType' in element && (
-    <SelectFieldEditor
-      id="sourceType"
-      label="Source Type"
-      value={element.sourceType || 'name'}
-      options={[
-            { value: 'name', label: 'Name', key: 'name' },
-            { value: 'email', label: 'Email', key: 'email' },
-            { value: 'department', label: 'Department', key: 'department' },
-            { value: 'role', label: 'Role', key: 'role' },
-            { value: 'dataset', label: 'Dataset', key: 'dataset' },
-            { value: 'form', label: 'Form', key: 'form' },
-          ]}
-      onChange={(e) => onChange('sourceType', 'value', e)}
-      onBlur={onBlur}
-    />
-      )}
+const DataSourceEditor = ({ element, formDataSource, activeForm, onChange, onBlur }) => {
+  const hasSelectedSource =
+    element.formSource !== undefined && element.formSource !== null && element.formSource !== ''
+  const matchedSource = hasSelectedSource
+    ? (formDataSource || []).find((item) => item.id == element.formSource)
+    : null
+  const formSourceValue = hasSelectedSource
+    ? (matchedSource ? matchedSource.id : element.formSource)
+    : -1
 
-    {/* Show form-specific fields only when sourceType is 'form' */}
-    {element.sourceType === 'form' && (
+  return (
     <div>
-      {/* formSource: ID of the selected form to pull data from
-              Defaults to -1 (Please select) when first shown */}
-      {'formSource' in element && (
+      {/* sourceType: Determines the data source type (name, department, role, dataset, or form)
+            Defaults to 'name' if not set */}
+      {'sourceType' in element && (
       <SelectFieldEditor
-        id="formSource"
-        label="Form Source"
-        value={element.formSource || -1}
+        id="sourceType"
+        label="Source Type"
+        value={element.sourceType || 'name'}
         options={[
-                { value: -1, label: 'Please select', key: -1 },
-                ...(formDataSource || []).map((item) => ({
-                  value: item.id,
-                  label: item.name,
-                  key: item.id,
-                })),
-              ]}
-        onChange={(e) => onChange('formSource', 'value', e)}
+              { value: 'name', label: 'Name', key: 'name' },
+              { value: 'email', label: 'Email', key: 'email' },
+              { value: 'department', label: 'Department', key: 'department' },
+              { value: 'role', label: 'Role', key: 'role' },
+              { value: 'dataset', label: 'Dataset', key: 'dataset' },
+              { value: 'form', label: 'Form', key: 'form' },
+            ]}
+        onChange={(e) => onChange('sourceType', 'value', e)}
         onBlur={onBlur}
       />
-          )}
+        )}
 
-      {/* Form field selection: Show checkboxes for each column in the selected form
-              Allows selecting which fields from the source form should be displayed
-              Field names are stored as formField{field_name} properties on the element */}
-      {activeForm && activeForm.columns && (
-      <div className="form-group">
-        <label className="control-label">Select Fields</label>
-        {activeForm.columns
-                .filter((item) => toPlainText(item.label || item.text || '') !== '')
-                .map((item) => (
-                  <CheckboxFieldEditor
-                    key={item.field_name}
-                    id={item.field_name}
-                    label={toPlainText(item.label || item.text || '')}
-                    checked={
-                      `formField${item.field_name}` in element
-                        ? element[`formField${item.field_name}`]
-                        : false
-                    }
-                    onChange={(e) => onChange(`formField${item.field_name}`, 'checked', e)}
-                  />
-                ))}
+      {(element.sourceType === 'form' || element.sourceType === 'dataset') && (
+      <div>
+        {'formSource' in element && (
+        <SelectFieldEditor
+          id="formSource"
+          label={element.sourceType === 'dataset' ? 'Dataset Source' : 'Form Source'}
+          value={formSourceValue}
+          options={[
+                  { value: -1, label: 'Please select', key: -1 },
+                  ...(formDataSource || []).map((item) => ({
+                    value: item.id,
+                    label: item.name,
+                    key: item.id,
+                  })),
+                ]}
+          onChange={(e) => onChange('formSource', 'value', e)}
+          onBlur={onBlur}
+        />
+            )}
+
+        {activeForm && activeForm.columns && (
+        <div className="form-group">
+          <label className="control-label">
+            {element.sourceType === 'dataset' ? 'Select Dataset Keys' : 'Select Fields'}
+          </label>
+          {activeForm.columns
+                  .filter((item) => toPlainText(item.label || item.text || item.field_name || '') !== '')
+                  .map((item) => (
+                    <CheckboxFieldEditor
+                      key={item.field_name}
+                      id={item.field_name}
+                      label={toPlainText(item.label || item.text || item.field_name || '')}
+                      checked={
+                        `formField${item.field_name}` in element
+                          ? element[`formField${item.field_name}`]
+                          : false
+                      }
+                      onChange={(e) => onChange(`formField${item.field_name}`, 'checked', e)}
+                    />
+                  ))}
+        </div>
+            )}
       </div>
-          )}
+        )}
     </div>
-      )}
-  </div>
   )
+}
 
 export default DataSourceEditor

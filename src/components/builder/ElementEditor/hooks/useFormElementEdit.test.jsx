@@ -2,6 +2,8 @@ import React from 'react'
 import { act, fireEvent, render, renderHook, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
+import DataSource from '../../../form-elements/advanced/DataSource'
+import DataSourceEditor from '../editors/specific/DataSourceEditor'
 import FormElementsEdit from '../FormElementsEdit'
 import { useFormElementEdit } from './useFormElementEdit'
 
@@ -148,5 +150,128 @@ describe('useFormElementEdit updateElement', () => {
       />
     )
     expect(screen.queryByTestId('switch-choice-element-type')).toBeNull()
+  })
+
+  it('renders Dataset Source and Select Dataset Keys in DataSourceEditor when sourceType is dataset', () => {
+    const element = {
+      id: 'ds-1',
+      element: 'DataSource',
+      sourceType: 'dataset',
+      formSource: '10',
+      formFieldCode: true,
+    }
+    render(
+      <DataSourceEditor
+        element={element}
+        formDataSource={[{ id: 10, name: 'Suppliers' }]}
+        activeForm={{
+          columns: [
+            { field_name: 'Code', label: 'Code' },
+            { field_name: 'Title', label: 'Title' },
+          ],
+        }}
+        onChange={vi.fn()}
+        onBlur={vi.fn()}
+      />
+    )
+
+    expect(screen.getByText('Dataset Source')).toBeTruthy()
+    expect(screen.getByText('Suppliers')).toBeTruthy()
+    expect(screen.getByText('Select Dataset Keys')).toBeTruthy()
+    expect(screen.getByLabelText('Code').checked).toBe(true)
+    expect(screen.getByLabelText('Title').checked).toBe(false)
+  })
+
+  it('reloads sources on sourceType change, clears stale formSource/formField keys, and ignores stale async responses', async () => {
+    const element = {
+      id: 'ds-2',
+      element: 'DataSource',
+      sourceType: 'form',
+      formSource: 1,
+      formFieldtext_1: true,
+    }
+    let resolveDatasetSources
+    const getFormSource = vi.fn((el) => {
+      if (el.sourceType === 'form') {
+        return Promise.resolve([{ id: 1, name: 'Form One' }])
+      }
+      if (el.sourceType === 'dataset') {
+        return new Promise((resolve) => {
+          resolveDatasetSources = resolve
+        })
+      }
+      return Promise.resolve([])
+    })
+
+    const { result } = renderHook(() =>
+      useFormElementEdit({
+        element,
+        preview: { state: { data: [element] } },
+        updateElement: vi.fn(),
+        getFormSource,
+        getFormContent: vi.fn().mockResolvedValue({ columns: [{ field_name: 'text_1', label: 'Text' }] }),
+      })
+    )
+
+    await act(async () => {})
+    expect(result.current.formDataSource).toEqual([{ id: 1, name: 'Form One' }])
+
+    // Start switching to dataset (pending), then immediately switch to name
+    let pendingDatasetPromise
+    act(() => {
+      pendingDatasetPromise = result.current.editElementProp('sourceType', 'value', {
+        target: { value: 'dataset' },
+      })
+    })
+
+    // Controlled element state updates synchronously without waiting for getFormSource
+    expect(result.current.element.sourceType).toBe('dataset')
+    expect(result.current.element.formSource).toBe(-1)
+    expect(result.current.element.formFieldtext_1).toBeUndefined()
+
+    await act(async () => {
+      await result.current.editElementProp('sourceType', 'value', {
+        target: { value: 'name' },
+      })
+    })
+    // Switching to 'name' should not fetch form/dataset lists
+    expect(getFormSource).toHaveBeenCalledTimes(2)
+
+    // Resolving the superseded dataset request must not repopulate formDataSource
+    await act(async () => {
+      resolveDatasetSources([{ id: 1, name: 'Dataset One' }])
+      await pendingDatasetPromise
+    })
+    expect(result.current.element.sourceType).toBe('name')
+    expect(result.current.formDataSource).toEqual([])
+  })
+
+  it('reloads DataSource options when sourceType or formSource changes', async () => {
+    const getDataSource = vi.fn(async (data) => {
+      if (data.sourceType === 'dataset' && data.formSource === 5) {
+        return [{ id: 1, name: 'Item A' }]
+      }
+      return []
+    })
+
+    const { rerender } = render(
+      <DataSource
+        mutable
+        data={{ id: 'ds-3', element: 'DataSource', field_name: 'ds_3', sourceType: 'name', formSource: '' }}
+        getDataSource={getDataSource}
+      />
+    )
+    await act(async () => {})
+    expect(getDataSource).toHaveBeenCalledTimes(1)
+
+    rerender(
+      <DataSource
+        mutable
+        data={{ id: 'ds-3', element: 'DataSource', field_name: 'ds_3', sourceType: 'dataset', formSource: 5 }}
+        getDataSource={getDataSource}
+      />
+    )
+    await act(async () => {})
+    expect(getDataSource).toHaveBeenCalledTimes(2)
   })
 })

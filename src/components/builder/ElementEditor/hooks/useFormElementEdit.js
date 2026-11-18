@@ -29,6 +29,8 @@ export const useFormElementEdit = (props) => {
   const debounceTimerRef = useRef(null)
   const elementRef = useRef(element)
   const dirtyRef = useRef(false)
+  const sourceRequestIdRef = useRef(0)
+  const contentRequestIdRef = useRef(0)
 
   // Sync ref with state
   useEffect(() => {
@@ -207,27 +209,85 @@ export const useFormElementEdit = (props) => {
   // Edit element property with optional async form loading
   const editElementProp = useCallback(
     async (elemProperty, targProperty, e) => {
-      const this_element = { ...element }
-      this_element[elemProperty] = e.target[targProperty]
+      const nextValue = e.target[targProperty]
+      const baseElement = elementRef.current || element
+      const prevSourceType = baseElement.sourceType
+      const prevFormSource = baseElement.formSource
+      const this_element = { ...baseElement }
 
-      // Update props.element directly for immediate parent sync
-      props.element[elemProperty] = e.target[targProperty]
+      if (elemProperty.startsWith('formField') && elemProperty.length > 'formField'.length && !nextValue) {
+        delete this_element[elemProperty]
+        delete props.element[elemProperty]
+      } else {
+        this_element[elemProperty] = nextValue
+        props.element[elemProperty] = nextValue
+      }
+
+      const isSourceTypeChange = elemProperty === 'sourceType' && prevSourceType !== nextValue
+      const isFormSourceChange = elemProperty === 'formSource' && prevFormSource != nextValue
+
+      if (isSourceTypeChange || isFormSourceChange) {
+        Object.keys(this_element).forEach((key) => {
+          if (key.startsWith('formField') && key.length > 'formField'.length) {
+            delete this_element[key]
+            delete props.element[key]
+          }
+        })
+      }
+
+      if (isSourceTypeChange) {
+        this_element.formSource = -1
+        props.element.formSource = -1
+        setActiveForm(null)
+        setFormDataSource([])
+      }
+
+      // Sync state immediately before any async source/content fetch so controlled
+      // inputs, refs, and concurrent edits stay consistent while requests are in flight.
+      setElement(this_element)
+      elementRef.current = this_element
+      setDirty(true)
+
+      if (targProperty === 'checked') {
+        props.updateElement.call(props.preview, this_element)
+        setDirty(false)
+      } else if (debouncedPushRef.current) {
+        debouncedPushRef.current()
+      }
+
+      // Reload available sources when switching to form or dataset
+      if (elemProperty === 'sourceType') {
+        const requestId = ++sourceRequestIdRef.current
+        if ((nextValue === 'form' || nextValue === 'dataset') && props.getFormSource) {
+          const sources = (await props.getFormSource(this_element)) || []
+          if (sourceRequestIdRef.current !== requestId) {
+            return
+          }
+          setFormDataSource(sources)
+        }
+        return
+      }
 
       // Load form content when formSource changes
       if (elemProperty === 'formSource' && formDataSource) {
-        const activeFormItem = formDataSource.find((item) => item.id == this_element[elemProperty])
+        const requestId = ++contentRequestIdRef.current
+        const activeFormItem = formDataSource.find((item) => item.id == nextValue)
         let activeFormContent = {}
 
         // Persist selected form label for FormLink so generator can display it
         if (props.element.element === 'FormLink') {
           const selectedFormLabel = activeFormItem?.title || activeFormItem?.name || ''
-          this_element.value = selectedFormLabel
-          this_element.formName = selectedFormLabel
-          this_element.selectedFormId = activeFormItem || undefined
-
+          const latest = {
+            ...(elementRef.current || this_element),
+            value: selectedFormLabel,
+            formName: selectedFormLabel,
+            selectedFormId: activeFormItem || undefined,
+          }
           props.element.value = selectedFormLabel
           props.element.formName = selectedFormLabel
           props.element.selectedFormId = activeFormItem || undefined
+          setElement(latest)
+          elementRef.current = latest
         }
 
         if (activeFormItem && props.getFormContent) {
@@ -236,20 +296,11 @@ export const useFormElementEdit = (props) => {
           console.log('Received form content:', activeFormContent)
         }
 
+        if (contentRequestIdRef.current !== requestId) {
+          return
+        }
         console.log('Setting activeForm to:', activeFormContent)
         setActiveForm(activeFormContent)
-      }
-
-      setElement(this_element)
-      elementRef.current = this_element
-      setDirty(true)
-
-      // Update immediately for checked properties, debounced for others
-      if (targProperty === 'checked') {
-        props.updateElement.call(props.preview, this_element)
-        setDirty(false)
-      } else if (debouncedPushRef.current) {
-        debouncedPushRef.current()
       }
     },
     [element, formDataSource, props]
